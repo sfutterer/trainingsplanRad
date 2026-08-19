@@ -186,6 +186,7 @@
   .an-day .an-ist{font-size:13px;line-height:1.5;margin-top:7px;}
   .an-day .an-note{font-size:12.5px;line-height:1.45;margin-top:6px;color:var(--rest);}
   .an-day .an-note.is-bad{color:var(--z3);}
+  .an-day .an-note.is-info{color:var(--muted);}
   .an-day .an-note.is-good{color:var(--work);}
   .an-zones{display:flex;height:8px;border-radius:999px;overflow:hidden;margin-top:8px;background:#0f1319;}
   .an-zones span{display:block;height:100%;}
@@ -2221,9 +2222,18 @@ function anPct(part, whole){
 
 /* ---- Vergleich Soll gegen Ist ---- */
 
-/* Toleranz auf die Dauer. Der Plan ist ein Plan, keine Stoppuhr - alles
-   innerhalb von 15 Prozent gilt als erfuellt. */
-const AN_DUR_TOL = 0.15;
+/* Toleranz auf die Dauer, bewusst unsymmetrisch.
+
+   Zu kurz ist eine echte Abweichung, da fehlt Umfang. Laenger oder weiter zu
+   fahren ist dagegen normal: exakt passende Strecken lassen sich kaum planen,
+   und die Distanzangabe im Plan ist ohnehin nur aus einer angenommenen
+   Geschwindigkeit geschaetzt - sie geht nirgends in die Bewertung ein.
+
+   Das eigentliche Risiko einer laengeren Fahrt ist nicht die Dauer, sondern die
+   Intensitaet. Die prueft der Zonenabschnitt weiter unten, und nur der darf eine
+   zu harte Fahrt herabsetzen. Mehr Umfang allein bleibt "eingehalten". */
+const AN_DUR_TOL_SHORT = 0.15;
+const AN_DUR_TOL_LONG  = 0.35;
 
 /* Setzt den Status herab und zieht das Badge mit. Ohne das behielte eine
    Einheit mit passender Dauer das Badge "erfuellt", obwohl die Zonenpruefung
@@ -2426,14 +2436,18 @@ function anCompareDay(date, startDate, acts, zonesById, coreSessions){
   const sollSec = (t.minutes || 0) * 60;
   const diff = sollSec ? (rideSec - sollSec) / sollSec : 0;
   row.durDiff = diff;
-  if(Math.abs(diff) <= AN_DUR_TOL){
-    row.status = 'ok'; row.badge = 'erfüllt';
+  const pct = Math.abs(Math.round(diff * 100));
+  if(diff < -AN_DUR_TOL_SHORT){
+    row.status = 'dev'; row.badge = 'kürzer';
+    row.notes.push({kind:'bad', text: pct + ' % kürzer als geplant.'});
   } else {
-    row.status = 'dev';
-    row.badge = diff > 0 ? 'länger' : 'kürzer';
-    const pct = Math.abs(Math.round(diff * 100));
-    row.notes.push({kind: diff > 0 ? '' : 'bad',
-      text: (diff > 0 ? pct + ' % länger als geplant.' : pct + ' % kürzer als geplant.')});
+    row.status = 'ok'; row.badge = 'erfüllt';
+    if(diff > AN_DUR_TOL_SHORT){
+      row.notes.push({kind:'info', text: pct + ' % länger als geplant – gilt als eingehalten.' +
+        (diff > AN_DUR_TOL_LONG
+          ? ' Dauerhaft deutlich mehr Umfang gehört in die Planprogression, nicht in einzelne Fahrten.'
+          : '')});
+    }
   }
 
   /* Zonen bewerten - nur wenn Streams geladen wurden. */
