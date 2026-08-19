@@ -151,6 +151,7 @@
   .time{font-size:56px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;}
   .exercise{font-size:19px;font-weight:600;margin-top:10px;min-height:26px;}
   .meta{color:var(--muted);font-size:13px;margin-top:4px;}
+  .meta .meta-dose{display:block;margin-top:2px;line-height:1.35;}
   .controls{display:flex;gap:12px;margin:14px 0 26px;justify-content:center;}
   button.tbtn{border:none;border-radius:12px;padding:13px 22px;font-size:15px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .btn-primary{background:var(--work);color:#0a1410;}
@@ -1266,9 +1267,13 @@ function announceStep(step){
     els.phase.textContent = 'Belastung';
     els.exercise.textContent = step.label;
     const t = step.reps;
-    els.meta.textContent = t
-      ? `Runde ${step.round} / ${els.rounds.value} · ${t.reps} Wdh.${t.perSide ? ` (${t.perSide}/Seite)` : ''} · ~${t.tempo} s/Wdh.`
-      : `Runde ${step.round} / ${els.rounds.value}`;
+    const runde = `Runde ${step.round} / ${els.rounds.value}`;
+    if(t){
+      const dosis = `${t.reps} Wdh.${t.perSide ? ` (${t.perSide}/Seite)` : ''} · ~${t.tempo} s/Wdh.`;
+      els.meta.innerHTML = runde + '<span class="meta-dose">' + dosis + '</span>';
+    } else {
+      els.meta.textContent = runde;
+    }
     let cue = step.label + '.';
     if(t){
       cue += t.perSide
