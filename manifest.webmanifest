@@ -5,8 +5,11 @@
   "lang": "de",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#12161c",
   "theme_color": "#12161c",
