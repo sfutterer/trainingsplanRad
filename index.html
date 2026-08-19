@@ -2259,8 +2259,6 @@ function anRenderRow(row){
       return '<div>' + anEsc(a.name || a.type) + ': ' + dauer + km + hr + '</div>';
     }).join('');
     html += '<div class="an-ist">' + zeilen + '</div>';
-  } else if(t.sport !== 'rest' && t.sport !== 'optional'){
-    html += '<div class="an-ist" style="color:var(--muted)">Keine Aktivität erfasst.</div>';
   }
 
   html += anRenderZones(row.zones);
@@ -2282,6 +2280,14 @@ function anRenderReport(rows, meta){
   const sollMin = geplant.reduce((n, r) => n + (r.target.minutes || 0), 0);
   const istMin = Math.round(rows.reduce((n, r) => n + (r.rideSec || 0), 0) / 60);
 
+  /* Nur Tage mit tatsaechlich gefundener Aktivitaet auflisten. Leere Tage
+     - Ruhetage, freie Freitage, nicht aufgezeichnetes Rumpftraining, aber
+     auch ausgefallene Fahrten - wuerden die Liste fuellen, ohne etwas zu
+     zeigen. Ihre Zahl bleibt in der Zusammenfassung sichtbar, damit
+     insbesondere ausgefallene Einheiten nicht stillschweigend verschwinden. */
+  const sichtbar = rows.filter(r => r.acts.length > 0);
+  const versteckt = rows.length - sichtbar.length;
+
   const sum = document.createElement('div');
   sum.className = 'an-sum';
   const diffPct = sollMin ? Math.round((istMin - sollMin) / sollMin * 100) : 0;
@@ -2293,11 +2299,24 @@ function anRenderReport(rows, meta){
       '<div class="an-chip"><b>' + ausgefallen + '</b>ausgefallen</div>' +
       '<div class="an-chip"><b>' + istMin + ' min</b>gefahren, geplant ' + sollMin + ' min</div>' +
       '<div class="an-chip"><b>' + (diffPct >= 0 ? '+' : '') + diffPct + ' %</b>Abweichung Fahrzeit</div>' +
-    '</div>';
+    '</div>' +
+    /* Wenn gar nichts vorliegt, sagt das die Leermeldung unten schon. */
+    (versteckt && sichtbar.length
+      ? '<div class="an-status">' + versteckt + (versteckt === 1 ? ' Tag ohne' : ' Tage ohne') +
+        ' Aktivität in intervals.icu – nicht aufgelistet.</div>'
+      : '');
   an.result.appendChild(sum);
 
+  if(!sichtbar.length){
+    const leer = document.createElement('div');
+    leer.className = 'an-sum';
+    leer.innerHTML = '<div class="an-status">Im gewählten Zeitraum liegt keine Aktivität in intervals.icu.</div>';
+    an.result.appendChild(leer);
+    return;
+  }
+
   /* Neueste zuerst - man will zuerst sehen, was gerade war. */
-  for(const row of rows.slice().reverse()){
+  for(const row of sichtbar.slice().reverse()){
     an.result.appendChild(anRenderRow(row));
   }
 }
