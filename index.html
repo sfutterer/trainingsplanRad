@@ -75,8 +75,9 @@
     border:1px solid var(--border);
     color:var(--muted);
     border-radius:10px;
-    padding:11px 4px;
-    font-size:12.5px;
+    padding:11px 2px;
+    font-size:12px;
+    white-space:nowrap;
     font-weight:600;
     cursor:pointer;
     letter-spacing:.02em;
@@ -136,6 +137,59 @@
   .type-core .title,.type-sun .title{color:var(--rest);}
   .type-rest .title,.type-restopt .title{color:var(--muted);}
   .hint{font-size:12px;color:var(--muted);text-align:center;max-width:340px;margin-top:6px;}
+
+
+  /* --- Analyse (intervals.icu) --- */
+  .an-row{display:flex;gap:8px;align-items:center;margin-top:10px;}
+  .an-row input[type=password],.an-row input[type=text],.an-row select{
+    flex:1;min-width:0;background:#0f1319;border:1px solid var(--border);border-radius:8px;
+    color:var(--text);padding:8px;font-size:13px;
+  }
+  .an-row button{
+    background:var(--panel2);color:var(--text);border:1px solid var(--border);
+    border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
+  }
+  .an-run{
+    width:100%;margin-top:12px;background:var(--work);color:#0a1410;border:none;
+    border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;
+  }
+  .an-run:disabled{opacity:.5;cursor:default;}
+  .an-status{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.45;}
+  .an-status.is-error{color:var(--z3);}
+  .an-status.is-ok{color:var(--work);}
+  .an-sum{background:var(--panel);border-radius:14px;padding:16px 18px;margin-bottom:16px;}
+  .an-sum-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+  .an-chip{
+    flex:1 1 calc(50% - 5px);background:var(--panel2);border-radius:10px;padding:9px 11px;
+    font-size:12px;color:var(--muted);line-height:1.3;
+  }
+  .an-chip b{display:block;font-size:18px;color:var(--text);font-weight:700;margin-bottom:2px;}
+  .an-day{
+    background:var(--panel);border-radius:14px;padding:14px 16px;margin-bottom:10px;
+    border-left:4px solid var(--border);
+  }
+  .an-day .an-head{
+    font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;
+    display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;
+  }
+  .an-day .an-badge{font-weight:700;white-space:nowrap;}
+  .an-day .an-title{font-size:14.5px;font-weight:700;margin-bottom:3px;}
+  .an-day .an-soll{font-size:12.5px;color:var(--muted);line-height:1.45;}
+  .an-day .an-ist{font-size:13px;line-height:1.5;margin-top:7px;}
+  .an-day .an-note{font-size:12.5px;line-height:1.45;margin-top:6px;color:var(--rest);}
+  .an-day .an-note.is-bad{color:var(--z3);}
+  .an-day .an-note.is-good{color:var(--work);}
+  .an-zones{display:flex;height:8px;border-radius:999px;overflow:hidden;margin-top:8px;background:#0f1319;}
+  .an-zones span{display:block;height:100%;}
+  .an-zlegend{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.4;}
+  .an-ok{border-left-color:var(--work);}
+  .an-dev{border-left-color:var(--rest);}
+  .an-miss{border-left-color:var(--z3);}
+  .an-extra{border-left-color:var(--prep);}
+  .an-ok .an-badge{color:var(--work);}
+  .an-dev .an-badge{color:var(--rest);}
+  .an-miss .an-badge{color:var(--z3);}
+  .an-extra .an-badge{color:var(--prep);}
 
   /* --- Timer view (from rumpf-timer.html) --- */
   .ring-wrap{position:relative;width:min(78vw,300px);height:min(78vw,300px);margin:6px auto 18px;}
@@ -305,9 +359,10 @@
 <h1>Trainingsplan Radfahren</h1>
 
 <div class="tabs">
-  <button class="tab-btn active" id="tabPlanBtn">Heute &amp; Plan</button>
+  <button class="tab-btn active" id="tabPlanBtn">Heute</button>
   <button class="tab-btn" id="tabTimerBtn">Rumpf</button>
   <button class="tab-btn" id="tabIntervalBtn">Intervalle</button>
+  <button class="tab-btn" id="tabAnalysisBtn">Analyse</button>
 </div>
 
 <!-- ================= PLAN VIEW ================= -->
@@ -422,6 +477,48 @@
   <button class="lb-close" id="lightboxCloseBtn">&#10005;</button>
   <img id="lightboxImg" alt="">
   <div class="lb-note">Zum Zoomen mit zwei Fingern aufziehen</div>
+</div>
+
+
+<!-- ================= ANALYSE VIEW ================= -->
+<div class="view" id="viewAnalysis">
+
+  <div class="status-card">
+    <div class="status-row"><span>Verbindung</span><b id="anConnState">nicht verbunden</b></div>
+    <div class="an-row">
+      <input type="password" id="anApiKey" placeholder="intervals.icu API-Key" autocomplete="off"
+             autocapitalize="off" spellcheck="false">
+      <button id="anSaveKey">Speichern</button>
+    </div>
+    <div class="an-status" id="anKeyHint">
+      Key findest du auf intervals.icu unter <b>Settings &rarr; Developer Settings</b>. Er wird nur
+      hier auf dem Gerät gespeichert und direkt an intervals.icu geschickt.
+    </div>
+  </div>
+
+  <div class="status-card">
+    <div class="status-row"><span>Zeitraum</span><b id="anRangeLabel">–</b></div>
+    <div class="an-row">
+      <select id="anRange">
+        <option value="7">Letzte 7 Tage</option>
+        <option value="14" selected>Letzte 14 Tage</option>
+        <option value="28">Letzte 4 Wochen</option>
+        <option value="all">Ganzer Plan ab Startdatum</option>
+      </select>
+    </div>
+    <div class="settings-row" style="margin-top:12px;">
+      <span>Pulszonen aus Streams</span><input type="checkbox" id="anZones" checked>
+    </div>
+    <div class="an-status">
+      Rechnet die Zeit in deinen Planzonen (Z1 90–108 · Z2 108–126 · Z3 126–144 · Z4 144–162 ·
+      Z5 162–180) aus dem Puls-Stream jeder Fahrt. Kostet pro Fahrt eine zusätzliche Abfrage.
+    </div>
+    <button class="an-run" id="anRun">Aktivitäten laden &amp; vergleichen</button>
+    <div class="an-status" id="anStatus"></div>
+  </div>
+
+  <div id="anResult"></div>
+
 </div>
 
 <div class="modal-overlay" id="exerciseModal">
@@ -661,7 +758,8 @@ function sayGerman(text, enabled){
 const TABS = {
   plan:     {btn:'tabPlanBtn',     view:'viewPlan'},
   timer:    {btn:'tabTimerBtn',    view:'viewTimer'},
-  interval: {btn:'tabIntervalBtn', view:'viewInterval'}
+  interval: {btn:'tabIntervalBtn', view:'viewInterval'},
+  analysis: {btn:'tabAnalysisBtn',  view:'viewAnalysis'}
 };
 
 function showTab(name){
@@ -692,6 +790,15 @@ const SUN_MIN  = [30, 30, 35, 25, 35, 40, 40, 25];   // Sonntag optionale Z1-Fah
 const CORE_WORK   = [25, 30, 35, 25, 30, 35, 40, 30];  // Belastung/Haltezeit (Sek.)
 const CORE_ROUNDS = [ 2,  2,  2,  2,  3,  3,  3,  2];  // Runden im Zirkel
 const CORE_REST   = [25, 25, 25, 25, 20, 20, 20, 25];  // Pause zwischen den Uebungen (Sek.)
+
+/* Lokaler Kalendertag als YYYY-MM-DD. toISOString() waere falsch: es rechnet
+   nach UTC um und liefert oestlich von Greenwich den Vortag. */
+function isoDayLocal(d){
+  const x = toMidnight(d);
+  const m = String(x.getMonth() + 1).padStart(2, '0');
+  const day = String(x.getDate()).padStart(2, '0');
+  return x.getFullYear() + '-' + m + '-' + day;
+}
 
 function toMidnight(d){
   const x = new Date(d);
@@ -842,7 +949,46 @@ function buildDayInfo(date, startDate){
   info.week = week;
   info.phase = phase;
   info.recovery = recovery;
+  info.target = buildDayTarget(date, week);
   return info;
+}
+
+/* Maschinenlesbare Sollwerte je Tag. Die detail-Texte oben bleiben fuer die
+   Anzeige; hier stehen dieselben Zahlen nochmal auswertbar, damit der
+   Abgleich mit intervals.icu keinen Fliesstext parsen muss.
+   Dauer in Minuten, Distanz in km, zone als Schluessel aus HR_BANDS. */
+function buildDayTarget(date, week){
+  const idx = weekIndex(week);
+  const phase = phaseOf(week);
+  const recovery = isRecoveryWeek(week);
+  switch(date.getDay()){
+    case 1: // Montag
+      return {sport:'rest'};
+    case 2: // Dienstag
+      return {sport:'ride', minutes:TUE_MIN[idx], km:estimateDistance(TUE_MIN[idx], week), zone:'z2'};
+    case 3: // Mittwoch
+      return {sport:'core', rounds:coreRounds(week), minutes:coreMinutes(week, coreRounds(week))};
+    case 4: { // Donnerstag
+      const reps = thursdayReps(week);
+      const work = phase === 1 ? 5 : 4;   // gleiche Werte wie applyIntervalDefaults
+      const rest = phase === 1 ? 3 : 4;
+      return {sport:'ride', zone: phase === 1 ? 'z3' : 'z5',
+              minutes: 15 + reps * work + (reps - 1) * rest + 12,
+              hardMinutes: reps * work, reps: reps, repMinutes: work};
+    }
+    case 5: // Freitag
+      return {sport:'optional', minutes:35, zone:'z1'};
+    case 6: { // Samstag
+      // Z3-Blockzeit gemittelt aus der Textangabe: Phase 1 2x8-10, Phase 2 3x10-12
+      const hard = recovery ? 0 : (phase === 1 ? 18 : 33);
+      return {sport:'ride', minutes:SAT_MIN[idx], km:estimateDistance(SAT_MIN[idx], week),
+              zone:'z2', hardMinutes:hard, hardZone:'z3'};
+    }
+    case 0: // Sonntag
+      return {sport:'core', rounds:2, minutes:coreMinutes(week, 2),
+              optionalRideMinutes:SUN_MIN[idx], optionalZone:'z1'};
+  }
+  return {sport:'rest'};
 }
 
 function formatDate(d){
@@ -859,7 +1005,7 @@ function renderStatus(today, startDate){
     <div class="status-row"><span>Phase</span><b>${phase === 1 ? 'Grundlage' : 'Aufbau mit VO2max'}${recovery ? ' · Erholungswoche' : ''}</b></div>
     <div class="status-row"><span>Startdatum</span><b>${startDate.toLocaleDateString('de-DE')}</b></div>
     <div class="startdate-row">
-      <input type="date" id="startDateInput" value="${startDate.toISOString().slice(0,10)}">
+      <input type="date" id="startDateInput" value="${isoDayLocal(startDate)}">
       <button id="saveStartDate">Speichern</button>
     </div>
   `;
@@ -868,9 +1014,11 @@ function renderStatus(today, startDate){
     if(!val) return;
     const newDate = toMidnight(new Date(val));
     await saveStartDate(newDate);
+    planStartDate = newDate;
     renderPlanView(newDate);
     applyCoreDefaults(newDate);
     applyIntervalDefaults(newDate);
+    anUpdateRangeLabel();
   });
 }
 
@@ -916,6 +1064,34 @@ function renderPlanView(startDate){
 
 /* ---- persistent storage for start date ---- */
 const STORAGE_KEY = 'training-start-date';
+const API_KEY_STORAGE = 'intervals-icu-api-key';
+
+/* Aktuelles Startdatum, damit die Analyse denselben Plan sieht wie die Ansicht. */
+let planStartDate = null;
+
+/* window.storage wurde hier erwartet, war aber nie definiert: beide Aufrufe
+   liefen in den catch-Block, das Startdatum wurde nie geschrieben und beim
+   Neuladen fiel der Plan zurueck auf "vor einer Woche" - also dauerhaft
+   Woche 2. Fallback auf localStorage mit gleicher Signatur; eine vom Host
+   bereitgestellte Implementierung hat weiter Vorrang. */
+if(!window.storage){
+  window.storage = {
+    async get(key){
+      try{
+        const value = localStorage.getItem(key);
+        return value === null ? null : {value: value};
+      }catch(e){ return null; }
+    },
+    async set(key, value){
+      try{ localStorage.setItem(key, value); return true; }
+      catch(e){ return false; }
+    },
+    async remove(key){
+      try{ localStorage.removeItem(key); return true; }
+      catch(e){ return false; }
+    }
+  };
+}
 
 async function loadStartDate(){
   try{
@@ -927,7 +1103,7 @@ async function loadStartDate(){
 
 async function saveStartDate(date){
   try{
-    await window.storage.set(STORAGE_KEY, date.toISOString().slice(0,10));
+    await window.storage.set(STORAGE_KEY, isoDayLocal(date));
   }catch(e){}
 }
 
@@ -940,9 +1116,11 @@ async function initPlan(){
     startDate = d;
     await saveStartDate(startDate);
   }
+  planStartDate = startDate;
   renderPlanView(startDate);
   applyCoreDefaults(startDate);
   applyIntervalDefaults(startDate);
+  anInit();
 }
 initPlan();
 
@@ -1761,6 +1939,469 @@ iv.reset.addEventListener('click', ivResetTimer);
 iv.skip.addEventListener('click', ivSkipStep);
 
 ivResetTimer();
+
+/* ============================================================
+   ANALYSE: Abgleich der intervals.icu-Aktivitaeten mit dem Plan
+============================================================ */
+const ICU_BASE = 'https://intervals.icu/api/v1';
+
+/* Nur die Felder holen, die der Abgleich braucht - die Activity hat 183. */
+const ICU_FIELDS = ['id','start_date_local','type','name','moving_time','elapsed_time',
+                    'distance','average_heartrate','max_heartrate','has_heartrate',
+                    'icu_training_load','icu_intensity'].join(',');
+
+/* Pulszonen dieses Plans in bpm. intervals.icu rechnet mit eigenen, an der LTHR
+   ausgerichteten Zonen - deren Zeiten passen nicht auf diese Baender. Daher wird
+   die Zeit je Zone aus dem Puls-Stream selbst gerechnet. */
+const HR_BANDS = [
+  {key:'unter', label:'<Z1', min:0,   max:90,  color:'#3a4553'},
+  {key:'z1',    label:'Z1',  min:90,  max:108, color:'#7d8bff'},
+  {key:'z2',    label:'Z2',  min:108, max:126, color:'#2dd4a7'},
+  {key:'z3',    label:'Z3',  min:126, max:144, color:'#ffb14e'},
+  {key:'z4',    label:'Z4',  min:144, max:162, color:'#ff8f6b'},
+  {key:'z5',    label:'Z5',  min:162, max:999, color:'#ff6b6b'}
+];
+
+const an = {
+  key:        document.getElementById('anApiKey'),
+  saveKey:    document.getElementById('anSaveKey'),
+  connState:  document.getElementById('anConnState'),
+  range:      document.getElementById('anRange'),
+  rangeLabel: document.getElementById('anRangeLabel'),
+  zones:      document.getElementById('anZones'),
+  run:        document.getElementById('anRun'),
+  status:     document.getElementById('anStatus'),
+  result:     document.getElementById('anResult')
+};
+
+function anSetStatus(text, kind){
+  an.status.textContent = text || '';
+  an.status.className = 'an-status' + (kind ? ' is-' + kind : '');
+}
+
+function icuAuthHeader(key){
+  return 'Basic ' + btoa('API_KEY:' + key);
+}
+
+async function icuFetch(path, key){
+  let res;
+  try{
+    res = await fetch(ICU_BASE + path, {
+      headers: {'Authorization': icuAuthHeader(key), 'Accept': 'application/json'}
+    });
+  }catch(e){
+    throw new Error('Keine Verbindung zu intervals.icu. Offline oder Netz blockiert?');
+  }
+  if(res.status === 401 || res.status === 403){
+    throw new Error('API-Key wurde abgelehnt (' + res.status + '). Stimmt der Key aus Settings → Developer Settings?');
+  }
+  if(res.status === 429){
+    throw new Error('intervals.icu bremst gerade (429). Kurz warten und erneut versuchen.');
+  }
+  if(!res.ok){
+    throw new Error('intervals.icu antwortete mit ' + res.status + '.');
+  }
+  return res.json();
+}
+
+function anIsRide(type){
+  return /ride|cycl|bike|biking|spinning/i.test(type || '');
+}
+
+function anIsStrength(type){
+  return /weight|strength|core|workout|yoga|pilates|training/i.test(type || '');
+}
+
+function anLocalDay(iso){
+  return (iso || '').slice(0, 10);
+}
+
+function anIsoDay(d){
+  return isoDayLocal(d);
+}
+
+/* Zeit je Puls-Band aus dem Stream. intervals.icu liefert 1-Hz-Samples,
+   ein Sample entspricht also einer Sekunde. */
+function anZoneSeconds(hrData){
+  const out = {};
+  HR_BANDS.forEach(b => { out[b.key] = 0; });
+  let counted = 0;
+  for(const v of hrData){
+    if(v == null || isNaN(v)) continue;
+    const band = HR_BANDS.find(b => v >= b.min && v < b.max);
+    if(band){ out[band.key] += 1; counted += 1; }
+  }
+  out._total = counted;
+  return out;
+}
+
+function anFmtMin(sec){
+  const m = Math.round(sec / 60);
+  if(m < 60) return m + ' min';
+  return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0') + ' h';
+}
+
+function anPct(part, whole){
+  if(!whole) return 0;
+  return Math.round(part / whole * 100);
+}
+
+/* ---- Vergleich Soll gegen Ist ---- */
+
+/* Toleranz auf die Dauer. Der Plan ist ein Plan, keine Stoppuhr - alles
+   innerhalb von 15 Prozent gilt als erfuellt. */
+const AN_DUR_TOL = 0.15;
+
+/* Setzt den Status herab und zieht das Badge mit. Ohne das behielte eine
+   Einheit mit passender Dauer das Badge "erfuellt", obwohl die Zonenpruefung
+   sie schon als abweichend markiert hat. */
+function anDowngrade(row, badge){
+  if(row.status === 'miss') return;
+  row.status = 'dev';
+  row.badge = badge;
+}
+
+function anCompareDay(date, startDate, acts, zonesById){
+  const info = buildDayInfo(date, startDate);
+  const t = info.target || {sport:'rest'};
+  const rides = acts.filter(a => anIsRide(a.type));
+  const strength = acts.filter(a => !anIsRide(a.type) && anIsStrength(a.type));
+  const row = {
+    date: date, week: info.week, plan: info, target: t,
+    acts: acts, rides: rides, strength: strength,
+    notes: [], status: 'ok', badge: ''
+  };
+
+  const rideSec = rides.reduce((n, a) => n + (a.moving_time || a.elapsed_time || 0), 0);
+  const rideKm  = rides.reduce((n, a) => n + (a.distance || 0), 0) / 1000;
+  row.rideSec = rideSec;
+  row.rideKm = rideKm;
+
+  /* Zonenzeiten aller Fahrten des Tages zusammenfassen. */
+  if(zonesById){
+    const merged = {}; let total = 0;
+    HR_BANDS.forEach(b => { merged[b.key] = 0; });
+    for(const a of rides){
+      const z = zonesById[a.id];
+      if(!z) continue;
+      HR_BANDS.forEach(b => { merged[b.key] += z[b.key] || 0; });
+      total += z._total || 0;
+    }
+    if(total > 0){ merged._total = total; row.zones = merged; }
+  }
+
+  if(t.sport === 'rest'){
+    if(rides.length){
+      row.status = 'extra'; row.badge = 'Zusatz';
+      row.notes.push({kind:'', text:'Ruhetag, trotzdem ' + anFmtMin(rideSec) + ' gefahren. Einmal ist kein Problem, regelmäßig frisst es die Erholung, die den Donnerstag trägt.'});
+    } else {
+      row.status = 'ok'; row.badge = 'Ruhetag';
+    }
+    return row;
+  }
+
+  if(t.sport === 'optional'){
+    row.status = 'ok';
+    row.badge = rides.length ? 'optional gefahren' : 'frei';
+    return row;
+  }
+
+  if(t.sport === 'core'){
+    const extraRide = rides.length ? ' Dazu ' + anFmtMin(rideSec) + ' auf dem Rad.' : '';
+    if(strength.length){
+      row.status = 'ok'; row.badge = 'erledigt';
+      row.notes.push({kind:'good', text:'Krafteinheit in intervals.icu vorhanden.' + extraRide});
+    } else {
+      row.status = 'dev'; row.badge = 'nicht erfasst';
+      row.notes.push({kind:'', text:'Keine Krafteinheit gefunden. Rumpftraining landet nur in intervals.icu, wenn du es auf der Uhr als Aktivität aufzeichnest – kann also auch nur eine Lücke in der Erfassung sein.' + extraRide});
+    }
+    return row;
+  }
+
+  /* Ab hier: Radeinheit mit messbarem Soll. */
+  if(!rides.length){
+    row.status = 'miss'; row.badge = 'ausgefallen';
+    row.notes.push({kind:'bad', text:'Keine Fahrt an diesem Tag gefunden.'});
+    return row;
+  }
+
+  const sollSec = (t.minutes || 0) * 60;
+  const diff = sollSec ? (rideSec - sollSec) / sollSec : 0;
+  row.durDiff = diff;
+  if(Math.abs(diff) <= AN_DUR_TOL){
+    row.status = 'ok'; row.badge = 'erfüllt';
+  } else {
+    row.status = 'dev';
+    row.badge = diff > 0 ? 'länger' : 'kürzer';
+    const pct = Math.abs(Math.round(diff * 100));
+    row.notes.push({kind: diff > 0 ? '' : 'bad',
+      text: (diff > 0 ? pct + ' % länger als geplant.' : pct + ' % kürzer als geplant.')});
+  }
+
+  /* Zonen bewerten - nur wenn Streams geladen wurden. */
+  if(row.zones && row.zones._total > 300){
+    const total = row.zones._total;
+    const target = t.zone;
+    const inTarget = row.zones[target] || 0;
+    const share = anPct(inTarget, total);
+    row.zoneShare = share;
+    const hardShare = anPct((row.zones.z4 || 0) + (row.zones.z5 || 0), total);
+
+    if(target === 'z2'){
+      const base = anPct((row.zones.z1 || 0) + (row.zones.z2 || 0), total);
+      if(hardShare > 15){
+        anDowngrade(row, 'zu hart');
+        row.notes.push({kind:'bad', text:hardShare + ' % der Zeit in Z4/Z5. Das ist eine Grundlagenfahrt – zu hart gefahren kostet sie die Erholung für die Intervalle.'});
+      } else if(share < 40 && base < 75){
+        anDowngrade(row, 'Zonen daneben');
+        row.notes.push({kind:'', text:'Nur ' + share + ' % in Z2 (' + base + ' % in Z1–Z2). Für eine Grundlagenfahrt eher zu locker oder zu ungleichmäßig.'});
+      } else {
+        row.notes.push({kind:'good', text:share + ' % in Z2, ' + base + ' % in Z1–Z2. Passt.'});
+      }
+      if(t.hardMinutes){
+        const z3min = Math.round((row.zones.z3 || 0) / 60);
+        row.notes.push({kind: z3min >= t.hardMinutes * 0.7 ? 'good' : '',
+          text:'Z3-Blockzeit: ' + z3min + ' min erreicht, geplant waren rund ' + t.hardMinutes + ' min.'});
+      }
+    } else {
+      /* Intervalltag: die harte Zeit zaehlt, nicht der Anteil. Der Puls hinkt dem
+         Tritt nachher, und man durchlaeuft die Zone darunter auf dem Weg nach oben.
+         Nur die Zielzone zu zaehlen wuerde saubere Intervalle als Abbruch melden -
+         deshalb zaehlt die Zone darunter mit, wird aber getrennt ausgewiesen. */
+      const below = target === 'z5' ? 'z4' : 'z4';
+      const zielMin = Math.round((row.zones[target] || 0) / 60);
+      const hardMin = Math.round(((row.zones[target] || 0) + (row.zones[below] || 0)) / 60);
+      const soll = t.hardMinutes || 0;
+      const plan = t.reps + '× ' + t.repMinutes + ' min';
+      if(soll){
+        if(hardMin >= soll * 0.7){
+          row.notes.push({kind:'good', text:hardMin + ' min hart gefahren (davon ' + zielMin + ' min in ' + target.toUpperCase() + '), geplant ' + soll + ' min als ' + plan + '.'});
+        } else {
+          anDowngrade(row, 'Intervalle kurz');
+          row.notes.push({kind:'bad', text:'Nur ' + hardMin + ' min hart gefahren (davon ' + zielMin + ' min in ' + target.toUpperCase() + '), geplant waren ' + soll + ' min als ' + plan + '. Intervalle abgebrochen oder Zone nicht erreicht?'});
+        }
+      }
+    }
+  }
+
+  return row;
+}
+
+function anBuildReport(startDate, from, to, activities, zonesById){
+  const byDay = {};
+  for(const a of activities){
+    const d = anLocalDay(a.start_date_local);
+    if(!d) continue;
+    (byDay[d] = byDay[d] || []).push(a);
+  }
+  const rows = [];
+  const cur = new Date(from);
+  while(cur <= to){
+    const key = anIsoDay(cur);
+    rows.push(anCompareDay(new Date(cur), startDate, byDay[key] || [], zonesById));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return rows;
+}
+
+/* ---- Darstellung ---- */
+
+const AN_BADGE_CLASS = {ok:'an-ok', dev:'an-dev', miss:'an-miss', extra:'an-extra'};
+
+function anEsc(str){
+  return String(str == null ? '' : str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function anRenderZones(z){
+  if(!z || !z._total) return '';
+  const total = z._total;
+  const bars = HR_BANDS
+    .filter(b => (z[b.key] || 0) / total >= 0.01)
+    .map(b => '<span style="width:' + (z[b.key] / total * 100).toFixed(1) + '%;background:' + b.color + '"></span>')
+    .join('');
+  const legend = HR_BANDS
+    .filter(b => (z[b.key] || 0) / total >= 0.02)
+    .map(b => b.label + ' ' + anPct(z[b.key], total) + '%')
+    .join(' · ');
+  return '<div class="an-zones">' + bars + '</div><div class="an-zlegend">' + legend + '</div>';
+}
+
+function anRenderRow(row){
+  const t = row.target;
+  const el = document.createElement('div');
+  el.className = 'an-day ' + (AN_BADGE_CLASS[row.status] || '');
+
+  const datum = row.date.toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'});
+  let html = '<div class="an-head"><span>' + anEsc(datum) + ' · Woche ' + row.week +
+             '</span><span class="an-badge">' + anEsc(row.badge) + '</span></div>' +
+             '<div class="an-title">' + anEsc(row.plan.title) + '</div>';
+
+  /* Soll */
+  const soll = [];
+  if(t.sport === 'optional'){
+    soll.push('optional ' + t.minutes + ' min ' + t.zone.toUpperCase());
+  } else if(t.minutes){
+    soll.push(t.minutes + ' min');
+  }
+  if(t.km) soll.push('ca. ' + t.km + ' km');
+  if(t.zone && t.sport === 'ride') soll.push(t.zone.toUpperCase());
+  if(t.sport === 'core' && t.optionalRideMinutes) soll.push('optional ' + t.optionalRideMinutes + ' min Z1');
+  if(t.sport === 'rest') soll.push('kein Training');
+  if(soll.length) html += '<div class="an-soll">Soll: ' + anEsc(soll.join(' · ')) + '</div>';
+
+  /* Ist */
+  if(row.acts.length){
+    const zeilen = row.acts.map(a => {
+      const dauer = anFmtMin(a.moving_time || a.elapsed_time || 0);
+      const km = a.distance ? ' · ' + (a.distance / 1000).toFixed(1) + ' km' : '';
+      const hr = a.average_heartrate ? ' · ⌀ ' + a.average_heartrate + ' bpm' : '';
+      return '<div>' + anEsc(a.name || a.type) + ': ' + dauer + km + hr + '</div>';
+    }).join('');
+    html += '<div class="an-ist">' + zeilen + '</div>';
+  } else if(t.sport !== 'rest' && t.sport !== 'optional'){
+    html += '<div class="an-ist" style="color:var(--muted)">Keine Aktivität erfasst.</div>';
+  }
+
+  html += anRenderZones(row.zones);
+
+  for(const n of row.notes){
+    html += '<div class="an-note' + (n.kind ? ' is-' + n.kind : '') + '">' + anEsc(n.text) + '</div>';
+  }
+
+  el.innerHTML = html;
+  return el;
+}
+
+function anRenderReport(rows, meta){
+  an.result.innerHTML = '';
+
+  const geplant = rows.filter(r => r.target.sport === 'ride');
+  const erfuellt = geplant.filter(r => r.status === 'ok').length;
+  const ausgefallen = geplant.filter(r => r.status === 'miss').length;
+  const sollMin = geplant.reduce((n, r) => n + (r.target.minutes || 0), 0);
+  const istMin = Math.round(rows.reduce((n, r) => n + (r.rideSec || 0), 0) / 60);
+
+  const sum = document.createElement('div');
+  sum.className = 'an-sum';
+  const diffPct = sollMin ? Math.round((istMin - sollMin) / sollMin * 100) : 0;
+  sum.innerHTML =
+    '<div class="status-row"><span>Zeitraum</span><b>' + anEsc(meta.label) + '</b></div>' +
+    '<div class="status-row"><span>Aktivitäten geladen</span><b>' + meta.count + '</b></div>' +
+    '<div class="an-sum-grid">' +
+      '<div class="an-chip"><b>' + erfuellt + ' / ' + geplant.length + '</b>Radeinheiten wie geplant</div>' +
+      '<div class="an-chip"><b>' + ausgefallen + '</b>ausgefallen</div>' +
+      '<div class="an-chip"><b>' + istMin + ' min</b>gefahren, geplant ' + sollMin + ' min</div>' +
+      '<div class="an-chip"><b>' + (diffPct >= 0 ? '+' : '') + diffPct + ' %</b>Abweichung Fahrzeit</div>' +
+    '</div>';
+  an.result.appendChild(sum);
+
+  /* Neueste zuerst - man will zuerst sehen, was gerade war. */
+  for(const row of rows.slice().reverse()){
+    an.result.appendChild(anRenderRow(row));
+  }
+}
+
+/* ---- Ablauf ---- */
+
+function anRangeFrom(){
+  const today = toMidnight(new Date());
+  const val = an.range.value;
+  if(val === 'all' && planStartDate) return toMidnight(planStartDate);
+  const days = parseInt(val, 10) || 14;
+  const d = new Date(today);
+  d.setDate(d.getDate() - (days - 1));
+  return d;
+}
+
+function anUpdateRangeLabel(){
+  if(!an.rangeLabel) return;
+  const from = anRangeFrom();
+  const to = toMidnight(new Date());
+  an.rangeLabel.textContent = from.toLocaleDateString('de-DE') + ' – ' + to.toLocaleDateString('de-DE');
+}
+
+async function anRun(){
+  const key = (an.key.value || '').trim();
+  if(!key){
+    anSetStatus('Erst den API-Key eintragen und speichern.', 'error');
+    return;
+  }
+  if(!planStartDate){
+    anSetStatus('Startdatum des Plans ist noch nicht geladen.', 'error');
+    return;
+  }
+
+  an.run.disabled = true;
+  an.result.innerHTML = '';
+  const from = anRangeFrom();
+  const to = toMidnight(new Date());
+
+  try{
+    anSetStatus('Aktivitäten werden geladen …');
+    const path = '/athlete/0/activities?oldest=' + anIsoDay(from) +
+                 '&newest=' + anIsoDay(to) + '&fields=' + ICU_FIELDS;
+    const activities = await icuFetch(path, key);
+    an.connState.textContent = 'verbunden';
+
+    let zonesById = null;
+    if(an.zones.checked){
+      const rides = activities.filter(a => anIsRide(a.type) && a.has_heartrate !== false);
+      zonesById = {};
+      let done = 0;
+      for(const a of rides){
+        done += 1;
+        anSetStatus('Pulszonen ' + done + ' / ' + rides.length + ' …');
+        try{
+          const streams = await icuFetch('/activity/' + a.id + '/streams.json?types=heartrate', key);
+          const hr = (streams || []).find(st => st.type === 'heartrate');
+          if(hr && Array.isArray(hr.data)) zonesById[a.id] = anZoneSeconds(hr.data);
+        }catch(e){
+          /* Eine fehlende Streamabfrage soll den ganzen Bericht nicht kippen. */
+        }
+      }
+    }
+
+    const rows = anBuildReport(planStartDate, from, to, activities, zonesById);
+    anRenderReport(rows, {
+      count: activities.length,
+      label: from.toLocaleDateString('de-DE') + ' – ' + to.toLocaleDateString('de-DE')
+    });
+    anSetStatus('Fertig. ' + activities.length + ' Aktivitäten ausgewertet.', 'ok');
+  }catch(e){
+    anSetStatus(e.message || 'Unbekannter Fehler.', 'error');
+    an.connState.textContent = 'Fehler';
+  }finally{
+    an.run.disabled = false;
+  }
+}
+
+async function anInit(){
+  anUpdateRangeLabel();
+  try{
+    const res = await window.storage.get(API_KEY_STORAGE);
+    if(res && res.value){
+      an.key.value = res.value;
+      an.connState.textContent = 'Key gespeichert';
+    }
+  }catch(e){}
+}
+
+an.saveKey.addEventListener('click', async () => {
+  const key = (an.key.value || '').trim();
+  if(!key){
+    await window.storage.remove(API_KEY_STORAGE);
+    an.connState.textContent = 'nicht verbunden';
+    anSetStatus('Key gelöscht.');
+    return;
+  }
+  await window.storage.set(API_KEY_STORAGE, key);
+  an.connState.textContent = 'Key gespeichert';
+  anSetStatus('Key gespeichert. Jetzt Aktivitäten laden.', 'ok');
+});
+
+an.range.addEventListener('change', anUpdateRangeLabel);
+an.run.addEventListener('click', anRun);
 
 /* ============================================================
    PWA: Service Worker (nur ueber http/https, nicht bei file://)
