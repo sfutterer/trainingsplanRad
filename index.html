@@ -2121,7 +2121,7 @@ const ICU_BASE = 'https://intervals.icu/api/v1';
 /* Nur die Felder holen, die der Abgleich braucht - die Activity hat 183. */
 const ICU_FIELDS = ['id','start_date_local','type','name','moving_time','elapsed_time',
                     'distance','average_heartrate','max_heartrate','has_heartrate',
-                    'icu_training_load','icu_intensity'].join(',');
+                    'icu_training_load','icu_intensity','icu_recording_time'].join(',');
 
 /* Pulszonen dieses Plans in bpm. intervals.icu rechnet mit eigenen, an der LTHR
    ausgerichteten Zonen - deren Zeiten passen nicht auf diese Baender. Daher wird
@@ -2201,18 +2201,47 @@ function anIsoDay(d){
    Jedes Sample gilt daher bis zum naechsten, gewichtet mit dem Zeitdelta aus
    dem time-Stream. Ohne time-Stream bleibt eine Sekunde je Sample als Notnagel,
    dann stimmen zwar die Anteile, aber nicht die absoluten Minuten. */
-function anZoneSeconds(hrData, timeData){
+function anZoneSeconds(hrData, timeData, recordedSec){
   const out = {};
   HR_BANDS.forEach(b => { out[b.key] = 0; });
   let counted = 0;
-  const hasTime = Array.isArray(timeData) && timeData.length === hrData.length;
-  for(let i = 0; i < hrData.length; i++){
+  const n = hrData.length;
+  const hasTime = Array.isArray(timeData) && timeData.length === n && n > 1;
+
+  /* Takt der Aufzeichnung bestimmen, nicht annehmen. Die Uhr kann pro Sekunde
+     aufzeichnen oder im intelligenten Modus mit schwankenden Abstaenden, und
+     neue Sensoren koennen das erneut aendern. Der Median ist robust gegen
+     einzelne Pausen. */
+  let takt = null;
+  if(hasTime){
+    const d = [];
+    for(let i = 1; i < n; i++){
+      const dt = timeData[i] - timeData[i - 1];
+      if(dt > 0 && dt <= 60) d.push(dt);
+    }
+    if(d.length){
+      d.sort((a, b) => a - b);
+      takt = d[Math.floor(d.length / 2)];
+    }
+  }
+
+  /* Ohne Zeit-Stream aus der Aufzeichnungsdauer skalieren. Das ist gleichmaessig
+     statt exakt, trifft die Gesamtzeit aber und ist allem vorzuziehen, was still
+     eine Sekunde je Messwert annimmt. */
+  let fallbackDt = 1;
+  let method = hasTime ? 'zeitgewichtet' : 'annahme';
+  if(!hasTime && recordedSec > 0 && n > 0){
+    const q = recordedSec / n;
+    if(q > 0.2 && q < 60){ fallbackDt = q; method = 'skaliert'; takt = q; }
+  }
+
+  for(let i = 0; i < n; i++){
     const v = hrData[i];
     if(v == null || isNaN(v)) continue;
-    let dt = 1;
+    let dt = fallbackDt;
     if(hasTime){
-      const next = i + 1 < timeData.length ? timeData[i + 1] : null;
-      dt = next == null ? 1 : next - timeData[i];
+      const next = i + 1 < n ? timeData[i + 1] : null;
+      dt = next == null ? (takt || 1) : next - timeData[i];
       /* Pausen und Luecken nicht als Zonenzeit durchschlagen lassen. */
       if(!(dt > 0)) dt = 0;
       if(dt > 60) dt = 60;
@@ -2221,7 +2250,27 @@ function anZoneSeconds(hrData, timeData){
     if(band){ out[band.key] += dt; counted += dt; }
   }
   out._total = counted;
+  out._method = method;
+  out._takt = takt;
+  out._samples = n;
   return out;
+}
+
+/* Macht sichtbar, wie die Zonenzeit zustande kam - aber nur, wenn es etwas zu
+   sagen gibt. Bei sauberer Sekundenaufzeichnung waere die Zeile nur Laerm. */
+function anRecordingNote(z){
+  if(!z) return null;
+  const takt = z._takt ? (Math.round(z._takt * 10) / 10).toString().replace('.', ',') : null;
+  if(z._method === 'annahme'){
+    return {kind:'', text:'Kein Zeit-Stream und keine Aufzeichnungsdauer verfügbar – Zonenzeiten mit einer Sekunde je Messwert gerechnet. Die Anteile stimmen, die absoluten Minuten können deutlich zu niedrig sein.'};
+  }
+  if(z._method === 'skaliert'){
+    return {kind:'info', text:'Kein Zeit-Stream vorhanden – Zonenzeiten gleichmäßig auf ⌀ ' + takt + ' s je Messwert skaliert (' + z._samples + ' Messwerte).'};
+  }
+  if(z._takt && z._takt >= 1.5){
+    return {kind:'info', text:'Aufzeichnung im ⌀ ' + takt + '-Sekunden-Takt (' + z._samples + ' Messwerte), zeitgewichtet ausgewertet.'};
+  }
+  return null;
 }
 
 function anFmtMin(sec){
@@ -2354,6 +2403,8 @@ function anEasyRideNotes(row, sollMin){
     } else {
       notes.push({kind:'good', text: locker + ' % locker (bis Z2). Passt für eine Erholungsfahrt.'});
     }
+    const aufz = anRecordingNote(z);
+    if(aufz) notes.push(aufz);
   }
   return notes;
 }
@@ -2375,17 +2426,30 @@ function anCompareDay(date, startDate, acts, zonesById, coreSessions){
   row.rideSec = rideSec;
   row.rideKm = rideKm;
 
-  /* Zonenzeiten aller Fahrten des Tages zusammenfassen. */
+  /* Zonenzeiten aller Fahrten des Tages zusammenfassen. Die Angaben zur
+     Aufzeichnung muessen mitwandern, sonst kann anRecordingNote nichts sagen.
+     Bei mehreren Fahrten gilt das unzuverlaessigste Verfahren und der groebste
+     Takt - eine Aussage soll nicht besser klingen als ihre schlechteste Quelle. */
   if(zonesById){
-    const merged = {}; let total = 0;
+    const RANG = {zeitgewichtet: 0, skaliert: 1, annahme: 2};
+    const merged = {}; let total = 0, method = null, takt = null, samples = 0;
     HR_BANDS.forEach(b => { merged[b.key] = 0; });
     for(const a of rides){
       const z = zonesById[a.id];
       if(!z) continue;
       HR_BANDS.forEach(b => { merged[b.key] += z[b.key] || 0; });
       total += z._total || 0;
+      samples += z._samples || 0;
+      if(z._method && (method === null || RANG[z._method] > RANG[method])) method = z._method;
+      if(z._takt && (takt === null || z._takt > takt)) takt = z._takt;
     }
-    if(total > 0){ merged._total = total; row.zones = merged; }
+    if(total > 0){
+      merged._total = total;
+      merged._method = method;
+      merged._takt = takt;
+      merged._samples = samples;
+      row.zones = merged;
+    }
   }
 
   if(t.sport === 'rest'){
@@ -2521,6 +2585,9 @@ function anCompareDay(date, startDate, acts, zonesById, coreSessions){
         }
       }
     }
+
+    const aufz = anRecordingNote(row.zones);
+    if(aufz) row.notes.push(aufz);
   }
 
   return row;
@@ -2811,7 +2878,11 @@ async function anRun(){
           const hr = (streams || []).find(st => st.type === 'heartrate');
           const tm = (streams || []).find(st => st.type === 'time');
           if(hr && Array.isArray(hr.data)){
-            zonesById[a.id] = anZoneSeconds(hr.data, tm && Array.isArray(tm.data) ? tm.data : null);
+            zonesById[a.id] = anZoneSeconds(
+              hr.data,
+              tm && Array.isArray(tm.data) ? tm.data : null,
+              a.icu_recording_time || a.elapsed_time || a.moving_time || 0
+            );
           }
         }catch(e){
           /* Eine fehlende Streamabfrage soll den ganzen Bericht nicht kippen. */
