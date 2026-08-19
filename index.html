@@ -2098,6 +2098,32 @@ function anDowngrade(row, badge){
   row.badge = badge;
 }
 
+/* Optionale und nicht geplante Fahrten werden bewertet, aber nicht am Umfang
+   gemessen: kuerzer oder gar nicht ist bei einer freiwilligen Einheit kein
+   Fehler. Zu hart gefahren dagegen schon - eine Erholungsfahrt in Z3 frisst
+   genau die Erholung, fuer die sie da ist. */
+function anEasyRideNotes(row, sollMin){
+  const notes = [];
+  const ist = Math.round(row.rideSec / 60);
+  const km = row.rideKm >= 1 ? ' (' + row.rideKm.toFixed(1) + ' km)' : '';
+  notes.push({kind:'', text: sollMin
+    ? 'Optionale Fahrt: ' + ist + ' min' + km + ' gefahren, vorgesehen sind ' + sollMin + ' min Z1.'
+    : 'Nicht eingeplante Fahrt: ' + ist + ' min' + km + '.'});
+
+  const z = row.zones;
+  if(z && z._total > 300){
+    const locker = anPct((z.unter || 0) + (z.z1 || 0) + (z.z2 || 0), z._total);
+    const hart = anPct((z.z3 || 0) + (z.z4 || 0) + (z.z5 || 0), z._total);
+    if(hart > 25){
+      anDowngrade(row, 'zu hart');
+      notes.push({kind:'bad', text: hart + ' % der Zeit über Z2. Für eine locker gemeinte Fahrt zu hart – sie soll Erholung bringen, nicht kosten.'});
+    } else {
+      notes.push({kind:'good', text: locker + ' % locker (bis Z2). Passt für eine Erholungsfahrt.'});
+    }
+  }
+  return notes;
+}
+
 function anCompareDay(date, startDate, acts, zonesById){
   const info = buildDayInfo(date, startDate);
   const t = info.target || {sport:'rest'};
@@ -2139,18 +2165,33 @@ function anCompareDay(date, startDate, acts, zonesById){
 
   if(t.sport === 'optional'){
     row.status = 'ok';
-    row.badge = rides.length ? 'optional gefahren' : 'frei';
+    if(rides.length){
+      row.badge = 'optional gefahren';
+      row.notes.push(...anEasyRideNotes(row, t.minutes));
+    } else {
+      row.badge = 'frei';
+    }
     return row;
   }
 
   if(t.sport === 'core'){
-    const extraRide = rides.length ? ' Dazu ' + anFmtMin(rideSec) + ' auf dem Rad.' : '';
     if(strength.length){
       row.status = 'ok'; row.badge = 'erledigt';
-      row.notes.push({kind:'good', text:'Krafteinheit in intervals.icu vorhanden.' + extraRide});
+      row.notes.push({kind:'good', text:'Krafteinheit in intervals.icu vorhanden.'});
+      if(rides.length) row.notes.push(...anEasyRideNotes(row, t.optionalRideMinutes));
+    } else if(rides.length){
+      /* Nur die Fahrt da: die wird bewertet. Das fehlende Rumpftraining bleibt
+         unkommentiert - am Sonntag ist die Fahrt ohnehin als Option vorgesehen,
+         und ein Hinweis auf jede nicht aufgezeichnete Krafteinheit waere Laerm. */
+      if(t.optionalRideMinutes){
+        row.status = 'ok'; row.badge = 'optional gefahren';
+      } else {
+        row.status = 'extra'; row.badge = 'Zusatz';
+      }
+      row.notes.push(...anEasyRideNotes(row, t.optionalRideMinutes));
     } else {
       row.status = 'dev'; row.badge = 'nicht erfasst';
-      row.notes.push({kind:'', text:'Keine Krafteinheit gefunden. Rumpftraining landet nur in intervals.icu, wenn du es auf der Uhr als Aktivität aufzeichnest – kann also auch nur eine Lücke in der Erfassung sein.' + extraRide});
+      row.notes.push({kind:'', text:'Keine Krafteinheit gefunden. Rumpftraining landet nur in intervals.icu, wenn du es auf der Uhr als Aktivität aufzeichnest – kann also auch nur eine Lücke in der Erfassung sein.'});
     }
     return row;
   }
