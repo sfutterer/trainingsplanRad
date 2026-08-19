@@ -1,6 +1,6 @@
 /* Service Worker – macht die App offline nutzbar.
    Bei einer neuen Version einfach CACHE_VERSION hochzählen. */
-const CACHE_VERSION = 'trainingsplan-v15';
+const CACHE_VERSION = 'trainingsplan-v18';
 
 const ASSETS = [
   './',

@@ -190,6 +190,18 @@
   .an-zones{display:flex;height:8px;border-radius:999px;overflow:hidden;margin-top:8px;background:#0f1319;}
   .an-zones span{display:block;height:100%;}
   .an-zlegend{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.4;}
+  /* .an-day .an-note ist auf die Tageskarten beschraenkt - in der
+     Zusammenfassung braucht es dieselbe Groesse noch einmal. */
+  .an-sum .an-note{font-size:12.5px;line-height:1.45;margin-top:12px;color:var(--rest);}
+  .an-sum .an-note.is-good{color:var(--work);}
+  .an-exlist{margin-top:8px;}
+  .an-exrow{
+    display:flex;justify-content:space-between;gap:10px;font-size:12.5px;
+    padding:6px 0;border-bottom:1px solid #232a34;color:var(--muted);
+  }
+  .an-exrow:last-child{border-bottom:none;}
+  .an-exrow .an-exname{color:var(--text);}
+  .an-exrow .an-exval{white-space:nowrap;}
   .an-ok{border-left-color:var(--work);}
   .an-dev{border-left-color:var(--rest);}
   .an-miss{border-left-color:var(--z3);}
@@ -533,6 +545,7 @@
     <div class="an-status" id="anStatus"></div>
   </div>
 
+  <div id="anCoreResult"></div>
   <div id="anResult"></div>
 
 </div>
@@ -807,6 +820,7 @@ function showTab(name){
     document.getElementById(TABS[key].btn).classList.toggle('active', active);
   });
   try{ window.scrollTo(0, 0); }catch(e){}
+  if(name === 'analysis' && typeof anRefreshLocal === 'function') anRefreshLocal();
 }
 Object.keys(TABS).forEach(key => {
   document.getElementById(TABS[key].btn).addEventListener('click', () => showTab(key));
@@ -1004,7 +1018,8 @@ function buildDayTarget(date, week){
     case 2: // Dienstag
       return {sport:'ride', minutes:TUE_MIN[idx], km:estimateDistance(TUE_MIN[idx], week), zone:'z2'};
     case 3: // Mittwoch
-      return {sport:'core', rounds:coreRounds(week), minutes:coreMinutes(week, coreRounds(week))};
+      return {sport:'core', rounds:coreRounds(week), minutes:coreMinutes(week, coreRounds(week)),
+              workSec:coreWorkSeconds(week), restSec:coreRestSeconds(week)};
     case 4: { // Donnerstag
       const reps = thursdayReps(week);
       const work = phase === 1 ? 5 : 4;   // gleiche Werte wie applyIntervalDefaults
@@ -1023,6 +1038,7 @@ function buildDayTarget(date, week){
     }
     case 0: // Sonntag
       return {sport:'core', rounds:2, minutes:coreMinutes(week, 2),
+              workSec:coreWorkSeconds(week), restSec:coreRestSeconds(week),
               optionalRideMinutes:SUN_MIN[idx], optionalZone:'z1'};
   }
   return {sport:'rest'};
@@ -1102,6 +1118,15 @@ function renderPlanView(startDate){
 /* ---- persistent storage for start date ---- */
 const STORAGE_KEY = 'training-start-date';
 const API_KEY_STORAGE = 'intervals-icu-api-key';
+const CORE_LOG_STORAGE = 'core-session-log';
+const CORE_LOG_MAX = 80;
+
+/* Muss vor dem Rumpf-Timer stehen: dessen resetTimer() laeuft schon beim Laden
+   und greift ueber coreLogAbandon() auf coreLog zu. Weiter unten deklariert
+   waere die Variable dort noch in der temporalen Todeszone und der
+   ReferenceError wuerde die restliche Skriptausfuehrung abbrechen. */
+let coreLogList = [];
+let coreLog = null;
 
 /* Aktuelles Startdatum, damit die Analyse denselben Plan sieht wie die Ansicht. */
 let planStartDate = null;
@@ -1519,6 +1544,7 @@ function announceStep(step){
     els.exercise.textContent = 'Training abgeschlossen';
     els.meta.textContent = '💪';
     speak('Training abgeschlossen. Gut gemacht!');
+    coreLogFinish();
     hideTimerImage();
     running = false;
     els.start.textContent = 'Start';
@@ -1541,6 +1567,7 @@ function tick(){
   }
 
   if(secondsLeft <= 0){
+    coreLogLeaveStep(0);
     nextStep();
   }
 }
@@ -1580,6 +1607,7 @@ function startTimer(){
     sequence = buildSequence();
     seqIndex = -1;
     els.settings.style.display = 'none';
+    coreLogStart();
     nextStep();
   } else if(secondsLeft <= 0){
     nextStep();
@@ -1590,6 +1618,7 @@ function startTimer(){
 }
 
 function resetTimer(){
+  coreLogAbandon();
   running = false;
   clearInterval(timerId);
   window.speechSynthesis && window.speechSynthesis.cancel();
@@ -1611,6 +1640,7 @@ function resetTimer(){
 function skipStep(){
   if(seqIndex === -1) return;
   clearInterval(timerId);
+  coreLogLeaveStep(secondsLeft);
   secondsLeft = 0;
   nextStep();
   if(running){
@@ -1977,6 +2007,111 @@ iv.skip.addEventListener('click', ivSkipStep);
 
 ivResetTimer();
 
+
+/* ============================================================
+   PROTOKOLL DES RUMPF-ZIRKELS
+   Garmin und intervals.icu kennen bei einer Krafteinheit nur Dauer und Puls -
+   keine Uebung, keinen Satz. Der Timer hier weiss dagegen genau, was lief.
+   Deshalb schreibt er jede Einheit lokal mit: geschlossene Runden, gehaltene
+   Zeit je Uebung und jedes vorzeitige Weiterdruecken. Gespeichert wird nach
+   jedem Satz, damit auch eine abgebrochene oder weggewischte Einheit erhalten
+   bleibt.
+============================================================ */
+
+async function coreLogLoad(){
+  try{
+    const res = await window.storage.get(CORE_LOG_STORAGE);
+    const parsed = res && res.value ? JSON.parse(res.value) : [];
+    coreLogList = Array.isArray(parsed) ? parsed : [];
+  }catch(e){ coreLogList = []; }
+}
+
+async function coreLogPersist(){
+  try{
+    await window.storage.set(CORE_LOG_STORAGE, JSON.stringify(coreLogList.slice(-CORE_LOG_MAX)));
+  }catch(e){}
+}
+
+function coreLogSave(){
+  if(!coreLog) return;
+  const i = coreLogList.findIndex(e => e.id === coreLog.id);
+  if(i >= 0) coreLogList[i] = coreLog; else coreLogList.push(coreLog);
+  coreLogPersist();
+}
+
+function coreLogStart(){
+  const now = new Date();
+  const week = planStartDate ? Math.max(weekNumberFor(now, planStartDate), 1) : null;
+  coreLog = {
+    id: now.toISOString(),
+    day: isoDayLocal(now),
+    week: week,
+    plannedRounds: parseInt(els.rounds.value, 10) || 0,
+    exCount: EXERCISES.length,
+    workSec: currentWorkSec(),
+    restSec: parseInt(els.rest.value, 10) || 0,
+    rounds: 0,
+    sets: 0,
+    workSecTotal: 0,
+    finished: false,
+    exercises: EXERCISES.map(ex => ({name: ex.name, sets: 0, heldSec: 0, skips: 0})),
+    skips: [],
+    lastExercise: null
+  };
+  coreLogSave();
+}
+
+/* Wird beim Verlassen eines Belastungsschritts gerufen - restSec sagt, wie
+   viel noch offen war. Null heisst durchgehalten, mehr heisst abgekuerzt. */
+function coreLogLeaveStep(restSec){
+  if(!coreLog) return;
+  const step = sequence[seqIndex];
+  if(!step || step.type !== 'work') return;
+  const offen = Math.max(0, restSec || 0);
+  const gehalten = Math.max(0, step.duration - offen);
+  const ex = coreLog.exercises[step.exIndex];
+  if(ex){
+    ex.sets += 1;
+    ex.heldSec += gehalten;
+    if(offen >= 2) ex.skips += 1;
+  }
+  coreLog.sets += 1;
+  coreLog.workSecTotal += gehalten;
+  coreLog.rounds = step.round;
+  coreLog.lastExercise = {index: step.exIndex, name: step.label, round: step.round};
+  if(offen >= 2){
+    coreLog.skips.push({index: step.exIndex, name: step.label, round: step.round,
+                        heldSec: gehalten, sollSec: step.duration});
+  }
+  coreLogSave();
+}
+
+function coreLogFinish(){
+  if(!coreLog) return;
+  coreLog.finished = true;
+  coreLogSave();
+  coreLog = null;
+}
+
+/* Reset mitten in der Einheit: was bis dahin lief, bleibt als unvollstaendige
+   Einheit stehen. Ohne einen einzigen Satz wird der Eintrag verworfen. */
+function coreLogAbandon(){
+  if(!coreLog) return;
+  if(coreLog.sets === 0){
+    coreLogList = coreLogList.filter(e => e.id !== coreLog.id);
+    coreLogPersist();
+  } else {
+    coreLog.finished = false;
+    coreLogSave();
+  }
+  coreLog = null;
+}
+
+function coreLogInRange(from, to){
+  const a = isoDayLocal(from), b = isoDayLocal(to);
+  return coreLogList.filter(e => e.day >= a && e.day <= b);
+}
+
 /* ============================================================
    ANALYSE: Abgleich der intervals.icu-Aktivitaeten mit dem Plan
 ============================================================ */
@@ -2008,7 +2143,8 @@ const an = {
   zones:      document.getElementById('anZones'),
   run:        document.getElementById('anRun'),
   status:     document.getElementById('anStatus'),
-  result:     document.getElementById('anResult')
+  result:     document.getElementById('anResult'),
+  coreResult: document.getElementById('anCoreResult')
 };
 
 function anSetStatus(text, kind){
@@ -2098,6 +2234,79 @@ function anDowngrade(row, badge){
   row.badge = badge;
 }
 
+
+/* Aus der aufgezeichneten Dauer die Zahl der Runden schaetzen. Der Zirkel ist
+   deterministisch: n Runden brauchen n*(8*Belastung + 7*Pause) plus die
+   Rundenpausen dazwischen und 10 s Vorlauf. */
+function anEstimateRounds(sec, workSec, restSec){
+  if(!workSec || !sec) return null;
+  const runde = 8 * workSec + 7 * restSec;
+  let best = null;
+  for(let n = 1; n <= 6; n++){
+    const soll = n * runde + (n - 1) * CORE_ROUND_REST + 10;
+    const abw = Math.abs(soll - sec);
+    if(!best || abw < best.abw) best = {rounds: n, abw: abw};
+  }
+  /* Passt selbst die beste Zuordnung um mehr als eine halbe Runde nicht, war
+     das etwas anderes als dieser Zirkel - dann lieber nichts behaupten. */
+  if(!best || best.abw > runde * 0.5) return null;
+  return best.rounds;
+}
+
+/* Exakte Auswertung aus dem eigenen Protokoll. */
+function anCoreLogNotes(row, sessions, t){
+  const notes = [];
+  const ses = sessions[sessions.length - 1];
+  const exCount = ses.exCount || 8;
+  const voll = Math.floor((ses.sets || 0) / exCount);
+  const soll = ses.plannedRounds || t.rounds || 0;
+
+  if(ses.finished && voll >= soll){
+    row.status = 'ok'; row.badge = 'erledigt';
+    notes.push({kind:'good', text:'Alle ' + soll + ' Runden komplett durchgezogen.'});
+  } else {
+    anDowngrade(row, voll + '/' + soll + ' Runden');
+    notes.push({kind:'', text:'Rumpf-Timer: ' + voll + ' von ' + soll + ' Runden' +
+      (ses.finished ? '' : ' – Einheit vorzeitig beendet') +
+      (ses.lastExercise ? ', zuletzt ' + ses.lastExercise.name + ' in Runde ' + ses.lastExercise.round : '') + '.'});
+  }
+
+  if(ses.skips && ses.skips.length){
+    const je = {};
+    for(const sk of ses.skips) je[sk.name] = (je[sk.name] || 0) + 1;
+    const liste = Object.keys(je).sort((a, b) => je[b] - je[a])
+      .map(n => n + (je[n] > 1 ? ' (' + je[n] + '×)' : '')).join(', ');
+    notes.push({kind:'', text: ses.skips.length + (ses.skips.length === 1 ? ' Satz' : ' Sätze') +
+      ' vorzeitig weitergedrückt: ' + liste + '.'});
+  }
+  if(sessions.length > 1){
+    notes.push({kind:'', text: sessions.length + ' Einheiten an diesem Tag protokolliert, bewertet ist die letzte.'});
+  }
+  return notes;
+}
+
+/* Nur eine Garmin-Aufzeichnung da: aus der Dauer schaetzen. */
+function anCoreEstimateNotes(row, strength, t){
+  const notes = [];
+  const sec = strength.reduce((n, a) => n + (a.elapsed_time || a.moving_time || 0), 0);
+  const min = Math.round(sec / 60);
+  const est = anEstimateRounds(sec, t.workSec, t.restSec);
+  const soll = t.rounds || 0;
+
+  if(est == null){
+    row.status = 'ok'; row.badge = 'erledigt';
+    notes.push({kind:'good', text:'Krafteinheit aufgezeichnet: ' + min + ' min. Die Dauer passt zu keiner Rundenzahl dieses Zirkels, daher keine Schätzung.'});
+  } else if(est >= soll){
+    row.status = 'ok'; row.badge = 'erledigt';
+    notes.push({kind:'good', text:'Krafteinheit aufgezeichnet: ' + min + ' min, geschätzt etwa ' + est + ' von ' + soll + ' Runden.'});
+  } else {
+    anDowngrade(row, 'ca. ' + est + '/' + soll + ' Runden');
+    notes.push({kind:'', text:'Krafteinheit aufgezeichnet: ' + min + ' min, geschätzt etwa ' + est +
+      ' von ' + soll + ' Runden – geplant waren ' + t.minutes + ' min. Geschätzt aus der Dauer, weil intervals.icu keine Sätze speichert.'});
+  }
+  return notes;
+}
+
 /* Optionale und nicht geplante Fahrten werden bewertet, aber nicht am Umfang
    gemessen: kuerzer oder gar nicht ist bei einer freiwilligen Einheit kein
    Fehler. Zu hart gefahren dagegen schon - eine Erholungsfahrt in Z3 frisst
@@ -2124,7 +2333,7 @@ function anEasyRideNotes(row, sollMin){
   return notes;
 }
 
-function anCompareDay(date, startDate, acts, zonesById){
+function anCompareDay(date, startDate, acts, zonesById, coreSessions){
   const info = buildDayInfo(date, startDate);
   const t = info.target || {sport:'rest'};
   const rides = acts.filter(a => anIsRide(a.type));
@@ -2132,6 +2341,7 @@ function anCompareDay(date, startDate, acts, zonesById){
   const row = {
     date: date, week: info.week, plan: info, target: t,
     acts: acts, rides: rides, strength: strength,
+    coreSessions: coreSessions || [],
     notes: [], status: 'ok', badge: ''
   };
 
@@ -2175,24 +2385,34 @@ function anCompareDay(date, startDate, acts, zonesById){
   }
 
   if(t.sport === 'core'){
-    if(strength.length){
-      row.status = 'ok'; row.badge = 'erledigt';
-      row.notes.push({kind:'good', text:'Krafteinheit in intervals.icu vorhanden.'});
-      if(rides.length) row.notes.push(...anEasyRideNotes(row, t.optionalRideMinutes));
-    } else if(rides.length){
-      /* Nur die Fahrt da: die wird bewertet. Das fehlende Rumpftraining bleibt
-         unkommentiert - am Sonntag ist die Fahrt ohnehin als Option vorgesehen,
-         und ein Hinweis auf jede nicht aufgezeichnete Krafteinheit waere Laerm. */
-      if(t.optionalRideMinutes){
-        row.status = 'ok'; row.badge = 'optional gefahren';
-      } else {
-        row.status = 'extra'; row.badge = 'Zusatz';
-      }
-      row.notes.push(...anEasyRideNotes(row, t.optionalRideMinutes));
-    } else {
-      row.status = 'dev'; row.badge = 'nicht erfasst';
-      row.notes.push({kind:'', text:'Keine Krafteinheit gefunden. Rumpftraining landet nur in intervals.icu, wenn du es auf der Uhr als Aktivität aufzeichnest – kann also auch nur eine Lücke in der Erfassung sein.'});
+    /* Das eigene Protokoll ist die genauere Quelle und hat Vorrang; die
+       Schaetzung aus der Garmin-Dauer greift nur ohne Protokoll. */
+    let rumpfBewertet = false;
+    if(row.coreSessions && row.coreSessions.length){
+      row.notes.push(...anCoreLogNotes(row, row.coreSessions, t));
+      rumpfBewertet = true;
+    } else if(strength.length){
+      row.notes.push(...anCoreEstimateNotes(row, strength, t));
+      rumpfBewertet = true;
     }
+
+    if(!rumpfBewertet){
+      if(rides.length){
+        /* Nur die Fahrt da: die wird bewertet. Das fehlende Rumpftraining bleibt
+           unkommentiert - am Sonntag ist die Fahrt ohnehin als Option vorgesehen,
+           und ein Hinweis auf jede nicht aufgezeichnete Krafteinheit waere Laerm. */
+        if(t.optionalRideMinutes){
+          row.status = 'ok'; row.badge = 'optional gefahren';
+        } else {
+          row.status = 'extra'; row.badge = 'Zusatz';
+        }
+      } else {
+        row.status = 'dev'; row.badge = 'nicht erfasst';
+        row.notes.push({kind:'', text:'Keine Krafteinheit gefunden. Rumpftraining landet nur in intervals.icu, wenn du es auf der Uhr als Aktivität aufzeichnest – oder du nutzt den Rumpf-Timer der App, der protokolliert von selbst.'});
+      }
+    }
+
+    if(rides.length) row.notes.push(...anEasyRideNotes(row, t.optionalRideMinutes));
     return row;
   }
 
@@ -2272,11 +2492,16 @@ function anBuildReport(startDate, from, to, activities, zonesById){
     if(!d) continue;
     (byDay[d] = byDay[d] || []).push(a);
   }
+  const logByDay = {};
+  for(const e of coreLogList){
+    if(!e || !e.day) continue;
+    (logByDay[e.day] = logByDay[e.day] || []).push(e);
+  }
   const rows = [];
   const cur = new Date(from);
   while(cur <= to){
     const key = anIsoDay(cur);
-    rows.push(anCompareDay(new Date(cur), startDate, byDay[key] || [], zonesById));
+    rows.push(anCompareDay(new Date(cur), startDate, byDay[key] || [], zonesById, logByDay[key] || []));
     cur.setDate(cur.getDate() + 1);
   }
   return rows;
@@ -2339,6 +2564,14 @@ function anRenderRow(row){
     html += '<div class="an-ist">' + zeilen + '</div>';
   }
 
+  if(row.coreSessions && row.coreSessions.length){
+    const ses = row.coreSessions[row.coreSessions.length - 1];
+    const exCount = ses.exCount || 8;
+    html += '<div class="an-ist">Rumpf-Timer: ' + (ses.sets || 0) + ' Sätze in ' +
+            Math.floor((ses.sets || 0) / exCount) + ' vollen Runden · ' +
+            anFmtMin(ses.workSecTotal || 0) + ' unter Spannung</div>';
+  }
+
   html += anRenderZones(row.zones);
 
   for(const n of row.notes){
@@ -2363,7 +2596,7 @@ function anRenderReport(rows, meta){
      auch ausgefallene Fahrten - wuerden die Liste fuellen, ohne etwas zu
      zeigen. Ihre Zahl bleibt in der Zusammenfassung sichtbar, damit
      insbesondere ausgefallene Einheiten nicht stillschweigend verschwinden. */
-  const sichtbar = rows.filter(r => r.acts.length > 0);
+  const sichtbar = rows.filter(r => r.acts.length > 0 || r.coreSessions.length > 0);
   const versteckt = rows.length - sichtbar.length;
 
   const sum = document.createElement('div');
@@ -2381,14 +2614,14 @@ function anRenderReport(rows, meta){
     /* Wenn gar nichts vorliegt, sagt das die Leermeldung unten schon. */
     (versteckt && sichtbar.length
       ? '<div class="an-status">' + versteckt + (versteckt === 1 ? ' Tag ohne' : ' Tage ohne') +
-        ' Aktivität in intervals.icu – nicht aufgelistet.</div>'
+        ' Aufzeichnung – nicht aufgelistet.</div>'
       : '');
   an.result.appendChild(sum);
 
   if(!sichtbar.length){
     const leer = document.createElement('div');
     leer.className = 'an-sum';
-    leer.innerHTML = '<div class="an-status">Im gewählten Zeitraum liegt keine Aktivität in intervals.icu.</div>';
+    leer.innerHTML = '<div class="an-status">Im gewählten Zeitraum liegt keine Aufzeichnung vor – weder in intervals.icu noch im Rumpf-Protokoll.</div>';
     an.result.appendChild(leer);
     return;
   }
@@ -2397,6 +2630,89 @@ function anRenderReport(rows, meta){
   for(const row of sichtbar.slice().reverse()){
     an.result.appendChild(anRenderRow(row));
   }
+}
+
+
+/* Zusammenfassung des eigenen Protokolls. Braucht keine API und keinen Key -
+   laeuft auch offline und ohne intervals.icu. */
+function anRenderCoreLog(from, to, rows){
+  const box = an.coreResult;
+  box.innerHTML = '';
+  const ses = coreLogInRange(from, to);
+  const planTage = rows ? rows.filter(r => r.target.sport === 'core').length : 0;
+
+  if(!ses.length){
+    if(planTage){
+      box.innerHTML = '<div class="an-sum">' +
+        '<div class="status-row"><span>Rumpf-Zirkel</span><b>nichts protokolliert</b></div>' +
+        '<div class="an-status">Der Rumpf-Timer schreibt jede Einheit selbst mit: Runden, gehaltene ' +
+        'Zeit je Übung und jedes vorzeitige Weiterdrücken. Für diesen Zeitraum liegt noch nichts vor – ' +
+        'aufgezeichnet wird ab dem ersten Start des Timers.</div></div>';
+    }
+    return;
+  }
+
+  const fertig = ses.filter(e => e.finished).length;
+  const saetze = ses.reduce((n, e) => n + (e.sets || 0), 0);
+  const spannung = ses.reduce((n, e) => n + (e.workSecTotal || 0), 0);
+  const volleRunden = ses.reduce((n, e) => n + Math.floor((e.sets || 0) / (e.exCount || 8)), 0);
+  const sollRunden = ses.reduce((n, e) => n + (e.plannedRounds || 0), 0);
+
+  /* Je Uebung aufsummieren: wie oft abgekuerzt und wie viel der vorgesehenen
+     Zeit tatsaechlich gehalten wurde. Das ist die Auswertung, die Garmin
+     grundsaetzlich nicht liefern kann. */
+  const agg = {};
+  for(const e of ses){
+    const w = e.workSec || 0;
+    for(const ex of (e.exercises || [])){
+      if(!ex.sets) continue;
+      const a = agg[ex.name] = agg[ex.name] || {sets:0, skips:0, held:0, soll:0};
+      a.sets += ex.sets;
+      a.skips += ex.skips || 0;
+      a.held += ex.heldSec || 0;
+      a.soll += ex.sets * w;
+    }
+  }
+  const schwach = Object.keys(agg)
+    .map(n => ({name:n, ...agg[n], quote: agg[n].soll ? agg[n].held / agg[n].soll : 1}))
+    .filter(a => a.skips > 0)
+    .sort((a, b) => (b.skips - a.skips) || (a.quote - b.quote))
+    .slice(0, 4);
+
+  let html = '<div class="an-sum">' +
+    '<div class="status-row"><span>Rumpf-Zirkel</span><b>eigenes Protokoll</b></div>' +
+    '<div class="an-sum-grid">' +
+      '<div class="an-chip"><b>' + ses.length + (planTage ? ' / ' + planTage : '') + '</b>Einheiten' +
+        (planTage ? ' von geplant' : '') + '</div>' +
+      '<div class="an-chip"><b>' + fertig + ' / ' + ses.length + '</b>komplett beendet</div>' +
+      '<div class="an-chip"><b>' + volleRunden + (sollRunden ? ' / ' + sollRunden : '') + '</b>volle Runden</div>' +
+      '<div class="an-chip"><b>' + anFmtMin(spannung) + '</b>unter Spannung, ' + saetze + ' Sätze</div>' +
+    '</div>';
+
+  if(schwach.length){
+    html += '<div class="an-note">Diese Übungen brichst du am häufigsten ab:</div><div class="an-exlist">';
+    for(const a of schwach){
+      html += '<div class="an-exrow"><span class="an-exname">' + anEsc(a.name) + '</span>' +
+              '<span class="an-exval">' + a.skips + ' von ' + a.sets + ' Sätzen · ⌀ ' +
+              Math.round(a.quote * 100) + ' % gehalten</span></div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="an-note is-good">Kein Satz vorzeitig beendet – alle Übungen komplett gehalten.</div>';
+  }
+
+  html += '<div class="an-status">Übungen und Sätze stehen nur hier: intervals.icu speichert bei ' +
+          'Krafteinheiten ausschließlich Dauer und Puls.</div></div>';
+  box.innerHTML = html;
+}
+
+/* Das Protokoll haengt an keiner Abfrage - deshalb sofort beim Oeffnen des
+   Tabs und bei jeder Zeitraumaenderung neu zeichnen. */
+function anRefreshLocal(){
+  if(!an || !an.coreResult || !planStartDate) return;
+  const from = anRangeFrom();
+  const to = toMidnight(new Date());
+  anRenderCoreLog(from, to, anBuildReport(planStartDate, from, to, [], null));
 }
 
 /* ---- Ablauf ---- */
@@ -2460,6 +2776,7 @@ async function anRun(){
     }
 
     const rows = anBuildReport(planStartDate, from, to, activities, zonesById);
+    anRenderCoreLog(from, to, rows);
     anRenderReport(rows, {
       count: activities.length,
       label: from.toLocaleDateString('de-DE') + ' – ' + to.toLocaleDateString('de-DE')
@@ -2474,7 +2791,9 @@ async function anRun(){
 }
 
 async function anInit(){
+  await coreLogLoad();
   anUpdateRangeLabel();
+  anRefreshLocal();
   try{
     const res = await window.storage.get(API_KEY_STORAGE);
     if(res && res.value){
@@ -2497,7 +2816,7 @@ an.saveKey.addEventListener('click', async () => {
   anSetStatus('Key gespeichert. Jetzt Aktivitäten laden.', 'ok');
 });
 
-an.range.addEventListener('change', anUpdateRangeLabel);
+an.range.addEventListener('change', () => { anUpdateRangeLabel(); anRefreshLocal(); });
 an.run.addEventListener('click', anRun);
 
 /* ============================================================
