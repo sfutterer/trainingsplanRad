@@ -139,6 +139,14 @@
   .hint{font-size:12px;color:var(--muted);text-align:center;max-width:340px;margin-top:6px;}
 
 
+  .fs-warn{
+    width:100%;max-width:400px;background:rgba(255,177,78,.12);
+    border:1px solid rgba(255,177,78,.35);border-radius:12px;
+    padding:11px 13px;margin-bottom:14px;font-size:12.5px;line-height:1.45;
+    color:var(--rest);text-align:left;
+  }
+  .fs-warn b{color:var(--text);}
+
   /* --- Analyse (intervals.icu) --- */
   .an-row{display:flex;gap:8px;align-items:center;margin-top:10px;}
   .an-row input[type=password],.an-row input[type=text],.an-row select{
@@ -365,6 +373,14 @@
   <button class="tab-btn" id="tabAnalysisBtn">Analyse</button>
 </div>
 
+<div class="fs-warn" id="fsWarn" style="display:none;">
+  <b>Diese App läuft noch im Vollbildmodus.</b> Deshalb ist die Statusleiste mit Uhrzeit und
+  Akku ausgeblendet. Der Anzeigemodus wird beim Installieren festgehalten – diese Verknüpfung
+  wurde noch mit der alten Einstellung angelegt. Chrome zieht die Änderung von selbst nach,
+  das dauert aber bis zu zwei Tage. Sofort behoben: App deinstallieren und über Chrome neu
+  zum Startbildschirm hinzufügen.
+</div>
+
 <!-- ================= PLAN VIEW ================= -->
 <div class="view active" id="viewPlan">
 
@@ -571,6 +587,27 @@ function exitFullscreen(){
   const ex = document.exitFullscreen || document.webkitExitFullscreen;
   if(ex){ try{ ex.call(document); }catch(e){} }
 }
+
+/* Der Anzeigemodus steckt in der installierten Verknuepfung, nicht in der
+   ausgelieferten Seite: eine App, die noch mit display:fullscreen hinzugefuegt
+   wurde, bleibt im Vollbild, auch wenn das Manifest inzwischen standalone sagt.
+   Chrome erneuert das WebAPK erst nach seiner naechsten Manifest-Pruefung
+   (hoechstens taeglich), iOS nie. Deshalb hier ein Hinweis genau in dem Fall. */
+function checkDisplayMode(){
+  const warn = document.getElementById('fsWarn');
+  if(!warn) return;
+  let vollbild = false;
+  try{
+    vollbild = !!(window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches);
+  }catch(e){}
+  warn.style.display = vollbild ? 'block' : 'none';
+}
+checkDisplayMode();
+try{
+  if(window.matchMedia){
+    window.matchMedia('(display-mode: fullscreen)').addEventListener('change', checkDisplayMode);
+  }
+}catch(e){}
 
 function updateFsButton(){
   /* In der installierten App (standalone) ist der Button ueberfluessig -
