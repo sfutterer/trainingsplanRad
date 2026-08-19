@@ -2194,16 +2194,31 @@ function anIsoDay(d){
   return isoDayLocal(d);
 }
 
-/* Zeit je Puls-Band aus dem Stream. intervals.icu liefert 1-Hz-Samples,
-   ein Sample entspricht also einer Sekunde. */
-function anZoneSeconds(hrData){
+/* Zeit je Puls-Band aus dem Stream.
+
+   Ein Sample ist NICHT eine Sekunde: Garmin zeichnet variabel auf, in echten
+   Daten liegen die Abstaende zwischen 1 und 17 s bei einem Mittel von gut 4 s.
+   Jedes Sample gilt daher bis zum naechsten, gewichtet mit dem Zeitdelta aus
+   dem time-Stream. Ohne time-Stream bleibt eine Sekunde je Sample als Notnagel,
+   dann stimmen zwar die Anteile, aber nicht die absoluten Minuten. */
+function anZoneSeconds(hrData, timeData){
   const out = {};
   HR_BANDS.forEach(b => { out[b.key] = 0; });
   let counted = 0;
-  for(const v of hrData){
+  const hasTime = Array.isArray(timeData) && timeData.length === hrData.length;
+  for(let i = 0; i < hrData.length; i++){
+    const v = hrData[i];
     if(v == null || isNaN(v)) continue;
+    let dt = 1;
+    if(hasTime){
+      const next = i + 1 < timeData.length ? timeData[i + 1] : null;
+      dt = next == null ? 1 : next - timeData[i];
+      /* Pausen und Luecken nicht als Zonenzeit durchschlagen lassen. */
+      if(!(dt > 0)) dt = 0;
+      if(dt > 60) dt = 60;
+    }
     const band = HR_BANDS.find(b => v >= b.min && v < b.max);
-    if(band){ out[band.key] += 1; counted += 1; }
+    if(band){ out[band.key] += dt; counted += dt; }
   }
   out._total = counted;
   return out;
@@ -2457,16 +2472,28 @@ function anCompareDay(date, startDate, acts, zonesById, coreSessions){
     const inTarget = row.zones[target] || 0;
     const share = anPct(inTarget, total);
     row.zoneShare = share;
-    const hardShare = anPct((row.zones.z4 || 0) + (row.zones.z5 || 0), total);
+    const sehrHart = anPct((row.zones.z4 || 0) + (row.zones.z5 || 0), total);
 
     if(target === 'z2'){
-      const base = anPct((row.zones.z1 || 0) + (row.zones.z2 || 0), total);
-      if(hardShare > 15){
+      const base  = anPct((row.zones.z1 || 0) + (row.zones.z2 || 0), total);
+      const unten = anPct((row.zones.unter || 0) + (row.zones.z1 || 0), total);
+      /* Auf einer Grundlagenfahrt ist schon Z3 zu hart. Vorher zaehlte nur
+         Z4/Z5 als "zu hart" - das kommt auf einer Ausdauerfahrt praktisch nie
+         vor, die Pruefung lief also leer und der Fall landete faelschlich im
+         Zweig "zu locker". Am Samstag sind Z3-Bloecke geplant, deren Anteil
+         ist deshalb zusaetzlich erlaubt. */
+      const ueber = anPct((row.zones.z3 || 0) + (row.zones.z4 || 0) + (row.zones.z5 || 0), total);
+      const erlaubt = 20 + (t.hardMinutes && t.minutes
+        ? Math.round(t.hardMinutes / t.minutes * 100) : 0);
+
+      if(ueber > erlaubt){
         anDowngrade(row, 'zu hart');
-        row.notes.push({kind:'bad', text:hardShare + ' % der Zeit in Z4/Z5. Das ist eine Grundlagenfahrt – zu hart gefahren kostet sie die Erholung für die Intervalle.'});
-      } else if(share < 40 && base < 75){
-        anDowngrade(row, 'Zonen daneben');
-        row.notes.push({kind:'', text:'Nur ' + share + ' % in Z2 (' + base + ' % in Z1–Z2). Für eine Grundlagenfahrt eher zu locker oder zu ungleichmäßig.'});
+        row.notes.push({kind:'bad', text: ueber + ' % der Zeit über Z2' +
+          (sehrHart >= 5 ? ' (davon ' + sehrHart + ' % in Z4/Z5)' : '') +
+          ', vorgesehen sind hier rund ' + erlaubt + ' %. Das ist eine Grundlagenfahrt – zu hart gefahren kostet sie die Erholung für die Intervalle.'});
+      } else if(unten > 35){
+        anDowngrade(row, 'zu locker');
+        row.notes.push({kind:'', text: unten + ' % der Zeit unter Z2. Für eine Grundlagenfahrt zu locker – der Reiz kommt aus Z2.'});
       } else {
         row.notes.push({kind:'good', text:share + ' % in Z2, ' + base + ' % in Z1–Z2. Passt.'});
       }
@@ -2780,9 +2807,12 @@ async function anRun(){
         done += 1;
         anSetStatus('Pulszonen ' + done + ' / ' + rides.length + ' …');
         try{
-          const streams = await icuFetch('/activity/' + a.id + '/streams.json?types=heartrate', key);
+          const streams = await icuFetch('/activity/' + a.id + '/streams.json?types=heartrate,time', key);
           const hr = (streams || []).find(st => st.type === 'heartrate');
-          if(hr && Array.isArray(hr.data)) zonesById[a.id] = anZoneSeconds(hr.data);
+          const tm = (streams || []).find(st => st.type === 'time');
+          if(hr && Array.isArray(hr.data)){
+            zonesById[a.id] = anZoneSeconds(hr.data, tm && Array.isArray(tm.data) ? tm.data : null);
+          }
         }catch(e){
           /* Eine fehlende Streamabfrage soll den ganzen Bericht nicht kippen. */
         }
