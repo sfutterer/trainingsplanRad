@@ -22,3 +22,15 @@
   padding: 10px 12px; font-size: 13px; color: var(--muted); line-height: 1.5;
 }
 .legsum b{ color: var(--on-surface); }
+
+/* Ruecksprung zum laufenden Zirkel. Der Timer laeuft weiter, waehrend im
+   Beinblock gezaehlt wird - der Streifen ist die einzige Stelle, an der man
+   das noch sieht. */
+.laufstreifen{
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; min-height: 44px; margin-bottom: 12px; padding: 0 16px;
+  background: var(--surface-2); border: 1px solid var(--outline);
+  border-radius: 999px; color: var(--on-surface);
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+}
+.laufstreifen b{ font-variant-numeric: tabular-nums; }
