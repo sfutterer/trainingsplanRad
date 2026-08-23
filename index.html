@@ -41,6 +41,19 @@
             calc(40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
   }
   html:fullscreen, body:fullscreen{background:var(--bg);}
+  /* Ladefehler der Plandaten. Bewusst laut und allein auf der Seite: eine App,
+     die halb funktioniert und dabei erfundene Zahlen zeigt, waere schlimmer als
+     gar keine. */
+  .plan-error{
+    width:100%;max-width:400px;
+    background:var(--panel);border:1px solid var(--z3);border-radius:14px;
+    padding:16px 18px;line-height:1.55;font-size:14px;
+  }
+  .plan-error h2{margin:0 0 10px;font-size:15px;color:var(--z3);}
+  .plan-error ul{margin:0;padding-left:18px;}
+  .plan-error li{margin-bottom:8px;color:var(--text);}
+  .plan-error p{color:var(--muted);margin:12px 0 0;font-size:13px;}
+  .plan-error code{background:var(--panel2);padding:1px 5px;border-radius:4px;}
   .fs-btn{
     position:fixed;
     top:calc(10px + env(safe-area-inset-top));
@@ -474,7 +487,9 @@
   <div class="plan" id="plan"></div>
   <div class="hint">Handy nicht stumm schalten – Sprachausgabe nutzt den Medien-/Klingelton-Kanal deines Browsers.</div>
   <div class="hint">Tipp: Tippe auf das Übungsbild oder auf eine Übung in der Liste für die vollständige Anleitung.</div>
-  <div class="hint">Regel: Wenn die Form kippt – Hüfte hängt durch, Rücken wird rund, Zittern – ist der Satz zu Ende. Abbrechen ist besser als schlecht weitermachen; eine Runde weniger kostet nichts.</div>
+  <!-- Text kommt aus plan.json (texts.coreAbortRule), damit die Abbruchregel an
+       einer Stelle steht und nicht zwischen Markup und Plan auseinanderlaeuft. -->
+  <div class="hint" id="coreAbortHint"></div>
   <div class="wake-status" id="wakeStatusCore"><span class="dot"></span><span class="txt">Bildschirm-Sperre: inaktiv</span></div>
 
   <div class="settings-title">Beinblock (Sonntag, nach dem Zirkel)</div>
@@ -876,37 +891,507 @@ Object.keys(TABS).forEach(key => {
 });
 
 /* ============================================================
+   PLANDATEN AUS plan.json
+
+   Der Plan steht nicht mehr im Code, sondern in plan.json. Die App haelt
+   bewusst keinen zweiten Satz Zahlen vor: laesst sich die Datei nicht laden
+   oder ist sie widerspruechlich, startet die Oberflaeche gar nicht erst.
+   Stille Ersatzwerte waeren hier das gefaehrlichste Verhalten - eine App, die
+   Vorgaben anzeigt, die niemand geplant hat.
+
+   Der Loader beruehrt nur die Variablen weiter unten. Bei einem spaeteren
+   Umbau der Oberflaeche laesst er sich ersetzen, ohne dass plan.json
+   angefasst werden muss.
+============================================================ */
+const PLAN_URL = 'plan.json';
+const PLAN_SCHEMA_VERSION = 1;
+
+/* Alles, was frueher als Konstante im Code stand. Bis loadPlanData() gelaufen
+   ist, sind die Werte leer - das ist Absicht, siehe oben. */
+let PLAN = null;
+let PLAN_WEEKS = 0;
+let TUE_MIN = [], WED_MIN = [], SAT_MIN = [], SUN_MIN = [];
+let CORE_WORK = [], CORE_ROUNDS = [], CORE_REST = [], LEG_ROUNDS = [];
+let WED_CORE_ROUNDS = 0, CORE_ROUND_REST = 0, CORE_PREP_SEC = 0;
+let EXERCISES = [], LEG_EXERCISES = [], LEG_DOSE = {};
+let LEG_REST_EX = 0, LEG_REST_ROUND = 0;
+let HR_TRANSITION = [], POWER_ZONES = {}, CADENCE_TARGET = {};
+let IV_WARM_MIN = 0, IV_COOL_MIN = 0, IV_PREP_SEC = 0;
+let PHASE_NAMES = {};
+let TXT = {};
+let WELLNESS_RULE = '';
+let ZONE_KEYS = [], ZONE_LABEL = {}, ZONE_COLOR = {};
+
+/* ---- Validierung ----
+   Meldungen nennen immer das Feld. Wer den Plan bearbeitet, soll die Stelle
+   in plan.json finden, ohne den Code zu lesen. */
+const PV_ZONE_KEYS = ['unter','z1','z2','z3','z4','z5'];
+
+function pvNum(err, wert, feld, opt){
+  opt = opt || {};
+  if(typeof wert !== 'number' || !isFinite(wert)){
+    err.push(feld + ' fehlt oder ist keine Zahl.');
+    return false;
+  }
+  if(opt.min != null && wert < opt.min){
+    err.push(feld + ' ist ' + wert + ', erlaubt ist mindestens ' + opt.min + '.');
+    return false;
+  }
+  if(opt.int && Math.round(wert) !== wert){
+    err.push(feld + ' muss eine ganze Zahl sein, ist aber ' + wert + '.');
+    return false;
+  }
+  return true;
+}
+
+function pvStr(err, wert, feld){
+  if(typeof wert !== 'string' || !wert.trim()){
+    err.push(feld + ' fehlt oder ist kein Text.');
+    return false;
+  }
+  return true;
+}
+
+function pvArr(err, wert, feld, minLen){
+  minLen = minLen || 1;
+  if(!Array.isArray(wert) || wert.length < minLen){
+    err.push(feld + ' fehlt oder enthält weniger als ' + minLen + ' Einträge.');
+    return false;
+  }
+  return true;
+}
+
+function pvObj(err, wert, feld){
+  if(!wert || typeof wert !== 'object' || Array.isArray(wert)){
+    err.push(feld + ' fehlt oder ist kein Objekt.');
+    return false;
+  }
+  return true;
+}
+
+/* Pulsbänder müssen lückenlos aufsteigen: die Obergrenze der einen Zone ist die
+   Untergrenze der nächsten. Sonst fällt ein Messwert in kein Band und
+   verschwindet stillschweigend aus der Zonenauswertung. */
+function pvBands(err, bands, feld, minKey, maxKey){
+  if(!pvArr(err, bands, feld, 2)) return;
+  let prev = 0;
+  bands.forEach((b, i) => {
+    const f = feld + '[' + i + ']';
+    if(!pvObj(err, b, f)) return;
+    pvStr(err, b.key, f + '.key');
+    pvStr(err, b.label, f + '.label');
+    pvStr(err, b.color, f + '.color');
+    const lo = b[minKey], hi = b[maxKey];
+    if(!pvNum(err, lo, f + '.' + minKey, {min:0})) return;
+    const offen = hi === null;
+    if(!offen && !pvNum(err, hi, f + '.' + maxKey, {min:0})) return;
+    if(!offen && !(hi > lo)){
+      err.push(f + '.' + maxKey + ' (' + hi + ') muss größer sein als ' + minKey + ' (' + lo + ').');
+    }
+    if(offen && i !== bands.length - 1){
+      err.push(f + '.' + maxKey + ' darf nur in der obersten Zone offen (null) sein.');
+    }
+    if(lo !== prev){
+      err.push(f + '.' + minKey + ' ist ' + lo + ', muss aber lückenlos an die Zone darunter anschließen (' + prev + ').');
+    }
+    prev = offen ? lo : hi;
+  });
+  const letzte = bands[bands.length - 1];
+  if(letzte && letzte[maxKey] !== null){
+    err.push(feld + ': die oberste Zone muss nach oben offen sein (' + maxKey + ': null).');
+  }
+  const da = bands.map(b => b && b.key);
+  PV_ZONE_KEYS.forEach(k => {
+    if(da.indexOf(k) < 0) err.push(feld + ': die Zone "' + k + '" fehlt.');
+  });
+}
+
+function pvThursday(err, t, feld, zonen){
+  if(!pvObj(err, t, feld)) return;
+  pvStr(err, t.title, feld + '.title');
+  if(zonen.indexOf(t.zone) < 0){
+    err.push(feld + '.zone ist "' + t.zone + '" – erlaubt sind ' + zonen.join(', ') + '.');
+  }
+  if(t.kind === 'intervals'){
+    pvNum(err, t.reps, feld + '.reps', {min:1, int:true});
+    pvNum(err, t.workMinutes, feld + '.workMinutes', {min:0});
+    pvNum(err, t.restMinutes, feld + '.restMinutes', {min:0});
+    if(t.power != null && typeof t.power !== 'string'){
+      err.push(feld + '.power muss ein Text oder null sein.');
+    }
+  } else if(t.kind === 'z2' || t.kind === 'test'){
+    pvNum(err, t.minutes, feld + '.minutes', {min:0});
+  } else {
+    err.push(feld + '.kind ist "' + t.kind + '" – erlaubt sind "intervals", "z2" und "test".');
+  }
+}
+
+function pvBlocks(err, b, feld){
+  if(b === null || b === undefined) return;
+  if(!pvObj(err, b, feld)) return;
+  pvNum(err, b.reps, feld + '.reps', {min:1, int:true});
+  pvNum(err, b.minutes, feld + '.minutes', {min:1});
+  pvNum(err, b.restMinutes, feld + '.restMinutes', {min:0});
+}
+
+/* Pflichttexte. Ein fehlender Textbaustein würde sonst als "undefined" in einer
+   Tageskarte landen - unauffällig genug, um lange übersehen zu werden. */
+const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMinimum',
+  'wednesdayEasyDefault','wednesdayEasyPhase3','wednesdayNoRide','thursdayTest',
+  'thursdayBaseDay','thursdayNoTimer','thursdayIntervalTail','saturdayRecovery','saturdayPureZ2',
+  'sundayLegOrder','sundayRideFirst','legNoTimer','legTempo','legTempoPlain',
+  'legPerSideNote','legAbortSigns',
+  'legProgression','legWednesdayNote','coreAbortRule','zoneNoteTransition',
+  'zoneNoteCoggan','thresholdTestSummary','intervalRollingStart','intervalRecoveryWeek'];
+
+function planValidate(p){
+  const err = [];
+  if(!pvObj(err, p, 'plan.json')) return err;
+
+  if(p.schemaVersion !== PLAN_SCHEMA_VERSION){
+    err.push('schemaVersion ist ' + JSON.stringify(p.schemaVersion) +
+             ', diese App liest Fassung ' + PLAN_SCHEMA_VERSION + '.');
+    return err;
+  }
+
+  pvNum(err, p.recoveryEveryNthWeek, 'recoveryEveryNthWeek', {min:2, int:true});
+  pvObj(err, p.phaseNames, 'phaseNames');
+
+  /* Zonen zuerst: die Wochen verweisen mit ihren Zonenschlüsseln darauf. */
+  if(pvObj(err, p.heartRateZones, 'heartRateZones')){
+    pvNum(err, p.heartRateZones.cogganFromWeek, 'heartRateZones.cogganFromWeek', {min:1, int:true});
+    pvBands(err, p.heartRateZones.transitionBands, 'heartRateZones.transitionBands', 'min', 'max');
+    pvBands(err, p.heartRateZones.cogganBands, 'heartRateZones.cogganBands', 'minFactor', 'maxFactor');
+  }
+
+  /* Leistungszonen sind nach Coggan bewusst nicht lückenlos (Z1 bis 55 %,
+     Z2 ab 56 %). Geprüft wird deshalb nur, dass sie aufsteigen. */
+  if(pvObj(err, p.powerZones, 'powerZones')){
+    let voriges = -1;
+    ['z1','z2','z3','z4','z5'].forEach(k => {
+      const f = 'powerZones.' + k;
+      const z = p.powerZones[k];
+      if(!pvObj(err, z, f)) return;
+      if(!pvNum(err, z.minFactor, f + '.minFactor', {min:0})) return;
+      if(!pvNum(err, z.maxFactor, f + '.maxFactor', {min:0})) return;
+      if(!(z.maxFactor > z.minFactor)){
+        err.push(f + '.maxFactor (' + z.maxFactor + ') muss größer sein als minFactor (' + z.minFactor + ').');
+      }
+      if(z.minFactor < voriges){
+        err.push(f + '.minFactor (' + z.minFactor + ') liegt unter der Obergrenze der Zone darunter (' + voriges + ').');
+      }
+      voriges = z.maxFactor;
+    });
+  }
+
+  const zonen = PV_ZONE_KEYS.slice();
+
+  /* Wochen: fortlaufend ab 1, ohne Lücke, jede mit allen Pflichtfeldern.
+     Weil alles zu einer Woche in einem Objekt steht, kann sich nichts
+     gegeneinander verschieben - der frühere Fehlerfall ungleich langer
+     Reihen ist damit strukturell ausgeschlossen. */
+  if(pvArr(err, p.weeks, 'weeks', 1)){
+    p.weeks.forEach((w, i) => {
+      const f = 'weeks[' + i + ']';
+      if(!pvObj(err, w, f)) return;
+      if(w.week !== i + 1){
+        err.push(f + '.week ist ' + JSON.stringify(w.week) + ', erwartet ' + (i + 1) +
+                 ' – die Wochen müssen lückenlos ab 1 aufsteigen.');
+      }
+      const name = f + ' (Woche ' + (i + 1) + ')';
+      if(pvNum(err, w.phase, name + '.phase', {min:1, int:true})){
+        if(p.phaseNames && !p.phaseNames[String(w.phase)]){
+          err.push(name + '.phase ist ' + w.phase + ', dazu fehlt ein Eintrag in phaseNames.');
+        }
+      }
+      ['tuesdayMinutes','wednesdayMinutes','saturdayMinutes','sundayOptionalMinutes',
+       'coreWorkSeconds','coreRestSeconds'].forEach(k => {
+        pvNum(err, w[k], name + '.' + k, {min:0, int:true});
+      });
+      pvNum(err, w.coreRounds, name + '.coreRounds', {min:1, int:true});
+      pvNum(err, w.legRounds, name + '.legRounds', {min:0, int:true});
+      pvThursday(err, w.thursday, name + '.thursday', zonen);
+      pvBlocks(err, w.saturdayBlocks, name + '.saturdayBlocks');
+    });
+  }
+
+  if(pvObj(err, p.winterBlock, 'winterBlock')){
+    pvNum(err, p.winterBlock.phase, 'winterBlock.phase', {min:1, int:true});
+    pvStr(err, p.winterBlock.name, 'winterBlock.name');
+    pvStr(err, p.winterBlock.note, 'winterBlock.note');
+    pvThursday(err, p.winterBlock.thursday, 'winterBlock.thursday', zonen);
+    pvBlocks(err, p.winterBlock.saturdayBlocks, 'winterBlock.saturdayBlocks');
+  }
+
+  if(pvObj(err, p.cadenceTargets, 'cadenceTargets')){
+    pvNum(err, p.cadenceTargets.fromWeek, 'cadenceTargets.fromWeek', {min:1, int:true});
+    pvObj(err, p.cadenceTargets.byZone, 'cadenceTargets.byZone');
+  }
+
+  if(pvObj(err, p.speedEstimate, 'speedEstimate')){
+    pvNum(err, p.speedEstimate.showUntilWeek, 'speedEstimate.showUntilWeek', {min:0, int:true});
+    pvNum(err, p.speedEstimate.baseKmh, 'speedEstimate.baseKmh', {min:1});
+    pvNum(err, p.speedEstimate.perWeekKmh, 'speedEstimate.perWeekKmh', {min:0});
+    pvNum(err, p.speedEstimate.maxKmh, 'speedEstimate.maxKmh', {min:1});
+  }
+
+  if(pvObj(err, p.saturdayRide, 'saturdayRide')){
+    pvNum(err, p.saturdayRide.warmupMinutes, 'saturdayRide.warmupMinutes', {min:0});
+    pvNum(err, p.saturdayRide.cooldownMinutes, 'saturdayRide.cooldownMinutes', {min:0});
+  }
+
+  if(pvObj(err, p.fridayOptional, 'fridayOptional')){
+    pvNum(err, p.fridayOptional.minMinutes, 'fridayOptional.minMinutes', {min:0, int:true});
+    pvNum(err, p.fridayOptional.maxMinutes, 'fridayOptional.maxMinutes', {min:0, int:true});
+    pvNum(err, p.fridayOptional.targetMinutes, 'fridayOptional.targetMinutes', {min:0, int:true});
+    if(zonen.indexOf(p.fridayOptional.zone) < 0){
+      err.push('fridayOptional.zone ist "' + p.fridayOptional.zone + '" – erlaubt sind ' + zonen.join(', ') + '.');
+    }
+  }
+
+  if(pvObj(err, p.intervalTimer, 'intervalTimer')){
+    pvNum(err, p.intervalTimer.prepSeconds, 'intervalTimer.prepSeconds', {min:0, int:true});
+    pvNum(err, p.intervalTimer.warmupMinutes, 'intervalTimer.warmupMinutes', {min:0});
+    pvNum(err, p.intervalTimer.cooldownMinutes, 'intervalTimer.cooldownMinutes', {min:0});
+  }
+
+  /* Der Schwellentest ist eine feste Schrittfolge. "z12" ist der Einfahrbereich
+     Z1-Z2 und deshalb hier zusätzlich erlaubt. */
+  if(pvObj(err, p.thresholdTest, 'thresholdTest') && pvArr(err, p.thresholdTest.steps, 'thresholdTest.steps', 1)){
+    p.thresholdTest.steps.forEach((s, i) => {
+      const f = 'thresholdTest.steps[' + i + ']';
+      if(!pvObj(err, s, f)) return;
+      if(['warm','work','rest','cool'].indexOf(s.type) < 0){
+        err.push(f + '.type ist "' + s.type + '" – erlaubt sind "warm", "work", "rest" und "cool".');
+      }
+      pvStr(err, s.label, f + '.label');
+      pvStr(err, s.short, f + '.short');
+      const hatMin = typeof s.minutes === 'number';
+      const hatSek = typeof s.seconds === 'number';
+      if(hatMin === hatSek){
+        err.push(f + ' braucht genau eine Dauerangabe: entweder "minutes" oder "seconds".');
+      } else if(hatMin){
+        pvNum(err, s.minutes, f + '.minutes', {min:0});
+      } else {
+        pvNum(err, s.seconds, f + '.seconds', {min:0, int:true});
+      }
+      if(zonen.indexOf(s.zone) < 0 && s.zone !== 'z12'){
+        err.push(f + '.zone ist "' + s.zone + '" – erlaubt sind ' + zonen.join(', ') + ' und z12.');
+      }
+    });
+  }
+
+  if(pvObj(err, p.coreCircuit, 'coreCircuit')){
+    pvNum(err, p.coreCircuit.prepSeconds, 'coreCircuit.prepSeconds', {min:0, int:true});
+    pvNum(err, p.coreCircuit.roundRestSeconds, 'coreCircuit.roundRestSeconds', {min:0, int:true});
+    pvNum(err, p.coreCircuit.wednesdayRounds, 'coreCircuit.wednesdayRounds', {min:1, int:true});
+    if(pvArr(err, p.coreCircuit.exercises, 'coreCircuit.exercises', 1)){
+      p.coreCircuit.exercises.forEach((ex, i) => {
+        const f = 'coreCircuit.exercises[' + i + ']';
+        if(!pvObj(err, ex, f)) return;
+        pvStr(err, ex.name, f + '.name');
+        pvStr(err, ex.goal, f + '.goal');
+        pvStr(err, ex.image, f + '.image');
+        pvArr(err, ex.steps, f + '.steps', 1);
+        if(ex.mode === 'reps'){
+          pvNum(err, ex.tempoSeconds, f + '.tempoSeconds', {min:1, int:true});
+        } else if(ex.mode !== 'hold'){
+          err.push(f + '.mode ist "' + ex.mode + '" – erlaubt sind "reps" und "hold".');
+        }
+      });
+    }
+  }
+
+  if(pvObj(err, p.legBlock, 'legBlock')){
+    pvNum(err, p.legBlock.restBetweenExercisesSeconds, 'legBlock.restBetweenExercisesSeconds', {min:0, int:true});
+    pvNum(err, p.legBlock.restBetweenRoundsSeconds, 'legBlock.restBetweenRoundsSeconds', {min:0, int:true});
+    pvStr(err, p.legBlock.durationHint, 'legBlock.durationHint');
+    pvStr(err, p.legBlock.shortList, 'legBlock.shortList');
+    const keys = [];
+    if(pvArr(err, p.legBlock.exercises, 'legBlock.exercises', 1)){
+      p.legBlock.exercises.forEach((ex, i) => {
+        const f = 'legBlock.exercises[' + i + ']';
+        if(!pvObj(err, ex, f)) return;
+        pvStr(err, ex.key, f + '.key');
+        pvStr(err, ex.name, f + '.name');
+        pvStr(err, ex.why, f + '.why');
+        pvStr(err, ex.progression, f + '.progression');
+        pvStr(err, ex.goal, f + '.goal');
+        pvStr(err, ex.image, f + '.image');
+        pvArr(err, ex.steps, f + '.steps', 1);
+        if(keys.indexOf(ex.key) >= 0) err.push(f + '.key "' + ex.key + '" kommt doppelt vor.');
+        keys.push(ex.key);
+      });
+    }
+    /* Für jede Phase muss zu jeder Übung eine Spanne stehen, sonst zeigt der
+       Beinblock in genau einer Phase kein Wiederholungsziel. */
+    if(pvObj(err, p.legBlock.doseByPhase, 'legBlock.doseByPhase') && p.phaseNames){
+      Object.keys(p.phaseNames).forEach(phase => {
+        const f = 'legBlock.doseByPhase["' + phase + '"]';
+        const d = p.legBlock.doseByPhase[phase];
+        if(!pvObj(err, d, f)) return;
+        keys.forEach(k => {
+          const s = d[k];
+          if(!Array.isArray(s) || s.length !== 2 ||
+             typeof s[0] !== 'number' || typeof s[1] !== 'number'){
+            err.push(f + '.' + k + ' fehlt oder ist keine Spanne aus zwei Zahlen, z. B. [8, 10].');
+          } else if(s[0] > s[1]){
+            err.push(f + '.' + k + ': der untere Wert (' + s[0] + ') liegt über dem oberen (' + s[1] + ').');
+          }
+        });
+      });
+    }
+  }
+
+  if(pvObj(err, p.texts, 'texts')){
+    PV_TEXT_KEYS.forEach(k => pvStr(err, p.texts[k], 'texts.' + k));
+  }
+
+  return err;
+}
+
+/* ---- Uebernahme ----
+   Einzige Stelle, an der aus JSON die Variablen des restlichen Codes werden.
+   Alles darunter kennt plan.json nicht. */
+function applyPlan(p){
+  PLAN = p;
+  PLAN_WEEKS = p.weeks.length;
+
+  TUE_MIN     = p.weeks.map(w => w.tuesdayMinutes);
+  WED_MIN     = p.weeks.map(w => w.wednesdayMinutes);
+  SAT_MIN     = p.weeks.map(w => w.saturdayMinutes);
+  SUN_MIN     = p.weeks.map(w => w.sundayOptionalMinutes);
+  CORE_WORK   = p.weeks.map(w => w.coreWorkSeconds);
+  CORE_ROUNDS = p.weeks.map(w => w.coreRounds);
+  CORE_REST   = p.weeks.map(w => w.coreRestSeconds);
+  LEG_ROUNDS  = p.weeks.map(w => w.legRounds);
+
+  WED_CORE_ROUNDS = p.coreCircuit.wednesdayRounds;
+  CORE_ROUND_REST = p.coreCircuit.roundRestSeconds;
+  CORE_PREP_SEC   = p.coreCircuit.prepSeconds;
+  EXERCISES = p.coreCircuit.exercises.map(ex => ({
+    name: ex.name, mode: ex.mode, tempo: ex.tempoSeconds,
+    alternating: !!ex.alternating, img: ex.image, steps: ex.steps, goal: ex.goal
+  }));
+
+  LEG_EXERCISES = p.legBlock.exercises.map(ex => ({
+    key: ex.key, name: ex.name, perSide: !!ex.perSide, img: ex.image,
+    steps: ex.steps, why: ex.why, progression: ex.progression, goal: ex.goal
+  }));
+  LEG_DOSE = p.legBlock.doseByPhase;
+  LEG_REST_EX = p.legBlock.restBetweenExercisesSeconds;
+  LEG_REST_ROUND = p.legBlock.restBetweenRoundsSeconds;
+
+  /* Nach oben offene Zonen stehen in der Datei als null; intern bleibt 999,
+     weil die Bandsuche mit Zahlen vergleicht. */
+  HR_TRANSITION = p.heartRateZones.transitionBands.map(b => ({
+    key: b.key, label: b.label, min: b.min, max: b.max === null ? 999 : b.max, color: b.color
+  }));
+  POWER_ZONES = {};
+  Object.keys(p.powerZones).forEach(k => {
+    POWER_ZONES[k] = [p.powerZones[k].minFactor, p.powerZones[k].maxFactor];
+  });
+  CADENCE_TARGET = p.cadenceTargets.byZone;
+
+  IV_WARM_MIN = p.intervalTimer.warmupMinutes;
+  IV_COOL_MIN = p.intervalTimer.cooldownMinutes;
+  IV_PREP_SEC = p.intervalTimer.prepSeconds;
+
+  PHASE_NAMES = {};
+  Object.keys(p.phaseNames).forEach(k => { PHASE_NAMES[k] = p.phaseNames[k]; });
+  PHASE_NAMES[p.winterBlock.phase] = p.winterBlock.name;
+
+  TXT = p.texts;
+  WELLNESS_RULE = p.texts.wellnessRule;
+
+  /* Die Analyse braucht dieselben Schluessel, Namen und Farben wie die Baender.
+     Frueher standen sie ein zweites Mal im Code und liefen bei jeder
+     Zonenkorrektur auseinander. */
+  ZONE_KEYS = HR_TRANSITION.map(b => b.key);
+  ZONE_LABEL = {};
+  ZONE_COLOR = {};
+  HR_TRANSITION.forEach(b => { ZONE_LABEL[b.key] = b.label; ZONE_COLOR[b.key] = b.color; });
+
+  const abbruch = document.getElementById('coreAbortHint');
+  if(abbruch) abbruch.textContent = p.texts.coreAbortRule;
+}
+
+/* Ersetzt die Seite durch eine Fehlermeldung. Halb gefuellte Tabs mit
+   erfundenen Zahlen waeren die schlechtere Alternative. */
+function showPlanError(titel, zeilen){
+  const h = document.createElement('h1');
+  h.textContent = 'Trainingsplan Radfahren';
+  const box = document.createElement('div');
+  box.className = 'plan-error';
+  box.innerHTML = '<h2>' + anEsc(titel) + '</h2><ul>' +
+    zeilen.map(z => '<li>' + anEsc(z) + '</li>').join('') + '</ul>' +
+    '<p>Solange das nicht behoben ist, zeigt die App keine Trainingsvorgaben – ' +
+    'lieber gar keine Zahl als eine falsche.</p>';
+  document.body.innerHTML = '';
+  document.body.appendChild(h);
+  document.body.appendChild(box);
+}
+
+async function loadPlanData(){
+  let text;
+  try{
+    const res = await fetch(PLAN_URL);
+    if(!res.ok) throw new Error('Der Server antwortete mit ' + res.status + '.');
+    text = await res.text();
+  }catch(e){
+    const zeilen = [PLAN_URL + ' konnte nicht geladen werden: ' + ((e && e.message) || 'unbekannter Fehler')];
+    if(location.protocol === 'file:'){
+      /* fetch() ist ueber file:// gesperrt. Betrifft nur das direkte Oeffnen
+         der Datei im Browser, nicht GitHub Pages und nicht die installierte App. */
+      zeilen.push('Die Seite wurde direkt aus dem Dateisystem geöffnet (file://). ' +
+        'Browser verbieten dort das Nachladen weiterer Dateien.');
+      zeilen.push('Abhilfe: die installierte App oder https://sfutterer.github.io/trainingsplanRad/ ' +
+        'benutzen – oder lokal im Projektordner "python3 -m http.server" starten und ' +
+        'http://localhost:8000/ öffnen.');
+    } else {
+      zeilen.push('Liegt plan.json neben index.html und ist sie erreichbar?');
+    }
+    showPlanError('Plandaten fehlen', zeilen);
+    return false;
+  }
+
+  let daten;
+  try{
+    daten = JSON.parse(text);
+  }catch(e){
+    showPlanError('plan.json lässt sich nicht lesen', [
+      (e && e.message) || 'Die Datei ist kein gültiges JSON.',
+      'Häufigste Ursachen: ein Komma zu viel vor einer schließenden Klammer, ' +
+      'ein fehlendes Anführungszeichen oder ein Kommentar – JSON kennt keine Kommentare.'
+    ]);
+    return false;
+  }
+
+  const fehler = planValidate(daten);
+  if(fehler.length){
+    const zeilen = fehler.slice(0, 12);
+    if(fehler.length > 12) zeilen.push('… und ' + (fehler.length - 12) + ' weitere Beanstandungen.');
+    showPlanError('plan.json ist unvollständig oder widersprüchlich', zeilen);
+    return false;
+  }
+
+  applyPlan(daten);
+  return true;
+}
+
+/* ============================================================
    PLAN LOGIC
 ============================================================ */
 const WEEKDAY_NAMES = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 
-/* Fassung 2 des Plans: vier Bloecke a vier Wochen, jede vierte Woche ist
-   Erholungswoche. Nach Woche 16 beginnt der Winterblock, der bewusst nicht
-   mehr als Wochenreihe abgebildet ist - dort entscheidet die Frage Rolle
-   oder keine Rolle ueber die Struktur. Der Erhaltungszyklus aus Fassung 1
-   ist ersatzlos entfallen: er wiederholte das VO2max-Muster unbefristet. */
-const PLAN_WEEKS = 16;
+/* Die Wochenreihen, das Phasenmodell, der Donnerstag je Woche und die
+   Samstagsbloecke stehen in plan.json und werden von applyPlan() in die
+   Variablen oben gelegt. Hier bleibt nur, was sich daraus rechnet.
 
-const TUE_MIN = [ 60,  70,  80,  45,  85,  90,  90,  50,  85,  90,  90,  50,  85,  90,  90,  50];
-/* Mittwoch ist der Arbeitsweg. Untergrenze, kein Sollwert: die Strecke ist so
-   gewaehlt, dass in Z2 mindestens diese Zeit zusammenkommt. Woche 1 wurde ohne
-   Mittwochsfahrt gefahren. In Phase 3 waechst der Tag auf 60 min, weil der
-   Donnerstag dort selbst eine Z2-Einheit ist und keine Schonung davor braucht. */
-const WED_MIN = [  0,  40,  40,  30,  40,  40,  40,  30,  60,  60,  60,  30,  40,  40,  40,  30];
-const SAT_MIN = [120, 130, 140,  90, 150, 160, 170, 100, 155, 165, 170, 100, 160, 170, 175, 100];
-const SUN_MIN = [ 30,  30,  35,  25,  35,  40,  40,  25,  40,  40,  40,  25,  40,  40,  40,  25];
-
-/* Rumpf-Zirkel: die Haltezeit ist bei 40 s gedeckelt - laenger geht bei
-   Einsteigern auf Kosten der Form, dann lieber eine Runde mehr. Die Werte
-   gelten fuer den Sonntag (volle Rundenzahl); der Mittwoch faehrt immer
-   2 Runden mit derselben Belastung und Pause. */
-const CORE_WORK   = [25, 30, 35, 25, 30, 35, 40, 30, 35, 40, 40, 30, 40, 40, 40, 30];
-const CORE_ROUNDS = [ 2,  2,  2,  2,  3,  3,  3,  2,  3,  3,  3,  2,  3,  3,  3,  2];
-const CORE_REST   = [25, 25, 25, 25, 20, 20, 20, 25, 20, 20, 20, 25, 20, 20, 20, 25];
-/* Beinblock, nur Sonntag, im Anschluss an den Zirkel. */
-const LEG_ROUNDS  = [ 2,  2,  2,  2,  2,  2,  2,  2,  3,  3,  3,  2,  3,  3,  3,  2];
-
-const WED_CORE_ROUNDS = 2;
+   Nach der letzten Planwoche gilt der Winterblock: die Wochenwerte bleiben
+   auf der letzten Woche stehen, Donnerstag und Samstag kommen aus dem
+   Abschnitt winterBlock. Eine eigene Progression bekommt er nicht - er haengt
+   an Fragen, die der Plan offen laesst (Rolle? Zieltermin?). */
 
 /* Lokaler Kalendertag als YYYY-MM-DD. toISOString() waere falsch: es rechnet
    nach UTC um und liefert oestlich von Greenwich den Vortag. */
@@ -928,15 +1413,18 @@ function weekNumberFor(date, startDate){
   return Math.floor(diffDays / 7) + 1;
 }
 
-/* Nach Woche 16 bleiben die Werte der letzten Woche stehen. Der Winterblock
-   bekommt keine eigene Progression - er haengt an Fragen, die der Plan offen
-   laesst (Rolle? Zieltermin?). Die Anzeige sagt das ausdruecklich. */
+/* Nach der letzten Planwoche bleiben die Wochenwerte stehen. Die Anzeige sagt
+   das ausdruecklich. */
 function weekIndex(week){
   return Math.min(Math.max(week, 1), PLAN_WEEKS) - 1;
 }
 
+function planWeek(week){
+  return PLAN.weeks[weekIndex(week)];
+}
+
 function isRecoveryWeek(week){
-  return week % 4 === 0;
+  return week % PLAN.recoveryEveryNthWeek === 0;
 }
 
 function isWinterBlock(week){
@@ -944,21 +1432,25 @@ function isWinterBlock(week){
 }
 
 function phaseOf(week){
-  if(isWinterBlock(week)) return 5;
-  return Math.min(Math.ceil(Math.max(week, 1) / 4), 4);
+  if(isWinterBlock(week)) return PLAN.winterBlock.phase;
+  return planWeek(week).phase;
 }
 
-const PHASE_NAMES = {
-  1: 'Grundlage',
-  2: 'VO2max',
-  3: 'Grundlagenblock',
-  4: 'Schwelle',
-  5: 'Winterblock'
-};
+/* Donnerstag der Woche, roh aus den Daten. Im Winterblock steht er nicht in
+   der Wochenreihe, sondern in winterBlock. */
+function thursdayData(week){
+  return isWinterBlock(week) ? PLAN.winterBlock.thursday : planWeek(week).thursday;
+}
 
-/* Testwochen: Donnerstag ist Schwellentest statt Intervalle. */
+/* Testwochen: Donnerstag ist Schwellentest statt Intervalle. Welche Wochen das
+   sind, sagen die Daten - eine zweite Liste waere nur eine weitere Stelle, die
+   auseinanderlaufen kann. */
 function isTestWeek(week){
-  return week === 4 || week === 12 || week === 16;
+  return thursdayData(week).kind === 'test';
+}
+
+function testWeeks(){
+  return PLAN.weeks.filter(w => w.thursday.kind === 'test').map(w => w.week);
 }
 
 /* ---- Schwellenwerte aus dem Test ----
@@ -973,49 +1465,32 @@ function hasFtp(){  return !!(thresholdValues.ftp > 0); }
 
 /* ---- Pulszonen ----
 
-   Uebergangsfassung fuer Woche 1-4, korrigiert am 22./23.08.2026. Die alten
-   Baender waren glatte %HFmax-Dekaden bei angenommenen 180 bpm HFmax und lagen
-   damit eine Stufe zu tief: 80 % einer sauber gefahrenen Grundlagenausfahrt
-   fielen dort in "Z3". 130-135 bpm sind 72-75 % von 180 - genau dort verortet
-   die Literatur LT1.
+   Beide Zonensaetze stehen in plan.json: die Uebergangsbaender als bpm-Werte,
+   das Coggan-Modell als Faktoren auf die LTHR. Die Begruendung der Baender
+   steht im Plandokument; hier bleibt nur die Rechnung.
 
-   Z2 ist hier bewusst der Arbeitsbereich 128-135. Die im Plan genannte harte
-   Obergrenze 142 ist absichtlich nicht abgebildet: sie ist unbelegt, der Drift
-   der Referenzfahrt kratzte mit 4-6,5 % am Zielwert. 142 waere ein Ziel
-   geworden, sobald es in der App steht - und genau das soll es nicht sein. */
-const HR_TRANSITION = [
-  {key:'unter', label:'<Z1', min:0,   max:100, color:'#3a4553'},
-  {key:'z1',    label:'Z1',  min:100, max:128, color:'#7d8bff'},
-  {key:'z2',    label:'Z2',  min:128, max:135, color:'#2dd4a7'},
-  {key:'z3',    label:'Z3',  min:135, max:155, color:'#ffb14e'},
-  {key:'z4',    label:'Z4',  min:155, max:168, color:'#ff8f6b'},
-  {key:'z5',    label:'Z5',  min:168, max:999, color:'#ff6b6b'}
-];
-
-/* Coggan, % LTHR - dasselbe Modell, das nach dem Test auch in intervals.icu
-   gesetzt wird. Nur so passen die Zonenzeiten dort und hier zusammen. */
+   Coggan ist dasselbe Modell, das nach dem Test auch in intervals.icu gesetzt
+   wird. Nur so passen die Zonenzeiten dort und hier zusammen. */
 function cogganHrBands(lthr){
-  const r = f => Math.round(lthr * f);
-  return [
-    {key:'unter', label:'<Z1', min:0,        max:r(0.55), color:'#3a4553'},
-    {key:'z1',    label:'Z1',  min:r(0.55),  max:r(0.68), color:'#7d8bff'},
-    {key:'z2',    label:'Z2',  min:r(0.68),  max:r(0.83), color:'#2dd4a7'},
-    {key:'z3',    label:'Z3',  min:r(0.83),  max:r(0.94), color:'#ffb14e'},
-    {key:'z4',    label:'Z4',  min:r(0.94),  max:r(1.05), color:'#ff8f6b'},
-    {key:'z5',    label:'Z5',  min:r(1.05),  max:999,     color:'#ff6b6b'}
-  ];
+  return PLAN.heartRateZones.cogganBands.map(b => ({
+    key: b.key,
+    label: b.label,
+    min: Math.round(lthr * b.minFactor),
+    max: b.maxFactor === null ? 999 : Math.round(lthr * b.maxFactor),
+    color: b.color
+  }));
 }
 
-/* Umschaltpunkt ist Woche 5 - aber nur, wenn der Test tatsaechlich gelaufen
-   ist. Ohne LTHR bleiben die Uebergangsbaender stehen, sonst rechnete die App
-   mit Zonen, die es nicht gibt. */
+/* Umgeschaltet wird ab cogganFromWeek - aber nur, wenn der Test tatsaechlich
+   gelaufen ist. Ohne LTHR bleiben die Uebergangsbaender stehen, sonst rechnete
+   die App mit Zonen, die es nicht gibt. */
 function hrBands(week){
-  if(week >= 5 && hasLthr()) return cogganHrBands(thresholdValues.lthr);
+  if(usesCoggan(week)) return cogganHrBands(thresholdValues.lthr);
   return HR_TRANSITION;
 }
 
 function usesCoggan(week){
-  return week >= 5 && hasLthr();
+  return week >= PLAN.heartRateZones.cogganFromWeek && hasLthr();
 }
 
 function zoneBand(key, week){
@@ -1042,16 +1517,8 @@ function zoneSpan(from, to, week){
   return from.toUpperCase() + '–' + to.toUpperCase() + ' ' + a.min + '–' + b.max + ' bpm';
 }
 
-/* Leistungszonen nach Coggan, % FTP. Ohne FTP liefert die Funktion null und
-   die Anzeige laesst den Wattteil weg. */
-const POWER_ZONES = {
-  z1: [0,    0.55],
-  z2: [0.56, 0.75],
-  z3: [0.76, 0.90],
-  z4: [0.91, 1.05],
-  z5: [1.06, 1.20]
-};
-
+/* Leistungszonen nach Coggan, % FTP (aus plan.json). Ohne FTP liefert die
+   Funktion null und die Anzeige laesst den Wattteil weg. */
 function wattText(key){
   if(!hasFtp() || !POWER_ZONES[key]) return null;
   const [lo, hi] = POWER_ZONES[key];
@@ -1065,12 +1532,10 @@ function targetText(key, week){
   return w ? zoneText(key, week) + ' · ' + w : zoneText(key, week);
 }
 
-/* Trittfrequenz erst ab Woche 4 - vorher gibt es keinen Sensor, und manuelles
-   Zaehlen ist ausdruecklich kein Bestandteil des Plans. */
-const CADENCE_TARGET = {z1:null, z2:'85–90 rpm', z3:'85–90 rpm', z4:'85–90 rpm', z5:'95–100 rpm'};
-
+/* Trittfrequenz erst ab cadenceTargets.fromWeek - vorher gibt es keinen Sensor,
+   und manuelles Zaehlen ist ausdruecklich kein Bestandteil des Plans. */
 function cadenceText(key, week){
-  if(week < 4) return null;
+  if(week < PLAN.cadenceTargets.fromWeek) return null;
   return CADENCE_TARGET[key] || null;
 }
 
@@ -1083,11 +1548,12 @@ function withCadence(text, key, week){
    Schnitt. Ab Woche 5 liegen Leistungsdaten vor, dann sind sie ohne
    Aussagewert und werden nicht mehr angezeigt. */
 function showsDistance(week){
-  return week <= 4;
+  return week <= PLAN.speedEstimate.showUntilWeek;
 }
 
 function estimateSpeed(week){
-  return Math.min(21 + 0.15 * (week - 1), 24);
+  const s = PLAN.speedEstimate;
+  return Math.min(s.baseKmh + s.perWeekKmh * (week - 1), s.maxKmh);
 }
 
 function estimateDistance(minutes, week){
@@ -1115,14 +1581,15 @@ function legRounds(week){
   return LEG_ROUNDS[weekIndex(week)];
 }
 
-const CORE_ROUND_REST = 60;
-
-/* Gesamtdauer des Zirkels in Minuten, damit Plan und App dieselbe Zahl nennen. */
+/* Gesamtdauer des Zirkels in Minuten, damit Plan und App dieselbe Zahl nennen.
+   Die Zahl der Uebungen kommt aus der Uebungsliste, nicht als Konstante: wer
+   eine Uebung ergaenzt, soll nicht zusaetzlich eine 8 im Code suchen muessen. */
 function coreMinutes(week, rounds){
   const work = coreWorkSeconds(week);
   const rest = coreRestSeconds(week);
   const n = rounds || coreRounds(week);
-  const total = n * (8 * work + 7 * rest) + (n - 1) * CORE_ROUND_REST + 10;
+  const ex = EXERCISES.length;
+  const total = n * (ex * work + (ex - 1) * rest) + (n - 1) * CORE_ROUND_REST + CORE_PREP_SEC;
   return Math.round(total / 60);
 }
 
@@ -1155,81 +1622,54 @@ function applyCoreDefaults(startDate){
   if(typeof renderLegBlock === 'function') renderLegBlock(week, today.getDay());
 }
 
-/* ---- Donnerstag je Phase ----
+/* ---- Donnerstag ----
 
    Die Formel aus Fassung 1 (4 + floor((Woche-1)/2), gedeckelt bei 8) ist
    entfallen. Sie widersprach ab Woche 9 dem Erhaltungszyklus und trieb die
-   Wiederholungszahl ueber alles, was als Einstiegsdosis belegt ist. Statt
-   dessen eine Tabelle je Phase; in Phase 2 laeuft die Progression ueber die
-   Leistung, nicht ueber mehr Wiederholungen. */
-const IV_WARM_MIN = 15;
-const IV_COOL_MIN = 12;
-
+   Wiederholungszahl ueber alles, was als Einstiegsdosis belegt ist. Seither
+   steht der Donnerstag je Woche in plan.json - hier bleibt nur die Rechnung
+   von der Struktur auf die Gesamtdauer. */
 function thursdayPlan(week){
+  const t = thursdayData(week);
   const phase = phaseOf(week);
 
-  if(isTestWeek(week)){
-    return {kind:'test', week: week, phase: phase, minutes: 65,
-            title:'Rad – Schwellentest',
-            zone:'z4'};
+  if(t.kind === 'test'){
+    return {kind:'test', week: week, phase: phase, minutes: t.minutes,
+            title: t.title,
+            zone: t.zone};
   }
 
-  if(phase === 1){
-    const reps = week <= 2 ? 4 : 5;
-    return {kind:'intervals', phase: phase, zone:'z3', reps: reps, workMin: 5, restMin: 3,
-            title:'Rad – Tempo-Intervalle',
-            power: null,
-            minutes: IV_WARM_MIN + reps * 5 + (reps - 1) * 3 + IV_COOL_MIN};
-  }
-
-  if(phase === 2){
-    /* Woche 8 ist Erholungswoche: kein Z5. In Fassung 1 stand dort die volle
-       Standarddosis 5x4 min Z5 - Umfang sank um 30 %, Intensitaet nur um 17 %. */
-    if(isRecoveryWeek(week)){
-      return {kind:'intervals', phase: phase, zone:'z3', reps: 4, workMin: 3, restMin: 3,
-              title:'Rad – Sweetspot (Erholungswoche)',
-              power:'ca. 95 % FTP',
-              minutes: IV_WARM_MIN + 4 * 3 + 3 * 3 + IV_COOL_MIN};
-    }
-    return {kind:'intervals', phase: phase, zone:'z5', reps: 5, workMin: 4, restMin: 4,
-            title:'Rad – VO2max-Intervalle',
-            power:'108–115 % FTP',
-            minutes: IV_WARM_MIN + 5 * 4 + 4 * 4 + IV_COOL_MIN};
-  }
-
-  if(phase === 3){
+  if(t.kind === 'z2'){
     /* Dritter Grundlagentag statt Intervallen. */
-    const min = isRecoveryWeek(week) ? 60 : (week === 9 ? 70 : 75);
-    return {kind:'z2', phase: phase, zone:'z2', minutes: min,
-            title:'Rad – Grundlagenausdauer (dritter Z2-Tag)'};
+    return {kind:'z2', phase: phase, zone: t.zone, minutes: t.minutes,
+            title: t.title};
   }
 
-  /* Phase 4: Schwellenbloecke. */
-  const workMin = week === 13 ? 10 : 12;
-  return {kind:'intervals', phase: phase, zone:'z4', reps: 3, workMin: workMin, restMin: 5,
-          title:'Rad – Schwellenintervalle',
-          power:'90–95 % FTP',
-          minutes: IV_WARM_MIN + 3 * workMin + 2 * 5 + IV_COOL_MIN};
+  return {kind:'intervals', phase: phase, zone: t.zone,
+          reps: t.reps, workMin: t.workMinutes, restMin: t.restMinutes,
+          title: t.title,
+          power: t.power == null ? null : t.power,
+          minutes: IV_WARM_MIN + t.reps * t.workMinutes +
+                   (t.reps - 1) * t.restMinutes + IV_COOL_MIN};
 }
 
 /* ---- Samstag ----
-   Z3-Bloecke nur noch in den Wochen 6, 10 und 14. Fassung 1 hatte zwei harte
-   Tage bei 5-6 h Wochenumfang; bei einem Intensitaetstag pro Woche ist der
-   Donnerstag der wertvollere. */
+   Z3-Bloecke stehen je Woche in plan.json - im Standardplan nur in Woche 6,
+   10 und 14. Fassung 1 hatte zwei harte Tage bei 5-6 h Wochenumfang; bei einem
+   Intensitaetstag pro Woche ist der Donnerstag der wertvollere.
+   hardMinutes wird gerechnet, damit Bloeckezahl und Sollzeit nicht getrennt
+   gepflegt werden muessen. */
 function saturdayBlocks(week){
-  if(isWinterBlock(week)) return null;
-  if(week >= 5 && week % 2 === 0 && week % 4 !== 0){
-    return {reps: 2, minutes: 12, restMinutes: 8, hardMinutes: 24};
-  }
-  return null;
+  const b = isWinterBlock(week) ? PLAN.winterBlock.saturdayBlocks : planWeek(week).saturdayBlocks;
+  if(!b) return null;
+  return {reps: b.reps, minutes: b.minutes, restMinutes: b.restMinutes,
+          hardMinutes: b.reps * b.minutes};
 }
 
 /* ---- Wellness-Gate ----
-   Die Regel selbst steht im Plan; die App zeigt sie am Mittwoch und Donnerstag
-   als Erinnerung. Ausgewertet wird sie im Analyse-Tab, sobald ein API-Key da
-   ist - dort liegen Ruhepuls, HRV und Schlaf ohnehin. */
-const WELLNESS_RULE = 'Wellness-Gate prüfen: Ruhepuls > 7-Tage-Schnitt + 5 bpm, HRV deutlich darunter ' +
-  'oder zwei Nächte unter 6 h Schlaf → Donnerstag wird 60 min Z2, Samstag ohne Blöcke.';
+   Die Regel selbst steht im Plan (texts.wellnessRule); die App zeigt sie am
+   Mittwoch und Donnerstag als Erinnerung. Ausgewertet wird sie im Analyse-Tab,
+   sobald ein API-Key da ist - dort liegen Ruhepuls, HRV und Schlaf ohnehin. */
 
 function buildDayInfo(date, startDate){
   const week = Math.max(weekNumberFor(date, startDate), 1);
@@ -1242,15 +1682,14 @@ function buildDayInfo(date, startDate){
   let info;
   switch(dow){
     case 1: // Montag
-      info = {type:'rest', title:'Ruhetag', detail:'Komplette Erholung – kein Training. Invariante des Plans: der Montag bleibt frei.'};
+      info = {type:'rest', title:'Ruhetag', detail:TXT.mondayRest};
       break;
 
     case 2: { // Dienstag - Arbeitsweg, verlaengert
       const dur = TUE_MIN[idx];
       info = {type:'ride', title:'Rad – Grundlagenausdauer (Z2)',
         detail:`${dur} min${distanceSuffix(dur, week)} · ${withCadence(targetText('z2', week), 'z2', week)}. ` +
-               `Arbeitsweg, verlängerte Strecke – gesteuert wird über die Zeit, nicht über die Distanz. ` +
-               `Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich bleiben.`};
+               TXT.tuesdayCommute};
       break;
     }
 
@@ -1258,19 +1697,17 @@ function buildDayInfo(date, startDate){
       const dur = WED_MIN[idx];
       const cWork = coreWorkSeconds(week);
       const cRest = coreRestSeconds(week);
-      const rumpf = `Abends Rumpf-Zirkel verkürzt: ${WED_CORE_ROUNDS} Runden à 8 Übungen ` +
+      const rumpf = `Abends Rumpf-Zirkel verkürzt: ${WED_CORE_ROUNDS} Runden à ${EXERCISES.length} Übungen ` +
                     `(${cWork} s Belastung / ${cRest} s Pause), ca. ${coreMinutes(week, WED_CORE_ROUNDS)} min. Kein Beinblock.`;
       if(dur > 0){
-        const lockerer = phase === 3
-          ? 'In Phase 3 ist der Donnerstag selbst ein Z2-Tag – der Mittwoch darf deshalb länger sein.'
-          : 'Bewusst der lockerste Fahrtag der Woche: unteres bis mittleres Z2, nicht am Sprechtest-Limit. Der Donnerstag ist der Qualitätstag.';
+        const lockerer = phase === 3 ? TXT.wednesdayEasyPhase3 : TXT.wednesdayEasyDefault;
         info = {type:'ride', title:'Rad – kurzes Z2 (Arbeitsweg) + Rumpf',
           detail:`Mindestens ${dur} min direkte Strecke${distanceSuffix(dur, week)} · ${withCadence(targetText('z2', week), 'z2', week)}. ` +
-                 `Die Zeit ist eine Untergrenze, länger ist kein Planverstoß. ${lockerer} ${rumpf}`,
+                 `${TXT.wednesdayMinimum} ${lockerer} ${rumpf}`,
           showTimerBtn:true};
       } else {
         info = {type:'core', title:'Rumpf/Oberkörper-Stabilität',
-          detail:`Keine Mittwochsfahrt in dieser Woche. ${rumpf}`,
+          detail:`${TXT.wednesdayNoRide} ${rumpf}`,
           showTimerBtn:true};
       }
       break;
@@ -1279,16 +1716,13 @@ function buildDayInfo(date, startDate){
     case 4: { // Donnerstag - Qualitaetstag
       const t = thursdayPlan(week);
       if(t.kind === 'test'){
-        info = {type:'interval', title:'Rad – Schwellentest',
-          detail:`65 min: 20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker rollen, ` +
-                 `20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95, ` +
-                 `LTHR = Ø-Puls der 20 min. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad. ` +
-                 `Bei schlechtem Schlaf, Infekt, über 30 °C oder Sturm auf den Samstag verschieben.`,
+        info = {type:'interval', title:t.title,
+          detail:TXT.thursdayTest,
           showIntervalBtn:true};
       } else if(t.kind === 'z2'){
         info = {type:'ride', title:t.title,
           detail:`${t.minutes} min${distanceSuffix(t.minutes, week)} · ${withCadence(targetText('z2', week), 'z2', week)}. ` +
-                 `Phase 3 hat keine harten Intervalle – dieser Tag ist der dritte Grundlagentag der Woche.`};
+                 TXT.thursdayBaseDay};
       } else {
         const zt = withCadence(targetText(t.zone, week), t.zone, week);
         const pw = t.power ? ` (${t.power})` : '';
@@ -1296,34 +1730,37 @@ function buildDayInfo(date, startDate){
           detail:`Nach ${IV_WARM_MIN} min Einfahren (${zoneSpan('z1','z2', week)}): ` +
                  `${t.reps}× ${t.workMin} min ${zt}${pw}, je ${t.restMin} min locker (${zoneText('z1', week)}) dazwischen. ` +
                  `Danach ${IV_COOL_MIN} min Ausrollen. Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
-                 `Die letzte Wiederholung soll die härteste sein.`,
+                 TXT.thursdayIntervalTail,
           showIntervalBtn:true};
       }
       info.wellness = true;
       break;
     }
 
-    case 5: // Freitag
+    case 5: { // Freitag
+      const fo = PLAN.fridayOptional;
       info = {type:'restopt', title:'Ruhetag oder lockere Fahrt',
-        detail:`Optional 30–40 min ${zoneText('z1', week)}, sonst frei.`};
+        detail:`Optional ${fo.minMinutes}–${fo.maxMinutes} min ${zoneText(fo.zone, week)}, sonst frei.`};
       break;
+    }
 
     case 6: { // Samstag - lange Ausfahrt
       const dur = SAT_MIN[idx];
       const bl = recovery ? null : saturdayBlocks(week);
+      const sr = PLAN.saturdayRide;
       let extra;
       if(recovery){
-        extra = `Erholungswoche: komplett locker, keine Blöcke (${zoneSpan('z1','z2', week)}).`;
+        extra = `${TXT.saturdayRecovery} (${zoneSpan('z1','z2', week)}).`;
       } else if(bl){
         const bz = wattText('z3') ? `${zoneText('z3', week)} · 80–88 % FTP` : zoneText('z3', week);
         extra = `Dazu ${bl.reps}× ${bl.minutes} min ${bz} in der zweiten Hälfte der Fahrt, ` +
                 `mit ${bl.restMinutes} min lockerem Rollen dazwischen.`;
       } else {
-        extra = 'Reines Z2 – keine Blöcke. Das ist der Regelfall; Blöcke gibt es nur in Woche 6, 10 und 14.';
+        extra = TXT.saturdayPureZ2;
       }
       info = {type:'long', title:'Lange Ausfahrt',
         detail:`${dur} min${distanceSuffix(dur, week)} · Basis ${withCadence(targetText('z2', week), 'z2', week)}. ` +
-               `${IV_WARM_MIN} min Einfahren, 10 min Ausrollen. ${extra}`};
+               `${sr.warmupMinutes} min Einfahren, ${sr.cooldownMinutes} min Ausrollen. ${extra}`};
       break;
     }
 
@@ -1334,11 +1771,11 @@ function buildDayInfo(date, startDate){
       const cRest = coreRestSeconds(week);
       const lr = legRounds(week);
       info = {type:'sun', title:'Rumpf-Zirkel (voll) + Beinblock',
-        detail:`Rumpf-Zirkel: ${rounds} Runden à 8 Übungen (${cWork} s Belastung / ${cRest} s Pause), ` +
+        detail:`Rumpf-Zirkel: ${rounds} Runden à ${EXERCISES.length} Übungen (${cWork} s Belastung / ${cRest} s Pause), ` +
                `ca. ${coreMinutes(week, rounds)} min. Direkt im Anschluss der Beinblock: ` +
-               `${lr} Runden Kniebeuge, Split Squat und Wadenheben – Wiederholungen zählen, kein Timer, ca. 8–12 min. ` +
-               `Der Zirkel ist das Aufwärmen, der Beinblock wird nie kalt begonnen. ` +
-               `Optional davor ${dur} min ${zoneText('z1', week)} – die Fahrt kommt vor den Beinblock, nicht danach.`,
+               `${lr} Runden ${PLAN.legBlock.shortList} – ${TXT.legNoTimer}, ${PLAN.legBlock.durationHint}. ` +
+               `${TXT.sundayLegOrder} ` +
+               `Optional davor ${dur} min ${zoneText('z1', week)} – ${TXT.sundayRideFirst}.`,
         showTimerBtn:true, showLegBlock:true};
       break;
     }
@@ -1397,7 +1834,7 @@ function buildDayTarget(date, week){
     }
 
     case 5: // Freitag
-      return {sport:'optional', minutes:35, zone:'z1'};
+      return {sport:'optional', minutes:PLAN.fridayOptional.targetMinutes, zone:PLAN.fridayOptional.zone};
 
     case 6: { // Samstag
       const bl = recovery ? null : saturdayBlocks(week);
@@ -1418,9 +1855,9 @@ function formatDate(d){
   return d.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'2-digit'});
 }
 
-/* Die drei Testtermine als feste Kalendertage. Der Plan nennt sie ausdruecklich
-   (10.09., 05.11., 03.12.2026); ueber die Wochennummer berechnet passen sie
-   auch, wenn das Startdatum verschoben wird. */
+/* Die Testtermine als feste Kalendertage. Welche Wochen es sind, sagen die
+   Plandaten; ueber die Wochennummer berechnet passen die Termine auch, wenn
+   das Startdatum verschoben wird. */
 function testDateFor(week, startDate){
   const d = toMidnight(startDate);
   d.setDate(d.getDate() + (week - 1) * 7);
@@ -1429,7 +1866,7 @@ function testDateFor(week, startDate){
 }
 
 function nextTestNote(today, startDate){
-  for(const w of [4, 12, 16]){
+  for(const w of testWeeks()){
     const d = testDateFor(w, startDate);
     const tage = Math.round((d - toMidnight(today)) / 86400000);
     if(tage < 0) continue;
@@ -1449,7 +1886,7 @@ function renderStatus(today, startDate){
   const card = document.getElementById('statusCard');
 
   const phaseLabel = winter
-    ? 'Winterblock (ab Woche 17)'
+    ? `${PLAN.winterBlock.name} (ab Woche ${PLAN_WEEKS + 1})`
     : `Phase ${phase} · ${PHASE_NAMES[phase]}${recovery ? ' · Erholungswoche' : ''}`;
 
   const zonenLabel = usesCoggan(week)
@@ -1457,17 +1894,13 @@ function renderStatus(today, startDate){
     : 'Übergangsbänder (bis zum Test)';
 
   const hinweise = [];
-  if(winter){
-    hinweise.push('Der 16-Wochen-Plan ist durch. Ab hier gilt der Winterblock: mit Rolle bleibt die ' +
-      'Struktur und wird über ERG genauer, ohne Rolle wandert die Intensität aufs Wochenende und der ' +
-      'Beinblock wird zum Hauptinhalt (2× pro Woche, 3 Sätze à 4–10 Wdh. mit Last). Die Wochenwerte ' +
-      'unten stehen weiter auf Woche 16.');
-  }
+  if(winter) hinweise.push(PLAN.winterBlock.note);
   if(isTestWeek(week)) hinweise.push('Testwoche: der Donnerstag ist Schwellentest, kein Intervalltag.');
   const testNote = nextTestNote(today, startDate);
   if(testNote && !isTestWeek(week)) hinweise.push(testNote);
-  if(week >= 5 && !hasLthr()){
-    hinweise.push('Ab Woche 5 rechnet der Plan mit Coggan-Zonen aus der LTHR. Solange kein Testwert ' +
+  const cogganAb = PLAN.heartRateZones.cogganFromWeek;
+  if(week >= cogganAb && !hasLthr()){
+    hinweise.push('Ab Woche ' + cogganAb + ' rechnet der Plan mit Coggan-Zonen aus der LTHR. Solange kein Testwert ' +
       'eingetragen ist, laufen die Übergangsbänder weiter – die Zonenauswertung ist dann nur eine Näherung.');
   }
 
@@ -1614,11 +2047,7 @@ function renderZoneCard(week){
     ? `Coggan, % LTHR (${thresholdValues.lthr} bpm)` + (hasFtp() ? ` · Watt aus FTP ${thresholdValues.ftp} W` : '')
     : 'Übergangsbänder, Arbeitsannahme';
 
-  const note = usesCoggan(week)
-    ? 'Auch Coggan-Z2 ist breit und reicht oben oft über LT1. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich sein.'
-    : 'Arbeitsannahme, kein gemessener Wert – ein Datenpunkt, eine ungeprüfte HFmax, Geschwindigkeit statt Leistung. ' +
-      'Z2 ist der belegte Arbeitsbereich 128–135; die im Plan genannte harte Obergrenze steht bewusst nicht hier, ' +
-      'damit sie kein Ziel wird. Der Sprechtest sticht die Zahl.';
+  const note = usesCoggan(week) ? TXT.zoneNoteCoggan : TXT.zoneNoteTransition;
 
   box.innerHTML =
     '<div class="status-row"><span>Zonenmodell</span><b>' + quelle + '</b></div>' +
@@ -1862,6 +2291,11 @@ async function saveStartDate(date){
 }
 
 async function initPlan(){
+  /* Ganz zuerst der Plan selbst. Schlaegt er fehl, ist die Seite bereits durch
+     die Fehlermeldung ersetzt und es darf nichts mehr gezeichnet werden -
+     jede weitere Zeile wuerde Zahlen anzeigen, die es nicht gibt. */
+  if(!await loadPlanData()) return;
+
   let startDate = await loadStartDate();
   if(!startDate){
     // Default: eine Woche vor heute (Woche 1 gerade abgeschlossen)
@@ -1871,8 +2305,8 @@ async function initPlan(){
     await saveStartDate(startDate);
   }
   planStartDate = startDate;
-  /* Zuerst die Schwellenwerte: ab Woche 5 haengt das ganze Zonenmodell an der
-     LTHR. Ohne sie wuerde die erste Zeichnung mit den Uebergangsbaendern
+  /* Dann die Schwellenwerte: ab der Coggan-Woche haengt das ganze Zonenmodell
+     an der LTHR. Ohne sie wuerde die erste Zeichnung mit den Uebergangsbaendern
      laufen und danach still umspringen. */
   await thresholdsLoad();
   /* Das Protokoll muss vor der ersten Zeichnung stehen: der Beinblock legt
@@ -1880,71 +2314,26 @@ async function initPlan(){
      coreLogList wuerde den ueberschreiben. */
   await coreLogLoad();
   await interimLoad();
+  /* Erstaufbau der beiden Timer. Stand frueher direkt im Skript, lief damit
+     aber vor dem Plan-Load - und die Uebungsliste war zu dem Zeitpunkt leer. */
+  renderPlan();
+  resetTimer();
+  ivResetTimer();
   renderPlanView(startDate);
   applyCoreDefaults(startDate);
   applyIntervalDefaults(startDate);
   anInit();
 }
-initPlan();
 
 /* ============================================================
    RUMPF-TIMER (identisch zur eigenständigen Version)
 ============================================================ */
-const EX_IMAGES = {
-  plank:       'assets/Plank.webp',
-  sideLeft:    'assets/SidePlankLinks.webp',
-  sideRight:   'assets/SidePlankRechts.webp',
-  birdDog:     'assets/BirdDog.webp',
-  deadBug:     'assets/DeadBug.webp',
-  pushup:      'assets/Liegestuetz.webp',
-  bandPull:    'assets/BandPullApart.webp',
-  gluteBridge: 'assets/GluteBridge.webp',
-  squat:       'assets/Squat.webp',
-  lunge:       'assets/Lunges.webp',
-  calfRaise:   'assets/WadenhebenEinbeinig.webp'
-};
-
-/* Reihenfolge bewusst so gewaehlt, dass nie zwei Uebungen mit derselben
-   Anforderung direkt aufeinander folgen. Plank (3.) und Liegestuetz (5.) liegen
-   frueh, weil beide volle Rumpfspannung brauchen; die beiden Seitstuetze sind
-   durch das Hueftheben getrennt, damit der Stuetzarm dazwischen frei ist. */
-const EXERCISES = [
-  {name:"Dead Bug", mode:'reps', tempo:5, alternating:true,
-   img: EX_IMAGES.deadBug,
-   steps:["Rückenlage, Arme zeigen zur Decke, Knie 90° angewinkelt","Gegenüberliegenden Arm und Bein langsam absenken, ca. 2 s","Unterer Rücken bleibt flach am Boden, Rippen Richtung Becken","Ca. 2 s kontrolliert zurück zur Ausgangsposition","Jede Wiederholung wechselt die Seite – nicht erst nach der Hälfte"],
-   goal:"Ziel: Kräftigt die tiefe Bauchmuskulatur, ohne den Rücken zu belasten."},
-  {name:"Schulterstabilität (Band-Pull-Apart)", mode:'reps', tempo:3,
-   img: EX_IMAGES.bandPull,
-   steps:["Band mit beiden Händen vor der Brust halten","Arme auseinanderziehen, Schulterblätter zusammenziehen","Kontrolliert wieder zurückführen","Ca. 2 s ziehen und kurz halten, 1 s zurück","Schultern bleiben unten, kein Hochziehen zu den Ohren"],
-   goal:"Ziel: Wichtig gegen das typische Einsinken in den Schultern bei langem Rennradfahren."},
-  {name:"Unterarmstütz (Plank)",
-   img: EX_IMAGES.plank,
-   steps:["Unterarme und Zehen am Boden aufstützen","Körper bildet eine gerade Linie von Kopf bis Ferse","Bauchnabel Richtung Wirbelsäule ziehen","Po nicht hochschieben, Rücken nicht durchhängen lassen"],
-   goal:"Ziel: Trainiert die gesamte Rumpfmuskulatur, die beim Rennrad die gebückte Haltung stützt."},
-  {name:"Bird Dog", mode:'reps', tempo:5, alternating:true,
-   img: EX_IMAGES.birdDog,
-   steps:["Vierfüßlerstand einnehmen, Hände unter den Schultern","Gegenüberliegenden Arm und Bein gleichzeitig ausstrecken","Rücken bleibt gerade, kein Hohlkreuz, Hüfte nicht verdrehen","Oben 1–2 s halten, dann kontrolliert zurück","Jede Wiederholung wechselt die Seite – nicht erst nach der Hälfte"],
-   goal:"Ziel: Trainiert Koordination und tiefe Rückenmuskulatur."},
-  {name:"Liegestütz", mode:'reps', tempo:3,
-   img: EX_IMAGES.pushup,
-   steps:["Auf Zehen oder Knien abstützen, Körper gerade","Ellbogen nah am Körper absenken","Bis kurz über dem Boden, dann kontrolliert hochdrücken","Ca. 2 s absenken, 1 s hochdrücken – kein Schwung","Lieber weniger Wiederholungen als eine durchhängende Hüfte"],
-   goal:"Ziel: Kräftigt Brust, Trizeps und Schultern – wichtig für Armhaltung und Stützkraft am Lenker."},
-  {name:"Seitstütz links",
-   img: EX_IMAGES.sideLeft,
-   steps:["Auf einem Unterarm seitlich abstützen","Körper gestreckt, Hüfte anheben und halten","Oberen Arm zur Decke strecken für mehr Stabilität"],
-   goal:"Ziel: Wichtig für seitliche Stabilität, verhindert Wackeln im Oberkörper beim Antritt."},
-  /* Ersetzt die Rueckenextension (Superman): gleiche Rolle im Zirkel - hintere Kette
-     bei freien Schultern - aber ueber die Huefte statt ueber Hyperextension der
-     Lendenwirbelsaeule. Fuer Radfahrer der deutlich nuetzlichere Reiz. */
-  {name:"Hüftheben (Glute Bridge)", mode:'reps', tempo:3,
-   img: EX_IMAGES.gluteBridge,
-   steps:["Rückenlage, Knie angewinkelt, Füße hüftbreit und flach am Boden","Fersen in den Boden drücken und das Becken anheben","Oben das Gesäß bewusst anspannen – Schulter, Hüfte und Knie bilden eine Linie","Nicht ins Hohlkreuz drücken: die Bewegung kommt aus der Hüfte, nicht aus dem Rücken","Ca. 1 s oben halten, dann kontrolliert absenken ohne ganz abzulegen","Später schwerer: oben 2–3 s halten, danach einbeinig (Single Leg Glute Bridge)"],
-   goal:"Ziel: Kräftigt Gesäß und hintere Oberschenkel – die Muskeln, die auf dem Rad das Becken stabilisieren und den unteren Rücken entlasten. Radfahrer sind hier klassisch schwach, weil im Sattel kaum Hüftstreckung gegen Widerstand vorkommt."},
-  {name:"Seitstütz rechts",
-   img: EX_IMAGES.sideRight,
-   steps:["Auf einem Unterarm seitlich abstützen","Körper gestreckt, Hüfte anheben und halten","Oberen Arm zur Decke strecken für mehr Stabilität"],
-   goal:"Ziel: Wichtig für seitliche Stabilität, verhindert Wackeln im Oberkörper beim Antritt."}
-];
+/* Die Uebungen samt Schritten, Zielen und Bildpfaden stehen in plan.json unter
+   coreCircuit.exercises. Ihre Reihenfolge ist bewusst so gewaehlt, dass nie
+   zwei Uebungen mit derselben Anforderung direkt aufeinander folgen: Plank und
+   Liegestuetz liegen frueh, weil beide volle Rumpfspannung brauchen, und die
+   beiden Seitstuetze sind durch das Hueftheben getrennt, damit der Stuetzarm
+   dazwischen frei ist. Wer die Liste umsortiert, sollte das mitdenken. */
 
 /* ============================================================
    BEINBLOCK (nur Sonntag, im Anschluss an den Zirkel)
@@ -1953,40 +2342,17 @@ const EXERCISES = [
    eine Uhr fahren, ohne genau das Tempo zu verlieren, das den Reiz ausmacht -
    hier ist die Wiederholung die Einheit, nicht die Sekunde. Der Zirkel davor
    dient als Aufwaermen; kalt begonnen wird der Block nie.
+
+   Uebungen, Dosierung je Phase und Pausen stehen in plan.json unter legBlock.
+   Die Dosierung ist eine Spanne, weil in Erholungswochen der untere Rand der
+   laufenden Phase gilt - das rechnet legDose() unten aus.
 ============================================================ */
-const LEG_EXERCISES = [
-  {key:'squat', name:'Kniebeuge', img: EX_IMAGES.squat,
-   steps:["Füße schulterbreit, Zehen leicht nach außen","Hüfte zuerst nach hinten, dann runter – Knie folgen der Fußrichtung","So tief, wie der Rücken gerade bleibt – meist Oberschenkel etwa parallel","Gewicht auf der ganzen Fußsohle, Ferse bleibt am Boden","3 s absenken, 1 s heben, oben nicht durchdrücken"],
-   why:'Beidbeinig, größte Muskelmasse – braucht die frischeste Technik, deshalb zuerst.',
-   progression:'Steigerung: Wiederholungen → Rucksack vor der Brust → Kurzhanteln.',
-   goal:"Ziel: Beinstrecker und Gesäß unter Last – die Muskulatur, die im Sattel nie gegen volle Widerstände arbeitet."},
-  {key:'split', name:'Split Squat / Ausfallschritt', perSide:true, img: EX_IMAGES.lunge,
-   steps:["Ein Fuß etwa eine Schrittlänge vor dem anderen, beide Füße zeigen nach vorn","Oberkörper aufrecht, hinteres Knie senkrecht Richtung Boden absenken","Vorderes Knie bleibt über dem Mittelfuß, das Becken kippt nicht zur Seite","3 s runter, 1 s hoch","Eine Seite komplett, dann wechseln"],
-   why:'Einbeinig, verlangt Stabilität – nach der Kniebeuge, aber vor der Ermüdung der Wade.',
-   progression:'Steigerung: Wiederholungen → hinterer Fuß erhöht (Bulgarian) → Zusatzgewicht.',
-   goal:"Ziel: einbeinige Kontrolle und Beckenstabilität – überträgt sich direkt auf einen ruhigen Tritt."},
-  {key:'calf', name:'Wadenheben einbeinig', perSide:true, img: EX_IMAGES.calfRaise,
-   steps:["Auf einem Bein stehen, mit den Fingerspitzen an einer Wand balancieren, nicht abstützen","Langsam auf den Ballen heben, oben 1 s halten","Ebenso langsam absenken","Knie bleibt gestreckt, aber nicht überstreckt"],
-   why:'Kleinste Muskelgruppe – darf zuletzt ermüden.',
-   progression:'Steigerung: Wiederholungen → Ballen auf einer Stufe, Ferse tiefer als die Stufe.',
-   goal:"Ziel: Sprunggelenk und Achillessehne, die den Kraftschluss zum Pedal herstellen."}
-];
-
-/* Dosierung je Phase. In Erholungswochen gilt der untere Rand der laufenden
-   Phase - deshalb steht die Spanne hier und nicht eine feste Zahl. */
-const LEG_DOSE = {
-  1: {squat:[8,10],  split:[6,6],  calf:[10,10], extra:null},
-  2: {squat:[10,12], split:[8,8],  calf:[12,12], extra:null},
-  3: {squat:[12,15], split:[8,8],  calf:[12,15], extra:null},
-  4: {squat:[8,10],  split:[6,8],  calf:[12,15], extra:'Kniebeuge und Split Squat mit Zusatzgewicht, Wadenheben mit erhöhter Ferse.'}
-};
-
-const LEG_REST_EX = 30;
-const LEG_REST_ROUND = 60;
 
 function legDose(week){
-  const phase = Math.min(phaseOf(week), 4);
-  const base = LEG_DOSE[phase] || LEG_DOSE[4];
+  const phasen = Object.keys(LEG_DOSE).map(Number).sort((a, b) => a - b);
+  const hoechste = phasen[phasen.length - 1];
+  const phase = Math.min(phaseOf(week), hoechste);
+  const base = LEG_DOSE[phase] || LEG_DOSE[hoechste];
   if(!isRecoveryWeek(week)) return base;
   /* Erholungswoche: unterer Rand, Spanne zusammenziehen. */
   const low = ([a]) => [a, a];
@@ -2082,8 +2448,7 @@ function renderLegBlock(week, dow){
   const rounds = legRounds(week);
 
   if(dow === 3){
-    box.innerHTML = '<div class="an-status">Mittwoch ist der verkürzte Zirkel ohne Beinblock. ' +
-      'Fällt der Sonntag aus, wird der Beinblock nicht auf den Mittwoch nachgeholt – ausgefallen ist ausgefallen.</div>';
+    box.innerHTML = '<div class="an-status">' + TXT.legWednesdayNote + '</div>';
     return;
   }
 
@@ -2092,8 +2457,7 @@ function renderLegBlock(week, dow){
   let head = '<div class="leg-head">' +
     '<b>' + rounds + ' Runden</b> · Pause ' + LEG_REST_EX + ' s zwischen den Übungen, ' +
     LEG_REST_ROUND + ' s zwischen den Runden.<br>' +
-    'Tempo durchgehend <b>3 s absenken, 1 s heben</b> – keine Pause unten, kein Schwung. ' +
-    'Das exzentrische Absenken ist der Reiz.' +
+    TXT.legTempo +
     '</div>';
 
   let grid = '<div class="leg-grid">';
@@ -2119,11 +2483,8 @@ function renderLegBlock(week, dow){
     '<div class="leg-sum" id="legSummary"></div>' +
     '<div class="hint" style="text-align:left;">Tatsächliche Wiederholungen je Runde eintragen. Weniger als das Ziel ' +
       'zählt als vorzeitiger Abbruch – das ist kein Fehler, sondern die Zahl, die später zeigt, wann es zu viel war.</div>' +
-    '<div class="hint" style="text-align:left;">Abbruchzeichen: Knie fällt beim Aufrichten nach innen, Rücken rundet unten, ' +
-      'Ferse hebt sich, Oberkörper kippt beim Split Squat zur Seite. Lieber 6 saubere Wiederholungen als 12 schlechte.</div>' +
-    '<div class="hint" style="text-align:left;">Weiterrücken erst, wenn das obere Ende der Spanne an zwei Sonntagen in allen ' +
-      'Runden mit sauberer Form erreicht wurde: mehr Wiederholungen → mehr Runden → schwierigere Variante → Zusatzgewicht. ' +
-      'Nicht über das Tempo und nicht über mehr Übungen.</div>';
+    '<div class="hint" style="text-align:left;">' + TXT.legAbortSigns + '</div>' +
+    '<div class="hint" style="text-align:left;">' + TXT.legProgression + '</div>';
 
   box.querySelectorAll('input[data-leg-ex]').forEach(inp => {
     inp.addEventListener('change', () => {
@@ -2155,8 +2516,8 @@ function openLegModal(i, dose){
     modal.illustration.appendChild(hint);
   }
   modal.title.textContent = ex.name;
-  modal.dose.textContent = legRepText(ex, dose) + ' · 3 s absenken, 1 s heben, keine Pause unten, kein Schwung. ' +
-    (ex.perSide ? 'Eine Seite komplett, dann wechseln. ' : '') + ex.progression;
+  modal.dose.textContent = legRepText(ex, dose) + ' · ' + TXT.legTempoPlain + ' ' +
+    (ex.perSide ? TXT.legPerSideNote + ' ' : '') + ex.progression;
   modal.steps.innerHTML = ex.steps.map(st => `<li>${st}</li>`).join('');
   modal.goal.textContent = ex.why + ' ' + ex.goal;
   modal.overlay.classList.add('open');
@@ -2259,7 +2620,7 @@ function buildSequence(){
   const rounds = parseInt(els.rounds.value) || 3;
 
   const seq = [];
-  seq.push({type:'prep', label:'Bereit machen', duration:10});
+  seq.push({type:'prep', label:'Bereit machen', duration:CORE_PREP_SEC});
 
   for(let r = 1; r <= rounds; r++){
     EXERCISES.forEach((ex, i) => {
@@ -2289,7 +2650,6 @@ function renderPlan(){
     els.plan.appendChild(row);
   });
 }
-renderPlan();
 
 const modal = {
   overlay: document.getElementById('exerciseModal'),
@@ -2575,7 +2935,7 @@ els.start.addEventListener('click', startTimer);
 els.reset.addEventListener('click', resetTimer);
 els.skip.addEventListener('click', skipStep);
 
-resetTimer();
+/* Erstaufbau erfolgt aus initPlan(), sobald plan.json geladen ist. */
 
 /* ============================================================
    INTERVALL-TIMER (Donnerstag: Tempo- bzw. VO2max-Intervalle)
@@ -2679,11 +3039,7 @@ function applyIntervalDefaults(startDate){
 
   if(ivMode === 'test'){
     iv.summary.innerHTML =
-      `<b>Woche ${week} · Schwellentest</b><br>` +
-      `20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker, 20 min gleichmäßig maximal, ` +
-      `10 min Ausrollen.<br>FTP = Ø-Watt der 20 min × 0,95 · LTHR = Ø-Puls der 20 min.<br>` +
-      `Pacing: die ersten drei Minuten bewusst konservativer als das Ziel, auf die ` +
-      `Durchschnittsleistung schauen, nicht auf den Momentanwert.`;
+      `<b>Woche ${week} · Schwellentest</b><br>` + TXT.thresholdTestSummary;
     ivResetTimer();
     return;
   }
@@ -2698,8 +3054,7 @@ function applyIntervalDefaults(startDate){
     iv.rest.value = 1;
     iv.summary.innerHTML =
       `<b>Woche ${week} · Grundlagentag statt Intervallen</b><br>` +
-      `${t.minutes} min ${zoneText('z2', week)} am Stück. In Phase 3 gibt es keine harten Intervalle – ` +
-      `der Timer ist an diesem Tag nicht nötig.`;
+      `${t.minutes} min ${zoneText(t.zone, week)} am Stück. ` + TXT.thursdayNoTimer;
     ivResetTimer();
     return;
   }
@@ -2718,9 +3073,9 @@ function applyIntervalDefaults(startDate){
     `${t.reps}× ${t.workMin} min ${zt}${w ? ' · ' + w : ''}${t.power ? ' (' + t.power + ')' : ''} ` +
     `mit je ${t.restMin} min lockerer Erholung (${zoneText('z1', week)}).` +
     (kadenz ? `<br>Trittfrequenz im Intervall: ${kadenz}.` : '') +
-    `<br>Rollender Start: in der letzten Minute der Erholung das Tempo leicht anziehen. ` +
+    `<br>${TXT.intervalRollingStart} ` +
     `Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}, die letzte Wiederholung soll die härteste sein.` +
-    (isRecoveryWeek(week) ? '<br>Erholungswoche – reduzierter Umfang, kein Z5.' : '');
+    (isRecoveryWeek(week) ? '<br>' + TXT.intervalRecoveryWeek : '');
 
   ivResetTimer();
 }
@@ -2731,27 +3086,25 @@ function ivWorkZone(){
   return ivZone(ivZoneKey);
 }
 
-/* Schwellentest, fester Ablauf aus Abschnitt 2 des Plans. Die Einstellungen
-   unten gelten hier nicht - ein Test, der sich verstellen laesst, ist kein
-   Vergleichsmassstab mehr. */
+/* Schwellentest, fester Ablauf aus plan.json (thresholdTest.steps). Die
+   Einstellungen unten gelten hier nicht - ein Test, der sich verstellen laesst,
+   ist kein Vergleichsmassstab mehr. Vorlauf und Schlussschritt gehoeren zum
+   Timer, nicht zum Plan, und stehen deshalb hier. */
 function buildTestSequence(){
-  const z1 = ivZone('z1'), z12 = ivZone('z12'), z3 = ivZone('z3'), z4 = ivZone('z4'), z5 = ivZone('z5');
+  const z1 = ivZone('z1');
   const seq = [];
-  seq.push({type:'prep', label:'Bereit machen', short:'Bereit machen', duration:10, zone:z1});
-  seq.push({type:'warm', label:'Einfahren', short:'Einfahren', duration:8 * 60, zone:z12});
-  for(let r = 1; r <= 3; r++){
-    seq.push({type:'work', label:'Zügig ' + r + ' / 3', short:'Zügig ' + r + '/3',
-              duration:60, zone:z3, rep:r, reps:3, note:'Öffnungsintervall, nicht all-out'});
-    seq.push({type:'rest', label:'Locker', short:'Locker ' + r + '/3',
-              duration:60, zone:z1, rep:r, reps:3});
+  seq.push({type:'prep', label:'Bereit machen', short:'Bereit machen', duration:IV_PREP_SEC, zone:z1});
+  for(const s of PLAN.thresholdTest.steps){
+    const step = {
+      type: s.type, label: s.label, short: s.short,
+      duration: typeof s.seconds === 'number' ? s.seconds : Math.round(s.minutes * 60),
+      zone: ivZone(s.zone)
+    };
+    if(s.rep != null)  step.rep = s.rep;
+    if(s.reps != null) step.reps = s.reps;
+    if(s.note)         step.note = s.note;
+    seq.push(step);
   }
-  seq.push({type:'warm', label:'Einfahren, Rest', short:'Einfahren', duration:6 * 60, zone:z12});
-  seq.push({type:'work', label:'5 min all-out', short:'5 min all-out', duration:5 * 60, zone:z5,
-            rep:1, reps:1, note:'VO2max-Referenzleistung'});
-  seq.push({type:'rest', label:'Locker rollen', short:'Locker rollen', duration:10 * 60, zone:z1, rep:1, reps:1});
-  seq.push({type:'work', label:'20 min gleichmäßig maximal', short:'20 min maximal', duration:20 * 60, zone:z4,
-            rep:1, reps:1, note:'Ø-Watt × 0,95 = FTP · Ø-Puls = LTHR'});
-  seq.push({type:'cool', label:'Ausrollen', short:'Ausrollen', duration:10 * 60, zone:z1});
   seq.push({type:'done', label:'Fertig!', short:'Fertig', duration:0, zone:z1});
   return seq;
 }
@@ -2768,7 +3121,7 @@ function buildIntervalSequence(){
   const z1 = ivZone('z1');
 
   const seq = [];
-  seq.push({type:'prep', label:'Bereit machen', short:'Bereit machen', duration:10, zone:z1});
+  seq.push({type:'prep', label:'Bereit machen', short:'Bereit machen', duration:IV_PREP_SEC, zone:z1});
   if(warm > 0) seq.push({type:'warm', label:'Einfahren', short:'Einfahren', duration:warm, zone:ivZone('z12')});
   for(let r = 1; r <= reps; r++){
     seq.push({type:'work', label:'Intervall ' + r, short:'Intervall ' + r + '/' + reps,
@@ -3022,7 +3375,7 @@ iv.start.addEventListener('click', ivStartTimer);
 iv.reset.addEventListener('click', ivResetTimer);
 iv.skip.addEventListener('click', ivSkipStep);
 
-ivResetTimer();
+/* Erstaufbau erfolgt aus initPlan(), sobald plan.json geladen ist. */
 
 
 /* ============================================================
@@ -3157,11 +3510,11 @@ const ICU_FIELDS = ['id','start_date_local','type','name','moving_time','elapsed
    die Uebergangsbaender, danach Coggan aus der LTHR. Fahrten vor der Korrektur
    vom 22.08. sind mit den alten Baendern ausgewertet worden und werden hier
    automatisch neu gerechnet. Die Schluessel sind in beiden Modellen dieselben,
-   deshalb lassen sich die Zeiten mehrerer Fahrten weiter zusammenfassen. */
-const ZONE_KEYS  = ['unter','z1','z2','z3','z4','z5'];
-const ZONE_LABEL = {unter:'<Z1', z1:'Z1', z2:'Z2', z3:'Z3', z4:'Z4', z5:'Z5'};
-const ZONE_COLOR = {unter:'#3a4553', z1:'#7d8bff', z2:'#2dd4a7',
-                    z3:'#ffb14e', z4:'#ff8f6b', z5:'#ff6b6b'};
+   deshalb lassen sich die Zeiten mehrerer Fahrten weiter zusammenfassen.
+
+   ZONE_KEYS, ZONE_LABEL und ZONE_COLOR kommen aus den Uebergangsbaendern in
+   plan.json (siehe applyPlan). Vorher standen Schluessel, Namen und Farben hier
+   ein zweites Mal und liefen bei jeder Zonenkorrektur auseinander. */
 
 const an = {
   key:        document.getElementById('anApiKey'),
@@ -3344,10 +3697,11 @@ function anDowngrade(row, badge){
    Rundenpausen dazwischen und 10 s Vorlauf. */
 function anEstimateRounds(sec, workSec, restSec){
   if(!workSec || !sec) return null;
-  const runde = 8 * workSec + 7 * restSec;
+  const ex = EXERCISES.length;
+  const runde = ex * workSec + (ex - 1) * restSec;
   let best = null;
   for(let n = 1; n <= 6; n++){
-    const soll = n * runde + (n - 1) * CORE_ROUND_REST + 10;
+    const soll = n * runde + (n - 1) * CORE_ROUND_REST + CORE_PREP_SEC;
     const abw = Math.abs(soll - sec);
     if(!best || abw < best.abw) best = {rounds: n, abw: abw};
   }
@@ -4139,6 +4493,15 @@ an.saveKey.addEventListener('click', async () => {
 an.range.addEventListener('change', () => { anUpdateRangeLabel(); anRefreshLocal(); });
 if(an.weekMode) an.weekMode.addEventListener('change', () => { if(an.result.children.length) anRun(); });
 an.run.addEventListener('click', anRun);
+
+/* ============================================================
+   START
+
+   Ganz am Ende, weil initPlan() nach dem Laden von plan.json Funktionen ruft,
+   die weiter oben und weiter unten stehen. Als Funktionsdeklarationen sind sie
+   zu diesem Zeitpunkt alle bekannt.
+============================================================ */
+initPlan();
 
 /* ============================================================
    PWA: Service Worker (nur ueber http/https, nicht bei file://)

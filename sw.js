@@ -1,10 +1,15 @@
 /* Service Worker – macht die App offline nutzbar.
    Bei einer neuen Version einfach CACHE_VERSION hochzählen. */
-const CACHE_VERSION = 'trainingsplan-v22';
+const CACHE_VERSION = 'trainingsplan-v23';
 
 const ASSETS = [
   './',
   './index.html',
+  /* Der komplette Trainingsplan. Ohne diese Datei startet die App nicht -
+     sie muss deshalb genauso zuverlaessig im Cache liegen wie index.html.
+     Nach jeder Aenderung an plan.json CACHE_VERSION hochzaehlen, sonst
+     liefert der Cache die alte Fassung weiter. */
+  './plan.json',
   './manifest.webmanifest',
   './icon192.png',
   './icon512.png',

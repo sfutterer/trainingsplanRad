@@ -943,6 +943,39 @@ die Obergrenze nachgezogen werden.
 Service Worker legt sie mit in den Cache. Das hat `index.html` von 1,2 MB auf rund 230 KB
 verkleinert.
 
+### Der Plan liegt in `plan.json`, nicht im Code
+
+Seit 23.08.2026 stehen alle Plandaten in `plan.json` neben `index.html`. Der Code hält
+keine Planwerte mehr — er lädt sie beim Start und rechnet damit. Damit lässt sich der Plan
+ändern, ohne JavaScript anzufassen.
+
+| In der JSON | Im Code geblieben |
+|---|---|
+| Wochenwerte je Woche (Dauer, Rumpf, Beine), Donnerstag und Samstagsblöcke je Woche | Kalender- und Wochenrechnung, Phasenzuordnung |
+| Pulszonen (Übergang und Coggan-Faktoren), Leistungszonen, Kadenzziele | Zonenberechnung aus LTHR und FTP |
+| Übungen mit Schritten, Zielen, Bildpfaden; Beinblock-Dosierung je Phase | Wiederholungsziel aus Belastung ÷ Tempo, Zirkeldauer |
+| Timer-Konstanten, Schwellentest-Ablauf | Sequenzbau der Timer |
+| Freistehende Erklärtexte | Satzgerüste mit eingerechneten Zahlen |
+| — | **Auswertungstoleranzen der Analyse** (15 % Dauer, 20 % Pendelintensität, 25 %, 35 %) |
+
+Die Toleranzen sind bewusst nicht in der JSON: das ist Bewertungspolitik der App, nicht
+Trainingsplan. Sollen sie konfigurierbar werden, gehören sie in einen eigenen Abschnitt
+`evaluation` und `schemaVersion` steigt auf 2.
+
+**Beim Bearbeiten zu beachten:**
+
+- Die Wochen stehen als Objekte in `weeks[]`, nicht als parallele Reihen. Ein Fehler bleibt
+  damit lokal statt eine ganze Reihe gegen die anderen zu verschieben.
+- **Nach jeder Änderung `CACHE_VERSION` in `sw.js` hochzählen**, sonst zeigt die
+  installierte App noch den alten Plan.
+- Eine neue Übung braucht zusätzlich einen Eintrag in der `ASSETS`-Liste in `sw.js`,
+  damit das Bild offline verfügbar ist.
+- Die Texte in `texts` werden als HTML eingefügt; `<` und `&` darin zerlegen die Anzeige.
+- Ist die Datei kaputt oder fehlt sie, zeigt die App eine Fehlermeldung und **keine
+  Zahlen**. Das ist Absicht — lieber gar keine Vorgabe als eine falsche.
+- `fetch` ist über `file://` gesperrt: die App per `python3 -m http.server` öffnen, nicht
+  per Doppelklick. Auf GitHub Pages und in der installierten PWA spielt das keine Rolle.
+
 ### Persistenz
 
 `localStorage`, Schlüssel:
