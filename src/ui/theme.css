@@ -51,6 +51,16 @@
   --z4:      #94552b;
   --z5:      #a2454c;
 
+  /* Die Spur auf der Karte. Bewusst ausserhalb der Themes und ausserhalb der
+     gedaempften Palette: die Kacheln kommen von aussen, bleiben in beiden
+     Themes hell und sind selbst schon voller Linien. In --primary ging die
+     Spur zwischen Strassen und Radrouten unter, im dunklen Theme zusaetzlich
+     als helles Blau auf hellen Kacheln. Magenta kommt in keinem Kartenstil
+     vor und in der Zonenrampe auch nicht - Verwechslung ausgeschlossen. Der
+     weisse Rand darunter traegt die Spur ueber jeden Untergrund. */
+  --spur:      #d5006d;
+  --spur-rand: #ffffff;
+
   /* Zustaende: die Farbe steckt in Text und Kante, die Flaeche bleibt fast
      neutral. Vier bunte Kacheln nebeneinander waren zu viel. */
   --ok:    #3e7a63;

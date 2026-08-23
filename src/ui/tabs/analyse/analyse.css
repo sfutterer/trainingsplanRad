@@ -58,7 +58,12 @@
 }
 
 /* ---- Karte ---- */
-.karte{ height: 260px; border-radius: var(--radius-s); overflow: hidden; margin: 10px 0; }
+/* Eigener Stapelkontext: Leaflet vergibt seinen Bedienelementen z-index 1000.
+   Ohne position und z-index hier gilt das gegen die ganze Seite - dann lagen
+   Zoomknopf und Nachweis ueber dem Menue (z-index 70). Mit z-index 0 bleibt
+   alles aus Leaflet innerhalb der Karte. */
+.karte{ height: 260px; border-radius: var(--radius-s); overflow: hidden; margin: 10px 0;
+  position: relative; z-index: 0; }
 .karte-leer{
   padding: 18px; border-radius: var(--radius-s); background: var(--surface-2);
   color: var(--muted); font-size: 13.5px; text-align: center; margin: 10px 0;

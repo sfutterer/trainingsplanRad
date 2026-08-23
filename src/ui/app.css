@@ -210,6 +210,9 @@ code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
 }
 .segbtn:last-child{ border-right: 0; }
 .segbtn.an{ background: var(--primary-container); color: var(--on-primary-container); }
+/* Gesperrt, wenn die Wahl noch nichts aendert - der Kartenstil braucht erst
+   den Schluessel. Sichtbar bleiben die Knoepfe, damit man sieht, was kommt. */
+.segbtn:disabled{ opacity: .45; }
 
 /* ---- Top App Bar ---- */
 .appbar{

@@ -26,7 +26,7 @@ export const mapKey      = signal('');   // Thunderforest, fuer OpenCycleMap
 export const coreLog     = signal([]);
 export const testLog     = signal([]);
 export const interimLog  = signal([]);
-export const settings    = signal({ voice:true, keepAwake:true, showIllu:true });
+export const settings    = signal({ voice:true, keepAwake:true, showIllu:true, mapStyle:'atlas' });
 export const tab         = signal('plan');
 export const ready       = signal(false);
 
@@ -70,7 +70,7 @@ export async function boot(){
   coreLog.value    = await store.coreLog();
   testLog.value    = await store.testLog();
   interimLog.value = await store.interimLog();
-  settings.value   = Object.assign({ voice:true, keepAwake:true, showIllu:true, theme:'system' }, await store.settings());
+  settings.value   = Object.assign({ voice:true, keepAwake:true, showIllu:true, theme:'system', mapStyle:'atlas' }, await store.settings());
   theme.value      = settings.value.theme;
 
   platform.setKeepAwake(settings.value.keepAwake);

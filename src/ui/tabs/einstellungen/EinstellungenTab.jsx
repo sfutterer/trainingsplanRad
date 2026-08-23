@@ -14,6 +14,7 @@ import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js'
 import { exportAll, importAll, exportFilename } from '../../../data/exportImport.js';
 import { downloadJson, requestPersistentStorage } from '../../../platform/index.js';
 import { probeCapabilities } from '../../../data/icu.js';
+import { KARTENSTILE, KARTENSTIL_DEFAULT, kartenstil } from '../../../state/kartenstile.js';
 import { PLAN_SCHEMA_VERSION } from '../../../data/planSource.js';
 import { Gruppe, Zeile, Schalter } from '../../components/SettingsList.jsx';
 
@@ -162,6 +163,29 @@ export function EinstellungenTab(){
             {THEMES.map(t => (
               <button key={t.id} class={'segbtn' + ((s.theme || 'system') === t.id ? ' an' : '')}
                 onClick={() => setSettings({ theme: t.id })}>{t.label}</button>
+            ))}
+          </div>
+        </div>
+        <Zeile titel="Kartenstil"
+          wert={mapKey.value
+            ? kartenstil(s.mapStyle || KARTENSTIL_DEFAULT).hinweis
+            : 'OpenStreetMap – erst den Thunderforest-Schlüssel eintragen'}
+          disabled={!mapKey.value}
+          hilfe={
+            <>
+              <p><b>Ruhig</b> (Atlas) zeigt Straßen und Orte. <b>Rad</b> ist die OpenCycleMap:
+                 dieselbe Karte plus Radroutennetz und Höhenlinien – gut zum Planen, aber so
+                 voll, dass die eigene Spur darin untergeht. <b>Gelände</b> (Landscape) betont
+                 Höhen und Bewuchs.</p>
+              <p>Ohne Schlüssel zeichnet die App OpenStreetMap, unabhängig von dieser Wahl.</p>
+            </>
+          } />
+        <div class="szeile-eingabe">
+          <div class="segmented" style="flex:1;margin:0">
+            {KARTENSTILE.map(k => (
+              <button key={k.id} class={'segbtn' + ((s.mapStyle || KARTENSTIL_DEFAULT) === k.id ? ' an' : '')}
+                disabled={!mapKey.value}
+                onClick={() => setSettings({ mapStyle: k.id })}>{k.label}</button>
             ))}
           </div>
         </div>
