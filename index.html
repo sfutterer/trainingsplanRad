@@ -2591,6 +2591,9 @@ let secondsLeft = 0;
 let totalSeconds = 0;
 let timerId = null;
 let running = false;
+let stepEndsAt = 0;       // Date.now()-Zeitpunkt, an dem der laufende Schritt endet
+let pausedLeftMs = 0;     // beim Pausieren eingefrorene Restzeit
+let lastShownSec = null;  // zuletzt angezeigte Sekunde, damit Piepser einmal kommen
 function speak(text){
   sayGerman(text, els.voiceOn.checked);
 }
@@ -2833,20 +2836,39 @@ function announceStep(step){
   applyPhaseStyle(step.type);
 }
 
+/* Die Restzeit wird aus der Uhr gerechnet, nicht heruntergezaehlt.
+
+   Vorher lief der Timer als setInterval(1000) mit secondsLeft -= 1 je Tick.
+   Damit war die verstrichene Zeit die Zahl der Ticks, nicht die Uhrzeit: Android
+   drosselt Timer im Hintergrund und bei gesperrtem Bildschirm auf bis zu einen
+   Tick pro Minute, und selbst im Vordergrund summieren sich ein paar
+   Millisekunden je Tick. Der Timer lief also zu langsam und holte das nie auf.
+   Bei einem Zirkelsatz faellt das kaum auf, bei den 20 Minuten des
+   Schwellentests ist es ein Messfehler, der ueber FTP und LTHR acht Wochen lang
+   in die Zonen durchschlaegt.
+
+   Jetzt merkt sich der Schritt seinen Endzeitpunkt. Der Tick liest nur ab -
+   nach einer Drosselung springt die Anzeige einmal und stimmt danach wieder.
+   Deshalb auch der schnellere Takt: 250 ms kosten nichts und lassen den letzten
+   Piepser nicht bis zu einer Sekunde zu spaet kommen. */
+const TICK_MS = 250;
+
 function tick(){
   const step = sequence[seqIndex];
   if(!step || step.type === 'done') return;
 
-  secondsLeft -= 1;
-  els.time.textContent = secondsLeft;
-  const fraction = secondsLeft / step.duration;
-  setRing(Math.max(fraction,0));
+  const leftMs = Math.max(0, stepEndsAt - Date.now());
+  secondsLeft = Math.ceil(leftMs / 1000);
+  setRing(Math.max(leftMs / (step.duration * 1000), 0));
 
-  if(secondsLeft <= 3 && secondsLeft > 0 && step.type !== 'done'){
-    beep(500, 120);
+  /* Anzeige und Piepser nur beim Sekundenwechsel, sonst viermal je Sekunde. */
+  if(secondsLeft !== lastShownSec){
+    lastShownSec = secondsLeft;
+    els.time.textContent = secondsLeft;
+    if(secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
   }
 
-  if(secondsLeft <= 0){
+  if(leftMs <= 0){
     coreLogLeaveStep(0);
     nextStep();
   }
@@ -2869,6 +2891,8 @@ function nextStep(){
   }
   secondsLeft = step.duration;
   totalSeconds = step.duration;
+  stepEndsAt = Date.now() + step.duration * 1000;
+  lastShownSec = secondsLeft;
   els.time.textContent = secondsLeft;
   setRing(1);
   announceStep(step);
@@ -2879,6 +2903,8 @@ function startTimer(){
   if(running){
     running = false;
     els.start.textContent = 'Weiter';
+    /* Restzeit einfrieren - sonst laeuft die Deadline waehrend der Pause weiter. */
+    pausedLeftMs = Math.max(0, stepEndsAt - Date.now());
     clearInterval(timerId);
     return;
   }
@@ -2891,10 +2917,12 @@ function startTimer(){
     nextStep();
   } else if(secondsLeft <= 0){
     nextStep();
+  } else {
+    stepEndsAt = Date.now() + pausedLeftMs;
   }
   running = true;
   els.start.textContent = 'Pause';
-  timerId = setInterval(tick, 1000);
+  timerId = setInterval(tick, TICK_MS);
 }
 
 function resetTimer(){
@@ -2905,6 +2933,9 @@ function resetTimer(){
   sequence = [];
   seqIndex = -1;
   secondsLeft = 0;
+  stepEndsAt = 0;
+  pausedLeftMs = 0;
+  lastShownSec = null;
   els.settings.style.display = 'block';
   els.start.textContent = 'Start';
   els.phase.className = 'phase is-prep';
@@ -2924,7 +2955,7 @@ function skipStep(){
   secondsLeft = 0;
   nextStep();
   if(running){
-    timerId = setInterval(tick, 1000);
+    timerId = setInterval(tick, TICK_MS);
   }
 }
 
@@ -2985,6 +3016,10 @@ let ivTimerId = null;
 let ivRunning = false;
 let ivHalfFired = false;
 let ivMinuteFired = false;
+let ivTenFired = false;
+let ivEndsAt = 0;           // wie beim Rumpf-Timer: Endzeitpunkt statt Zaehler
+let ivPausedLeftMs = 0;
+let ivLastShownSec = null;
 let ivPhaseNum = 1;
 
 function ivSpeak(text){
@@ -3199,6 +3234,7 @@ function ivRemainingAfter(index){
 function ivAnnounce(step){
   ivHalfFired = false;
   ivMinuteFired = false;
+  ivTenFired = false;
 
   if(step.type === 'prep'){
     const first = ivSeq.find(s => s.type === 'warm') ? 'Einfahren' : 'Intervall 1';
@@ -3253,42 +3289,57 @@ function ivAnnounce(step){
   }
 }
 
+/* Gleiche Umstellung wie beim Rumpf-Timer, aus demselben Grund - hier wiegt sie
+   schwerer: die 20 Minuten des Schwellentests bestimmen FTP und LTHR.
+
+   Die Ansagen pruefen jetzt auf Unterschreiten statt auf Gleichheit. Solange
+   sekundenweise heruntergezaehlt wurde, traf ivLeft jeden ganzzahligen Wert und
+   ivLeft === 60 ging immer auf. Mit einer aus der Uhr gerechneten Restzeit kann
+   der Wert springen, und eine uebersprungene 60 haette die Ansage ersatzlos
+   verschluckt. Die Fired-Flags sorgen dafuer, dass das Unterschreiten trotzdem
+   nur einmal ausloest. */
 function ivTick(){
   const step = ivSeq[ivIndex];
   if(!step || step.type === 'done') return;
 
-  ivLeft -= 1;
-  iv.time.textContent = fmtClock(ivLeft);
-  ivSetRing(Math.max(ivLeft / step.duration, 0));
-  iv.total.textContent = 'noch ' + fmtDuration(ivRemainingAfter(ivIndex));
+  const leftMs = Math.max(0, ivEndsAt - Date.now());
+  ivLeft = Math.ceil(leftMs / 1000);
+  ivSetRing(Math.max(leftMs / (step.duration * 1000), 0));
+
+  if(ivLeft !== ivLastShownSec){
+    ivLastShownSec = ivLeft;
+    iv.time.textContent = fmtClock(ivLeft);
+    iv.total.textContent = 'noch ' + fmtDuration(ivRemainingAfter(ivIndex));
+    if(ivLeft <= 3 && ivLeft > 0) beep(500, 120);
+  }
 
   if(step.type === 'work'){
     const half = Math.floor(step.duration / 2);
-    if(!ivHalfFired && step.duration >= 120 && ivLeft === half){
+    if(!ivHalfFired && step.duration >= 120 && ivLeft <= half){
       ivHalfFired = true;
       ivSpeak('Halbzeit. Tempo halten!');
       beep(660, 150);
     }
-    if(!ivMinuteFired && step.duration > 90 && ivLeft === 60){
+    if(!ivMinuteFired && step.duration > 90 && ivLeft <= 60){
       ivMinuteFired = true;
       ivSpeak('Noch eine Minute.');
     }
   }
-  if(step.type === 'rest' && !ivMinuteFired && step.duration > 90 && ivLeft === 30){
+  if(step.type === 'rest' && !ivMinuteFired && step.duration > 90 && ivLeft <= 30){
     ivMinuteFired = true;
     ivSpeak('Noch 30 Sekunden Erholung. Bereit machen.');
   }
-  if((step.type === 'rest' || step.type === 'prep' || step.type === 'warm') && ivLeft === 10){
+  if(!ivTenFired && (step.type === 'rest' || step.type === 'prep' || step.type === 'warm') && ivLeft <= 10){
+    ivTenFired = true;
     const next = ivSeq[ivIndex + 1];
     if(next && next.type === 'work') ivSpeak('Gleich Intervall ' + next.rep + '.');
   }
-  if((step.type === 'warm' || step.type === 'cool') && !ivMinuteFired && step.duration > 120 && ivLeft === 60){
+  if((step.type === 'warm' || step.type === 'cool') && !ivMinuteFired && step.duration > 120 && ivLeft <= 60){
     ivMinuteFired = true;
     ivSpeak('Noch eine Minute.');
   }
 
-  if(ivLeft <= 3 && ivLeft > 0) beep(500, 120);
-  if(ivLeft <= 0) ivNextStep();
+  if(leftMs <= 0) ivNextStep();
 }
 
 function ivNextStep(){
@@ -3307,6 +3358,8 @@ function ivNextStep(){
   if(step.type === 'work') beep(880, 180);
   if(step.type === 'rest' || step.type === 'cool') beep(440, 180);
   ivLeft = step.duration;
+  ivEndsAt = Date.now() + step.duration * 1000;
+  ivLastShownSec = ivLeft;
   iv.time.textContent = fmtClock(ivLeft);
   ivSetRing(1);
   ivAnnounce(step);
@@ -3317,6 +3370,7 @@ function ivStartTimer(){
   if(ivRunning){
     ivRunning = false;
     iv.start.textContent = 'Weiter';
+    ivPausedLeftMs = Math.max(0, ivEndsAt - Date.now());
     clearInterval(ivTimerId);
     return;
   }
@@ -3329,10 +3383,12 @@ function ivStartTimer(){
     ivNextStep();
   } else if(ivLeft <= 0){
     ivNextStep();
+  } else {
+    ivEndsAt = Date.now() + ivPausedLeftMs;
   }
   ivRunning = true;
   iv.start.textContent = 'Pause';
-  ivTimerId = setInterval(ivTick, 1000);
+  ivTimerId = setInterval(ivTick, TICK_MS);
 }
 
 function ivResetTimer(){
@@ -3341,6 +3397,9 @@ function ivResetTimer(){
   window.speechSynthesis && window.speechSynthesis.cancel();
   ivIndex = -1;
   ivLeft = 0;
+  ivEndsAt = 0;
+  ivPausedLeftMs = 0;
+  ivLastShownSec = null;
   iv.settings.style.display = 'block';
   iv.start.textContent = 'Start';
   iv.phase.className = 'phase is-prep';
@@ -3362,7 +3421,7 @@ function ivSkipStep(){
   clearInterval(ivTimerId);
   ivLeft = 0;
   ivNextStep();
-  if(ivRunning) ivTimerId = setInterval(ivTick, 1000);
+  if(ivRunning) ivTimerId = setInterval(ivTick, TICK_MS);
 }
 
 [iv.warm, iv.work, iv.rest, iv.reps, iv.cool].forEach(input => {
