@@ -82,16 +82,6 @@ const HILFE_KARTE = (
   </>
 );
 
-const HILFE_WETTER = (
-  <>
-    <p>Die Wetterdaten kommen von <a href="https://open-meteo.com" target="_blank" rel="noreferrer">Open-Meteo</a>
-       und brauchen <b>keinen</b> Schlüssel. Nichts einzurichten.</p>
-    <p>Abgefragt werden Temperatur, Windrichtung und Windgeschwindigkeit zur Zeit der Fahrt.
-       Aus Windrichtung und Fahrtrichtung rechnet die Analyse den Gegenwindanteil je Abschnitt.</p>
-    <p>Dabei gehen die Koordinaten deiner Fahrt an Open-Meteo.</p>
-  </>
-);
-
 export function EinstellungenTab(){
   const [meldung, setMeldung] = useState(null);
   const s = settings.value;
@@ -159,7 +149,6 @@ export function EinstellungenTab(){
           hilfe={HILFE_ICU} onSave={setApiKey} />
         <SchluesselZeile titel="Kartenkacheln (Thunderforest)" wert={mapKey.value} platzhalter="API-Key"
           hilfe={HILFE_KARTE} onSave={setMapKey} />
-        <Zeile titel="Wetterdaten" wert="Open-Meteo · kein Schlüssel nötig" hilfe={HILFE_WETTER} />
       </Gruppe>
 
       <Gruppe titel="Darstellung">
@@ -301,6 +290,11 @@ function DiagnoseZeile(){
                 {Object.keys(erg.streams).length === 0
                   ? <li>keiner zurückgekommen</li>
                   : Object.entries(erg.streams).map(([k, n]) => <li key={k}>{k}: {n} Messwerte</li>)}
+              </ul>
+              <p><b>Spur</b></p>
+              <ul>
+                <li>{erg.spur == null ? 'nicht geprüft' : erg.spur + ' auswertbare Punkte'}</li>
+                {erg.spurForm && <li>{erg.spurForm}</li>}
               </ul>
               <p><b>Wetterfelder an der Aktivität</b></p>
               <ul>

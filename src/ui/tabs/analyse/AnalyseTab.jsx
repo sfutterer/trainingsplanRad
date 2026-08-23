@@ -238,6 +238,14 @@ function Detail({ act, onZurueck }){
                   </p>
                 </>
               )}
+
+              {/* Stand vorher in den Einstellungen. Dort war die Zeile leer -
+                  es gibt nichts einzustellen; der Hinweis gehoert dorthin, wo
+                  die Daten tatsaechlich abgerufen werden. */}
+              <p class="hint">
+                Open-Meteo, ohne Schlüssel und ohne Konto. Für die Abfrage gehen die
+                Koordinaten der Fahrt dorthin.
+              </p>
             </div>
           )}
 
