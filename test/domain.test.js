@@ -185,25 +185,13 @@ describe('Beinblock-Protokoll', () => {
   });
 });
 
-describe('Teile der Krafteinheit', () => {
-  const keys = dow => C.strengthParts(plan, 2, dow).map(t => t.key);
-
-  it('Sonntag: Zirkel und Beinblock', () => {
-    expect(keys(0)).toEqual(['core', 'leg']);
-    expect(C.hasLegBlock(plan, 2, 0)).toBe(true);
-  });
-
-  it('Mittwoch: nur der verkuerzte Zirkel', () => {
-    expect(keys(3)).toEqual(['core']);
-    expect(C.hasLegBlock(plan, 2, 3)).toBe(false);
-    const [zirkel] = C.strengthParts(plan, 2, 3);
-    expect(zirkel.verkuerzt).toBe(true);
-    expect(zirkel.rounds).toBe(plan.circuit.wednesdayRounds);
-  });
-
-  it('Rundenzahlen kommen aus derselben Quelle wie der Zirkel', () => {
-    const [zirkel, beine] = C.strengthParts(plan, 2, 0);
-    expect(zirkel.rounds).toBe(C.coreRoundsForDay(plan, 2, 0));
-    expect(beine.rounds).toBe(C.legRounds(plan, 2));
+describe('Beinblock im Wochenplan', () => {
+  it('kuerzt am Mittwoch den Zirkel, nicht den Beinblock', () => {
+    /* Woche 5 hat drei Zirkelrunden, der Mittwoch trotzdem zwei. Die Dosis des
+       Beinblocks haengt dagegen nur an der Woche: wer ihn ausserhalb des Plans
+       faehrt, faehrt dieselben Runden wie am Sonntag. */
+    expect(C.coreRoundsForDay(plan, 5, 3)).toBe(2);
+    expect(C.coreRoundsForDay(plan, 5, 0)).toBe(3);
+    expect(C.legRounds(plan, 5)).toBe(2);
   });
 });

@@ -5,7 +5,7 @@ import { createTimer } from '../../../domain/timer/engine.js';
 import { buildCircuitSequence } from '../../../domain/timer/sequences.js';
 import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
          repShort, repLong, legDose, legRounds, legRepText, legRepMin,
-         legDoneRounds, legAborts, strengthParts, hasLegBlock } from '../../../domain/core.js';
+         legDoneRounds, legAborts } from '../../../domain/core.js';
 import { isoDayLocal, weekNumberFor } from '../../../domain/week.js';
 import { ProgressRing } from '../../components/ProgressRing.jsx';
 import { ExerciseDialog } from '../../components/ExerciseDialog.jsx';
@@ -94,8 +94,9 @@ export function KraftTab(){
         timerLaeuft.value = false;
         vibrate([60, 40, 60]);
         /* Der Zirkel ist das Aufwaermen des Beinblocks - wer ihn beendet, will
-           dorthin. An Tagen ohne Beinblock bleibt die Ansicht stehen. */
-        if(hasLegBlock(plan.value, week.value, today.value.getDay())) setSegment('leg');
+           dorthin. An jedem Tag gleich: welcher Tag wofuer vorgesehen ist,
+           weiss der Nutzer selbst. */
+        setSegment('leg');
       }
     }));
     ab.push(timer.on('tick', ({ secondsLeft, sekundenwechsel }) => {
@@ -149,12 +150,6 @@ export function KraftTab(){
   const sec = timer.secondsLeft();
   const aktiveUebung = step && step.type === 'work' ? step.exIndex : null;
 
-  /* Welche Teile der Tag hat, sagt der Plan. Am Mittwoch ist es nur der
-     Zirkel - dann gibt es nichts umzuschalten und der Umschalter entfaellt. */
-  const teile = strengthParts(p, w, dow);
-  const hatBeine = teile.some(t => t.key === 'leg');
-  const aktiv = hatBeine ? segment : 'core';
-
   const legEintrag = coreLog.value.find(e => e && e.kind === 'leg' && e.day === isoDayLocal(today.value)) || null;
   const legSoll = legRounds(p, w);
 
@@ -184,20 +179,20 @@ export function KraftTab(){
 
   return (
     <>
-      {/* Zwei Teile, zwei Segmente. Der Umschalter traegt den Stand beider
-          Haelften, damit die gerade nicht gezeigte trotzdem ablesbar bleibt. */}
-      {hatBeine && (
-        <div class="segmented" style="margin:0 0 14px">
-          <button class={'segbtn' + (aktiv === 'core' ? ' an' : '')} onClick={() => setSegment('core')}>
-            Zirkel{zirkelStand ? ' · ' + zirkelStand : ''}
-          </button>
-          <button class={'segbtn' + (aktiv === 'leg' ? ' an' : '')} onClick={() => setSegment('leg')}>
-            Beine · {legDoneRounds(legEintrag)}/{legSoll}
-          </button>
-        </div>
-      )}
+      {/* Zwei Segmente an jedem Tag, in derselben Form. Der Umschalter traegt
+          den Stand beider Haelften, damit die gerade nicht gezeigte trotzdem
+          ablesbar bleibt. Wann der Beinblock ansteht, sagt der Plan - die App
+          fuehrt darueber nicht Buch und versperrt keinen Tag. */}
+      <div class="segmented" style="margin:0 0 14px">
+        <button class={'segbtn' + (segment === 'core' ? ' an' : '')} onClick={() => setSegment('core')}>
+          Zirkel{zirkelStand ? ' · ' + zirkelStand : ''}
+        </button>
+        <button class={'segbtn' + (segment === 'leg' ? ' an' : '')} onClick={() => setSegment('leg')}>
+          Beine · {legDoneRounds(legEintrag)}/{legSoll}
+        </button>
+      </div>
 
-      {aktiv === 'core' && <>
+      {segment === 'core' && <>
       {/* Ring, Bild und Bedienung sind eine Einheit: was zur laufenden Uebung
           gehoert, muss ohne Scrollen sichtbar sein. Die Hoehe des Blocks ist
           in timer.css auf den Platz zwischen den Leisten begrenzt. */}
@@ -243,15 +238,6 @@ export function KraftTab(){
         <p class="hint">{p.texts.coreAbortRule}</p>
       </div>
 
-      {/* Das Fehlen benennen statt es wegzulassen: die Regel gegen das
-          Nachholen greift genau an dem Tag, an dem sie hier steht. */}
-      {!hatBeine && (
-        <div class="card">
-          <div class="row"><span>Beinblock</span><b>entfällt heute</b></div>
-          <p class="hint" style="margin-top:6px">{p.texts.legWednesdayNote}</p>
-        </div>
-      )}
-
       <div class="card">
         <div class="row"><span>Einstellungen</span><b>Woche {w}, {dow === 3 ? 'Mittwoch (verkürzt)' : dow === 0 ? 'Sonntag (voll)' : 'heute'}</b></div>
         <div class="field"><span>Belastung (Sek.)</span>
@@ -269,7 +255,7 @@ export function KraftTab(){
       </div>
       </>}
 
-      {aktiv === 'leg' && <>
+      {segment === 'leg' && <>
       {/* Der Zirkel laeuft weiter, waehrend hier gezaehlt wird. Ohne diesen
           Streifen liefe er unsichtbar - man hoert ihn nur noch. */}
       {step && step.type !== 'done' && (

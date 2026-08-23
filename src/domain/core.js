@@ -29,22 +29,6 @@ export function coreRoundsForDay(plan, week, dow){
   return dow === 3 ? plan.circuit.wednesdayRounds : coreRounds(plan, week);
 }
 
-/* Woraus die Krafteinheit eines Tages besteht.
-
-   Wie viele Teile ein Tag hat, ist eine Planregel und keine Frage des Layouts.
-   Bisher stand sie zweimal im Code: hier als Rundenzahl des Zirkels, in der
-   Anzeige noch einmal als eigene Abfrage auf den Wochentag. Zwei Haelften
-   derselben Regel an zwei Orten laufen frueher oder spaeter auseinander. */
-export function strengthParts(plan, week, dow){
-  const teile = [{ key:'core', rounds: coreRoundsForDay(plan, week, dow), verkuerzt: dow === 3 }];
-  if(dow !== 3) teile.push({ key:'leg', rounds: legRounds(plan, week) });
-  return teile;
-}
-
-export function hasLegBlock(plan, week, dow){
-  return strengthParts(plan, week, dow).some(t => t.key === 'leg');
-}
-
 /* Zeit bleibt die Uhr des Zirkels, aber dynamische Uebungen bekommen ein
    Wiederholungsziel: Zeitfenster geteilt durch Tempo. So gibt es eine
    Orientierung, ohne dass man mit nassen Haenden am Bildschirm zaehlt. */
