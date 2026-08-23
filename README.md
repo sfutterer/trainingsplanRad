@@ -17,6 +17,14 @@ npm run build    # Produktionsbuild nach dist/
 Node-Version steht in `.nvmrc`. Ein Push auf `main` baut und veröffentlicht
 automatisch über GitHub Actions.
 
+**Voraussetzung in den Repo-Einstellungen:** Settings → Pages → Build and
+deployment → Source muss auf **GitHub Actions** stehen, nicht auf „Deploy from
+a branch". Sonst liefert Pages den Quelltext statt des Builds aus – und die
+Seite lädt nichts, weil `index.html` dann auf rohes JSX zeigt.
+
+Bricht der Build, bleibt die zuletzt veröffentlichte Fassung stehen. Der Stand
+vor dem Umbau liegt als Tag `vor-umbau` bereit.
+
 ## Den Plan ändern
 
 Der Trainingsplan steht in `public/plan.json`, nicht im Code. Zwei Wege:
