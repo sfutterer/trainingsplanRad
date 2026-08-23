@@ -81,24 +81,41 @@ export function primeSpeech(){
   } catch(e){}
 }
 
+let ansageTimer = null;
+
+/* Eine neue Ansage ersetzt die alte, sie stellt sich nicht dahinter.
+
+   speak() reiht standardmaessig ein. Wer fuenfmal "Weiter" drueckt, sammelt
+   damit fuenf Ansagen an, die nacheinander abgespielt werden - laengst nachdem
+   man weitergegangen ist. In dieser App gibt es keinen Fall, in dem zwei
+   Ansagen gleichzeitig gelten: die letzte beschreibt immer den Schritt, in dem
+   man gerade steht. */
 export function speak(text, enabled){
   if(!enabled || !text || !('speechSynthesis' in window)) return;
   try {
     const s = window.speechSynthesis;
     /* Chrome haelt die Sprachausgabe an, sobald die Seite den Fokus verliert,
-       und kommt danach nicht immer von selbst zurueck: die Warteschlange bleibt
-       stehen, speak() nimmt zwar an, es kommt aber nichts. resume() vor jeder
-       Ansage kostet nichts und holt den haengenden Zustand zurueck. */
+       und kommt danach nicht immer von selbst zurueck. */
     if(s.paused) s.resume();
+    s.cancel();
+    if(ansageTimer) clearTimeout(ansageTimer);
+
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'de-DE';
     u.rate = 1.0;
-    s.speak(u);
+    /* cancel() und speak() unmittelbar nacheinander verschluckt Chrome
+       gelegentlich - die neue Aeusserung faellt dann stillschweigend aus.
+       Ein Tick Abstand genuegt, und er sammelt zugleich schnelle
+       Weiter-Klicks ein: nur die letzte Ansage wird tatsaechlich gesprochen. */
+    ansageTimer = setTimeout(() => { ansageTimer = null; s.speak(u); }, 80);
   } catch(e){}
 }
 
 export function cancelSpeech(){
-  try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch(e){}
+  try {
+    if(ansageTimer){ clearTimeout(ansageTimer); ansageTimer = null; }
+    window.speechSynthesis && window.speechSynthesis.cancel();
+  } catch(e){}
 }
 
 /* Beim Zurueckkommen aufwecken. Ohne das bleibt nach einem Wechsel in eine
