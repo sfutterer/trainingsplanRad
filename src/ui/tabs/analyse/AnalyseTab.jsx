@@ -10,12 +10,16 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, startDate, apiKey, coreLog, today } from '../../../state/store.js';
-import { fetchActivities, fetchStreams, spurPunkte } from '../../../data/icu.js';
-import { ladeWetter, stundenIndex, windBilanz, richtungKurz } from '../../../data/wetter.js';
+import { fetchActivities, fetchStreams, spurMitHoehe } from '../../../data/icu.js';
+import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
+import { ladeWege } from '../../../data/osm.js';
+import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn } from '../../../domain/strecke.js';
+import { streckenFazit } from '../../../domain/fazit.js';
 import { zoneSeconds, hrBands } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, weekNumberFor, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { anCompareDay, anWeekTotals, anBuildReport, anFmtMin, anPct, anIsRide } from '../../../domain/analysis.js';
-import { RouteMap } from '../../components/RouteMap.jsx';
+import { RouteMap, StreckenLegende } from '../../components/RouteMap.jsx';
+import { Auswertung, Fazit, WetterLeiste, ein } from './Auswertung.jsx';
 import { gotoTab } from '../../../App.jsx';
 import './analyse.css';
 
@@ -111,6 +115,27 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
 
 /* ---------- Auswertung einer Fahrt ---------- */
 
+/* Mehr Punkte braucht weder die Auswertung noch die Karte: bei 2000 Punkten
+   liegen auf einem 150-m-Abschnitt noch ein Dutzend Messwerte, und die Linie
+   sieht aus wie die Aufzeichnung. */
+const MAX_PUNKTE = 2000;
+
+function duenne(spur, max){
+  const grenze = max || MAX_PUNKTE;
+  if(spur.length <= grenze) return spur;
+  const schritt = Math.ceil(spur.length / grenze);
+  const raus = spur.filter((_, i) => i % schritt === 0);
+  if(raus[raus.length - 1] !== spur[spur.length - 1]) raus.push(spur[spur.length - 1]);
+  return raus;
+}
+
+/* Zwei Abrufe, die nichts voneinander wissen - also nebeneinander. Faellt einer
+   aus, laeuft die Auswertung mit dem anderen weiter: ohne Wetter fehlt der
+   Wind, ohne Overpass der Untergrund, und beides steht dann auch so da. */
+function sicher(p){
+  return p.then(v => ({ wert: v }), e => ({ fehler: e.message }));
+}
+
 function Detail({ act, onZurueck }){
   const p = plan.value, th = thresholds.value, start = startDate.value;
   const [zustand, setZustand] = useState({ phase: 'laedt' });
@@ -119,10 +144,9 @@ function Detail({ act, onZurueck }){
     let weg = false;
     (async () => {
       const key = apiKey.value;
-      const erg = { zonen: null, latlng: null, wetter: null, wind: null, hinweise: [] };
+      const erg = { zonen: null, latlng: null, gruppen: null, bilanz: null, wetter: null, hinweise: [] };
       try {
-        const rad = anIsRide(act.type);
-        if(rad){
+        if(anIsRide(act.type)){
           const streams = await fetchStreams(key, act.id, 'heartrate,time,latlng,altitude');
           const hol = t => (streams || []).find(s => s.type === t);
           const hr = hol('heartrate'), tm = hol('time');
@@ -136,29 +160,42 @@ function Detail({ act, onZurueck }){
 
           /* Die Form des latlng-Streams liegt nicht fest - das Umrechnen auf
              Paare steckt deshalb in icu.js, wo auch die Diagnose es nutzt. */
-          const roh = spurPunkte(streams);
-          if(roh.length > 1){
-            /* Auf hoechstens 1200 Punkte ausduennen: die Linie sieht identisch
-               aus, die Karte bleibt fluessig. */
-            const schritt = Math.max(1, Math.floor(roh.length / 1200));
-            erg.latlng = roh.filter((_, i) => i % schritt === 0);
+          const spur = duenne(spurMitHoehe(streams));
+          if(spur.length > 1){
+            erg.latlng = spur.map(x => x.ll);
+            const mitte = spur[Math.floor(spur.length / 2)].ll;
+
+            const [w, o] = await Promise.all([
+              sicher(ladeWetter(mitte[0], mitte[1], act.start_date_local)),
+              sicher(ladeWege(erg.latlng))
+            ]);
+            if(weg) return;
+
+            let wind = null;
+            if(w.wert){
+              const i = stundenIndex(w.wert, act.start_date_local);
+              erg.wetter = {
+                temp: w.wert.temperature_2m[i], gefuehlt: w.wert.apparent_temperature[i],
+                wind: w.wert.wind_speed_10m[i], boe: w.wert.wind_gusts_10m[i],
+                richtung: w.wert.wind_direction_10m[i], regen: w.wert.precipitation[i],
+                feuchte: w.wert.relative_humidity_2m[i]
+              };
+              wind = sek => windZurZeit(w.wert, act.start_date_local, sek);
+            } else {
+              erg.hinweise.push('Wetterdaten nicht abrufbar: ' + w.fehler +
+                ' Ohne sie bleibt die Karte bei Steigung und Untergrund.');
+            }
+
+            let untergrund = null;
+            if(o.wert) untergrund = ll => untergrundAn(ll, o.wert);
+            else erg.hinweise.push('Untergrund nicht abrufbar: ' + o.fehler +
+              ' Die Karte zeigt dann Wind und Steigung, aber keinen Schotter.');
+
+            const abschnitte = baueAbschnitte(spur, { wind, untergrund });
+            erg.gruppen = zeichenGruppen(abschnitte);
+            erg.bilanz = streckenBilanz(abschnitte);
           } else {
             erg.hinweise.push('Kein GPS-Stream zu dieser Fahrt. Entweder ohne Aufzeichnung gefahren, oder das Konto liefert latlng nicht über die API. Unter Einstellungen → Diagnose zeigt „Verfügbare Daten prüfen“, was zu dieser Aktivität ankommt.');
-          }
-
-          if(erg.latlng && erg.latlng.length > 1){
-            try {
-              const mitte = erg.latlng[Math.floor(erg.latlng.length / 2)];
-              const h = await ladeWetter(mitte[0], mitte[1], act.start_date_local);
-              const i = stundenIndex(h, act.start_date_local);
-              erg.wetter = {
-                temp: h.temperature_2m[i], gefuehlt: h.apparent_temperature[i],
-                wind: h.wind_speed_10m[i], boe: h.wind_gusts_10m[i],
-                richtung: h.wind_direction_10m[i], regen: h.precipitation[i],
-                feuchte: h.relative_humidity_2m[i]
-              };
-              erg.wind = windBilanz(erg.latlng, h, i);
-            } catch(e){ erg.hinweise.push('Wetterdaten nicht abrufbar: ' + e.message); }
           }
         }
         if(weg) return;
@@ -175,6 +212,10 @@ function Detail({ act, onZurueck }){
   const logs = coreLog.value.filter(e => e && e.day === isoDayLocal(datum));
   const row = anCompareDay(p, th, datum, start, [act], zonesById,
     logs.filter(e => e.kind !== 'leg'), logs.filter(e => e.kind === 'leg'));
+  /* Erst wenn Strecke und Wetter da sind, ist das Fazit mehr als die halbe
+     Wahrheit - vorher steht in der Kopfkarte nichts. */
+  const fazit = zustand.phase === 'fertig'
+    ? streckenFazit(row, zustand.bilanz, zustand.wetter) : null;
 
   return (
     <>
@@ -194,60 +235,29 @@ function Detail({ act, onZurueck }){
             {act.average_heartrate ? ' · ⌀ ' + act.average_heartrate + ' bpm' : ''}</b></div>
         <div class="row"><span>Geplant</span><b>{row.plan.title}</b></div>
         <ZonenBalken z={zustand.zonen} />
-        {row.notes.map((n, i) => <div class={'annote ' + (n.kind || '')} key={i}>{n.text}</div>)}
+        <Fazit fazit={fazit} kompakt />
       </div>
 
-      {zustand.phase === 'laedt' && <div class="card"><p class="hint">Streckendaten und Wetter werden geladen …</p></div>}
+      {zustand.phase === 'laedt' && <div class="card"><p class="hint">Strecke, Wetter und Untergrund werden geladen …</p></div>}
       {zustand.phase === 'fehler' && <div class="card"><div class="meldung fehler"><b>{zustand.text}</b></div></div>}
 
       {zustand.phase === 'fertig' && (
         <>
           <div class="card">
             <div class="row"><span>Strecke</span>
-              <b>{zustand.latlng ? zustand.latlng.length + ' Punkte' : 'keine GPS-Daten'}</b></div>
-            <RouteMap latlng={zustand.latlng} windAus={zustand.wetter && zustand.wetter.richtung} />
+              <b>{zustand.latlng ? ein(zustand.bilanz ? zustand.bilanz.km : 0) + ' km' : 'keine GPS-Daten'}</b></div>
+            <WetterLeiste wetter={zustand.wetter} />
+            <RouteMap latlng={zustand.latlng} gruppen={zustand.gruppen}
+              windAus={zustand.wetter && zustand.wetter.richtung} />
+            <StreckenLegende bilanz={zustand.bilanz} />
           </div>
 
-          {zustand.wetter && (
+          <Auswertung bilanz={zustand.bilanz} wetter={zustand.wetter} fazit={fazit} row={row} />
+
+          {!zustand.bilanz && (
             <div class="card">
-              <div class="row"><span>Wetter zur Startzeit</span><b>Open-Meteo</b></div>
-              <div class="wetterraster">
-                <div class="wetterfeld"><b>{Math.round(zustand.wetter.temp)} °C</b>
-                  <span>gefühlt {Math.round(zustand.wetter.gefuehlt)} °C</span></div>
-                <div class="wetterfeld"><b>{Math.round(zustand.wetter.wind)} km/h</b>
-                  <span>aus {richtungKurz(zustand.wetter.richtung)}, Böen {Math.round(zustand.wetter.boe)}</span></div>
-                <div class="wetterfeld"><b>{zustand.wetter.regen.toFixed(1)} mm</b><span>Niederschlag</span></div>
-                <div class="wetterfeld"><b>{Math.round(zustand.wetter.feuchte)} %</b><span>Luftfeuchte</span></div>
-              </div>
-
-              {zustand.wind && (
-                <>
-                  <div class="row" style="margin-top:14px"><span>Wind zur Fahrtrichtung</span>
-                    <b>{zustand.wind.gegenProzent} % gegen</b></div>
-                  <div class="zbar">
-                    <span style={'width:' + zustand.wind.gegenProzent + '%;background:var(--z5)'}></span>
-                    <span style={'width:' + zustand.wind.querProzent + '%;background:var(--z3)'}></span>
-                    <span style={'width:' + zustand.wind.rueckProzent + '%;background:var(--z2)'}></span>
-                  </div>
-                  <div class="zleg">
-                    Gegen {zustand.wind.gegenProzent} % · quer {zustand.wind.querProzent} % ·
-                    Rücken {zustand.wind.rueckProzent} % · {zustand.wind.streckeKm.toFixed(1)} km gewertet
-                  </div>
-                  <p class="hint">
-                    Anteil der gefahrenen Strecke je Windlage, aus Fahrtrichtung und Windrichtung
-                    abschnittsweise gerechnet. Ein hoher Gegenwindanteil erklärt einen Puls, der
-                    über der Geschwindigkeit liegt – und einen Drift, der sonst nach Ermüdung aussieht.
-                  </p>
-                </>
-              )}
-
-              {/* Stand vorher in den Einstellungen. Dort war die Zeile leer -
-                  es gibt nichts einzustellen; der Hinweis gehoert dorthin, wo
-                  die Daten tatsaechlich abgerufen werden. */}
-              <p class="hint">
-                Open-Meteo, ohne Schlüssel und ohne Konto. Für die Abfrage gehen die
-                Koordinaten der Fahrt dorthin.
-              </p>
+              {row.notes.map((n, i) => <div class={'annote ' + (n.kind || '')} key={i}>{n.text}</div>)}
+              <Fazit fazit={fazit} />
             </div>
           )}
 

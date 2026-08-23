@@ -42,56 +42,27 @@ export function stundenIndex(hourly, zeitIso){
   return i >= 0 ? i : 0;
 }
 
-/* Kurs zwischen zwei Punkten in Grad, 0 = Norden. */
-export function peilung(a, b){
-  const rad = Math.PI / 180;
-  const y = Math.sin((b[1] - a[1]) * rad) * Math.cos(b[0] * rad);
-  const x = Math.cos(a[0] * rad) * Math.sin(b[0] * rad)
-          - Math.sin(a[0] * rad) * Math.cos(b[0] * rad) * Math.cos((b[1] - a[1]) * rad);
-  return (Math.atan2(y, x) / rad + 360) % 360;
-}
+/* Wind zu der Stunde, in der ein Abschnitt gefahren wurde.
 
-/* Windrichtung wird als Richtung angegeben, AUS der es weht. Gegenwind heisst
-   also: der Kurs zeigt dorthin, wo der Wind herkommt. */
-export function windAnteil(kurs, windAus){
-  const diff = ((windAus - kurs + 540) % 360) - 180;   // -180..180
-  return Math.cos(diff * Math.PI / 180);               // 1 = voller Gegenwind, -1 = Rueckenwind
-}
-
-/* Aus Spur und Wind den Gegenwindanteil der Fahrt. Nur Abschnitte mit echter
-   Bewegung zaehlen - im Stand hat "Fahrtrichtung" keine Bedeutung. */
-export function windBilanz(latlng, hourly, index, minMeter){
-  const schwelle = minMeter || 25;
-  let gegen = 0, rueck = 0, quer = 0, strecke = 0;
-  const windAus = hourly.wind_direction_10m[index];
-  const tempo = hourly.wind_speed_10m[index];
-  for(let i = 1; i < latlng.length; i++){
-    const a = latlng[i - 1], b = latlng[i];
-    if(!a || !b) continue;
-    const d = abstand(a, b);
-    if(d < schwelle) continue;
-    const anteil = windAnteil(peilung(a, b), windAus);
-    strecke += d;
-    if(anteil > 0.3) gegen += d;
-    else if(anteil < -0.3) rueck += d;
-    else quer += d;
-  }
-  if(!strecke) return null;
+   Ein Wert fuer die ganze Fahrt reicht nicht: eine Vierstundenfahrt sieht am
+   Ende oft eine andere Windrichtung als am Anfang, und genau daran haengt, ob
+   die Rueckfahrt Rueckenwind war oder nicht. sek ist die Sekunde seit dem
+   Start, wie sie der Zeit-Stream zaehlt. */
+export function windZurZeit(hourly, startIso, sek){
+  const t = new Date(String(startIso).replace(/Z$/, ''));
+  if(isNaN(t.getTime())) return null;
+  t.setSeconds(t.getSeconds() + (sek || 0));
+  const i = stundenIndex(hourly, isoStunde(t));
   return {
-    windAus, tempo,
-    gegenProzent: Math.round(gegen / strecke * 100),
-    rueckProzent: Math.round(rueck / strecke * 100),
-    querProzent:  Math.round(quer / strecke * 100),
-    streckeKm: strecke / 1000
+    aus: hourly.wind_direction_10m[i],
+    kmh: hourly.wind_speed_10m[i],
+    boe: hourly.wind_gusts_10m[i]
   };
 }
 
-export function abstand(a, b){
-  const R = 6371000, rad = Math.PI / 180;
-  const dLat = (b[0] - a[0]) * rad, dLon = (b[1] - a[1]) * rad;
-  const s = Math.sin(dLat / 2) ** 2 +
-            Math.cos(a[0] * rad) * Math.cos(b[0] * rad) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(s));
+function isoStunde(d){
+  const z = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + 'T' + z(d.getHours());
 }
 
 export const HIMMELSRICHTUNG = ['N','NNO','NO','ONO','O','OSO','SO','SSO','S','SSW','SW','WSW','W','WNW','NW','NNW'];

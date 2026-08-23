@@ -61,6 +61,18 @@
   --spur:      #d5006d;
   --spur-rand: #ffffff;
 
+  /* Die Abschnittsfarben auf der Karte. Zwei Stufen je Ursache, damit man
+     "etwas Gegenwind" von "Wand aus Wind" unterscheiden kann, ohne die Legende
+     zu lesen. Getrennte Farbtoene je Ursache statt einer Rampe: die Frage vor
+     der Karte ist zuerst, WAS gebremst hat, und erst dann, wie stark.
+     Auch das ausserhalb der Themes - die Kacheln bleiben immer hell. */
+  --sp-frei:       #1a8f4a;
+  --sp-berg:       #e08a00;
+  --sp-berg-stark: #c03a10;
+  --sp-wind:       #7048d8;
+  --sp-wind-stark: #4517a8;
+  --sp-weg:        #8a5a20;
+
   /* Zustaende: die Farbe steckt in Text und Kante, die Flaeche bleibt fast
      neutral. Vier bunte Kacheln nebeneinander waren zu viel. */
   --ok:    #3e7a63;

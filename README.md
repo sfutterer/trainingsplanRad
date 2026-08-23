@@ -74,8 +74,9 @@ Nur über das Menü erreichbar, weil man sie selten braucht:
 | Dienst | Wofür | Schlüssel |
 |---|---|---|
 | intervals.icu | Aktivitäten, Streams, Wellness | nötig, Settings → Developer Settings |
-| Thunderforest | OpenCycleMap in der Analyse | optional, sonst OpenStreetMap |
-| Open-Meteo | Temperatur und Wind je Fahrt | keiner |
+| Thunderforest | Kartenkacheln in der Analyse (Atlas, OpenCycleMap, Landscape) | optional, sonst OpenStreetMap |
+| Open-Meteo | Temperatur, Feuchte, Niederschlag und Wind je Stunde | keiner |
+| Overpass (OpenStreetMap) | Untergrund der gefahrenen Wege | keiner |
 
 Die Anleitung, wo man die Schlüssel bekommt, steht in der App hinter dem
 Fragezeichen der jeweiligen Zeile.
@@ -101,9 +102,21 @@ dunkel. Jede Zonenfarbe erreicht mindestens 5:1 gegen ihre Fläche.
 
 Zuerst eine Liste der Aufzeichnungen aus dem gewählten Zeitraum – eine Abfrage.
 Die Auswertung läuft erst beim Antippen einer Fahrt: Pulszonen aus dem Stream,
-Abgleich mit dem Plan, Streckenkarte und Wetter. Aus Windrichtung und
-Fahrtrichtung wird abschnittsweise der Gegenwindanteil gerechnet – die Frage,
-die eine Drift-Analyse sonst offen lässt.
+Abgleich mit dem Plan, Streckenkarte und Bedingungen.
+
+Die Spur wird in Abschnitte von rund 150 m geschnitten und jeder Abschnitt
+einzeln bewertet: Gegenwindanteil aus Fahrtrichtung gegen die Windrichtung
+**der jeweiligen Stunde**, Steigung aus dem Höhenstream, Untergrund aus
+OpenStreetMap. Auf der Karte trägt jeder Abschnitt die Farbe seiner stärksten
+Bremse – bergauf, Gegenwind, unbefestigt – oder grün, wenn nichts davon zutraf.
+Treffen Steigung und Wind zusammen, entscheidet eine grobe Wattschätzung,
+welche der beiden die Farbe bekommt; unbefestigt kommt zusätzlich als
+Punktlinie darüber, damit Schotter nicht verdeckt wird.
+
+Darunter eine Auswertung, die Strecke und Wetter zusammen liest, und am Ende
+ein Fazit: passt die Einheit zum Plan, erklären die Bedingungen eine Abweichung,
+und was wäre nächstes Mal anders zu machen. Das Fazit steht auch oben in der
+Kopfkarte – die Frage nach einer Fahrt ist zuerst „war das gut so?“.
 
 Der Planbeginn steht standardmäßig auf dem **15.08.2026**, dem Samstag, an dem
 Woche 1 begonnen hat. Liegt er auf einem anderen Wochentag, warnt die App: die

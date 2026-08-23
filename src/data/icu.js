@@ -80,16 +80,19 @@ export async function probeCapabilities(key, activityId){
    blieb, weil ein einzelner Breitenwert kein Paar ist.
 
    Statt eine Form zu raten, werden alle erkannt und auf [lat, lng] gebracht:
-   Leaflet und die Windbilanz rechnen mit Paaren. */
-export function spurPunkte(streams){
+   Leaflet und die Abschnittsauswertung rechnen mit Paaren.
+
+   Die Rohfassung behaelt die Luecken als null. Nur so passen Hoehe und Zeit
+   noch zum Punkt - die kommen als eigene Stroeme, Index fuer Index. */
+export function latlngRoh(streams){
   const list = Array.isArray(streams) ? streams : [];
   const hol = t => list.find(s => s && s.type === t);
 
   const ll = hol('latlng');
   if(ll && Array.isArray(ll.data)){
     if(Array.isArray(ll.data2)) return paare(ll.data, ll.data2);
-    const punkte = ll.data.map(einPunkt).filter(Boolean);
-    if(punkte.length) return punkte;
+    const punkte = ll.data.map(einPunkt);
+    if(punkte.some(Boolean)) return punkte;
   }
 
   /* Getrennte Stroeme - je nach Konto unter verschiedenen Namen. */
@@ -101,13 +104,38 @@ export function spurPunkte(streams){
   return [];
 }
 
+export function spurPunkte(streams){
+  return latlngRoh(streams).filter(Boolean);
+}
+
+/* Die Spur mit allem, was die Abschnittsauswertung braucht: Punkt, Hoehe und
+   die Sekunde seit dem Start. Fehlt ein Strom, bleibt das Feld null - die
+   Auswertung laesst dann weg, was sie ohne ihn nicht sagen kann. */
+export function spurMitHoehe(streams){
+  const roh = latlngRoh(streams);
+  const hoehe = zahlenStrom(streams, 'altitude');
+  const zeit  = zahlenStrom(streams, 'time');
+  const raus = [];
+  for(let i = 0; i < roh.length; i++){
+    if(!roh[i]) continue;
+    raus.push({
+      ll: roh[i],
+      hoehe: hoehe && Number.isFinite(hoehe[i]) ? hoehe[i] : null,
+      sek:   zeit  && Number.isFinite(zeit[i])  ? zeit[i]  : null
+    });
+  }
+  return raus;
+}
+
+function zahlenStrom(streams, typ){
+  const s = (Array.isArray(streams) ? streams : []).find(x => x && x.type === typ);
+  return s && Array.isArray(s.data) ? s.data.map(v => (v == null ? NaN : Number(v))) : null;
+}
+
 function paare(lats, lngs){
   const out = [];
-  const n = Math.min(lats.length, lngs.length);
-  for(let i = 0; i < n; i++){
-    const p = gueltig(lats[i], lngs[i]);
-    if(p) out.push(p);
-  }
+  const n = Math.max(lats.length, lngs.length);
+  for(let i = 0; i < n; i++) out.push(gueltig(lats[i], lngs[i]));
   return out;
 }
 
