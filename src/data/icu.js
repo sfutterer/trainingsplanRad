@@ -50,12 +50,16 @@ export function fetchWellness(key, fromIso, toIso){
    Routen- und Wetterauswertung haengen daran, und das steht in keiner
    Dokumentation - es muss gemessen werden. */
 export async function probeCapabilities(key, activityId){
-  const out = { streams: {}, weatherFields: [], error: null };
+  const out = { streams: {}, spur: null, spurForm: null, weatherFields: [], error: null };
   try {
     const s = await fetchStreams(key, activityId, 'latlng,altitude,watts,cadence,heartrate,time');
     for(const st of (s || [])){
       out.streams[st.type] = Array.isArray(st.data) ? st.data.length : 0;
     }
+    /* Nicht nur, ob latlng ankommt, sondern ob daraus Punkte werden. Beides
+       auseinanderzuhalten war genau die Luecke: Stream da, Karte leer. */
+    out.spur = spurPunkte(s).length;
+    out.spurForm = spurForm(s);
   } catch(e){ out.error = e.message; }
   try {
     const a = await icuFetch('/activity/' + activityId, key);
@@ -65,4 +69,81 @@ export async function probeCapabilities(key, activityId){
       .map(k => k + '=' + JSON.stringify(a[k]));
   } catch(e){ if(!out.error) out.error = e.message; }
   return out;
+}
+
+/* ---------- Spur aus den Streams ---------- */
+
+/* intervals.icu liefert latlng nicht in einer Form, sondern je nach Quelle
+   der Aufzeichnung in mehreren: als Paare [lat, lng], als Objekte mit lat/lng,
+   oder aufgeteilt in data (Breite) und data2 (Laenge). Die Diagnose zaehlt nur
+   data - deshalb sah der Stream dort schon nach Daten aus, wo die Karte leer
+   blieb, weil ein einzelner Breitenwert kein Paar ist.
+
+   Statt eine Form zu raten, werden alle erkannt und auf [lat, lng] gebracht:
+   Leaflet und die Windbilanz rechnen mit Paaren. */
+export function spurPunkte(streams){
+  const list = Array.isArray(streams) ? streams : [];
+  const hol = t => list.find(s => s && s.type === t);
+
+  const ll = hol('latlng');
+  if(ll && Array.isArray(ll.data)){
+    if(Array.isArray(ll.data2)) return paare(ll.data, ll.data2);
+    const punkte = ll.data.map(einPunkt).filter(Boolean);
+    if(punkte.length) return punkte;
+  }
+
+  /* Getrennte Stroeme - je nach Konto unter verschiedenen Namen. */
+  const lat = hol('lat') || hol('latitude');
+  const lng = hol('lng') || hol('lon') || hol('longitude');
+  if(lat && lng && Array.isArray(lat.data) && Array.isArray(lng.data)){
+    return paare(lat.data, lng.data);
+  }
+  return [];
+}
+
+function paare(lats, lngs){
+  const out = [];
+  const n = Math.min(lats.length, lngs.length);
+  for(let i = 0; i < n; i++){
+    const p = gueltig(lats[i], lngs[i]);
+    if(p) out.push(p);
+  }
+  return out;
+}
+
+function einPunkt(p){
+  if(Array.isArray(p) && p.length >= 2) return gueltig(p[0], p[1]);
+  if(p && typeof p === 'object'){
+    const lat = p.lat !== undefined ? p.lat : p.latitude;
+    const lng = p.lng !== undefined ? p.lng
+              : p.lon !== undefined ? p.lon
+              : p.long !== undefined ? p.long : p.longitude;
+    return gueltig(lat, lng);
+  }
+  if(typeof p === 'string' && p.indexOf(',') > 0){
+    const teile = p.split(',');
+    return gueltig(parseFloat(teile[0]), parseFloat(teile[1]));
+  }
+  return null;
+}
+
+/* Nur echte Koordinaten. Aussetzer der Aufzeichnung kommen als null oder als
+   0/0 zurueck - Punkt null im Atlantik verzieht sonst die ganze Karte. */
+function gueltig(lat, lng){
+  const a = Number(lat), b = Number(lng);
+  if(!Number.isFinite(a) || !Number.isFinite(b)) return null;
+  if(Math.abs(a) > 90 || Math.abs(b) > 180) return null;
+  if(a === 0 && b === 0) return null;
+  return [a, b];
+}
+
+/* Wie der latlng-Stream tatsaechlich aussieht, in einer Zeile. Ohne das bleibt
+   bei einer leeren Karte offen, ob die Daten fehlen oder nur anders liegen. */
+export function spurForm(streams){
+  const ll = (Array.isArray(streams) ? streams : []).find(s => s && s.type === 'latlng');
+  if(!ll) return 'kein latlng-Stream';
+  if(!Array.isArray(ll.data)) return 'latlng ohne data-Feld';
+  const erster = ll.data.find(p => p !== null && p !== undefined);
+  return 'erster Wert ' + JSON.stringify(erster) +
+         (Array.isArray(ll.data2) ? ', Laenge in data2 (' + ll.data2.length + ')' : '');
 }

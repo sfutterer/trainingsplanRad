@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, startDate, apiKey, coreLog, today } from '../../../state/store.js';
-import { fetchActivities, fetchStreams } from '../../../data/icu.js';
+import { fetchActivities, fetchStreams, spurPunkte } from '../../../data/icu.js';
 import { ladeWetter, stundenIndex, windBilanz, richtungKurz } from '../../../data/wetter.js';
 import { zoneSeconds, hrBands } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, weekNumberFor, WEEKDAY_NAMES } from '../../../domain/week.js';
@@ -125,7 +125,7 @@ function Detail({ act, onZurueck }){
         if(rad){
           const streams = await fetchStreams(key, act.id, 'heartrate,time,latlng,altitude');
           const hol = t => (streams || []).find(s => s.type === t);
-          const hr = hol('heartrate'), tm = hol('time'), ll = hol('latlng');
+          const hr = hol('heartrate'), tm = hol('time');
 
           if(hr && Array.isArray(hr.data)){
             const wk = Math.max(weekNumberFor(new Date(act.start_date_local), start), 1);
@@ -134,14 +134,16 @@ function Detail({ act, onZurueck }){
               act.icu_recording_time || act.elapsed_time || act.moving_time || 0);
           }
 
-          if(ll && Array.isArray(ll.data) && ll.data.length > 1){
+          /* Die Form des latlng-Streams liegt nicht fest - das Umrechnen auf
+             Paare steckt deshalb in icu.js, wo auch die Diagnose es nutzt. */
+          const roh = spurPunkte(streams);
+          if(roh.length > 1){
             /* Auf hoechstens 1200 Punkte ausduennen: die Linie sieht identisch
                aus, die Karte bleibt fluessig. */
-            const roh = ll.data.filter(pt => Array.isArray(pt) && pt.length === 2 && pt[0] != null);
             const schritt = Math.max(1, Math.floor(roh.length / 1200));
             erg.latlng = roh.filter((_, i) => i % schritt === 0);
           } else {
-            erg.hinweise.push('Kein GPS-Stream zu dieser Fahrt. Entweder ohne Aufzeichnung gefahren, oder das Konto liefert latlng nicht über die API.');
+            erg.hinweise.push('Kein GPS-Stream zu dieser Fahrt. Entweder ohne Aufzeichnung gefahren, oder das Konto liefert latlng nicht über die API. Unter Einstellungen → Diagnose zeigt „Verfügbare Daten prüfen“, was zu dieser Aktivität ankommt.');
           }
 
           if(erg.latlng && erg.latlng.length > 1){

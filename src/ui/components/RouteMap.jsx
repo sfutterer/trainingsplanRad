@@ -28,10 +28,13 @@ function ladeLeaflet(){
 export function RouteMap({ latlng, windAus }){
   const box = useRef(null);
   const [fehler, setFehler] = useState(null);
+  /* Im Render gelesen, nicht erst im Effekt: so merkt die Komponente, wenn der
+     Schluessel dazukommt, und baut die Karte mit den Radkacheln neu - statt bis
+     zum naechsten Aufruf auf OpenStreetMap stehen zu bleiben. */
+  const key = mapKey.value;
 
   useEffect(() => {
     if(!box.current || !latlng || latlng.length < 2) return;
-    const key = mapKey.value;
     let m = null, weg = false;
 
     ladeLeaflet().then(L => {
@@ -77,7 +80,7 @@ export function RouteMap({ latlng, windAus }){
     }).catch(e => setFehler('Karte konnte nicht geladen werden: ' + e.message));
 
     return () => { weg = true; if(m) m.remove(); };
-  }, [latlng, windAus]);
+  }, [latlng, windAus, key]);
 
   if(fehler) return <div class="karte-leer">{fehler}</div>;
 
