@@ -150,8 +150,8 @@
     "transitionBands": [
       {"key": "unter", "label": "<Z1", "min": 0,   "max": 100,  "color": "#3a4553"},
       {"key": "z1",    "label": "Z1",  "min": 100, "max": 128,  "color": "#7d8bff"},
-      {"key": "z2",    "label": "Z2",  "min": 128, "max": 135,  "color": "#2dd4a7"},
-      {"key": "z3",    "label": "Z3",  "min": 135, "max": 155,  "color": "#ffb14e"},
+      {"key": "z2",    "label": "Z2",  "min": 128, "max": 142,  "color": "#2dd4a7"},
+      {"key": "z3",    "label": "Z3",  "min": 142, "max": 155,  "color": "#ffb14e"},
       {"key": "z4",    "label": "Z4",  "min": 155, "max": 168,  "color": "#ff8f6b"},
       {"key": "z5",    "label": "Z5",  "min": 168, "max": null, "color": "#ff6b6b"}
     ],
@@ -400,7 +400,7 @@
     "legProgression": "Weiterrücken erst, wenn das obere Ende der Spanne an zwei Sonntagen in allen Runden mit sauberer Form erreicht wurde: mehr Wiederholungen → mehr Runden → schwierigere Variante → Zusatzgewicht. Nicht über das Tempo und nicht über mehr Übungen.",
     "legWednesdayNote": "Mittwoch ist der verkürzte Zirkel ohne Beinblock. Fällt der Sonntag aus, wird der Beinblock nicht auf den Mittwoch nachgeholt – ausgefallen ist ausgefallen.",
     "coreAbortRule": "Regel: Wenn die Form kippt – Hüfte hängt durch, Rücken wird rund, Zittern – ist der Satz zu Ende. Abbrechen ist besser als schlecht weitermachen; eine Runde weniger kostet nichts.",
-    "zoneNoteTransition": "Arbeitsannahme, kein gemessener Wert – ein Datenpunkt, eine ungeprüfte HFmax, Geschwindigkeit statt Leistung. Z2 ist der belegte Arbeitsbereich 128–135; die im Plan genannte harte Obergrenze steht bewusst nicht hier, damit sie kein Ziel wird. Der Sprechtest sticht die Zahl.",
+    "zoneNoteTransition": "Arbeitsannahme, kein gemessener Wert – ein Datenpunkt, eine ungeprüfte HFmax, Geschwindigkeit statt Leistung. Das Band reicht wie im Plan bis 142; belegt ist aber nur der Arbeitsbereich 128–135, dort wird gefahren. 142 ist eine harte Grenze, kein Ziel. Der Sprechtest sticht die Zahl.",
     "zoneNoteCoggan": "Auch Coggan-Z2 ist breit und reicht oben oft über LT1. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich sein.",
     "thresholdTestSummary": "20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker, 20 min gleichmäßig maximal, 10 min Ausrollen.<br>FTP = Ø-Watt der 20 min × 0,95 · LTHR = Ø-Puls der 20 min.<br>Pacing: die ersten drei Minuten bewusst konservativer als das Ziel, auf die Durchschnittsleistung schauen, nicht auf den Momentanwert.",
     "intervalRollingStart": "Rollender Start: in der letzten Minute der Erholung das Tempo leicht anziehen.",

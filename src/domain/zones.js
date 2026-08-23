@@ -42,7 +42,7 @@ export function bandRange(b){
   return b.min + '–' + b.max + ' bpm';
 }
 
-/* "Z2 128-135 bpm" - eine Stelle, an der die Zahlen stehen. Vorher waren die
+/* "Z2 128-142 bpm" - eine Stelle, an der die Zahlen stehen. Vorher waren die
    bpm-Werte in ein Dutzend Textbausteine einkopiert und liefen bei jeder
    Zonenkorrektur auseinander. */
 export function zoneText(plan, th, key, week){

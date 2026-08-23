@@ -4,7 +4,12 @@
    Stand und in Node gegen diese Module erzeugt wurde - identisches Startdatum,
    18 Wochen, alle sieben Tage je Woche, beide Zonenmodelle. Aendert sich hier
    eine Zahl oder ein Satz, faellt der Test. Das ist der Zweck: der Umbau darf
-   die Anzeige nicht anfassen. */
+   die Anzeige nicht anfassen.
+
+   Nachgezogen am 23.08.2026: Z2 der Uebergangsfassung reicht jetzt wie im
+   Trainingsplan bis 142 statt bis 135, Z3 beginnt entsprechend bei 142. Die
+   Abzuege unterscheiden sich gegenueber dem alten Stand ausschliesslich in
+   diesen beiden Zahlen und den daraus erzeugten Texten. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -87,11 +92,11 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: 'ce998707f75980d0', len: 14119 });
+      .toEqual({ hash: 'f2d67a5f210db4ae', len: 14119 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '948bc3ab6434f1a8', len: 43550 });
+      .toEqual({ hash: 'cc350b5e06fa622c', len: 43550 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -114,7 +119,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + D.buildDayInfo(plan, th, date, start).detail);
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '575954fe5b2471b1', len: 38551 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '2e1d91d772534831', len: 38551 });
   });
 });
 
@@ -140,9 +145,9 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
     expect(W.testWeeks(plan)).toEqual([4, 12, 16]);
   });
 
-  it('Z2 der Uebergangsfassung ist 128 bis 135 bpm', () => {
+  it('Z2 der Uebergangsfassung ist 128 bis 142 bpm', () => {
     const b = Z.zoneBand(plan, Z.NO_THRESHOLDS, 'z2', 2);
-    expect([b.min, b.max]).toEqual([128, 135]);
+    expect([b.min, b.max]).toEqual([128, 142]);
   });
 });
 
