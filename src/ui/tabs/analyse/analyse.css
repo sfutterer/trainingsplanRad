@@ -90,6 +90,7 @@
 .legfarbe.gepunktet{ background: var(--outline-2);
   background-image: repeating-linear-gradient(90deg, #12140f 0 1.5px, transparent 1.5px 6px); }
 .leghinweis{ flex-basis: 100%; font-size: 12px; }
+.legende .leghinweis:first-child{ margin-bottom: -1px; }
 
 /* ---- Wetterleiste ueber der Karte ---- */
 /* Drei Werte, drei Zeichen, kein Satz. Was sie bedeuten, steht in der

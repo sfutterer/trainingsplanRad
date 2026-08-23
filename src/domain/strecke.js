@@ -35,7 +35,7 @@ export const KLASSE_TEXT = {
   'berg-mittel': 'bergauf ' + SCHWELLEN.bergMittel + '–' + SCHWELLEN.bergStark + ' %',
   'wind-stark':  'Gegenwind über ' + SCHWELLEN.windStark + ' km/h',
   'wind-mittel': 'Gegenwind ' + SCHWELLEN.windMittel + '–' + SCHWELLEN.windStark + ' km/h',
-  'weg':         'unbefestigt, sonst frei',
+  'weg':         'unbefestigt',
   'frei':        'nichts davon'
 };
 

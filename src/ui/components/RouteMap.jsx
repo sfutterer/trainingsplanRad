@@ -139,21 +139,31 @@ export function RouteMap({ latlng, gruppen, windAus }){
 }
 
 /* Legende unter der Karte. Nur was vorkam: eine Zeile "unbefestigt: 0 km"
-   erklaert nichts, sie verlaengert nur die Liste. */
+   erklaert nichts, sie verlaengert nur die Liste.
+
+   Die Zeilen duerfen sich nicht ueberschneiden. Vorher stand der Schotter
+   zweimal da - einmal als Farbe und einmal als Gesamtsumme -, und bei einer
+   Fahrt, auf der kein Schotterabschnitt zusaetzlich Wind oder Steigung hatte,
+   waren beide Zahlen gleich. Zwei Zeilen mit derselben Zahl sehen aus wie ein
+   Fehler. Jetzt zeigt die Punktlinie nur den Rest: den Schotter, dem eine
+   andere Farbe zusteht, weil dort etwas Staerkeres gebremst hat. So addieren
+   sich die Zeilen zur Gesamtstrecke. */
 export function StreckenLegende({ bilanz, laeuft }){
   if(!bilanz) return null;
   const km = m => (m / 1000).toFixed(1).replace('.', ',') + ' km';
   const vorhanden = KLASSEN.filter(k => (bilanz.klassen[k] || 0) >= 100);
+  const wegRest = bilanz.wegMeter - (bilanz.klassen['weg'] || 0);
   return (
     <div class="legende">
+      <span class="leghinweis">Farbe: was auf dem Abschnitt am stärksten gebremst hat.</span>
       {vorhanden.map(k => (
         <span class="legpost" key={k}>
           <i class={'legfarbe k-' + k}></i>{KLASSE_TEXT[k]} <b>{km(bilanz.klassen[k])}</b>
         </span>
       ))}
-      {bilanz.wegMeter >= 100 && (
+      {wegRest >= 100 && (
         <span class="legpost">
-          <i class="legfarbe gepunktet"></i>unbefestigt insgesamt <b>{km(bilanz.wegMeter)}</b>
+          <i class="legfarbe gepunktet"></i>unbefestigt, dazu Wind oder Steigung <b>{km(wegRest)}</b>
         </span>
       )}
       {laeuft && <span class="leghinweis">Untergrund wird noch geladen …</span>}
