@@ -28,7 +28,13 @@
 .daynote b{ color: var(--on-surface); }
 .daynote.rot{ background:var(--miss-bg); border-color:var(--miss); color:var(--on-surface); }
 .daynote.gruen{ background:var(--ok-bg); border-color:var(--ok); color:var(--on-surface); }
+.daynote.gelb{ background:var(--dev-bg); border-color:var(--dev); color:var(--on-surface); }
+.daynote ul{ margin:6px 0 0; padding-left:18px; }
+.daynote li{ margin-top:4px; }
 
+.verlauf{ display:block; width:100%; height:auto; margin:6px 0 2px; overflow:visible; }
+.verlaufleg{ display:flex; gap:14px; font-size:12px; color:var(--muted); margin-top:2px; }
+.verlaufleg i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; }
 .zonerow .dot{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:8px; }
 .hint.warn{ color: var(--dev); }
 .hint.good{ color: var(--ok); }

@@ -27,7 +27,7 @@ function ein(v){ return (Math.round(v * 10) / 10).toString().replace('.', ','); 
 
 /* Wie schwer waren die Bedingungen? Der Punktwert entscheidet nur darueber, ob
    eine Abweichung als erklaert durchgeht - er wird nirgends angezeigt. */
-export function umfeldLast(bilanz, wetter){
+export function umfeldLast(bilanz, wetter, verfassung){
   const teile = [];
   let punkte = 0;
 
@@ -91,14 +91,45 @@ export function umfeldLast(bilanz, wetter){
     }
   }
 
+  /* Die Verfassung zaehlt wie das Wetter, weil sie dasselbe tut: bei erhoehtem
+     Ruhepuls landet dieselbe Leistung in einer hoeheren Zone. Die Urteile
+     kommen fertig aus analysis.js - die Schwellen duerfen nicht zweimal
+     irgendwo stehen, sonst bewerten Gate und Fazit denselben Tag verschieden. */
+  if(verfassung){
+    if(verfassung.rhrHoch){
+      punkte += 2;
+      teile.push({ art: 'verfassung', text: 'Ruhepuls am Morgen ' + Math.round(verfassung.restingHR) +
+        ' bpm gegen ' + Math.round(verfassung.rhrAvg) + ' bpm im Schnitt. Der Puls startet erhöht in ' +
+        'die Fahrt und bleibt es – dieselbe Leistung landet dann eine Zone höher.' });
+    }
+    if(verfassung.hrvNiedrig){
+      punkte += 1;
+      teile.push({ art: 'verfassung', text: 'HRV ' + Math.round(verfassung.hrv) + ' gegen ' +
+        Math.round(verfassung.hrvAvg) + ' im Schnitt – der Körper war an dem Tag nicht erholt.' });
+    }
+    if(verfassung.kurzeNaechte >= 2){
+      punkte += 2;
+      teile.push({ art: 'verfassung', text: 'Zwei Nächte unter 6 h Schlaf vor dieser Fahrt.' });
+    } else if(verfassung.kurzeNaechte === 1){
+      punkte += 1;
+      teile.push({ art: 'verfassung', text: 'Die Nacht davor blieb unter 6 h (' +
+        ein(verfassung.sleepSecs / 3600) + ' h).' });
+    }
+  }
+
   return { punkte, teile };
 }
 
 /* Die Massnahmen, die sich allein aus den Bedingungen ergeben - unabhaengig
    davon, ob der Plan eingehalten wurde. Hoechstens zwei, sonst liest sie
    niemand. */
-function umfeldMassnahmen(bilanz, wetter, ziel){
+function umfeldMassnahmen(bilanz, wetter, ziel, verfassung){
   const m = [];
+  if(verfassung && verfassung.rot){
+    m.push('Das Wellness-Gate stand an dem Tag auf rot. Die Fahrt ist damit nicht das Problem – ' +
+      'die Entscheidung davor war es. An solchen Tagen kostet ein Qualitätstag mehr Erholung, ' +
+      'als er Reiz bringt.');
+  }
   if(wetter && wetter.temp >= LAST.heissEtwas){
     m.push('In der Wärme nach Puls fahren, nicht nach Tempo: die 5–10 bpm Drift sind Kühlung, kein Trainingsreiz. Früher starten hält ' +
       (ziel || 'die Zielzone') + ' fahrbar.');
@@ -118,8 +149,8 @@ function umfeldMassnahmen(bilanz, wetter, ziel){
    row kommt aus anCompareDay - status, badge und notes sind dort schon
    entschieden. Hier wird nichts umbewertet: eine zu harte Fahrt bleibt zu
    hart. Nur die Erklaerung kommt dazu, und die Frage, was daraus folgt. */
-export function streckenFazit(row, bilanz, wetter){
-  const last = umfeldLast(bilanz, wetter);
+export function streckenFazit(row, bilanz, wetter, verfassung){
+  const last = umfeldLast(bilanz, wetter, verfassung);
   const ziel = row && row.target && row.target.zone ? row.target.zone.toUpperCase() : null;
   const badge = (row && row.badge) || '';
   const schlecht = ((row && row.notes) || []).filter(n => n.kind === 'bad');
@@ -173,7 +204,7 @@ export function streckenFazit(row, bilanz, wetter){
       : 'Die Einheit passt zum Plan.';
   }
 
-  for(const m of umfeldMassnahmen(bilanz, wetter, ziel)){
+  for(const m of umfeldMassnahmen(bilanz, wetter, ziel, verfassung)){
     if(massnahmen.length < 3) massnahmen.push(m);
   }
 

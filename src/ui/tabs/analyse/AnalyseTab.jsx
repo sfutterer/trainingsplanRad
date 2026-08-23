@@ -10,14 +10,15 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, startDate, apiKey, coreLog, today } from '../../../state/store.js';
-import { fetchActivities, fetchStreams, spurMitHoehe } from '../../../data/icu.js';
+import { fetchActivities, fetchStreams, spurMitHoehe, fetchWellness } from '../../../data/icu.js';
 import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
 import { ladeWege } from '../../../data/osm.js';
 import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn } from '../../../domain/strecke.js';
 import { streckenFazit } from '../../../domain/fazit.js';
 import { zoneSeconds, hrBands } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, weekNumberFor, WEEKDAY_NAMES } from '../../../domain/week.js';
-import { anCompareDay, anWeekTotals, anBuildReport, anFmtMin, anPct, anIsRide } from '../../../domain/analysis.js';
+import { anCompareDay, anWeekTotals, anBuildReport, anFmtMin, anPct, anIsRide,
+         verfassungAus } from '../../../domain/analysis.js';
 import { RouteMap, StreckenLegende } from '../../components/RouteMap.jsx';
 import { Auswertung, Fazit, WetterLeiste, ein } from './Auswertung.jsx';
 import { gotoTab } from '../../../App.jsx';
@@ -144,7 +145,15 @@ function Detail({ act, onZurueck }){
     let weg = false;
     (async () => {
       const key = apiKey.value;
-      const erg = { zonen: null, latlng: null, gruppen: null, bilanz: null, wetter: null, hinweise: [] };
+      const erg = { zonen: null, latlng: null, gruppen: null, bilanz: null, wetter: null,
+                    verfassung: null, hinweise: [] };
+      /* Laeuft neben den Streams, nicht dahinter: die Verfassung am Fahrtag
+         haengt an nichts, was die Aufzeichnung liefert. Faellt der Abruf aus,
+         bleibt das Fazit bei Strecke und Wetter. */
+      const tagIso = isoDayLocal(toMidnight(new Date(act.start_date_local)));
+      const wellVon = toMidnight(new Date(tagIso));
+      wellVon.setDate(wellVon.getDate() - 8);
+      const wellness = sicher(fetchWellness(key, isoDayLocal(wellVon), tagIso));
       try {
         if(anIsRide(act.type)){
           const streams = await fetchStreams(key, act.id, 'heartrate,time,latlng,altitude');
@@ -198,7 +207,9 @@ function Detail({ act, onZurueck }){
             erg.hinweise.push('Kein GPS-Stream zu dieser Fahrt. Entweder ohne Aufzeichnung gefahren, oder das Konto liefert latlng nicht über die API. Unter Einstellungen → Diagnose zeigt „Verfügbare Daten prüfen“, was zu dieser Aktivität ankommt.');
           }
         }
+        const wl = await wellness;
         if(weg) return;
+        if(wl.wert) erg.verfassung = verfassungAus(wl.wert, tagIso);
         setZustand({ phase: 'fertig', ...erg });
       } catch(e){
         if(!weg) setZustand({ phase: 'fehler', text: e.message });
@@ -215,7 +226,7 @@ function Detail({ act, onZurueck }){
   /* Erst wenn Strecke und Wetter da sind, ist das Fazit mehr als die halbe
      Wahrheit - vorher steht in der Kopfkarte nichts. */
   const fazit = zustand.phase === 'fertig'
-    ? streckenFazit(row, zustand.bilanz, zustand.wetter) : null;
+    ? streckenFazit(row, zustand.bilanz, zustand.wetter, zustand.verfassung) : null;
 
   return (
     <>
@@ -252,7 +263,8 @@ function Detail({ act, onZurueck }){
             <StreckenLegende bilanz={zustand.bilanz} />
           </div>
 
-          <Auswertung bilanz={zustand.bilanz} wetter={zustand.wetter} fazit={fazit} row={row} />
+          <Auswertung bilanz={zustand.bilanz} wetter={zustand.wetter} fazit={fazit} row={row}
+            verfassung={zustand.verfassung} />
 
           {!zustand.bilanz && (
             <div class="card">

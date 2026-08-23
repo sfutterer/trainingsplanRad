@@ -68,7 +68,42 @@ export function ein(v){ return (Math.round(v * 10) / 10).toFixed(1).replace('.',
 /* Der ganze Wetterblock ist hier aufgegangen: Wetter allein sagt wenig, Wind
    allein auch. Was zaehlt, ist die Kombination aus Strecke und Bedingungen -
    und die steht jetzt in einer Auswertung statt in vier Kacheln. */
-export function Auswertung({ bilanz, wetter, fazit, row }){
+/* Ruhepuls, HRV und Schlaf am Fahrtag - dieselbe Rolle wie die Wetterleiste
+   ueber der Karte: drei Zahlen, die den Rest einordnen. Ohne sie liest sich
+   eine harte Fahrt nach zwei kurzen Naechten wie mangelnde Disziplin. */
+export function VerfassungsLeiste({ verfassung }){
+  if(!verfassung) return null;
+  const v = verfassung;
+  const posten = [];
+  if(v.restingHR > 0){
+    posten.push({ k:'Ruhepuls', w: Math.round(v.restingHR) + ' bpm', warn: v.rhrHoch,
+                  t: v.rhrAvg ? 'Schnitt ' + Math.round(v.rhrAvg) + ' bpm' : null });
+  }
+  if(v.hrv > 0){
+    posten.push({ k:'HRV', w: String(Math.round(v.hrv)), warn: v.hrvNiedrig,
+                  t: v.hrvAvg ? 'Schnitt ' + Math.round(v.hrvAvg) : null });
+  }
+  if(v.sleepSecs > 0){
+    posten.push({ k:'Schlaf', w: ein(v.sleepSecs / 3600) + ' h', warn: v.kurzeNaechte > 0,
+                  t: v.kurzeNaechte === 2 ? 'zweite kurze Nacht' : null });
+  }
+  if(!posten.length) return null;
+  return (
+    <>
+      <div class="row" style="margin-top:14px"><span>Verfassung am Fahrtag</span>
+        <b>{v.rot ? 'Gate rot' : 'Gate grün'}</b></div>
+      <div class="anwerte">
+        {posten.map(p => (
+          <div class={'anwert' + (p.warn ? ' warn' : '')} key={p.k}>
+            <b>{p.w}</b><span>{p.k}{p.t ? ' · ' + p.t : ''}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+export function Auswertung({ bilanz, wetter, fazit, row, verfassung }){
   if(!bilanz) return null;
   const windGewertet = bilanz.windMeter > 0;
   return (
@@ -107,11 +142,14 @@ export function Auswertung({ bilanz, wetter, fazit, row }){
         </>
       )}
 
+      <VerfassungsLeiste verfassung={verfassung} />
+
       {row.notes.map((n, i) => <div class={'annote ' + (n.kind || '')} key={i}>{n.text}</div>)}
 
       <Fazit fazit={fazit} />
 
       <p class="hint">
+        Ruhepuls, HRV, Schlaf und Gewicht aus der Wellness von intervals.icu.
         Wind, Temperatur und Niederschlag stundenweise von Open-Meteo, Untergrund aus
         OpenStreetMap über Overpass – beide ohne Schlüssel und ohne Konto. Für die Abfragen
         gehen die Koordinaten der Fahrt dorthin. Steigung aus dem Höhenstream der

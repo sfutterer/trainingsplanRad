@@ -13,7 +13,7 @@ import { THEMES } from '../../../state/theme.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { exportAll, importAll, exportFilename } from '../../../data/exportImport.js';
 import { downloadJson, requestPersistentStorage } from '../../../platform/index.js';
-import { probeCapabilities } from '../../../data/icu.js';
+import { probeCapabilities, probeWellness } from '../../../data/icu.js';
 import { KARTENSTILE, KARTENSTIL_DEFAULT, kartenstil } from '../../../state/kartenstile.js';
 import { PLAN_SCHEMA_VERSION } from '../../../data/planSource.js';
 import { Gruppe, Zeile, Schalter } from '../../components/SettingsList.jsx';
@@ -268,10 +268,62 @@ export function EinstellungenTab(){
 
       <Gruppe titel="Diagnose">
         <DiagnoseZeile />
+        <WellnessZeile />
         <Zeile titel="App zurücksetzen" wert="Zwischenspeicher leeren und neu laden"
           hilfe={<p>Für den Fall, dass nach einem Update etwas hängt. Trainingsdaten werden nicht angefasst.</p>}
           onClick={appZuruecksetzen} />
       </Gruppe>
+    </>
+  );
+}
+
+/* Dieselbe Frage fuer die Wellness: welche Felder befuellt die verknuepfte Uhr
+   tatsaechlich? Ruhepuls, HRV und Schlaf entscheiden ueber das Gate, Gewicht
+   ueber den Abnehmhinweis - fehlt eins davon, bleibt die Ampel stumm, und ohne
+   diese Zeile sieht man nicht, woran es liegt. Braucht keine Aktivitaets-ID. */
+function WellnessZeile(){
+  const [offen, setOffen] = useState(false);
+  const [erg, setErg] = useState(null);
+  const [laeuft, setLaeuft] = useState(false);
+  const key = apiKey.value;
+
+  async function pruefen(){
+    setLaeuft(true); setErg(null);
+    const bis = toMidnight(new Date());
+    const von = new Date(bis); von.setDate(von.getDate() - 20);
+    try { setErg(await probeWellness(key, isoDayLocal(von), isoDayLocal(bis))); }
+    finally { setLaeuft(false); }
+  }
+
+  return (
+    <>
+      <Zeile titel="Wellness-Felder prüfen"
+        wert={key ? 'was deine Uhr an Ruhepuls, HRV, Schlaf und Gewicht liefert' : 'erst den intervals.icu-Schlüssel eintragen'}
+        disabled={!key}
+        onClick={() => { setOffen(o => !o); }} />
+      {offen && (
+        <>
+          <div class="szeile-eingabe">
+            <button class="btn block" disabled={laeuft} onClick={pruefen}>
+              {laeuft ? 'Prüft …' : 'Letzte 21 Tage prüfen'}
+            </button>
+          </div>
+          {erg && (
+            <div class="shilfe">
+              <p><b>{erg.tage} Tage mit Datensatz</b>{erg.neueste ? ', neuester ' + erg.neueste : ''}</p>
+              <ul>
+                {erg.felder.length === 0
+                  ? <li>kein Feld befüllt – dann bleibt das Wellness-Gate stumm</li>
+                  : erg.felder.map((f, i) => <li key={i}>{f}</li>)}
+              </ul>
+              <p>Für die Ampel zählen <b>restingHR</b>, <b>hrv</b> und <b>sleepSecs</b>,
+                 für den Gewichtstrend <b>weight</b>. Alles andere liefert intervals.icu
+                 nur mit, es wird nicht ausgewertet.</p>
+              {erg.error && <p>{erg.error}</p>}
+            </div>
+          )}
+        </>
+      )}
     </>
   );
 }

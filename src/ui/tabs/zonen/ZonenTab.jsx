@@ -6,8 +6,9 @@
    Wochen. */
 
 import { useState } from 'preact/hooks';
-import { plan, thresholds, startDate, week, testLog, interimLog,
+import { plan, thresholds, startDate, week, testLog, interimLog, apiKey,
          setThresholds, addTestEntry, addInterimEntry } from '../../../state/store.js';
+import { fetchWellness, putWellness } from '../../../data/icu.js';
 import { isoDayLocal, toMidnight, weekNumberFor } from '../../../domain/week.js';
 import { hrBands, bandRange, wattText, usesCoggan, zoneBand } from '../../../domain/zones.js';
 import '../plan/plan.css';
@@ -33,34 +34,146 @@ function ZonenKarte(){
   );
 }
 
+/* Zwei Verlaeufe, kein W/kg.
+
+   W/kg waere die naheliegende Zahl und ist hier die falsche: waehrend einer
+   Abnehmphase bewegen sich Zaehler und Nenner gleichzeitig, ein steigender
+   Quotient sagt dann nichts darueber, ob der Motor groesser geworden ist.
+   Getrennt gezeichnet beantworten die beiden Linien genau das - und eine
+   flache FTP-Linie ueber einer fallenden Gewichtslinie ist kein Stillstand,
+   sondern gehaltene Leistung bei weniger Energie.
+
+   Beide auf einer gemeinsamen Prozentachse, nicht jede auf ihren eigenen
+   Bereich normiert. Eigene Bereiche waren der erste Entwurf und machten aus
+   einem Watt Unterschied zwischen zwei Tests einen Ausschlag ueber die halbe
+   Bildhoehe - Messrauschen, gezeichnet wie Fortschritt. Auf einer gemeinsamen
+   Achse bleibt flach, was flach ist, und die beiden Linien werden ueberhaupt
+   erst vergleichbar. */
+const VERLAUF_MIN_SPANNE = 4;   // Prozent, damit Rauschen nicht das Bild fuellt
+
+function Verlauf({ eintraege }){
+  const punkte = eintraege.slice().sort((a, b) => (a.day < b.day ? -1 : 1));
+
+  const reihe = feld => {
+    const roh = punkte.map(e => (e[feld] > 0 ? e[feld] : null));
+    const echte = roh.filter(x => x !== null);
+    if(echte.length < 2) return null;
+    const erster = echte[0];
+    const werte = [];
+    roh.forEach((x, i) => {
+      if(x === null) return;
+      werte.push({ i, pz: (x - erster) / erster * 100 });
+    });
+    return { werte, erster, letzter: echte[echte.length - 1] };
+  };
+
+  const ftp = reihe('ftp'), kg = reihe('weight');
+  if(!ftp && !kg) return null;
+
+  const alle = [].concat(ftp ? ftp.werte : [], kg ? kg.werte : []).map(w => Math.abs(w.pz));
+  const spanne = Math.max(VERLAUF_MIN_SPANNE, ...alle);
+  const x = i => (punkte.length > 1 ? i / (punkte.length - 1) * 96 + 2 : 50);
+  const y = pz => 19 - pz / spanne * 15;
+
+  const zeichne = (l, farbe) => l && (
+    <>
+      <polyline points={l.werte.map(w => x(w.i) + ',' + y(w.pz)).join(' ')}
+        fill="none" stroke={farbe} stroke-width="1.5" vector-effect="non-scaling-stroke" />
+      {l.werte.map((w, k) => <circle key={k} cx={x(w.i)} cy={y(w.pz)} r="1.6" fill={farbe} />)}
+    </>
+  );
+
+  const delta = (l, einheit, s) => {
+    if(!l) return null;
+    const d = l.letzter - l.erster;
+    const z = (Math.round(Math.abs(d) * (s || 1)) / (s || 1)).toString().replace('.', ',');
+    const pz = Math.round(Math.abs(d / l.erster * 100) * 10) / 10;
+    return (d >= 0 ? '+' : '−') + z + ' ' + einheit +
+           ' (' + (d >= 0 ? '+' : '−') + String(pz).replace('.', ',') + ' %)';
+  };
+
+  return (
+    <>
+      <div class="listhead">Verlauf</div>
+      <svg class="verlauf" viewBox="0 0 100 38" aria-hidden="true">
+        <line x1="0" y1="19" x2="100" y2="19" stroke="var(--outline)"
+          stroke-width="1" stroke-dasharray="2 2" vector-effect="non-scaling-stroke" />
+        {zeichne(kg, 'var(--z1)')}
+        {zeichne(ftp, 'var(--z4)')}
+      </svg>
+      <div class="verlaufleg">
+        {ftp && <span><i style="background:var(--z4)"></i>FTP {delta(ftp, 'W')}</span>}
+        {kg && <span><i style="background:var(--z1)"></i>Gewicht {delta(kg, 'kg', 10)}</span>}
+      </div>
+      <p class="hint">
+        Änderung gegenüber dem ersten Test, beide Linien auf derselben Achse. Bewusst
+        getrennt statt als W/kg: sinkt das Gewicht gewollt, sagt ein steigender Quotient
+        nichts über die Form. Eine flache FTP-Linie bei fallendem Gewicht ist gehaltene
+        Leistung bei weniger Energie – kein Stillstand.
+      </p>
+    </>
+  );
+}
+
 function SchwellenKarte(){
   const th = thresholds.value;
   const [f, setF] = useState({ ftp: th.ftp || '', lthr: th.lthr || '', hrmax: th.hrmax || '' });
+  const [meldung, setMeldung] = useState(null);
 
   const num = v => { const n = parseInt(v, 10); return isFinite(n) && n > 0 ? n : null; };
   const geaendert = num(f.ftp) !== th.ftp || num(f.lthr) !== th.lthr || num(f.hrmax) !== th.hrmax;
 
+  /* Das Gewicht steht meist schon in der Wellness - dann muss es niemand
+     abtippen und die beiden Quellen koennen nicht auseinanderlaufen. */
+  async function gewichtVorschlag(tagIso){
+    const key = apiKey.value;
+    if(!key) return null;
+    try {
+      const rows = await fetchWellness(key, tagIso, tagIso);
+      const r = (Array.isArray(rows) ? rows : []).find(x => x && x.weight > 0);
+      return r ? r.weight : null;
+    } catch(e){ return null; }
+  }
+
   async function alsTest(){
+    const heute = toMidnight(new Date());
+    const tagIso = isoDayLocal(heute);
     const w20 = parseInt(prompt('Ø-Watt der 20 min?') || '', 10);
     const w5  = parseInt(prompt('Ø-Watt der 5 min? (optional)') || '', 10);
-    const kg  = parseFloat(String(prompt('Gewicht am Testtag in kg? (optional)') || '').replace(',', '.'));
+    const vor = await gewichtVorschlag(tagIso);
+    const kg  = parseFloat(String(prompt(
+      'Gewicht am Testtag in kg? (optional)' + (vor ? '\nAus intervals.icu übernommen:' : ''),
+      vor ? String(vor) : '') || '').replace(',', '.'));
     const bed = prompt('Bedingungen? Temperatur, Wind, Strecke, Rad, Reifendruck (optional)') || '';
-    const heute = toMidnight(new Date());
     let ftp = num(f.ftp);
     if(isFinite(w20) && w20 > 0 && !ftp){
       ftp = Math.round(w20 * 0.95);
       setF({ ...f, ftp });
       await setThresholds({ ftp, lthr: num(f.lthr), hrmax: num(f.hrmax) });
     }
+    const gewicht = isFinite(kg) && kg > 0 ? kg : null;
     await addTestEntry({
-      day: isoDayLocal(heute),
+      day: tagIso,
       week: weekNumberFor(heute, startDate.value),
       w20: isFinite(w20) && w20 > 0 ? w20 : null,
       w5:  isFinite(w5)  && w5  > 0 ? w5  : null,
       ftp, lthr: num(f.lthr),
-      weight: isFinite(kg) && kg > 0 ? kg : null,
+      weight: gewicht,
       conditions: bed
     });
+
+    /* Der einzige Schreibvorgang der App, deshalb mit Rueckfrage - und nur,
+       wenn der Wert nicht ohnehin von dort kam. */
+    if(gewicht && apiKey.value && gewicht !== vor){
+      if(confirm('Gewicht ' + gewicht + ' kg für ' + tagIso + ' auch in die Wellness von intervals.icu schreiben?')){
+        try {
+          await putWellness(apiKey.value, tagIso, { weight: gewicht });
+          setMeldung({ art:'ok', text:'Gewicht nach intervals.icu geschrieben.' });
+        } catch(e){
+          setMeldung({ art:'fehler', text:'Nicht geschrieben: ' + e.message + ' Der Test ist trotzdem gespeichert.' });
+        }
+      }
+    }
   }
 
   const hist = testLog.value.slice().sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, 4);
@@ -84,6 +197,8 @@ function SchwellenKarte(){
         intervals.icu unter Settings → Ride, Power Zones und HR Zones auf Coggan, Load Priority
         auf Power, FTP von automatisch auf manuell.
       </p>
+      {meldung && <div class={'meldung ' + meldung.art} style="margin-top:10px"><b>{meldung.text}</b></div>}
+      {testLog.value.length > 1 && <Verlauf eintraege={testLog.value} />}
       {hist.length > 0 && <>
         <div class="listhead">Testhistorie</div>
         {hist.map((e, i) => (

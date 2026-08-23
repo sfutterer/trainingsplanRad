@@ -88,6 +88,12 @@ export function buildDayInfo(plan, th, date, startDate){
         info = { type:'core', title:'Rumpf/Oberkörper-Stabilität',
           detail:`${T.wednesdayNoRide} ${rumpf}`, showTimerBtn:true };
       }
+      /* Das Wellness-Gate schon am Mittwoch, wie im Trainingsplan vorgesehen:
+         wer erst Donnerstag frueh schaut, kann den Tag nur noch absagen. Die
+         Art des Donnerstags haengt dran, weil sie entscheidet, was ein rotes
+         Gate ueberhaupt bedeutet - ein Test wird verschoben, ein Intervalltag
+         heruntergestuft, ein Z2-Tag gekuerzt. */
+      info.wellness = { rolle:'vorschau', donnerstag: thursdayPlan(plan, week).kind };
       break;
     }
 
@@ -108,7 +114,7 @@ export function buildDayInfo(plan, th, date, startDate){
                  T.thursdayIntervalTail,
           showIntervalBtn:true };
       }
-      info.wellness = true;
+      info.wellness = { rolle:'entscheidung', donnerstag: t.kind };
       break;
     }
 

@@ -46,6 +46,60 @@ export function fetchWellness(key, fromIso, toIso){
   return icuFetch('/athlete/0/wellness?oldest=' + fromIso + '&newest=' + toIso, key);
 }
 
+/* Der einzige schreibende Aufruf der App.
+
+   Gewicht am Testtag gehoert laut Trainingsplan in die Wellness - sonst sind
+   die Testwerte spaeter nicht einzuordnen. Es zweimal von Hand zu pflegen, in
+   der App und auf intervals.icu, geht genau so lange gut, bis man es einmal
+   vergisst. PUT setzt nur die uebergebenen Felder, der Rest des Tages bleibt
+   stehen. */
+export async function putWellness(key, dayIso, felder){
+  let res;
+  try {
+    res = await fetch(ICU_BASE + '/athlete/0/wellness/' + dayIso, {
+      method: 'PUT',
+      headers: { Authorization: authHeader(key), Accept: 'application/json',
+                 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: dayIso, ...felder })
+    });
+  } catch(e){
+    throw new Error('Keine Verbindung zu intervals.icu. Offline oder Netz blockiert?');
+  }
+  if(res.status === 401 || res.status === 403){
+    throw new Error('intervals.icu hat das Schreiben abgelehnt (' + res.status + '). Der Key braucht Schreibrechte.');
+  }
+  if(!res.ok) throw new Error('intervals.icu antwortete mit ' + res.status + '.');
+  return res.json().catch(() => ({}));
+}
+
+/* Was das Konto in der Wellness tatsaechlich fuehrt.
+
+   Dieselbe Frage wie bei den Streams, dieselbe Antwort: es steht in keiner
+   Dokumentation, welche Felder die verknuepfte Uhr befuellt. Ruhepuls, HRV und
+   Schlaf entscheiden ueber das Gate, Gewicht ueber den Abnehmhinweis - und ob
+   intervals.icu zusaetzlich ctl, atl und rampRate mitliefert, sieht man erst
+   hier. Kein Aktivitaets-Schluessel noetig, deshalb eigener Aufruf. */
+export async function probeWellness(key, fromIso, toIso){
+  const out = { tage: 0, felder: [], neueste: null, error: null };
+  try {
+    const rows = await fetchWellness(key, fromIso, toIso);
+    const list = Array.isArray(rows) ? rows.filter(Boolean) : [];
+    out.tage = list.length;
+    const zaehler = {};
+    for(const r of list){
+      for(const k of Object.keys(r)){
+        if(r[k] === null || r[k] === undefined || r[k] === '') continue;
+        zaehler[k] = (zaehler[k] || 0) + 1;
+      }
+    }
+    out.felder = Object.keys(zaehler).sort()
+      .map(k => k + ': ' + zaehler[k] + ' von ' + list.length + ' Tagen');
+    const letzte = list[list.length - 1];
+    if(letzte) out.neueste = letzte.id || null;
+  } catch(e){ out.error = e.message; }
+  return out;
+}
+
 /* Diagnose: welche Stroeme und Felder liefert dieses Konto tatsaechlich?
    Routen- und Wetterauswertung haengen daran, und das steht in keiner
    Dokumentation - es muss gemessen werden. */

@@ -6,7 +6,7 @@ import { isoDayLocal, toMidnight, phaseName, isWinterBlock, isRecoveryWeek,
 import { usesCoggan } from '../../../domain/zones.js';
 
 import { fetchWellness } from '../../../data/icu.js';
-import { wellnessGate } from '../../../domain/analysis.js';
+import { wellnessSerie, wellnessMassnahmen } from '../../../domain/analysis.js';
 import { gotoTab } from '../../../App.jsx';
 import './plan.css';
 
@@ -53,42 +53,99 @@ function StatusKarte(){
   );
 }
 
-function WellnessAmpel({ info }){
-  const [gate, setGate] = useState(null);
+/* Ein Abruf fuer die ganze Woche.
+
+   Die Ampel steht auf zwei Karten (Mittwoch und Donnerstag), gerechnet wird sie
+   aber nur einmal - fuer heute. Zwei Komponenten mit je eigenem useEffect
+   haetten zwei Abfragen fuer dieselbe Antwort ausgeloest.
+
+   Drei Wochen statt einer: das Gate nimmt sich daraus die letzten sieben Tage,
+   der Gewichtstrend braucht mehr Punkte, um eine Gerade zu tragen. */
+const WELLNESS_TAGE = 21;
+
+function useWellness(){
+  const [serie, setSerie] = useState(null);
   const key = apiKey.value;
+  const heuteIso = isoDayLocal(toMidnight(today.value));
 
   useEffect(() => {
-    if(!info.wellness || !key) return;
+    if(!key) return undefined;
     let abgebrochen = false;
-    const to = toMidnight(new Date());
-    const from = new Date(to); from.setDate(from.getDate() - 7);
-    fetchWellness(key, isoDayLocal(from), isoDayLocal(to))
-      .then(d => { if(!abgebrochen) setGate(wellnessGate(d, isoDayLocal(to))); })
+    const bis = toMidnight(new Date(heuteIso));
+    const von = new Date(bis); von.setDate(von.getDate() - (WELLNESS_TAGE - 1));
+    fetchWellness(key, isoDayLocal(von), heuteIso)
+      .then(d => { if(!abgebrochen) setSerie(wellnessSerie(d, heuteIso)); })
       .catch(() => {});
     return () => { abgebrochen = true; };
-  }, [info.wellness, key]);
+  }, [key, heuteIso]);
 
+  return serie;
+}
+
+function Werteleiste({ gate }){
+  const h = gate.heute;
+  const teile = [];
+  if(h.restingHR > 0){
+    teile.push('Ruhepuls ' + Math.round(h.restingHR) + ' bpm' +
+      (gate.rhrAvg ? ' (Schnitt ' + Math.round(gate.rhrAvg) + ')' : ''));
+  }
+  if(h.hrv > 0){
+    teile.push('HRV ' + Math.round(h.hrv) + (gate.hrvAvg ? ' (Schnitt ' + Math.round(gate.hrvAvg) + ')' : ''));
+  }
+  if(h.sleepSecs > 0) teile.push('Schlaf ' + (h.sleepSecs / 3600).toFixed(1).replace('.', ',') + ' h');
+  return <>{teile.join(' · ')}</>;
+}
+
+/* Die Ampel gilt fuer heute, also steht sie auch nur auf der heutigen Karte.
+
+   Vorher hing sie an jedem Donnerstag im Sieben-Tage-Fenster - am Montag also
+   an einer Karte, die drei Tage in der Zukunft liegt, mit den Werten von
+   Montag. Auf kuenftigen Karten bleibt deshalb nur die Regel als Erinnerung,
+   ohne Zahlen. */
+function WellnessAmpel({ info, istHeute, serie }){
   if(!info.wellness) return null;
-  if(!gate) return <div class="daynote">{plan.value.texts.wellnessRule}</div>;
+  const regel = <div class="daynote">{plan.value.texts.wellnessRule}</div>;
+  if(!istHeute || !apiKey.value) return regel;
+  if(!serie || !serie.heute) return regel;
+
+  const gate = serie.heute;
+  const vorschau = info.wellness.rolle === 'vorschau';
 
   if(gate.rot){
-    return <div class="daynote rot">
-      <b>Wellness-Gate rot:</b> {gate.gruende.join(' · ')}. Donnerstag wird 60 min Z2,
-      Samstag ohne Blöcke. Zwei rote Tage hintereinander → die ganze Woche als Erholungswoche fahren.
-    </div>;
+    const mass = wellnessMassnahmen(info.wellness.donnerstag, serie.zweiRot);
+    return (
+      <div class="daynote rot">
+        <b>Wellness-Gate rot{vorschau ? ' (Stand heute)' : ''}:</b> {gate.gruende.join(' · ')}.
+        {vorschau && ' Entscheidend ist der Wert morgen früh – bleibt es dabei:'}
+        <ul>{mass.map((m, i) => <li key={i}>{m}</li>)}</ul>
+      </div>
+    );
   }
-  const h = gate.heute;
-  return <div class="daynote gruen">
-    <b>Wellness-Gate grün.</b>{' '}
-    {h.restingHR > 0 ? 'Ruhepuls ' + h.restingHR + ' bpm' + (gate.rhrAvg ? ' (Schnitt ' + Math.round(gate.rhrAvg) + ')' : '') : ''}
-    {h.hrv > 0 ? ' · HRV ' + Math.round(h.hrv) : ''}
-    {h.sleepSecs > 0 ? ' · Schlaf ' + (h.sleepSecs / 3600).toFixed(1).replace('.', ',') + ' h' : ''}
-    . Der Qualitätstag kann wie geplant laufen.
-  </div>;
+
+  return (
+    <div class="daynote gruen">
+      <b>Wellness-Gate grün{vorschau ? ' (Stand heute)' : ''}.</b>{' '}
+      <Werteleiste gate={gate} />.{' '}
+      {vorschau
+        ? 'Wenn es morgen früh so bleibt, kann der Qualitätstag wie geplant laufen.'
+        : 'Der Qualitätstag kann wie geplant laufen.'}
+    </div>
+  );
+}
+
+/* Eigener Kasten, nicht in der Ampel.
+
+   Eine zu schnelle Abnahme ist keine Aussage ueber heute, sondern ueber die
+   letzten Wochen. In den Gruenden des Gates stuende sie waehrend einer Diaet
+   dauerhaft - und ein Gate, das nie gruen wird, beantwortet keine Frage mehr. */
+function AbnehmHinweis({ serie }){
+  if(!serie || !serie.abnehmen) return null;
+  return <div class="daynote gelb"><b>Gewichtstrend:</b> {serie.abnehmen.text}</div>;
 }
 
 function Tageskarten(){
   const p = plan.value, th = thresholds.value, start = startDate.value;
+  const serie = useWellness();
   const karten = [];
   for(let i = 0; i < 7; i++){
     const d = new Date(today.value);
@@ -102,7 +159,8 @@ function Tageskarten(){
         </div>
         <div class="daytitle">{info.title}</div>
         <div class="daydetail">{info.detail}</div>
-        <WellnessAmpel info={info} />
+        <WellnessAmpel info={info} istHeute={i === 0} serie={serie} />
+        {i === 0 && <AbnehmHinweis serie={serie} />}
         {info.showTimerBtn && <button class="btn tonal" style="margin-top:12px"
           onClick={() => gotoTab('rumpf', true)}>Rumpf-Timer öffnen</button>}
         {info.showIntervalBtn && <button class="btn tonal" style="margin-top:12px"
