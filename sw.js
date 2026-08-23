@@ -1,6 +1,6 @@
 /* Service Worker – macht die App offline nutzbar.
    Bei einer neuen Version einfach CACHE_VERSION hochzählen. */
-const CACHE_VERSION = 'trainingsplan-v21';
+const CACHE_VERSION = 'trainingsplan-v22';
 
 const ASSETS = [
   './',
@@ -9,7 +9,21 @@ const ASSETS = [
   './icon192.png',
   './icon512.png',
   './icon512-maskable.png',
-  './icon180.png'
+  './icon180.png',
+  /* Uebungsbilder liegen seit Fassung 2 als Dateien in assets/ statt als
+     base64 im HTML. Sie muessen mit in den Cache, sonst bleibt der Rumpf-Tab
+     offline ohne Bilder. */
+  './assets/Plank.webp',
+  './assets/SidePlankLinks.webp',
+  './assets/SidePlankRechts.webp',
+  './assets/BirdDog.webp',
+  './assets/DeadBug.webp',
+  './assets/Liegestuetz.webp',
+  './assets/BandPullApart.webp',
+  './assets/GluteBridge.webp',
+  './assets/Squat.webp',
+  './assets/Lunges.webp',
+  './assets/WadenhebenEinbeinig.webp'
 ];
 
 self.addEventListener('install', event => {
