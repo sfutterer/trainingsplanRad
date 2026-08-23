@@ -84,15 +84,32 @@ export function primeSpeech(){
 export function speak(text, enabled){
   if(!enabled || !text || !('speechSynthesis' in window)) return;
   try {
+    const s = window.speechSynthesis;
+    /* Chrome haelt die Sprachausgabe an, sobald die Seite den Fokus verliert,
+       und kommt danach nicht immer von selbst zurueck: die Warteschlange bleibt
+       stehen, speak() nimmt zwar an, es kommt aber nichts. resume() vor jeder
+       Ansage kostet nichts und holt den haengenden Zustand zurueck. */
+    if(s.paused) s.resume();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'de-DE';
     u.rate = 1.0;
-    window.speechSynthesis.speak(u);
+    s.speak(u);
   } catch(e){}
 }
 
 export function cancelSpeech(){
   try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch(e){}
+}
+
+/* Beim Zurueckkommen aufwecken. Ohne das bleibt nach einem Wechsel in eine
+   andere App die erste Ansage danach stumm - und das ist beim Timer genau die,
+   auf die man gewartet hat. */
+if(typeof document !== 'undefined' && 'speechSynthesis' in window){
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible' && window.speechSynthesis.paused){
+      try { window.speechSynthesis.resume(); } catch(e){}
+    }
+  });
 }
 
 /* ---- Toene ---- */

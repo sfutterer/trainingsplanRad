@@ -44,13 +44,26 @@ export function IntervalleTab(){
 
   useEffect(() => {
     const ab = [];
-    ab.push(timer.on('step', ({ step }) => {
+    ab.push(timer.on('step', ({ step, index }) => {
       flags.current = { half:false, minute:false, zehn:false };
       tickState(x => x + 1);
-      if(step.type === 'work'){ beep(880, 180); vibrate(40); speak(step.label + '. Los!', s.voice); }
-      else if(step.type === 'rest'){ beep(440, 180); speak('Erholung. Locker rollen.', s.voice); }
-      else if(step.type === 'warm'){ speak('Einfahren. Locker und gleichmäßig.', s.voice); }
-      else if(step.type === 'cool'){ beep(440, 180); speak('Jetzt locker ausrollen.', s.voice); }
+      const naechster = timer.sequence[index + 1];
+      if(step.type === 'prep'){
+        speak('Bereit machen. Gleich geht es los mit ' + (naechster ? naechster.label : 'dem Einfahren') + '.', s.voice);
+      }
+      else if(step.type === 'work'){
+        beep(880, 180); vibrate(40);
+        /* Wiederholung und Gesamtzahl mitsagen: auf dem Rad schaut man nicht
+           auf den Bildschirm, um zu wissen, die wievielte gerade laeuft. */
+        const wo = step.reps > 1 ? 'Intervall ' + step.rep + ' von ' + step.reps : step.label;
+        speak(wo + '. Los!', s.voice);
+      }
+      else if(step.type === 'rest'){
+        beep(440, 180);
+        speak('Erholung. Locker rollen in ' + (step.zone && step.zone.key ? step.zone.key.toUpperCase() : 'Zone 1') + '.', s.voice);
+      }
+      else if(step.type === 'warm'){ speak('Einfahren. Locker und gleichmäßig, Zone 1 bis 2.', s.voice); }
+      else if(step.type === 'cool'){ beep(440, 180); speak('Alle Intervalle geschafft. Jetzt locker ausrollen.', s.voice); }
       else if(step.type === 'done'){
         beep(880, 300); beep(1046, 300, 200); vibrate([60, 40, 60]);
         speak('Einheit abgeschlossen. Stark gemacht!', s.voice);

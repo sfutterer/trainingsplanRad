@@ -60,18 +60,35 @@ export function RumpfTab(){
 
   useEffect(() => {
     const ab = [];
-    ab.push(timer.on('step', ({ step }) => {
+    ab.push(timer.on('step', ({ step, index }) => {
       tickState(x => x + 1);
-      if(step.type === 'work'){
+      const naechste = timer.sequence[index + 1];
+      if(step.type === 'prep'){
+        const erste = p.circuit.exercises[0];
+        speak('Bereit machen. Erste Übung: ' + erste.name, s.voice);
+      } else if(step.type === 'work'){
         beep(880, 180);
-        const ziel = step.reps ? ' ' + (step.reps.perSide ? step.reps.reps + ' Wiederholungen' : step.reps.reps + ' Wiederholungen') : '';
-        speak(step.label + '.' + ziel, s.voice);
-      } else if(step.type === 'rest' || step.type === 'roundrest'){
+        /* Die Ansage traegt die Dosierung mit: auf dem Boden liegend liest
+           niemand den Bildschirm ab. Der Tempohinweis nur in der ersten Runde -
+           danach nervt er. */
+        const t = step.reps;
+        let ansage = step.label + '.';
+        if(t){
+          ansage += t.perSide
+            ? ` Abwechselnd, ${t.perSide} Wiederholungen pro Seite.`
+            : ` Ziel ${t.reps} Wiederholungen.`;
+          if(step.round === 1) ansage += ` Etwa ${t.tempo} Sekunden pro Wiederholung, betont langsam.`;
+        }
+        speak(ansage + ' Los!', s.voice);
+      } else if(step.type === 'rest'){
         beep(440, 180);
-        speak(step.type === 'roundrest' ? 'Rundenpause.' : 'Pause.', s.voice);
+        speak('Pause.' + (naechste && naechste.type === 'work' ? ' Nächste Übung: ' + naechste.label + '.' : ''), s.voice);
+      } else if(step.type === 'roundrest'){
+        beep(440, 180);
+        speak(`Runde ${step.round} geschafft. Rundenpause.`, s.voice);
       } else if(step.type === 'done'){
         beep(880, 300); beep(1046, 300, 200);
-        speak('Einheit abgeschlossen. Stark gemacht!', s.voice);
+        speak('Training abgeschlossen. Gut gemacht!', s.voice);
         if(logRef.current){ logRef.current.finished = true; persist(); logRef.current = null; }
         timerLaeuft.value = false;
         vibrate([60, 40, 60]);
@@ -134,7 +151,18 @@ export function RumpfTab(){
     : step.type === 'roundrest' ? 'Rundenpause'
     : step.type === 'done' ? 'Fertig' : 'Bereit';
 
-  const bild = s.showIllu && step && step.type === 'work' ? p.circuit.exercises[step.exIndex] : null;
+  /* In der Pause die naechste Uebung zeigen - man richtet sich waehrend der
+     Pause schon ein, nicht erst wenn die Ansage kommt. */
+  let bildIndex = null, vorschau = false;
+  if(s.showIllu && step){
+    if(step.type === 'work'){ bildIndex = step.exIndex; }
+    else if(step.type === 'prep'){ bildIndex = 0; vorschau = true; }
+    else if(step.type === 'rest' || step.type === 'roundrest'){
+      const n = timer.sequence[timer.index + 1];
+      if(n && n.type === 'work'){ bildIndex = n.exIndex; vorschau = true; }
+    }
+  }
+  const bild = bildIndex == null ? null : p.circuit.exercises[bildIndex];
 
   return (
     <>
@@ -151,9 +179,12 @@ export function RumpfTab(){
       />
 
       {bild && (
-        <div class="illu">
-          <img src={bild.img} alt={bild.name} loading="lazy" onClick={() => setDialogEx({ kind:'core', i: step.exIndex })} />
-          <div class="cap"><b>{bild.name}</b>{bild.steps && bild.steps[0] ? ' · ' + bild.steps[0] : ''}</div>
+        <div class={'illu' + (vorschau ? ' vorschau' : '')}>
+          <img src={bild.img} alt={bild.name} loading="lazy" onClick={() => setDialogEx({ kind:'core', i: bildIndex })} />
+          <div class="cap">
+            {vorschau ? <span class="tag">Als Nächstes</span> : null}
+            <b>{bild.name}</b>{bild.steps && bild.steps[0] ? ' · ' + bild.steps[0] : ''}
+          </div>
         </div>
       )}
 

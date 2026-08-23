@@ -85,3 +85,10 @@
 .dialog ol{ padding-left: 20px; margin: 0 0 12px; }
 .dialog li{ margin-bottom: 7px; font-size: 14.5px; }
 .dialog .goal{ font-size: 13.5px; color: var(--muted); }
+.illu .cap .tag{
+  display: inline-block; margin-right: 8px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--on-primary-container); background: var(--primary-container);
+  padding: 2px 8px; border-radius: 999px; vertical-align: 1px;
+}
+.illu.vorschau img{ opacity: .82; }
