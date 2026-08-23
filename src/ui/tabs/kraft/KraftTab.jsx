@@ -11,11 +11,11 @@ import { ProgressRing } from '../../components/ProgressRing.jsx';
 import { ExerciseDialog } from '../../components/ExerciseDialog.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 import '../../components/timer.css';
-import './rumpf.css';
+import './kraft.css';
 
 const FARBE = { work:'var(--work)', rest:'var(--rest)', roundrest:'var(--rest)', prep:'var(--prep)', done:'var(--work)' };
 
-export function RumpfTab(){
+export function KraftTab(){
   const p = plan.value, w = week.value;
   const dow = today.value.getDay();
   const s = settings.value;
@@ -166,7 +166,7 @@ export function RumpfTab(){
 
   return (
     <>
-      <h1 class="title">Rumpf</h1>
+      
 
       <ProgressRing
         fraction={timer.fraction()}

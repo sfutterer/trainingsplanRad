@@ -11,8 +11,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "preact": "^10.27.2",
-    "@preact/signals": "^2.4.0"
+    "@preact/signals": "^2.4.0",
+    "leaflet": "^1.9.4",
+    "preact": "^10.27.2"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",

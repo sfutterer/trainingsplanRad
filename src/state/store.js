@@ -22,11 +22,12 @@ export const planError   = signal(null);
 export const startDate   = signal(null);
 export const thresholds  = signal({ ftp:null, lthr:null, hrmax:null });
 export const apiKey      = signal('');
+export const mapKey      = signal('');   // Thunderforest, fuer OpenCycleMap
 export const coreLog     = signal([]);
 export const testLog     = signal([]);
 export const interimLog  = signal([]);
 export const settings    = signal({ voice:true, keepAwake:true, showIllu:true });
-export const tab         = signal('heute');
+export const tab         = signal('plan');
 export const ready       = signal(false);
 
 /* Der Tag wechselt, waehrend die App offen ist - eine PWA laeuft ueber Nacht
@@ -65,6 +66,7 @@ export async function boot(){
 
   thresholds.value = await store.thresholds();
   apiKey.value     = await store.apiKey();
+  mapKey.value     = await store.mapKey();
   coreLog.value    = await store.coreLog();
   testLog.value    = await store.testLog();
   interimLog.value = await store.interimLog();
@@ -100,6 +102,11 @@ export async function setThresholds(t){
 export async function setApiKey(k){
   apiKey.value = k;
   await store.setApiKey(k);
+}
+
+export async function setMapKey(k){
+  mapKey.value = k;
+  await store.setMapKey(k);
 }
 
 export async function setSettings(patch){

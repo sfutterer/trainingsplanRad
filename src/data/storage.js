@@ -12,6 +12,7 @@
 export const KEYS = {
   startDate:  'training-start-date',
   apiKey:     'intervals-icu-api-key',
+  mapKey:     'thunderforest-api-key',
   coreLog:    'core-session-log',
   thresholds: 'training-thresholds',
   testLog:    'test-history',
@@ -73,6 +74,11 @@ export function createRepos(store){
     async apiKey(){ return (await store.get(KEYS.apiKey)) || ''; },
     async setApiKey(k){
       return k ? store.set(KEYS.apiKey, k) : store.remove(KEYS.apiKey);
+    },
+
+    async mapKey(){ return (await store.get(KEYS.mapKey)) || ''; },
+    async setMapKey(k){
+      return k ? store.set(KEYS.mapKey, k) : store.remove(KEYS.mapKey);
     },
 
     async thresholds(){

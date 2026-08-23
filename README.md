@@ -30,7 +30,7 @@ vor dem Umbau liegt als Tag `vor-umbau` bereit.
 Der Trainingsplan steht in `public/plan.json`, nicht im Code. Zwei Wege:
 
 - **Dauerhaft für alle:** Datei im Repo bearbeiten und pushen.
-- **Nur auf dem Gerät:** Unter „Optionen“ exportieren, bearbeiten, importieren.
+- **Nur auf dem Gerät:** Unter „Einstellungen“ exportieren, bearbeiten, importieren.
   Der eigene Plan wird lokal gespeichert und gilt ab sofort; die Repo-Fassung
   bleibt der Default und ist per Knopf wieder erreichbar.
 
@@ -55,15 +55,38 @@ sie mitgezogen werden.
 ## Daten sichern
 
 Trainingsprotokolle, Testhistorie und Erhebungen liegen nur im `localStorage`
-dieses einen Browserprofils. Unter „Optionen“ steht der Knopf für die Sicherung –
-das ist die einzige Kopie, die es gibt.
+dieses einen Browserprofils. Unter „Einstellungen“ steht der Knopf für die
+Sicherung – das ist die einzige Kopie, die es gibt.
 
-## Einstellungen
+## Aufbau der Oberfläche
 
-Unter „Optionen“ liegen alle Stellschrauben an einem Ort: API-Zugang zu
-intervals.icu, Erscheinungsbild (System, Hell, Dunkel), Beginn von Woche 1,
-Plan-Import und -Export, Sicherung aller Nutzerdaten, eine Diagnose der
-verfügbaren intervals.icu-Daten und das Verhalten während des Trainings.
+Unten die vier Bereiche, die während des Trainings gebraucht werden: **Plan**,
+**Kraft**, **Intervalle**, **Analyse**. Oben links das Menü mit allen Bereichen,
+oben rechts die Glocke mit dem Tagesüberblick.
+
+Nur über das Menü erreichbar, weil man sie selten braucht:
+
+- **Zonen & Schwellenwerte** – Zonenmodell, FTP und LTHR, Sprechtest-Erhebung
+- **Einstellungen** – Zugänge, Erscheinungsbild, Planbeginn, Plan, Sicherung, Diagnose
+
+## Zugänge
+
+| Dienst | Wofür | Schlüssel |
+|---|---|---|
+| intervals.icu | Aktivitäten, Streams, Wellness | nötig, Settings → Developer Settings |
+| Thunderforest | OpenCycleMap in der Analyse | optional, sonst OpenStreetMap |
+| Open-Meteo | Temperatur und Wind je Fahrt | keiner |
+
+Die Anleitung, wo man die Schlüssel bekommt, steht in der App hinter dem
+Fragezeichen der jeweiligen Zeile.
+
+## Analyse
+
+Zuerst eine Liste der Aufzeichnungen aus dem gewählten Zeitraum – eine Abfrage.
+Die Auswertung läuft erst beim Antippen einer Fahrt: Pulszonen aus dem Stream,
+Abgleich mit dem Plan, Streckenkarte und Wetter. Aus Windrichtung und
+Fahrtrichtung wird abschnittsweise der Gegenwindanteil gerechnet – die Frage,
+die eine Drift-Analyse sonst offen lässt.
 
 Der Planbeginn steht standardmäßig auf dem **15.08.2026**, dem Samstag, an dem
 Woche 1 begonnen hat. Liegt er auf einem anderen Wochentag, warnt die App: die

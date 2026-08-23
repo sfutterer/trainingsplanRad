@@ -26,3 +26,56 @@
 .chip{ background:var(--surface-2); border-radius:var(--radius-s); padding:10px 12px;
   font-size:12px; color:var(--muted); line-height:1.35; }
 .chip b{ display:block; font-size:17px; color:var(--on-surface); margin-bottom:2px; }
+
+/* ---- Trainingsliste ---- */
+.trliste{ display: flex; flex-direction: column; }
+.treintrag{
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; min-height: 72px; padding: 12px 14px;
+  border: 0; background: none; border-radius: var(--radius-s);
+  text-align: left; cursor: pointer; color: inherit;
+  border-bottom: 1px solid var(--outline);
+}
+.treintrag:last-child{ border-bottom: 0; }
+.treintrag:active{ background: var(--surface-2); }
+.trsymbol{
+  width: 42px; height: 42px; flex: none; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-3); color: var(--on-surface-var);
+}
+.trsymbol svg{ width: 22px; height: 22px; }
+.trsymbol.ok{ background: var(--ok-bg); color: var(--ok); }
+.trsymbol.dev{ background: var(--dev-bg); color: var(--dev); }
+.trsymbol.miss{ background: var(--miss-bg); color: var(--miss); }
+.trtext{ flex: 1; min-width: 0; }
+.trname{ font-size: 15.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trmeta{ font-size: 13px; color: var(--muted); margin-top: 2px; }
+.trpfeil{ color: var(--muted); flex: none; }
+
+.trtag{
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); padding: 14px 16px 6px;
+}
+
+/* ---- Karte ---- */
+.karte{ height: 260px; border-radius: var(--radius-s); overflow: hidden; margin: 10px 0; }
+.karte-leer{
+  padding: 18px; border-radius: var(--radius-s); background: var(--surface-2);
+  color: var(--muted); font-size: 13.5px; text-align: center; margin: 10px 0;
+}
+.leaflet-container{ background: var(--surface-2); font: inherit; }
+.windpfeil div{ font-size: 26px; line-height: 34px; text-align: center; color: var(--z5); text-shadow: 0 0 3px rgba(0,0,0,.6); }
+
+.wetterraster{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.wetterfeld{ background: var(--surface-2); border-radius: var(--radius-s); padding: 10px 12px; }
+.wetterfeld b{ display: block; font-size: 16px; margin-bottom: 2px; }
+.wetterfeld span{ font-size: 12px; color: var(--muted); }
+
+.detailkopf{ display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.detailkopf .zurueck{
+  width: 44px; height: 44px; border: 0; background: none; border-radius: 50%;
+  color: var(--on-surface); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.detailkopf .zurueck svg{ width: 24px; height: 24px; }
+.detailkopf h2{ margin: 0; font-size: 17px; font-weight: 700; flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
