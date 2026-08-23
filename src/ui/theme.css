@@ -14,47 +14,54 @@
   color-scheme: light dark;
 
   /* --- Helles Theme --- */
-  --bg:            #f6f8f7;
+  --bg:            #f6f7f8;
   --surface:       #ffffff;
-  --surface-2:     #eef2f0;
-  --surface-3:     #e4eae7;
-  --on-surface:    #16201c;
-  --on-surface-var:#4a5a54;
-  --muted:         #6b7a74;
-  --outline:       #d5dedb;
-  --outline-2:     #bcc7c2;
+  --surface-2:     #eff0f3;
+  --surface-3:     #e3e5e9;
+  --on-surface:    #17181c;
+  --on-surface-var:#4a4d55;
+  --muted:         #6e717a;
+  --outline:       #e0e2e6;
+  --outline-2:     #c7cad1;
 
-  --primary:       #00694f;
+  /* Ein Akzent, sparsam gesetzt: aktives Navigationsziel, Hauptknopf,
+     Gruppenueberschrift, Verweise. Gedaempftes Blau, weil die Zonenrampe
+     Gruen bis Rot bereits belegt - so laesst sich Bedienung nie mit
+     Trainingsbedeutung verwechseln. */
+  --primary:       #35548c;
   --on-primary:    #ffffff;
-  --primary-container: #b8efd9;
-  --on-primary-container: #00201699;
+  --primary-container: #dbe4f5;
+  --on-primary-container: #12233f;
 
-  /* Semantische Trainingsfarben. "Pause" und "Zone 3" waren frueher derselbe
-     Wert - zwei Begriffe, die zufaellig gleich aussahen. Jetzt getrennt. */
-  --work:  #007b5b;
-  --rest:  #986004;
-  --prep:  #5760d0;
-  --hard:  #bd2d3e;
+  /* Timerphasen. Warm heisst Belastung, kuehl heisst Erholung - das liest
+     sich aus zwei Metern schneller als jede Beschriftung. Bewusst kein
+     Gruen: es traegt hier keine Bedeutung, die Waerme tut es. */
+  --work:  #8a5a20;
+  --rest:  #3c5f87;
+  --prep:  #6e717a;
+  --hard:  #a2454c;
 
-  /* Zonenrampe, Farbtoene gleichmaessiger ueber den Kreis verteilt.
-     Jeder Wert erreicht mindestens 4,5:1 gegen die Kartenflaeche. Vorher lagen
-     Z3, Z4 und Z5 als drei Nuancen desselben Orangerots in einem 8-px-Balken. */
-  --z-unter: #6b747f;
-  --z1:      #495cc9;
-  --z2:      #007c54;
-  --z3:      #856b00;
-  --z4:      #ae4d00;
-  --z5:      #bd2d3e;
+  /* Zonenrampe. Farbton bleibt gespreizt, damit Z3, Z4 und Z5 in einem
+     8-px-Balken unterscheidbar bleiben; die Saettigung ist zurueckgenommen,
+     damit die Seite nicht bunt wirkt. */
+  --z-unter: #6c6f77;
+  --z1:      #4a5c96;
+  --z2:      #3e7a63;
+  --z3:      #7a6520;
+  --z4:      #94552b;
+  --z5:      #a2454c;
 
-  --ok:    #00694f;
-  --dev:   #8a5300;
-  --miss:  #b3261e;
-  --extra: #4a5a54;
+  /* Zustaende: die Farbe steckt in Text und Kante, die Flaeche bleibt fast
+     neutral. Vier bunte Kacheln nebeneinander waren zu viel. */
+  --ok:    #3e7a63;
+  --dev:   #7a6520;
+  --miss:  #a2454c;
+  --extra: #4a4d55;
 
-  --ok-bg:    #dcf1e8;
-  --dev-bg:   #f9edda;
-  --miss-bg:  #fbe4e2;
-  --extra-bg: #e8edeb;
+  --ok-bg:    #eaf0ed;
+  --dev-bg:   #f2efe6;
+  --miss-bg:  #f7eaeb;
+  --extra-bg: #eff0f3;
 
   --radius:   16px;
   --radius-s: 10px;
@@ -71,87 +78,89 @@
    ausdrueckliche Hell-Wahl auch auf einem dunklen System gewinnt. */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:            #101614;
-    --surface:       #171f1d;
-    --surface-2:     #1e2725;
-    --surface-3:     #263130;
-    --on-surface:    #e6ede9;
-    --on-surface-var:#b3c2bb;
-    --muted:         #8b9c95;
-    --outline:       #2a3532;
-    --outline-2:     #3a4643;
+    --bg:            #121316;
+    --surface:       #191a1e;
+    --surface-2:     #1f2025;
+    --surface-3:     #292b31;
+    --on-surface:    #e7e8eb;
+    --on-surface-var:#a8aab2;
+    --muted:         #8a8d96;
+    --outline:       #2b2d34;
+    --outline-2:     #3a3d45;
 
-    --primary:       #45d9a4;
-    --on-primary:    #00382a;
-    --primary-container: #005139;
-    --on-primary-container: #b8efd9;
+    --primary:       #93b4e8;
+    --on-primary:    #16233a;
+    --primary-container: #26344a;
+    --on-primary-container: #cfe0fa;
 
-    --work:  #2dd4a7;
-    --rest:  #ffb14e;
-    --prep:  #7d8bff;
-    --hard:  #ff6b6b;
+    --work:  #d9a66c;
+    --rest:  #8fb4d9;
+    --prep:  #9aa0ab;
+    --hard:  #d47f85;
 
-    --z-unter: #4b535e;
-    --z1:      #758eff;
-    --z2:      #33d5a1;
-    --z3:      #f2cf3b;
-    --z4:      #ff9044;
-    --z5:      #f75c66;
+    --z-unter: #53565d;
+    --z1:      #7c8fc4;
+    --z2:      #6fb394;
+    --z3:      #c9b063;
+    --z4:      #d2946a;
+    --z5:      #ce7a80;
 
-    --ok:    #45d9a4;
-    --dev:   #e8b45c;
-    --miss:  #f0787f;
-    --extra: #9aaaa3;
+    --ok:    #6fb394;
+    --dev:   #c9b063;
+    --miss:  #d47f85;
+    --extra: #a8aab2;
 
-    --ok-bg:    #122b23;
-    --dev-bg:   #2b2317;
-    --miss-bg:  #2e1b1c;
-    --extra-bg: #1e2725;
+    --ok-bg:    #1b241f;
+    --dev-bg:   #242118;
+    --miss-bg:  #26191a;
+    --extra-bg: #1f2025;
 
-    --shadow-1: 0 1px 2px rgba(0,0,0,.36), 0 1px 3px rgba(0,0,0,.28);
+    --shadow-1: 0 1px 2px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3);
+
   }
 }
 
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --bg:            #101614;
-  --surface:       #171f1d;
-  --surface-2:     #1e2725;
-  --surface-3:     #263130;
-  --on-surface:    #e6ede9;
-  --on-surface-var:#b3c2bb;
-  --muted:         #8b9c95;
-  --outline:       #2a3532;
-  --outline-2:     #3a4643;
+    --bg:            #121316;
+    --surface:       #191a1e;
+    --surface-2:     #1f2025;
+    --surface-3:     #292b31;
+    --on-surface:    #e7e8eb;
+    --on-surface-var:#a8aab2;
+    --muted:         #8a8d96;
+    --outline:       #2b2d34;
+    --outline-2:     #3a3d45;
 
-  --primary:       #45d9a4;
-  --on-primary:    #00382a;
-  --primary-container: #005139;
-  --on-primary-container: #b8efd9;
+    --primary:       #93b4e8;
+    --on-primary:    #16233a;
+    --primary-container: #26344a;
+    --on-primary-container: #cfe0fa;
 
-  --work:  #2dd4a7;
-  --rest:  #ffb14e;
-  --prep:  #7d8bff;
-  --hard:  #ff6b6b;
+    --work:  #d9a66c;
+    --rest:  #8fb4d9;
+    --prep:  #9aa0ab;
+    --hard:  #d47f85;
 
-  --z-unter: #4b535e;
-  --z1:      #758eff;
-  --z2:      #33d5a1;
-  --z3:      #f2cf3b;
-  --z4:      #ff9044;
-  --z5:      #f75c66;
+    --z-unter: #53565d;
+    --z1:      #7c8fc4;
+    --z2:      #6fb394;
+    --z3:      #c9b063;
+    --z4:      #d2946a;
+    --z5:      #ce7a80;
 
-  --ok:    #45d9a4;
-  --dev:   #e8b45c;
-  --miss:  #f0787f;
-  --extra: #9aaaa3;
+    --ok:    #6fb394;
+    --dev:   #c9b063;
+    --miss:  #d47f85;
+    --extra: #a8aab2;
 
-  --ok-bg:    #122b23;
-  --dev-bg:   #2b2317;
-  --miss-bg:  #2e1b1c;
-  --extra-bg: #1e2725;
+    --ok-bg:    #1b241f;
+    --dev-bg:   #242118;
+    --miss-bg:  #26191a;
+    --extra-bg: #1f2025;
 
-  --shadow-1: 0 1px 2px rgba(0,0,0,.36), 0 1px 3px rgba(0,0,0,.28);
+    --shadow-1: 0 1px 2px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3);
+
 }
 
 *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }

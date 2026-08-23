@@ -80,6 +80,23 @@ Nur über das Menü erreichbar, weil man sie selten braucht:
 Die Anleitung, wo man die Schlüssel bekommt, steht in der App hinter dem
 Fragezeichen der jeweiligen Zeile.
 
+## Farben
+
+Neutrales Grau als Grundton, ein gedämpftes Blau als einziger Akzent – für das
+aktive Navigationsziel, den Hauptknopf, Gruppenüberschriften und Verweise.
+Alles andere bleibt flach.
+
+Farbe trägt nur dort Bedeutung, wo sie gebraucht wird:
+
+| Wo | Warum |
+|---|---|
+| Zonenrampe Z1–Z5 | Blau → Grün → Gelb → Orange → Rot, Farbton gespreizt, Sättigung zurückgenommen |
+| Timerphasen | warm = Belastung, kühl = Erholung – aus zwei Metern schneller lesbar als jede Beschriftung |
+| Tageskarten | nur eine schmale Kante links, die Überschriften bleiben neutral |
+
+Alle Werte liegen als Tokens in `src/ui/theme.css`, je einmal für hell und
+dunkel. Jede Zonenfarbe erreicht mindestens 5:1 gegen ihre Fläche.
+
 ## Analyse
 
 Zuerst eine Liste der Aufzeichnungen aus dem gewählten Zeitraum – eine Abfrage.

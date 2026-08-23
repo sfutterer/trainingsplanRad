@@ -46,12 +46,17 @@ export function RouteMap({ latlng, windAus }){
         : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
       L.tileLayer(url, { attribution: nachweis, maxZoom: 18 }).addTo(m);
 
-      const spur = L.polyline(latlng, { color: '#2dd4a7', weight: 4, opacity: .9 }).addTo(m);
+      /* Aus den Theme-Tokens lesen, damit die Spur zum Rest passt und beim
+         Themewechsel nicht als Fremdkoerper stehen bleibt. */
+      const token = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888';
+      const spurFarbe = token('--primary'), zielFarbe = token('--hard');
+
+      const spur = L.polyline(latlng, { color: spurFarbe, weight: 4, opacity: .95 }).addTo(m);
       m.fitBounds(spur.getBounds(), { padding: [18, 18] });
 
-      L.circleMarker(latlng[0], { radius: 6, color: '#fff', weight: 2, fillColor: '#2dd4a7', fillOpacity: 1 })
+      L.circleMarker(latlng[0], { radius: 6, color: '#fff', weight: 2, fillColor: spurFarbe, fillOpacity: 1 })
         .addTo(m).bindTooltip('Start');
-      L.circleMarker(latlng[latlng.length - 1], { radius: 6, color: '#fff', weight: 2, fillColor: '#ff6b6b', fillOpacity: 1 })
+      L.circleMarker(latlng[latlng.length - 1], { radius: 6, color: '#fff', weight: 2, fillColor: zielFarbe, fillOpacity: 1 })
         .addTo(m).bindTooltip('Ziel');
 
       /* Der Windpfeil zeigt, wohin der Wind weht - nicht, woher er kommt.

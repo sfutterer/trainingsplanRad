@@ -15,7 +15,9 @@ export const THEMES = [
   { id: 'dark',   label: 'Dunkel' }
 ];
 
-const GROUND = { light: '#f6f8f7', dark: '#101614' };
+/* Muss mit --bg in theme.css uebereinstimmen - sonst hat die Statusleiste
+   eine andere Farbe als die Seite darunter. */
+const GROUND = { light: '#f6f7f8', dark: '#121316' };
 
 export const theme = signal('system');
 
