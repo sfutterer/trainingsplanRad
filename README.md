@@ -30,7 +30,7 @@ vor dem Umbau liegt als Tag `vor-umbau` bereit.
 Der Trainingsplan steht in `public/plan.json`, nicht im Code. Zwei Wege:
 
 - **Dauerhaft für alle:** Datei im Repo bearbeiten und pushen.
-- **Nur auf dem Gerät:** Im Tab „Plan“ exportieren, bearbeiten, importieren.
+- **Nur auf dem Gerät:** Unter „Optionen“ exportieren, bearbeiten, importieren.
   Der eigene Plan wird lokal gespeichert und gilt ab sofort; die Repo-Fassung
   bleibt der Default und ist per Knopf wieder erreichbar.
 
@@ -55,5 +55,17 @@ sie mitgezogen werden.
 ## Daten sichern
 
 Trainingsprotokolle, Testhistorie und Erhebungen liegen nur im `localStorage`
-dieses einen Browserprofils. Der Tab „Plan“ hat einen Knopf für die Sicherung –
+dieses einen Browserprofils. Unter „Optionen“ steht der Knopf für die Sicherung –
 das ist die einzige Kopie, die es gibt.
+
+## Einstellungen
+
+Unter „Optionen“ liegen alle Stellschrauben an einem Ort: API-Zugang zu
+intervals.icu, Erscheinungsbild (System, Hell, Dunkel), Beginn von Woche 1,
+Plan-Import und -Export, Sicherung aller Nutzerdaten, eine Diagnose der
+verfügbaren intervals.icu-Daten und das Verhalten während des Trainings.
+
+Der Planbeginn steht standardmäßig auf dem **15.08.2026**, dem Samstag, an dem
+Woche 1 begonnen hat. Liegt er auf einem anderen Wochentag, warnt die App: die
+Trainingswoche beginnt samstags, und ein verschobener Start zieht jeden Samstag
+in die Vorwoche – die lange Ausfahrt bekäme dann durchgehend die falsche Dauer.

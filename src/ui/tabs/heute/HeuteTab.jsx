@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, week, apiKey,
-         testLog, interimLog, setStartDate, setThresholds,
+         testLog, interimLog, setThresholds,
          addTestEntry, addInterimEntry } from '../../../state/store.js';
 import { buildDayInfo, formatDate } from '../../../domain/day.js';
 import { isoDayLocal, toMidnight, phaseName, isWinterBlock, isRecoveryWeek,
@@ -26,7 +26,6 @@ function naechsterTest(p, heute, start){
 
 function StatusKarte(){
   const p = plan.value, w = week.value, start = startDate.value, th = thresholds.value;
-  const [datum, setDatum] = useState(isoDayLocal(start));
   const winter = isWinterBlock(p, w);
 
   const hinweise = [];
@@ -49,14 +48,7 @@ function StatusKarte(){
       <div class="row"><span>Pulszonen</span><b>
         {usesCoggan(p, th, w) ? 'Coggan aus LTHR ' + th.lthr + ' bpm' : 'Übergangsbänder (bis zum Test)'}
       </b></div>
-      <div class="field" style="margin-top:8px">
-        <span>Startdatum</span>
-        <input type="date" value={datum} onInput={e => setDatum(e.currentTarget.value)} />
-      </div>
-      {datum !== isoDayLocal(start) && (
-        <button class="btn block" style="margin-top:10px"
-          onClick={() => setStartDate(new Date(datum))}>Startdatum übernehmen</button>
-      )}
+      <div class="row"><span>Beginn Woche 1</span><b>{start.toLocaleDateString('de-DE')}</b></div>
       {hinweise.map((h, i) => <p class="hint" key={i}>{h}</p>)}
     </div>
   );

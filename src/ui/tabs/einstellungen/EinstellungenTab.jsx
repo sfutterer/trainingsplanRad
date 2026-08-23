@@ -1,12 +1,17 @@
-/* Plan bearbeiten, Daten sichern, App einstellen.
+/* Alles, was eingestellt wird: Zugaenge, Darstellung, Planbeginn, der Plan
+   selbst, Sicherung und Diagnose.
 
-   Der wichtigste Knopf hier ist die Sicherung: core-session-log und
-   interim-log existieren nur in diesem einen Browserprofil. Kein Backend
-   heisst auch: keine andere Kopie. */
+   Zusammengezogen an einen Ort, weil verstreute Einstellungen genau dann nicht
+   gefunden werden, wenn man sie braucht. Der wichtigste Knopf hier ist die
+   Sicherung: core-session-log und interim-log existieren nur in diesem einen
+   Browserprofil. Kein Backend heisst auch: keine andere Kopie. */
 
 import { useState } from 'preact/hooks';
-import { plan, planJson, planSource, settings, setSettings, apiKey,
-         store, applyPlanOverride, resetPlanToDefault, coreLog, testLog, interimLog } from '../../../state/store.js';
+import { plan, planJson, planSource, settings, setSettings, apiKey, setApiKey,
+         startDate, setStartDate, store, applyPlanOverride, resetPlanToDefault,
+         coreLog, testLog, interimLog, PLAN_START_DEFAULT } from '../../../state/store.js';
+import { THEMES } from '../../../state/theme.js';
+import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { exportAll, importAll, exportFilename } from '../../../data/exportImport.js';
 import { downloadJson, requestPersistentStorage } from '../../../platform/index.js';
 import { probeCapabilities } from '../../../data/icu.js';
@@ -24,6 +29,108 @@ function datei(onText){
     r.readAsText(f);
   };
   inp.click();
+}
+
+
+/* ---- Zugaenge ----
+   Der Schluessel bleibt auf dem Geraet und geht nur an intervals.icu. Weitere
+   Dienste bekommen hier eigene Zeilen - die Karte ist dafuer angelegt. */
+function ZugangsKarte(){
+  const [key, setKey] = useState(apiKey.value);
+  const [gespeichert, setGespeichert] = useState(false);
+  const geaendert = key.trim() !== apiKey.value;
+
+  async function speichern(){
+    await setApiKey(key.trim());
+    setGespeichert(true);
+    setTimeout(() => setGespeichert(false), 2500);
+  }
+
+  return (
+    <div class="card">
+      <div class="row"><span>intervals.icu</span>
+        <b>{apiKey.value ? 'verbunden' : 'kein Schlüssel'}</b></div>
+      <div class="field"><span style="flex:1">
+        <input type="password" placeholder="API-Key" value={key} autocomplete="off"
+          autocapitalize="off" spellcheck={false} style="width:100%"
+          onInput={e => setKey(e.currentTarget.value)} /></span></div>
+      <div class="buttons" style="margin-top:10px">
+        <button class="btn" disabled={!geaendert} onClick={speichern}>Speichern</button>
+        {apiKey.value && <button class="btn secondary" onClick={() => { setKey(''); setApiKey(''); }}>Entfernen</button>}
+      </div>
+      {gespeichert && <div class="meldung ok"><b>Schlüssel gespeichert.</b></div>}
+      <p class="hint">
+        Zu finden auf intervals.icu unter Settings → Developer Settings. Er wird nur hier auf dem
+        Gerät abgelegt und ausschließlich an intervals.icu geschickt.
+      </p>
+    </div>
+  );
+}
+
+/* ---- Darstellung ---- */
+function DarstellungsKarte(){
+  const aktuell = settings.value.theme || 'system';
+  return (
+    <div class="card">
+      <div class="row"><span>Erscheinungsbild</span>
+        <b>{THEMES.find(t => t.id === aktuell)?.label}</b></div>
+      <div class="segmented" role="group" aria-label="Erscheinungsbild">
+        {THEMES.map(t => (
+          <button key={t.id} class={'segbtn' + (aktuell === t.id ? ' an' : '')}
+            aria-pressed={aktuell === t.id ? 'true' : 'false'}
+            onClick={() => setSettings({ theme: t.id })}>{t.label}</button>
+        ))}
+      </div>
+      <p class="hint">
+        „System“ folgt der Android-Einstellung und wechselt mit ihr – auch mitten in einer Einheit,
+        wenn dein Gerät nachts automatisch umschaltet. Hell und Dunkel bleiben fest.
+      </p>
+    </div>
+  );
+}
+
+/* ---- Planbeginn ----
+   Die Trainingswoche beginnt samstags. Liegt der Startpunkt auf einem anderen
+   Wochentag, rutscht jeder Samstag in die vorherige Woche - und damit bekommt
+   die lange Ausfahrt die Dauer der Vorwoche. Das faellt sonst nicht auf. */
+function StartdatumKarte(){
+  const aktuell = startDate.value;
+  const [datum, setDatum] = useState(isoDayLocal(aktuell));
+  const gewaehlt = toMidnight(new Date(datum));
+  const geaendert = datum !== isoDayLocal(aktuell);
+  const wochentag = gewaehlt.getDay();
+  const passt = wochentag === 6;
+
+  return (
+    <div class="card">
+      <div class="row"><span>Beginn Woche 1</span>
+        <b>{aktuell.toLocaleDateString('de-DE')} · {WEEKDAY_NAMES[aktuell.getDay()]}</b></div>
+      <div class="field"><span>Startdatum</span>
+        <input type="date" value={datum} onInput={e => setDatum(e.currentTarget.value)} /></div>
+      <div class="buttons" style="margin-top:10px">
+        <button class="btn" disabled={!geaendert} onClick={() => setStartDate(gewaehlt)}>Übernehmen</button>
+        {isoDayLocal(aktuell) !== PLAN_START_DEFAULT && (
+          <button class="btn secondary" onClick={() => { setDatum(PLAN_START_DEFAULT); setStartDate(new Date(PLAN_START_DEFAULT)); }}>
+            Auf {new Date(PLAN_START_DEFAULT).toLocaleDateString('de-DE')} setzen
+          </button>
+        )}
+      </div>
+      {!passt && (
+        <div class="meldung fehler">
+          <b>{WEEKDAY_NAMES[wochentag]} als Wochenbeginn verschiebt den Samstag.</b>
+          <ul>
+            <li>Die Trainingswoche beginnt laut Plan am Samstag.</li>
+            <li>Liegt der Start auf einem anderen Tag, zählt jeder Samstag zur vorherigen Woche –
+                die lange Ausfahrt bekommt dann durchgehend die Dauer der Vorwoche.</li>
+          </ul>
+        </div>
+      )}
+      <p class="hint">
+        Aus dem Startdatum ergibt sich jede Wochennummer und damit jede Vorgabe. Standard ist der{' '}
+        {new Date(PLAN_START_DEFAULT).toLocaleDateString('de-DE')} – der Samstag, an dem Woche 1 begonnen hat.
+      </p>
+    </div>
+  );
 }
 
 function PlanKarte(){
@@ -185,7 +292,7 @@ function DiagnoseKarte(){
   );
 }
 
-function EinstellungenKarte(){
+function VerhaltensKarte(){
   const s = settings.value;
   const [reset, setReset] = useState(false);
 
@@ -203,6 +310,7 @@ function EinstellungenKarte(){
 
   return (
     <div class="card">
+      <div class="row"><span>Verhalten</span><b>während des Trainings</b></div>
       <div class="field"><span>Sprachansage</span>
         <input type="checkbox" checked={s.voice} onChange={e => setSettings({ voice: e.currentTarget.checked })} /></div>
       <div class="field"><span>Bildschirm anlassen</span>
@@ -225,14 +333,17 @@ function EinstellungenKarte(){
   );
 }
 
-export function PlanTab(){
+export function EinstellungenTab(){
   return (
     <>
-      <h1 class="title">Plan &amp; Daten</h1>
+      <h1 class="title">Einstellungen</h1>
+      <ZugangsKarte />
+      <DarstellungsKarte />
+      <StartdatumKarte />
       <PlanKarte />
       <SicherungsKarte />
       <DiagnoseKarte />
-      <EinstellungenKarte />
+      <VerhaltensKarte />
     </>
   );
 }

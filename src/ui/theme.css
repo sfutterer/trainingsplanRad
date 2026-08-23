@@ -65,8 +65,12 @@
   --font: system-ui, -apple-system, "Roboto", "Segoe UI", sans-serif;
 }
 
+/* Drei Zustaende, nicht zwei: "System" setzt kein Attribut und folgt
+   prefers-color-scheme, "Hell" und "Dunkel" setzen data-theme und schlagen das
+   System. Der :not()-Schutz in der Medienabfrage sorgt dafuer, dass eine
+   ausdrueckliche Hell-Wahl auch auf einem dunklen System gewinnt. */
 @media (prefers-color-scheme: dark){
-  :root{
+  :root:not([data-theme="light"]){
     --bg:            #101614;
     --surface:       #171f1d;
     --surface-2:     #1e2725;
@@ -108,6 +112,48 @@
   }
 }
 
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:            #101614;
+  --surface:       #171f1d;
+  --surface-2:     #1e2725;
+  --surface-3:     #263130;
+  --on-surface:    #e6ede9;
+  --on-surface-var:#b3c2bb;
+  --muted:         #8b9c95;
+  --outline:       #2a3532;
+  --outline-2:     #3a4643;
+
+  --primary:       #45d9a4;
+  --on-primary:    #00382a;
+  --primary-container: #005139;
+  --on-primary-container: #b8efd9;
+
+  --work:  #2dd4a7;
+  --rest:  #ffb14e;
+  --prep:  #7d8bff;
+  --hard:  #ff6b6b;
+
+  --z-unter: #4b535e;
+  --z1:      #758eff;
+  --z2:      #33d5a1;
+  --z3:      #f2cf3b;
+  --z4:      #ff9044;
+  --z5:      #f75c66;
+
+  --ok:    #45d9a4;
+  --dev:   #e8b45c;
+  --miss:  #f0787f;
+  --extra: #9aaaa3;
+
+  --ok-bg:    #122b23;
+  --dev-bg:   #2b2317;
+  --miss-bg:  #2e1b1c;
+  --extra-bg: #1e2725;
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,.36), 0 1px 3px rgba(0,0,0,.28);
+}
+
 *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body{ height: 100%; }
@@ -140,3 +186,5 @@ button{ font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+:root[data-theme="light"]{ color-scheme: light; }

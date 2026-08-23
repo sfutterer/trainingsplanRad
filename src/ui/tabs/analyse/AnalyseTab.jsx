@@ -6,7 +6,8 @@
    eigenstaendige Oberflaeche ausliefern liesse. */
 
 import { useState } from 'preact/hooks';
-import { plan, thresholds, startDate, apiKey, coreLog, setApiKey, today } from '../../../state/store.js';
+import { plan, thresholds, startDate, apiKey, coreLog, today } from '../../../state/store.js';
+import { gotoTab } from '../../../App.jsx';
 import { fetchActivities, fetchStreams } from '../../../data/icu.js';
 import { zoneSeconds, hrBands } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, weekNumberFor } from '../../../domain/week.js';
@@ -68,7 +69,6 @@ function TagesZeile({ row, wochenmodus }){
 
 export function AnalyseTab(){
   const p = plan.value, th = thresholds.value, start = startDate.value;
-  const [key, setKey] = useState(apiKey.value);
   const [range, setRange] = useState('14');
   const [mitZonen, setMitZonen] = useState(true);
   const [wochenmodus, setWochenmodus] = useState(false);
@@ -86,12 +86,13 @@ export function AnalyseTab(){
   }
 
   async function laden(){
-    if(!key.trim()) return setStatus({ art:'fehler', text:'Erst den API-Key eintragen und speichern.' });
+    const key = apiKey.value;
+    if(!key) return setStatus({ art:'fehler', text:'Erst den API-Key in den Einstellungen eintragen.' });
     setLaeuft(true); setRows(null);
     const from = vonDatum(), to = toMidnight(today.value);
     try {
       setStatus({ art:'', text:'Aktivitäten werden geladen …' });
-      const acts = await fetchActivities(key.trim(), isoDayLocal(from), isoDayLocal(to));
+      const acts = await fetchActivities(key, isoDayLocal(from), isoDayLocal(to));
 
       let zonesById = null;
       if(mitZonen){
@@ -102,7 +103,7 @@ export function AnalyseTab(){
           n += 1;
           setStatus({ art:'', text:'Pulszonen ' + n + ' / ' + rides.length + ' …' });
           try {
-            const streams = await fetchStreams(key.trim(), a.id, 'heartrate,time');
+            const streams = await fetchStreams(key, a.id, 'heartrate,time');
             const hr = (streams || []).find(s => s.type === 'heartrate');
             const tm = (streams || []).find(s => s.type === 'time');
             if(hr && Array.isArray(hr.data)){
@@ -137,18 +138,17 @@ export function AnalyseTab(){
     <>
       <h1 class="title">Analyse</h1>
 
-      <div class="card">
-        <div class="row"><span>Verbindung</span><b>{apiKey.value ? 'Key gespeichert' : 'nicht verbunden'}</b></div>
-        <div class="field"><span style="flex:1">
-          <input type="password" placeholder="intervals.icu API-Key" value={key} autocomplete="off"
-            autocapitalize="off" spellcheck={false} style="width:100%"
-            onInput={e => setKey(e.currentTarget.value)} /></span></div>
-        <button class="btn block" style="margin-top:10px" onClick={() => setApiKey(key.trim())}>Key speichern</button>
-        <p class="hint">
-          Der Key steht auf intervals.icu unter Settings → Developer Settings. Er bleibt auf diesem
-          Gerät und geht nur an intervals.icu.
-        </p>
-      </div>
+      {!apiKey.value && (
+        <div class="card">
+          <div class="row"><span>Verbindung</span><b>nicht verbunden</b></div>
+          <p class="hint" style="margin-top:6px">
+            Ohne API-Key kann die App keine Aktivitäten laden. Der Schlüssel wird unter
+            Einstellungen eingetragen.
+          </p>
+          <button class="btn block" style="margin-top:12px"
+            onClick={() => gotoTab('einstellungen', true)}>Zu den Einstellungen</button>
+        </div>
+      )}
 
       <div class="card">
         <div class="field"><span>Zeitraum</span>

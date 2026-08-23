@@ -188,3 +188,25 @@ h1.title{
 .meldung li{ margin-bottom: 4px; }
 code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
   background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+
+/* Segmented Button, Material 3. Drei Zustaende nebeneinander statt einer
+   Auswahlliste - bei drei Optionen ist ein Dropdown ein Klick zu viel. */
+.segmented{
+  display: flex;
+  border: 1px solid var(--outline-2);
+  border-radius: 24px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+.segbtn{
+  flex: 1;
+  min-height: 48px;
+  border: 0;
+  border-right: 1px solid var(--outline-2);
+  background: transparent;
+  color: var(--on-surface-var);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+}
+.segbtn:last-child{ border-right: 0; }
+.segbtn.an{ background: var(--primary-container); color: var(--on-primary-container); }

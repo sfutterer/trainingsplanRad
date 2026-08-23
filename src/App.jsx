@@ -11,7 +11,7 @@ import { HeuteTab } from './ui/tabs/heute/HeuteTab.jsx';
 import { RumpfTab } from './ui/tabs/rumpf/RumpfTab.jsx';
 import { IntervalleTab } from './ui/tabs/intervalle/IntervalleTab.jsx';
 import { AnalyseTab } from './ui/tabs/analyse/AnalyseTab.jsx';
-import { PlanTab } from './ui/tabs/plan/PlanTab.jsx';
+import { EinstellungenTab } from './ui/tabs/einstellungen/EinstellungenTab.jsx';
 import { UpdateBanner } from './ui/components/UpdateBanner.jsx';
 
 const TABS = {
@@ -19,7 +19,7 @@ const TABS = {
   rumpf: RumpfTab,
   intervalle: IntervalleTab,
   analyse: AnalyseTab,
-  plan: PlanTab
+  einstellungen: EinstellungenTab
 };
 
 function gotoTab(id, push){

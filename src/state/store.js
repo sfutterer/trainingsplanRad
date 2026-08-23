@@ -10,6 +10,7 @@ import { localStorageAdapter, createRepos, KEYS } from '../data/storage.js';
 import { loadPlan, parsePlan, PlanError } from '../data/planSource.js';
 import { toMidnight, isoDayLocal, weekNumberFor } from '../domain/week.js';
 import * as platform from '../platform/index.js';
+import { theme } from './theme.js';
 
 export const store = createRepos(localStorageAdapter());
 
@@ -32,6 +33,11 @@ export const ready       = signal(false);
    weiter. Ein Signal statt new Date() an dreissig Stellen. */
 export const today = signal(toMidnight(new Date()));
 
+/* Beginn der ersten Trainingswoche. Fester Tag statt "eine Woche vor heute":
+   der Plan haengt an einem echten Datum, nicht an dem Tag, an dem die App
+   zufaellig zum ersten Mal geoeffnet wird. Die Trainingswoche beginnt samstags. */
+export const PLAN_START_DEFAULT = '2026-08-15';
+
 export const week = computed(() => {
   if(!startDate.value) return 1;
   return Math.max(weekNumberFor(today.value, startDate.value), 1);
@@ -52,10 +58,7 @@ export async function boot(){
 
   let sd = await store.startDate();
   if(!sd){
-    /* Vorgabe: eine Woche vor heute, also Woche 1 gerade abgeschlossen. */
-    const d = toMidnight(new Date());
-    d.setDate(d.getDate() - 7);
-    sd = isoDayLocal(d);
+    sd = PLAN_START_DEFAULT;
     await store.setStartDate(sd);
   }
   startDate.value = toMidnight(new Date(sd));
@@ -65,7 +68,8 @@ export async function boot(){
   coreLog.value    = await store.coreLog();
   testLog.value    = await store.testLog();
   interimLog.value = await store.interimLog();
-  settings.value   = Object.assign({ voice:true, keepAwake:true, showIllu:true }, await store.settings());
+  settings.value   = Object.assign({ voice:true, keepAwake:true, showIllu:true, theme:'system' }, await store.settings());
+  theme.value      = settings.value.theme;
 
   platform.setKeepAwake(settings.value.keepAwake);
   platform.requestPersistentStorage();
@@ -102,6 +106,7 @@ export async function setSettings(patch){
   settings.value = Object.assign({}, settings.value, patch);
   await store.setSettings(settings.value);
   if('keepAwake' in patch) platform.setKeepAwake(settings.value.keepAwake);
+  if('theme' in patch) theme.value = settings.value.theme;
 }
 
 export async function saveCoreLog(list){
@@ -138,4 +143,4 @@ export async function resetPlanToDefault(){
   planSource.value = r.source;
 }
 
-export { KEYS, PlanError };
+export { KEYS, PlanError, theme };
