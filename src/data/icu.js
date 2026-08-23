@@ -2,6 +2,8 @@
    Kein Backend dazwischen - der Schluessel verlaesst das Geraet nur Richtung
    intervals.icu. */
 
+import { holen, ZEITGRENZE } from './netz.js';
+
 export const ICU_BASE = 'https://intervals.icu/api/v1';
 
 /* Nur die Felder, die der Abgleich braucht - die Activity hat 183. */
@@ -18,10 +20,11 @@ function authHeader(key){
 export async function icuFetch(path, key){
   let res;
   try {
-    res = await fetch(ICU_BASE + path, {
+    res = await holen(ICU_BASE + path, {
       headers: { Authorization: authHeader(key), Accept: 'application/json' }
-    });
+    }, ZEITGRENZE.icu, 'intervals.icu');
   } catch(e){
+    if(/nicht geantwortet/.test(e.message)) throw e;
     throw new Error('Keine Verbindung zu intervals.icu. Offline oder Netz blockiert?');
   }
   if(res.status === 401 || res.status === 403){

@@ -140,7 +140,7 @@ export function RouteMap({ latlng, gruppen, windAus }){
 
 /* Legende unter der Karte. Nur was vorkam: eine Zeile "unbefestigt: 0 km"
    erklaert nichts, sie verlaengert nur die Liste. */
-export function StreckenLegende({ bilanz }){
+export function StreckenLegende({ bilanz, laeuft }){
   if(!bilanz) return null;
   const km = m => (m / 1000).toFixed(1).replace('.', ',') + ' km';
   const vorhanden = KLASSEN.filter(k => (bilanz.klassen[k] || 0) >= 100);
@@ -156,7 +156,8 @@ export function StreckenLegende({ bilanz }){
           <i class="legfarbe gepunktet"></i>unbefestigt insgesamt <b>{km(bilanz.wegMeter)}</b>
         </span>
       )}
-      {!bilanz.untergrundBekannt && (
+      {laeuft && <span class="leghinweis">Untergrund wird noch geladen …</span>}
+      {!laeuft && !bilanz.untergrundBekannt && (
         <span class="leghinweis">Zum Untergrund liegt für den größten Teil der Strecke kein Eintrag in OpenStreetMap vor.</span>
       )}
     </div>

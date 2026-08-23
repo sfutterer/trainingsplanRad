@@ -147,14 +147,6 @@ export function Auswertung({ bilanz, wetter, fazit, row, verfassung }){
       {row.notes.map((n, i) => <div class={'annote ' + (n.kind || '')} key={i}>{n.text}</div>)}
 
       <Fazit fazit={fazit} />
-
-      <p class="hint">
-        Ruhepuls, HRV, Schlaf und Gewicht aus der Wellness von intervals.icu.
-        Wind, Temperatur und Niederschlag stundenweise von Open-Meteo, Untergrund aus
-        OpenStreetMap über Overpass – beide ohne Schlüssel und ohne Konto. Für die Abfragen
-        gehen die Koordinaten der Fahrt dorthin. Steigung aus dem Höhenstream der
-        Aufzeichnung, Gegenwindanteil aus Fahrtrichtung und Windrichtung je Abschnitt.
-      </p>
     </div>
   );
 }

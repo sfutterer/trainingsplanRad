@@ -21,7 +21,9 @@ import { IntervalleTab } from './ui/tabs/intervalle/IntervalleTab.jsx';
 import { AnalyseTab } from './ui/tabs/analyse/AnalyseTab.jsx';
 import { ZonenTab } from './ui/tabs/zonen/ZonenTab.jsx';
 import { EinstellungenTab } from './ui/tabs/einstellungen/EinstellungenTab.jsx';
+import { AboutTab } from './ui/tabs/about/AboutTab.jsx';
 import { UpdateBanner } from './ui/components/UpdateBanner.jsx';
+import { Snackbar } from './ui/components/Snackbar.jsx';
 
 const TABS = {
   plan:          { komp: PlanTab,          titel: 'Plan' },
@@ -29,7 +31,8 @@ const TABS = {
   intervalle:    { komp: IntervalleTab,    titel: 'Intervalle' },
   analyse:       { komp: AnalyseTab,       titel: 'Analyse' },
   zonen:         { komp: ZonenTab,         titel: 'Zonen & Schwellenwerte' },
-  einstellungen: { komp: EinstellungenTab, titel: 'Einstellungen' }
+  einstellungen: { komp: EinstellungenTab, titel: 'Einstellungen' },
+  about:         { komp: AboutTab,         titel: 'Über die App' }
 };
 
 function gotoTab(id, push){
@@ -116,6 +119,7 @@ export function App(){
       </main>
 
       <UpdateBanner />
+      <Snackbar />
 
       {imUntermenue && <NavigationBar active={tab.value} onSelect={id => gotoTab(id, true)} />}
 

@@ -9,12 +9,14 @@
    ist der einzige, der ohne diese Faehigkeiten funktioniert. */
 
 import { useEffect, useState } from 'preact/hooks';
-import { plan, thresholds, startDate, apiKey, coreLog, today } from '../../../state/store.js';
+import { plan, thresholds, startDate, apiKey, coreLog, today, store } from '../../../state/store.js';
 import { fetchActivities, fetchStreams, spurMitHoehe, fetchWellness } from '../../../data/icu.js';
 import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
-import { ladeWege } from '../../../data/osm.js';
-import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn } from '../../../domain/strecke.js';
+import { ladeWege, untergrundCode, untergrundAusCode } from '../../../data/osm.js';
+import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn,
+         setzeUntergrund } from '../../../domain/strecke.js';
 import { streckenFazit } from '../../../domain/fazit.js';
+import { melde } from '../../../state/snackbar.js';
 import { zoneSeconds, hrBands } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, weekNumberFor, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { anCompareDay, anWeekTotals, anBuildReport, anFmtMin, anPct, anIsRide,
@@ -143,78 +145,136 @@ function Detail({ act, onZurueck }){
 
   useEffect(() => {
     let weg = false;
+    setZustand({ phase: 'laedt' });
+
     (async () => {
       const key = apiKey.value;
-      const erg = { zonen: null, latlng: null, gruppen: null, bilanz: null, wetter: null,
-                    verfassung: null, hinweise: [] };
+      /* Was ausgefallen ist, kommt am Ende der schnellen Runde als eine
+         Meldung - nicht drei hintereinander, von denen nur die letzte zu
+         sehen waere. */
+      const fehlt = [];
+
       /* Laeuft neben den Streams, nicht dahinter: die Verfassung am Fahrtag
-         haengt an nichts, was die Aufzeichnung liefert. Faellt der Abruf aus,
-         bleibt das Fazit bei Strecke und Wetter. */
+         haengt an nichts, was die Aufzeichnung liefert. */
       const tagIso = isoDayLocal(toMidnight(new Date(act.start_date_local)));
       const wellVon = toMidnight(new Date(tagIso));
       wellVon.setDate(wellVon.getDate() - 8);
       const wellness = sicher(fetchWellness(key, isoDayLocal(wellVon), tagIso));
-      try {
-        if(anIsRide(act.type)){
-          const streams = await fetchStreams(key, act.id, 'heartrate,time,latlng,altitude');
-          const hol = t => (streams || []).find(s => s.type === t);
-          const hr = hol('heartrate'), tm = hol('time');
+      const verfassungAus_ = wl => {
+        if(wl.wert) return verfassungAus(wl.wert, tagIso);
+        fehlt.push('Wellness (' + wl.fehler + ')');
+        return null;
+      };
 
-          if(hr && Array.isArray(hr.data)){
-            const wk = Math.max(weekNumberFor(new Date(act.start_date_local), start), 1);
-            erg.zonen = zoneSeconds(hrBands(p, th, wk), hr.data,
-              tm && Array.isArray(tm.data) ? tm.data : null,
-              act.icu_recording_time || act.elapsed_time || act.moving_time || 0);
-          }
-
-          /* Die Form des latlng-Streams liegt nicht fest - das Umrechnen auf
-             Paare steckt deshalb in icu.js, wo auch die Diagnose es nutzt. */
-          const spur = duenne(spurMitHoehe(streams));
-          if(spur.length > 1){
-            erg.latlng = spur.map(x => x.ll);
-            const mitte = spur[Math.floor(spur.length / 2)].ll;
-
-            const [w, o] = await Promise.all([
-              sicher(ladeWetter(mitte[0], mitte[1], act.start_date_local)),
-              sicher(ladeWege(erg.latlng))
-            ]);
-            if(weg) return;
-
-            let wind = null;
-            if(w.wert){
-              const i = stundenIndex(w.wert, act.start_date_local);
-              erg.wetter = {
-                temp: w.wert.temperature_2m[i], gefuehlt: w.wert.apparent_temperature[i],
-                wind: w.wert.wind_speed_10m[i], boe: w.wert.wind_gusts_10m[i],
-                richtung: w.wert.wind_direction_10m[i], regen: w.wert.precipitation[i],
-                feuchte: w.wert.relative_humidity_2m[i]
-              };
-              wind = sek => windZurZeit(w.wert, act.start_date_local, sek);
-            } else {
-              erg.hinweise.push('Wetterdaten nicht abrufbar: ' + w.fehler +
-                ' Ohne sie bleibt die Karte bei Steigung und Untergrund.');
-            }
-
-            let untergrund = null;
-            if(o.wert) untergrund = ll => untergrundAn(ll, o.wert);
-            else erg.hinweise.push('Untergrund nicht abrufbar: ' + o.fehler +
-              ' Die Karte zeigt dann Wind und Steigung, aber keinen Schotter.');
-
-            const abschnitte = baueAbschnitte(spur, { wind, untergrund });
-            erg.gruppen = zeichenGruppen(abschnitte);
-            erg.bilanz = streckenBilanz(abschnitte);
-          } else {
-            erg.hinweise.push('Kein GPS-Stream zu dieser Fahrt. Entweder ohne Aufzeichnung gefahren, oder das Konto liefert latlng nicht über die API. Unter Einstellungen → Diagnose zeigt „Verfügbare Daten prüfen“, was zu dieser Aktivität ankommt.');
-          }
-        }
+      if(!anIsRide(act.type)){
         const wl = await wellness;
         if(weg) return;
-        if(wl.wert) erg.verfassung = verfassungAus(wl.wert, tagIso);
-        setZustand({ phase: 'fertig', ...erg });
+        const verfassung = verfassungAus_(wl);
+        if(fehlt.length) melde('Nicht abrufbar: ' + fehlt.join(' · '));
+        setZustand({ phase: 'fertig', verfassung });
+        return;
+      }
+
+      /* Ohne die Streams gibt es nichts zu zeichnen - aber die Kopfkarte mit
+         Plan und Dauer steht trotzdem. Deshalb Meldung statt Fehlerseite. */
+      let streams = null;
+      try {
+        streams = await fetchStreams(key, act.id, 'heartrate,time,latlng,altitude');
       } catch(e){
-        if(!weg) setZustand({ phase: 'fehler', text: e.message });
+        if(weg) return;
+        const wl = await wellness;
+        melde('Streams nicht abrufbar: ' + e.message);
+        setZustand({ phase: 'fertig', verfassung: wl.wert ? verfassungAus(wl.wert, tagIso) : null });
+        return;
+      }
+      if(weg) return;
+
+      const hol = t => (streams || []).find(s => s.type === t);
+      const hr = hol('heartrate'), tm = hol('time');
+      let zonen = null;
+      if(hr && Array.isArray(hr.data)){
+        const wk = Math.max(weekNumberFor(new Date(act.start_date_local), start), 1);
+        zonen = zoneSeconds(hrBands(p, th, wk), hr.data,
+          tm && Array.isArray(tm.data) ? tm.data : null,
+          act.icu_recording_time || act.elapsed_time || act.moving_time || 0);
+      }
+
+      /* Die Form des latlng-Streams liegt nicht fest - das Umrechnen auf
+         Paare steckt deshalb in icu.js, wo auch die Diagnose es nutzt. */
+      const spur = duenne(spurMitHoehe(streams));
+      if(spur.length < 2){
+        const wl = await wellness;
+        if(weg) return;
+        melde('Kein GPS-Stream zu dieser Fahrt – unter Einstellungen → Diagnose steht, was das Konto liefert.', 9000);
+        setZustand({ phase: 'fertig', zonen, verfassung: verfassungAus_(wl) });
+        return;
+      }
+      const latlng = spur.map(x => x.ll);
+
+      /* Die beiden schnellen Abrufe zusammen, der langsame danach: Wetter und
+         Wellness antworten in Millisekunden, Overpass braucht Sekunden. Auf den
+         wartet die Karte nicht. */
+      const mitte = spur[Math.floor(spur.length / 2)].ll;
+      const [w, wl] = await Promise.all([
+        sicher(ladeWetter(mitte[0], mitte[1], act.start_date_local)),
+        wellness
+      ]);
+      if(weg) return;
+      const verfassung = verfassungAus_(wl);
+
+      let wetter = null, wind = null;
+      if(w.wert){
+        const i = stundenIndex(w.wert, act.start_date_local);
+        wetter = {
+          temp: w.wert.temperature_2m[i], gefuehlt: w.wert.apparent_temperature[i],
+          wind: w.wert.wind_speed_10m[i], boe: w.wert.wind_gusts_10m[i],
+          richtung: w.wert.wind_direction_10m[i], regen: w.wert.precipitation[i],
+          feuchte: w.wert.relative_humidity_2m[i]
+        };
+        wind = sek => windZurZeit(w.wert, act.start_date_local, sek);
+      } else {
+        fehlt.push('Wetter (' + w.fehler + ')');
+      }
+      if(fehlt.length) melde('Nicht abrufbar: ' + fehlt.join(' · '));
+
+      let abschnitte = baueAbschnitte(spur, { wind });
+      setZustand({
+        phase: 'fertig', zonen, latlng, wetter, verfassung,
+        gruppen: zeichenGruppen(abschnitte), bilanz: streckenBilanz(abschnitte),
+        untergrundLaeuft: true
+      });
+
+      /* Untergrund zuletzt, und beim zweiten Ansehen aus dem Zwischenspeicher:
+         dieselbe Fahrt hat morgen denselben Schotter. */
+      const merker = await store.untergrund();
+      const schluessel = act.id + ':' + abschnitte.length;
+      let quelle = merker[schluessel] ? untergrundAusCode(merker[schluessel]) : null;
+
+      if(!quelle){
+        const o = await sicher(ladeWege(latlng));
+        if(weg) return;
+        if(o.wert){
+          quelle = ll => untergrundAn(ll, o.wert);
+        } else {
+          melde('Untergrund nicht abrufbar: ' + o.fehler);
+          setZustand(z => Object.assign({}, z, { untergrundLaeuft: false }));
+          return;
+        }
+      }
+
+      abschnitte = setzeUntergrund(abschnitte, quelle);
+      if(weg) return;
+      setZustand(z => Object.assign({}, z, {
+        gruppen: zeichenGruppen(abschnitte), bilanz: streckenBilanz(abschnitte),
+        untergrundLaeuft: false
+      }));
+
+      if(!merker[schluessel]){
+        merker[schluessel] = untergrundCode(abschnitte);
+        store.setUntergrund(merker);
       }
     })();
+
     return () => { weg = true; };
   }, [act.id]);
 
@@ -249,34 +309,22 @@ function Detail({ act, onZurueck }){
         <Fazit fazit={fazit} kompakt />
       </div>
 
-      {zustand.phase === 'laedt' && <div class="card"><p class="hint">Strecke, Wetter und Untergrund werden geladen …</p></div>}
-      {zustand.phase === 'fehler' && <div class="card"><div class="meldung fehler"><b>{zustand.text}</b></div></div>}
+      {zustand.phase === 'laedt' && <div class="card"><p class="hint">Strecke und Wetter werden geladen …</p></div>}
+
+      {zustand.phase === 'fertig' && zustand.latlng && (
+        <div class="card">
+          <div class="row"><span>Strecke</span>
+            <b>{ein(zustand.bilanz ? zustand.bilanz.km : 0)} km</b></div>
+          <WetterLeiste wetter={zustand.wetter} />
+          <RouteMap latlng={zustand.latlng} gruppen={zustand.gruppen}
+            windAus={zustand.wetter && zustand.wetter.richtung} />
+          <StreckenLegende bilanz={zustand.bilanz} laeuft={zustand.untergrundLaeuft} />
+        </div>
+      )}
 
       {zustand.phase === 'fertig' && (
-        <>
-          <div class="card">
-            <div class="row"><span>Strecke</span>
-              <b>{zustand.latlng ? ein(zustand.bilanz ? zustand.bilanz.km : 0) + ' km' : 'keine GPS-Daten'}</b></div>
-            <WetterLeiste wetter={zustand.wetter} />
-            <RouteMap latlng={zustand.latlng} gruppen={zustand.gruppen}
-              windAus={zustand.wetter && zustand.wetter.richtung} />
-            <StreckenLegende bilanz={zustand.bilanz} />
-          </div>
-
-          <Auswertung bilanz={zustand.bilanz} wetter={zustand.wetter} fazit={fazit} row={row}
-            verfassung={zustand.verfassung} />
-
-          {!zustand.bilanz && (
-            <div class="card">
-              {row.notes.map((n, i) => <div class={'annote ' + (n.kind || '')} key={i}>{n.text}</div>)}
-              <Fazit fazit={fazit} />
-            </div>
-          )}
-
-          {zustand.hinweise.map((h, i) => (
-            <div class="card" key={i}><p class="hint">{h}</p></div>
-          ))}
-        </>
+        <Auswertung bilanz={zustand.bilanz} wetter={zustand.wetter} fazit={fazit} row={row}
+          verfassung={zustand.verfassung} />
       )}
     </>
   );

@@ -68,6 +68,8 @@ Nur über das Menü erreichbar, weil man sie selten braucht:
 
 - **Zonen & Schwellenwerte** – Zonenmodell, FTP und LTHR, Sprechtest-Erhebung
 - **Einstellungen** – Zugänge, Erscheinungsbild, Planbeginn, Plan, Sicherung, Diagnose
+- **Über die App** – Version, welche Schnittstelle wofür benutzt wird, was dabei
+  das Gerät verlässt, Zeitgrenzen, Nachweise
 
 ## Zugänge
 
@@ -117,6 +119,14 @@ Darunter eine Auswertung, die Strecke und Wetter zusammen liest, und am Ende
 ein Fazit: passt die Einheit zum Plan, erklären die Bedingungen eine Abweichung,
 und was wäre nächstes Mal anders zu machen. Das Fazit steht auch oben in der
 Kopfkarte – die Frage nach einer Fahrt ist zuerst „war das gut so?“.
+
+Geladen wird in zwei Stufen: erst Aufzeichnung, Wetter und Wellness – die
+antworten in Millisekunden, die Karte steht also sofort. Der Untergrund kommt
+nach, weil Overpass für eine lange Runde zwischen 9 und 20 s braucht, und wird
+je Fahrt gespeichert; beim zweiten Ansehen fällt die Abfrage weg. Jeder Abruf
+hat eine Zeitgrenze (intervals.icu 15 s, Open-Meteo 10 s, Overpass 25 s).
+Fällt einer aus, zeigt die App die Auswertung ohne diesen Teil und sagt es
+kurz in einer Snackbar – statt zu warten oder eine Fehlerseite zu zeigen.
 
 Der Planbeginn steht standardmäßig auf dem **15.08.2026**, dem Samstag, an dem
 Woche 1 begonnen hat. Liegt er auf einem anderen Wochentag, warnt die App: die

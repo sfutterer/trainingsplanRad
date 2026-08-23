@@ -18,10 +18,16 @@ export const KEYS = {
   testLog:    'test-history',
   interimLog: 'interim-log',
   planOverride: 'plan-override',
-  settings:   'app-settings'
+  settings:   'app-settings',
+  untergrund: 'untergrund-cache'
 };
 
 export const CORE_LOG_MAX = 80;
+
+/* Mehr Fahrten sieht man nicht zweimal an, und der Platz in localStorage ist
+   die einzige Kopie der Protokolle - der Zwischenspeicher darf ihn nicht
+   auffressen. */
+export const UNTERGRUND_MAX = 40;
 
 export function localStorageAdapter(){
   return {
@@ -115,6 +121,17 @@ export function createRepos(store){
     async clearPlanOverride(){ return store.remove(KEYS.planOverride); },
 
     async settings(){ return json(KEYS.settings, {}); },
-    async setSettings(s){ return store.set(KEYS.settings, JSON.stringify(s)); }
+    async setSettings(s){ return store.set(KEYS.settings, JSON.stringify(s)); },
+
+    async untergrund(){
+      const v = await json(KEYS.untergrund, {});
+      return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+    },
+    async setUntergrund(map){
+      const eintraege = Object.entries(map || {}).slice(-UNTERGRUND_MAX);
+      const knapp = {};
+      for(const [k, v] of eintraege) knapp[k] = v;
+      return store.set(KEYS.untergrund, JSON.stringify(knapp));
+    }
   };
 }

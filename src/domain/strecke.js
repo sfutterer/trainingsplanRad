@@ -169,6 +169,23 @@ export function zeichenGruppen(abschnitte){
   return raus;
 }
 
+/* Untergrund nachtragen und neu einfaerben.
+
+   Overpass ist der langsamste der drei Dienste, und die Karte soll nicht auf
+   ihn warten: erst zeichnen, was aus Aufzeichnung und Wetter schon feststeht,
+   dann den Untergrund darueberlegen. gib bekommt Mittelpunkt und Index des
+   Abschnitts - so kann die Antwort aus Overpass kommen oder aus dem
+   Zwischenspeicher. */
+export function setzeUntergrund(abschnitte, gib){
+  return (abschnitte || []).map((a, i) => {
+    const u = gib(a.ll[Math.floor(a.ll.length / 2)], i);
+    if(u === a.untergrund) return a;
+    const neu = Object.assign({}, a, { untergrund: u });
+    neu.klasse = klassifiziere(neu);
+    return neu;
+  });
+}
+
 /* Die Summen unter der Karte: was war wie lang, wie viel Hoehe, wie viel Wind. */
 export function streckenBilanz(abschnitte){
   const a = abschnitte || [];

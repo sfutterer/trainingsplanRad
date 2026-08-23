@@ -7,9 +7,11 @@
 import { describe, it, expect } from 'vitest';
 import { abstand, peilung, windAnteil, abstandZuStrecke } from '../src/domain/geo.js';
 import { baueAbschnitte, streckenBilanz, zeichenGruppen, klassifiziere,
-         wegKlasse, untergrundAn, SCHWELLEN } from '../src/domain/strecke.js';
+         wegKlasse, untergrundAn, setzeUntergrund, SCHWELLEN } from '../src/domain/strecke.js';
 import { streckenFazit, umfeldLast } from '../src/domain/fazit.js';
-import { stuetzpunkte, overpassAbfrage, wegeAus } from '../src/data/osm.js';
+import { stuetzpunkte, overpassAbfrage, wegeAus,
+         untergrundCode, untergrundAusCode } from '../src/data/osm.js';
+import { holen, ZEITGRENZE } from '../src/data/netz.js';
 
 /* Spur nach Norden, 20 m je Punkt, 5 s je Punkt (14,4 km/h). */
 function spurNord(n, steigungProzent){
@@ -201,5 +203,55 @@ describe('Fazit', () => {
     const f = streckenFazit({ badge: 'erfüllt', status: 'ok', notes: [] }, null, null);
     expect(f.urteil).toBe('offen');
     expect(f.gruende).toEqual([]);
+  });
+});
+
+describe('Zeitgrenzen', () => {
+  it('bricht ab, wenn niemand antwortet, und sagt welcher Dienst', async () => {
+    const alt = globalThis.fetch;
+    globalThis.fetch = (url, opts) => new Promise((_, ab) => {
+      opts.signal.addEventListener('abort', () => {
+        const e = new Error('aborted'); e.name = 'AbortError'; ab(e);
+      });
+    });
+    try {
+      await expect(holen('https://beispiel.test', null, 30, 'Overpass'))
+        .rejects.toThrow(/Overpass hat nach 0 s nicht geantwortet/);
+    } finally { globalThis.fetch = alt; }
+  });
+
+  it('gibt eine Antwort innerhalb der Grenze unveraendert zurueck', async () => {
+    const alt = globalThis.fetch;
+    globalThis.fetch = async () => ({ ok: true, status: 200 });
+    try {
+      expect((await holen('https://beispiel.test', null, 500, 'Test')).status).toBe(200);
+    } finally { globalThis.fetch = alt; }
+  });
+
+  it('setzt fuer jeden Dienst eine Grenze', () => {
+    for(const k of ['icu', 'wetter', 'osm']){
+      expect(ZEITGRENZE[k]).toBeGreaterThan(0);
+      expect(ZEITGRENZE[k]).toBeLessThanOrEqual(30000);
+    }
+  });
+});
+
+describe('Zwischenspeicher Untergrund', () => {
+  it('schreibt und liest den Untergrund je Abschnitt', () => {
+    const a = baueAbschnitte(spurNord(60, 0), {});
+    const mit = setzeUntergrund(a, (ll, i) => (i % 2 ? 'unbefestigt' : 'fest'));
+    const code = untergrundCode(mit);
+    expect(code).toMatch(/^[uf-]+$/);
+    expect(code.length).toBe(a.length);
+    const zurueck = setzeUntergrund(a, untergrundAusCode(code));
+    expect(zurueck.map(x => x.klasse)).toEqual(mit.map(x => x.klasse));
+  });
+
+  it('faerbt nach, ohne die Karte neu zu bauen', () => {
+    const a = baueAbschnitte(spurNord(60, 0), {});
+    expect(a.every(x => x.klasse === 'frei')).toBe(true);
+    const mit = setzeUntergrund(a, () => 'unbefestigt');
+    expect(mit.every(x => x.klasse === 'weg')).toBe(true);
+    expect(streckenBilanz(mit).wegProzent).toBe(100);
   });
 });

@@ -1,11 +1,21 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 /* Die Seite liegt unter sfutterer.github.io/trainingsplanRad/, also in einem
    Unterpfad. Ohne base zeigen alle erzeugten Pfade ins Leere. */
+/* Version und Baudatum kommen aus package.json in den Build. Ohne das muesste
+   die Zahl an zwei Stellen gepflegt werden, und die Info-Seite zeigte irgendwann
+   etwas anderes an als das, was ausgeliefert wurde. */
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+
 export default defineConfig({
   base: '/trainingsplanRad/',
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10))
+  },
   plugins: [
     preact(),
     VitePWA({

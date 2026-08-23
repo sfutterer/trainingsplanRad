@@ -9,6 +9,8 @@
    Fahrtrichtung. Ein Durchschnitt ueber die ganze Fahrt beantwortet das nicht -
    deshalb wird stundenweise geholt und abschnittsweise verrechnet. */
 
+import { holen, ZEITGRENZE } from './netz.js';
+
 const BASIS = 'https://archive-api.open-meteo.com/v1/archive';
 const AKTUELL = 'https://api.open-meteo.com/v1/forecast';
 
@@ -28,7 +30,7 @@ export async function ladeWetter(lat, lon, startIso){
     '&start_date=' + tag + '&end_date=' + tag +
     '&hourly=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,relative_humidity_2m' +
     '&timezone=auto';
-  const res = await fetch(url);
+  const res = await holen(url, null, ZEITGRENZE.wetter, 'Open-Meteo');
   if(!res.ok) throw new Error('Wetterdaten nicht verfügbar (' + res.status + ').');
   const d = await res.json();
   if(!d.hourly || !d.hourly.time) throw new Error('Wetterdaten unvollständig.');
