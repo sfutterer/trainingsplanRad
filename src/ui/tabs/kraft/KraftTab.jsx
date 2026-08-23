@@ -166,32 +166,35 @@ export function KraftTab(){
 
   return (
     <>
-      
+      {/* Ring, Bild und Bedienung sind eine Einheit: was zur laufenden Uebung
+          gehoert, muss ohne Scrollen sichtbar sein. Die Hoehe des Blocks ist
+          in timer.css auf den Platz zwischen den Leisten begrenzt. */}
+      <div class="uebungsblock">
+        <ProgressRing
+          fraction={timer.fraction()}
+          color={FARBE[step ? step.type : 'prep'] || 'var(--prep)'}
+          phase={phase}
+          time={step ? (step.type === 'done' ? '0' : String(sec)) : String(cfg.workSec)}
+          exercise={step ? step.label : 'Tippen zum Starten'}
+          meta={step && step.round ? 'Runde ' + step.round + ' / ' + cfg.rounds : ''}
+          onTap={starten}
+        />
 
-      <ProgressRing
-        fraction={timer.fraction()}
-        color={FARBE[step ? step.type : 'prep'] || 'var(--prep)'}
-        phase={phase}
-        time={step ? (step.type === 'done' ? '0' : String(sec)) : String(cfg.workSec)}
-        exercise={step ? step.label : 'Tippen zum Starten'}
-        meta={step && step.round ? 'Runde ' + step.round + ' / ' + cfg.rounds : ''}
-        onTap={starten}
-      />
-
-      {bild && (
-        <div class={'illu' + (vorschau ? ' vorschau' : '')}>
-          <img src={bild.img} alt={bild.name} loading="lazy" onClick={() => setDialogEx({ kind:'core', i: bildIndex })} />
-          <div class="cap">
-            {vorschau ? <span class="tag">Als Nächstes</span> : null}
-            <b>{bild.name}</b>{bild.steps && bild.steps[0] ? ' · ' + bild.steps[0] : ''}
+        {bild && (
+          <div class={'illu' + (vorschau ? ' vorschau' : '')}>
+            <img src={bild.img} alt={bild.name} loading="lazy" onClick={() => setDialogEx({ kind:'core', i: bildIndex })} />
+            <div class="cap">
+              {vorschau ? <span class="tag">Als Nächstes</span> : null}
+              <b>{bild.name}</b>{bild.steps && bild.steps[0] ? ' · ' + bild.steps[0] : ''}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div class="controls">
-        <button class="btn secondary" onClick={zuruecksetzen}>Reset</button>
-        <button class="btn gross" onClick={starten}>{laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Weiter' : 'Start')}</button>
-        <button class="btn secondary" onClick={weiter}>Weiter</button>
+        <div class="controls">
+          <button class="btn secondary" onClick={zuruecksetzen}>Reset</button>
+          <button class="btn gross" onClick={starten}>{laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Weiter' : 'Start')}</button>
+          <button class="btn secondary" onClick={weiter}>Weiter</button>
+        </div>
       </div>
 
       <div class="card">

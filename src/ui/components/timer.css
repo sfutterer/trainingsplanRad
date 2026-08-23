@@ -1,7 +1,11 @@
 .ring{
   position: relative;
-  width: min(340px, 88vw);
-  margin: 4px auto 18px;
+  /* Drei Grenzen: fester Hoechstwert, Breite, Hoehe. Die Hoehe zaehlt mit,
+     seit unter dem Ring noch Bild und Bedienung stehen - ohne sie waechst der
+     Ring auf einem schmalen, kurzen Bildschirm ueber den Platz hinaus. */
+  --ring: min(var(--ring-max, 340px), 88vw, var(--ring-hoehe, 42dvh));
+  width: var(--ring);
+  margin: 4px auto 12px;
   aspect-ratio: 1;
   cursor: pointer;
   border-radius: 50%;
@@ -9,7 +13,7 @@
      ueber 290x290. Kostet einen Event-Listener. */
   transition: background-color .12s linear;
 }
-.ring svg{ width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring svg{ display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
 .ring .track{ fill: none; stroke: var(--surface-3); stroke-width: 14; }
 .ring .prog{ fill: none; stroke: var(--ringcolor); stroke-width: 14; stroke-linecap: round; }
 
@@ -23,7 +27,10 @@
   color: var(--ringcolor);
 }
 .ringmid .time{
-  font-size: clamp(58px, 21vw, 104px); font-weight: 700; line-height: 1;
+  /* Aus der Ringgroesse gerechnet, nicht aus der Bildschirmbreite: sonst
+     bleiben die Ziffern gross, wenn der Ring schon geschrumpft ist, und
+     stossen an seinen Rand. */
+  font-size: min(104px, calc(var(--ring) * .31)); font-weight: 700; line-height: 1;
   font-variant-numeric: tabular-nums; letter-spacing: -.03em;
   margin: 2px 0 4px;
 }
@@ -51,9 +58,29 @@
 .exlist .exrow.aktiv{ color: var(--work); font-weight: 700; }
 .exlist .exrow .ziel{ font-size: 12.5px; color: var(--muted); white-space: nowrap; }
 
-.illu{ margin-bottom: 14px; }
-.illu img{ width: 100%; border-radius: var(--radius-s); display: block; }
-.illu .cap{ font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+/* Der Uebungsblock des Rumpf-Timers: Ring, Bild und Bedienung gehoeren zur
+   laufenden Uebung und sollen zusammen auf den Bildschirm passen. Der Block
+   bekommt genau den Platz zwischen Titel- und Navigationsleiste; wird es eng,
+   gibt das Bild nach - es ist der einzige Teil, der Groesse verliert, ohne
+   unlesbar zu werden, und ein Tipp darauf oeffnet es ohnehin gross. */
+.uebungsblock{
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 152px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+/* Kleiner als im Intervall-Timer, und auf kurzen Bildschirmen gibt der Ring
+   frueher nach: dort steht unter ihm noch das Uebungsbild, das sonst auf
+   Briefmarkengroesse zusammenfaellt. */
+.uebungsblock .ring{ --ring-max: 300px; --ring-hoehe: 36dvh; flex: none; }
+.uebungsblock .controls{ flex: none; }
+
+.illu{ margin-bottom: 14px; display: flex; flex-direction: column; min-height: 0; flex: 0 1 auto; }
+.illu img{
+  width: 100%; border-radius: var(--radius-s); display: block;
+  /* Schrumpfen statt abschneiden. contain haelt dabei das Seitenverhaeltnis. */
+  min-height: 0; flex: 0 1 auto; object-fit: contain;
+}
+.illu .cap{ font-size: 12.5px; color: var(--muted); margin-top: 6px; flex: none; }
 
 .seglist .seg{
   display: flex; justify-content: space-between; gap: 10px;
