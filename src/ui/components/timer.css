@@ -1,0 +1,87 @@
+.ring{
+  position: relative;
+  width: min(340px, 88vw);
+  margin: 4px auto 18px;
+  aspect-ratio: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  /* Trefferflaeche fuer Start/Pause ist der ganze Ring - statt 85x43 sind das
+     ueber 290x290. Kostet einen Event-Listener. */
+  transition: background-color .12s linear;
+}
+.ring svg{ width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .track{ fill: none; stroke: var(--surface-3); stroke-width: 14; }
+.ring .prog{ fill: none; stroke: var(--ringcolor); stroke-width: 14; stroke-linecap: round; }
+
+.ringmid{
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; text-align: center; padding: 0 14%;
+}
+.ringmid .phase{
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ringcolor);
+}
+.ringmid .time{
+  font-size: clamp(58px, 21vw, 104px); font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: -.03em;
+  margin: 2px 0 4px;
+}
+.ringmid .ex{ font-size: 15px; font-weight: 600; line-height: 1.2; }
+.ringmid .meta{ font-size: 12.5px; color: var(--muted); }
+.ringmid .zone{
+  margin-top: 6px; font-size: 12px; font-weight: 600;
+  padding: 3px 10px; border-radius: 999px; background: var(--surface-3);
+}
+.zone.z-z1{ color: var(--z1); } .zone.z-z2{ color: var(--z2); }
+.zone.z-z3{ color: var(--z3); } .zone.z-z4{ color: var(--z4); }
+.zone.z-z5{ color: var(--z5); }
+
+.controls{ display: flex; gap: 10px; margin-bottom: 16px; }
+.controls .btn{ flex: 1; }
+.controls .btn.gross{ flex: 1.6; min-height: 56px; font-size: 17px; }
+
+.exlist .exrow{
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  min-height: 48px; padding: 4px 0; border-bottom: 1px solid var(--outline);
+  cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0;
+  width: 100%; text-align: left;
+}
+.exlist .exrow:last-child{ border-bottom: 0; }
+.exlist .exrow.aktiv{ color: var(--work); font-weight: 700; }
+.exlist .exrow .ziel{ font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+
+.illu{ margin-bottom: 14px; }
+.illu img{ width: 100%; border-radius: var(--radius-s); display: block; }
+.illu .cap{ font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+
+.seglist .seg{
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 9px 0; border-bottom: 1px solid var(--outline); font-size: 14px;
+}
+.seglist .seg:last-child{ border-bottom: 0; }
+.seglist .seg.aktiv{ font-weight: 700; }
+.seglist .seg.fertig{ opacity: .45; }
+.seglist .dot{ display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:8px; }
+.seglist .dur{ color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.dialog{
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(0,0,0,.55);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0;
+}
+.dialog .sheet{
+  background: var(--surface); width: 100%; max-width: 560px;
+  max-height: 92dvh; overflow-y: auto;
+  border-radius: 24px 24px 0 0;
+  padding: 8px 20px calc(24px + env(safe-area-inset-bottom));
+}
+.dialog .grip{ width: 34px; height: 4px; border-radius: 2px; background: var(--outline-2);
+  margin: 6px auto 14px; }
+.dialog h3{ margin: 8px 0 6px; font-size: 20px; }
+.dialog .dose{ background: var(--ok-bg); border-radius: var(--radius-s); padding: 10px 12px;
+  font-size: 14px; margin-bottom: 12px; }
+.dialog ol{ padding-left: 20px; margin: 0 0 12px; }
+.dialog li{ margin-bottom: 7px; font-size: 14.5px; }
+.dialog .goal{ font-size: 13.5px; color: var(--muted); }

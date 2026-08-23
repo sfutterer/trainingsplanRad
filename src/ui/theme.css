@@ -1,0 +1,142 @@
+/* Material-3-Tokens fuer beide Themes.
+
+   Das Theme folgt dem Android-System ueber prefers-color-scheme. Material You
+   / dynamic color geht bewusst nicht: AccentColor ist zwar seit Chrome 150
+   stable, auf Android aber gezielt deaktiviert, weil die Farbe aus dem
+   Hintergrundbild abgeleitet wird und Google das als Datenschutzrisiko
+   einstuft. Dort liefert sie konstant #0075FF. Stattdessen eine eigene
+   Quellfarbe, konsequent abgeleitet.
+
+   Rollen statt Farbwerte: --surface, --on-surface, --primary. Wer eine Farbe
+   aendern will, aendert sie hier und nirgends sonst. */
+
+:root{
+  color-scheme: light dark;
+
+  /* --- Helles Theme --- */
+  --bg:            #f6f8f7;
+  --surface:       #ffffff;
+  --surface-2:     #eef2f0;
+  --surface-3:     #e4eae7;
+  --on-surface:    #16201c;
+  --on-surface-var:#4a5a54;
+  --muted:         #6b7a74;
+  --outline:       #d5dedb;
+  --outline-2:     #bcc7c2;
+
+  --primary:       #00694f;
+  --on-primary:    #ffffff;
+  --primary-container: #b8efd9;
+  --on-primary-container: #00201699;
+
+  /* Semantische Trainingsfarben. "Pause" und "Zone 3" waren frueher derselbe
+     Wert - zwei Begriffe, die zufaellig gleich aussahen. Jetzt getrennt. */
+  --work:  #007b5b;
+  --rest:  #986004;
+  --prep:  #5760d0;
+  --hard:  #bd2d3e;
+
+  /* Zonenrampe, Farbtoene gleichmaessiger ueber den Kreis verteilt.
+     Jeder Wert erreicht mindestens 4,5:1 gegen die Kartenflaeche. Vorher lagen
+     Z3, Z4 und Z5 als drei Nuancen desselben Orangerots in einem 8-px-Balken. */
+  --z-unter: #6b747f;
+  --z1:      #495cc9;
+  --z2:      #007c54;
+  --z3:      #856b00;
+  --z4:      #ae4d00;
+  --z5:      #bd2d3e;
+
+  --ok:    #00694f;
+  --dev:   #8a5300;
+  --miss:  #b3261e;
+  --extra: #4a5a54;
+
+  --ok-bg:    #dcf1e8;
+  --dev-bg:   #f9edda;
+  --miss-bg:  #fbe4e2;
+  --extra-bg: #e8edeb;
+
+  --radius:   16px;
+  --radius-s: 10px;
+  --shadow-1: 0 1px 2px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.06);
+
+  --nav-h: 80px;
+
+  --font: system-ui, -apple-system, "Roboto", "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:            #101614;
+    --surface:       #171f1d;
+    --surface-2:     #1e2725;
+    --surface-3:     #263130;
+    --on-surface:    #e6ede9;
+    --on-surface-var:#b3c2bb;
+    --muted:         #8b9c95;
+    --outline:       #2a3532;
+    --outline-2:     #3a4643;
+
+    --primary:       #45d9a4;
+    --on-primary:    #00382a;
+    --primary-container: #005139;
+    --on-primary-container: #b8efd9;
+
+    --work:  #2dd4a7;
+    --rest:  #ffb14e;
+    --prep:  #7d8bff;
+    --hard:  #ff6b6b;
+
+    --z-unter: #4b535e;
+    --z1:      #758eff;
+    --z2:      #33d5a1;
+    --z3:      #f2cf3b;
+    --z4:      #ff9044;
+    --z5:      #f75c66;
+
+    --ok:    #45d9a4;
+    --dev:   #e8b45c;
+    --miss:  #f0787f;
+    --extra: #9aaaa3;
+
+    --ok-bg:    #122b23;
+    --dev-bg:   #2b2317;
+    --miss-bg:  #2e1b1c;
+    --extra-bg: #1e2725;
+
+    --shadow-1: 0 1px 2px rgba(0,0,0,.36), 0 1px 3px rgba(0,0,0,.28);
+  }
+}
+
+*{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body{ height: 100%; }
+
+body{
+  margin: 0;
+  background: var(--bg);
+  color: var(--on-surface);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  accent-color: var(--primary);
+
+  /* Zwei Zeilen, die zwei echte Fehler beheben:
+     Pull-to-Refresh laedt die App sonst mitten im laufenden Timer neu, und
+     versehentliches Markieren beim Tippen auf Bedienelemente stoert. */
+  overscroll-behavior-y: contain;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Eingaben duerfen markiert werden - dort ist Auswaehlen erwuenscht. */
+input, textarea{ user-select: text; -webkit-user-select: text; }
+
+button{ font: inherit; color: inherit; }
+
+:focus-visible{ outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
