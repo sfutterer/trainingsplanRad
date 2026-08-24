@@ -11,13 +11,19 @@
    sonst waere Schotter unsichtbar, sobald am selben Stueck auch Wind oder
    Steigung dazukommt.
 
-   Doppelt gefahrene Strecken - beim Intervalltraining die Regel - liegen
-   nebeneinander statt uebereinander: halbe Breite, seitlich versetzt, jede
-   Spur nach rechts ihrer eigenen Fahrtrichtung. Dadurch trennen sich Hin- und
-   Rueckweg von selbst, und Pfeile sagen, welche Spur welche ist. Der Versatz
-   muss in Bildschirmpunkten gerechnet werden, nicht in Metern: sechs Meter
-   sind bei der Uebersicht ueber eine ganze Fahrt weniger als ein Pixel. Deshalb
-   wird die Spur nach jedem Zoomen neu gelegt.
+   Doppelt gefahrene Strecken - beim Intervalltraining die Regel - weichen um
+   knapp eine halbe Strichbreite nach rechts der eigenen Fahrtrichtung aus.
+   Rechts ist beim Zurueckfahren die andere Strassenseite, also entstehen genau
+   zwei Spuren: eine hin, eine zurueck, auch bei zwanzig Wiederholungen. Die
+   Strichbreite bleibt ueberall gleich - unterschiedlich dicke Linien lasen sich
+   wie ein Fehler.
+
+   Die Fahrtrichtung steht als weisser Winkel in der Linie, nicht als Pfeil
+   daneben: Marker neben der Spur waren bei zwei Spuren nicht mehr zuzuordnen.
+
+   Der Versatz muss in Bildschirmpunkten gerechnet werden, nicht in Metern:
+   drei Meter sind bei der Uebersicht ueber eine ganze Fahrt weniger als ein
+   Pixel. Deshalb wird die Spur nach jedem Zoomen neu gelegt.
 
    Kacheln kommen zur Laufzeit aus dem Netz. Offline bleibt die Karte leer -
    das steht dann auch dort, statt eine graue Flaeche zu zeigen. */
@@ -54,15 +60,18 @@ function token(name){
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888';
 }
 
-/* Strichbreiten in Bildschirmpunkten. Doppelt gefahrene Abschnitte teilen sich
-   die Breite der einfachen Spur, damit die Strecke gleich breit bleibt. */
-const BREIT  = { spur: 5, rand: 10 };
-const SCHMAL = { spur: 3, rand: 7 };
-const VERSATZ_PX = 2.4;
-const PFEIL_ABSTAND = 700;   // Meter zwischen zwei Richtungspfeilen
-const PFEIL_JE_GRUPPE = 3;
-const PFEIL_NEBEN = 5.5;     // Bildschirmpunkte, um die der Pfeil neben seiner Spur sitzt
-const PFEIL_MAX = 16;        // mehr Pfeile liest niemand, und jeder ist ein DOM-Knoten
+/* Strichbreiten in Bildschirmpunkten. Ueberall dieselben, auch auf doppelt
+   gefahrenen Abschnitten: der Versatz allein trennt die beiden Spuren. */
+const SPUR = 4.5, RAND = 8.5;
+
+/* Halbe Strichbreite plus eine Haaresbreite: die Spuren beruehren sich, statt
+   auseinanderzulaufen. Ein Versatz je Durchfahrt - die erste Fassung zaehlte
+   sie - wurde beim Zirkeltraining zu einem Faecher aus einem Dutzend Linien. */
+const VERSATZ_PX = 2.6;
+
+const WINKEL_ABSTAND = 450;   // Meter zwischen zwei Richtungswinkeln
+const WINKEL_JE_GRUPPE = 4;
+const WINKEL_GROESSE = 3.6;   // Bildschirmpunkte, Armlaenge
 
 /* Eine Linie seitlich versetzen, in Bildschirmpunkten und rechts der
    Fahrtrichtung. Auf dem Bildschirm zeigt y nach unten, rechts von (dx, dy)
@@ -78,24 +87,69 @@ function versetzt(karte, ll, px){
   });
 }
 
-/* Wo Pfeile hingehoeren und wohin sie zeigen. Ein Pfeil je 700 m, mindestens
-   einer, hoechstens drei je Abschnittsgruppe - sonst steht die Karte voll.
+/* Ein Winkel in Fahrtrichtung, als drei Punkte auf der Linie selbst - gezeichnet
+   wird er weiss und schmal, damit er in der Farbe liegt statt sie zu ersetzen. */
+function winkel(karte, ll, i){
+  const p = karte.latLngToLayerPoint(ll[i]);
+  const a = karte.latLngToLayerPoint(ll[Math.max(i - 1, 0)]);
+  const b = karte.latLngToLayerPoint(ll[Math.min(i + 1, ll.length - 1)]);
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const laenge = Math.sqrt(dx * dx + dy * dy);
+  if(!laenge) return null;
+  const ux = dx / laenge, uy = dy / laenge;      // Fahrtrichtung
+  const nx = -uy, ny = ux;                        // rechts davon
+  const s = WINKEL_GROESSE;
+  const ecken = [
+    [p.x - ux * s + nx * s, p.y - uy * s + ny * s],
+    [p.x + ux * s,          p.y + uy * s],
+    [p.x - ux * s - nx * s, p.y - uy * s - ny * s]
+  ];
+  return ecken.map(q => karte.layerPointToLatLng(q));
+}
 
-   Zwei Feinheiten, ohne die es unlesbar wird: der Pfeil sitzt neben seiner
-   Spur, nicht darauf - bei 3 px Spurbreite wuerde er sonst beide Spuren
-   ueberdecken. Und die Stellen sind je Gruppe versetzt, sonst liegen der Pfeil
-   des Hinwegs und der des Rueckwegs an derselben Stelle uebereinander. */
-function pfeilStellen(karte, ll, meter, schritt){
-  const anzahl = Math.max(1, Math.min(PFEIL_JE_GRUPPE, Math.round((meter || 0) / PFEIL_ABSTAND)));
+/* Wo die Winkel sitzen.
+
+   Nicht je Zeichengruppe: bei acht Intervallen auf derselben Strecke gibt es
+   ein Dutzend Gruppen, und deren Winkel lagen alle auf denselben paar hundert
+   Metern - eine weisse Leiter ueber der Spur. Stattdessen werden Kandidaten
+   gesammelt und ausgeduennt: ein Winkel je Richtung und Bildschirmabstand, der
+   Rest fliegt heraus. Damit steht auf jeder der beiden Spuren einer, egal wie
+   oft die Strecke gefahren wurde. */
+const WINKEL_MIN_PX = 70;    // Bildschirmabstand zwischen zwei Winkeln derselben Richtung
+const WINKEL_MAX = 12;
+
+function winkelKandidaten(karte, gelegt){
   const raus = [];
-  for(let k = 0; k < anzahl; k++){
-    const teil = (k + 0.5 + (schritt || 0) * 0.5) / anzahl % 1;
-    const i = Math.min(ll.length - 2, Math.max(1, Math.round(teil * (ll.length - 1))));
-    const a = karte.latLngToLayerPoint(ll[i - 1]), b = karte.latLngToLayerPoint(ll[Math.min(i + 1, ll.length - 1)]);
-    const dx = b.x - a.x, dy = b.y - a.y;
-    if(!dx && !dy) continue;
-    /* Das Zeichen zeigt nach oben, also entspricht 0 Grad dem Bildschirmnorden. */
-    raus.push({ ll: ll[i], grad: Math.atan2(dx, -dy) * 180 / Math.PI });
+  for(const t of gelegt){
+    if(!t.g.doppelt) continue;
+    const anzahl = Math.max(1, Math.min(WINKEL_JE_GRUPPE,
+      Math.round((t.g.meter || 0) / WINKEL_ABSTAND)));
+    for(let k = 0; k < anzahl; k++){
+      const i = Math.min(t.ll.length - 2, Math.max(1,
+        Math.round((k + 0.5) / anzahl * (t.ll.length - 1))));
+      const p = karte.latLngToLayerPoint(t.ll[i]);
+      const a = karte.latLngToLayerPoint(t.ll[i - 1]);
+      const b = karte.latLngToLayerPoint(t.ll[Math.min(i + 1, t.ll.length - 1)]);
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const laenge = Math.sqrt(dx * dx + dy * dy);
+      if(!laenge) continue;
+      raus.push({ p: p, kurs: Math.atan2(dx, -dy) * 180 / Math.PI, ll: t.ll, i: i });
+    }
+  }
+  return raus;
+}
+
+function winkelAusduennen(kandidaten){
+  const raus = [];
+  for(const k of kandidaten){
+    if(raus.length >= WINKEL_MAX) break;
+    const zuNah = raus.some(v => {
+      const dx = v.p.x - k.p.x, dy = v.p.y - k.p.y;
+      if(Math.sqrt(dx * dx + dy * dy) > WINKEL_MIN_PX) return false;
+      /* Nah, aber in Gegenrichtung: das ist die andere Spur und darf bleiben. */
+      return Math.abs(((v.kurs - k.kurs + 540) % 360) - 180) <= 60;
+    });
+    if(!zuNah) raus.push(k);
   }
   return raus;
 }
@@ -126,37 +180,37 @@ export function RouteMap({ latlng, gruppen, windAus }){
       const schicht = L.layerGroup().addTo(m);
       const spurFarbe = token('--spur'), randFarbe = token('--spur-rand');
 
+      /* In drei Durchgaengen, nicht Gruppe fuer Gruppe: erst alle weissen
+         Raender, dann alle Farben, dann die Winkel. Sonst deckt der Rand der
+         naechsten Gruppe die Farbe der vorigen zu - bei acht Durchfahrten
+         derselben Strecke waren am Ende nur die Linien der letzten zu sehen,
+         und die Winkel gar nicht. */
       function zeichneSpur(){
         schicht.clearLayers();
-        let pfeile = 0, doppelteGruppe = 0;
-        for(const g of teile){
-          if(!g.ll || g.ll.length < 2) continue;
-          const b = g.doppelt ? SCHMAL : BREIT;
-          const abstand = VERSATZ_PX + (g.versatz || 0) * SCHMAL.rand;
-          const ll = g.doppelt ? versetzt(m, g.ll, abstand) : g.ll;
-          const farbe = token(TOKEN[g.klasse] || '--spur');
+        const gelegt = teile
+          .filter(g => g.ll && g.ll.length >= 2)
+          .map(g => ({ g: g, ll: g.doppelt ? versetzt(m, g.ll, VERSATZ_PX) : g.ll,
+                       farbe: token(TOKEN[g.klasse] || '--spur') }));
 
-          L.polyline(ll, { color: randFarbe, weight: b.rand, opacity: .9,
+        for(const t of gelegt){
+          L.polyline(t.ll, { color: randFarbe, weight: RAND, opacity: .9,
             lineCap: 'round', lineJoin: 'round' }).addTo(schicht);
-          L.polyline(ll, { color: farbe, weight: b.spur, opacity: 1,
+        }
+        for(const t of gelegt){
+          L.polyline(t.ll, { color: t.farbe, weight: SPUR, opacity: 1,
             lineCap: 'round', lineJoin: 'round' }).addTo(schicht);
           /* Unbefestigt als feine Punktlinie obendrauf: eine zweite Farbe kann
              der Abschnitt nicht tragen, eine zweite Textur schon. */
-          if(g.weg){
-            L.polyline(ll, { color: '#14150f', weight: Math.max(1.5, b.spur - 1),
-              opacity: .85, dashArray: '1 6', lineCap: 'round' }).addTo(schicht);
+          if(t.g.weg){
+            L.polyline(t.ll, { color: '#14150f', weight: 2, opacity: .85,
+              dashArray: '1 6', lineCap: 'round' }).addTo(schicht);
           }
-          if(g.doppelt){
-            const neben = versetzt(m, g.ll, abstand + PFEIL_NEBEN);
-            for(const pf of pfeilStellen(m, neben, g.meter, doppelteGruppe++)){
-              if(pfeile >= PFEIL_MAX) break;
-              L.marker(pf.ll, { interactive: false, keyboard: false, icon: L.divIcon({
-                className: 'spurpfeil', iconSize: [12, 12],
-                html: '<div style="transform:rotate(' + Math.round(pf.grad) + 'deg);color:' + farbe + '">▲</div>'
-              })}).addTo(schicht);
-              pfeile++;
-            }
-          }
+        }
+        for(const k of winkelAusduennen(winkelKandidaten(m, gelegt))){
+          const w = winkel(m, k.ll, k.i);
+          if(!w) continue;
+          L.polyline(w, { color: randFarbe, weight: 1.8, opacity: 1,
+            lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(schicht);
         }
       }
 
@@ -246,8 +300,8 @@ export function StreckenLegende({ bilanz, laeuft }){
       )}
       {bilanz.doppeltMeter >= 100 && (
         <span class="leghinweis">
-          {km(bilanz.doppeltMeter)} doppelt gefahren: dort liegen die Durchfahrten nebeneinander,
-          die Pfeile zeigen die jeweilige Fahrtrichtung.
+          {km(bilanz.doppeltMeter)} doppelt gefahren: Hin- und Rückweg liegen dort nebeneinander,
+          die weißen Winkel zeigen die Fahrtrichtung.
         </span>
       )}
       {laeuft && <span class="leghinweis">Untergrund wird noch geladen …</span>}

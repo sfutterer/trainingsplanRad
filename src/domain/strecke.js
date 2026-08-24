@@ -159,16 +159,14 @@ export function zeichenGruppen(abschnitte){
   for(const a of (abschnitte || [])){
     const weg = a.untergrund === 'unbefestigt';
     const doppelt = !!a.doppelt;
-    const versatz = a.versatz || 0;
     const letzte = raus[raus.length - 1];
     /* Auch die Spur trennt: eine Gruppe wird als eine Linie gezeichnet, und
        eine Linie kann nicht halb versetzt sein. */
-    if(letzte && letzte.klasse === a.klasse && letzte.weg === weg &&
-       letzte.doppelt === doppelt && letzte.versatz === versatz){
+    if(letzte && letzte.klasse === a.klasse && letzte.weg === weg && letzte.doppelt === doppelt){
       letzte.ll = letzte.ll.concat(a.ll.slice(1));
       letzte.meter += a.meter;
     } else {
-      raus.push({ klasse: a.klasse, weg: weg, doppelt: doppelt, versatz: versatz,
+      raus.push({ klasse: a.klasse, weg: weg, doppelt: doppelt,
                   ll: a.ll.slice(), meter: a.meter });
     }
   }
@@ -177,23 +175,28 @@ export function zeichenGruppen(abschnitte){
 
 /* ---------- Doppelt gefahrene Abschnitte ---------- */
 
-/* Beim Intervalltraining faehrt man dieselbe Strasse hin und zurueck. Auf der
-   Karte liegt der Rueckweg dann genau auf dem Hinweg, und sichtbar ist nur,
-   was zuletzt gezeichnet wurde - meist das gruene Stueck ueber dem violetten,
-   obwohl auf dem Hinweg der Wind stand.
+/* Beim Intervalltraining faehrt man dieselbe Strasse hin und zurueck, oft
+   viele Male. Auf der Karte liegt der Rueckweg dann genau auf dem Hinweg, und
+   sichtbar ist nur, was zuletzt gezeichnet wurde - meist das gruene Stueck
+   ueber dem violetten, obwohl auf dem Hinweg der Wind stand.
 
-   Deshalb wird jeder Abschnitt gefragt, ob die Spur an derselben Stelle noch
-   ein zweites Mal vorbeikommt. Wenn ja, zeichnet die Karte die Durchfahrten
-   nebeneinander statt uebereinander (halbe Breite, seitlich versetzt) und
-   setzt Pfeile in die jeweilige Fahrtrichtung.
+   Deshalb wird nur eine Frage beantwortet: kommt die Spur an dieser Stelle
+   noch ein zweites Mal vorbei? Wenn ja, weicht der Abschnitt beim Zeichnen zur
+   Seite aus, nach rechts der eigenen Fahrtrichtung - und rechts ist beim
+   Zurueckfahren die andere Strassenseite. Damit gibt es genau zwei Spuren, eine
+   je Richtung, egal ob man die Strecke zweimal oder zwanzigmal faehrt.
 
-   versatz zaehlt nur Durchfahrten in derselben Richtung: Hin- und Rueckweg
-   trennen sich schon dadurch, dass jede Spur nach rechts der eigenen
-   Fahrtrichtung ausweicht - und rechts ist beim Zurueckfahren die andere
-   Strassenseite. Erst wer eine Runde zweimal in derselben Richtung faehrt,
-   braucht eine dritte Spur. */
+   Die Zahl der Durchfahrten wird bewusst nicht gezaehlt: ein Versatz je
+   Durchfahrt addierte sich beim Zirkeltraining zu einem Faecher aus einem
+   Dutzend Linien.
 
-export const DOPPEL_TOLERANZ = 30;      // Meter zwischen zwei Durchfahrten
+   Geprueft wird gegen die Punkte der Spur, nicht gegen die Nachbarabschnitte.
+   Der Abschnittsvergleich hatte Loecher: laeuft die Rueckfahrt genau ueber die
+   Naht zweier Abschnitte, deckt keiner von beiden genug davon ab, und ein
+   Stueck mitten in der Strecke blieb unerkannt. */
+
+export const DOPPEL_TOLERANZ = 30;      // Meter Abstand zwischen zwei Durchfahrten
+export const DOPPEL_TRENNUNG = 200;     // Meter Fahrweg, die dazwischen liegen muessen
 const RICHTUNG_GLEICH = 60;             // Grad: bis dahin dieselbe Richtung
 const RICHTUNG_GEGEN = 120;             // Grad: darueber Gegenrichtung
 
@@ -201,74 +204,89 @@ function zelle(p, grad){
   return Math.round(p[0] / grad) + ':' + Math.round(p[1] / grad);
 }
 
-function proben(ll){
-  const n = ll.length;
-  if(n < 3) return ll.slice();
-  return [ll[Math.floor(n * 0.25)], ll[Math.floor(n * 0.5)], ll[Math.floor(n * 0.75)]];
+/* Die Punkte aller Abschnitte hintereinander, mit dem Weg vom Start und der
+   Richtung an dieser Stelle. Die Abschnitte teilen ihre Endpunkte, deshalb
+   faengt jeder ab dem zweiten Punkt an. */
+function spurPunkteAus(abschnitte){
+  const punkte = [];
+  let weg = 0;
+  abschnitte.forEach((a, i) => {
+    a.ll.forEach((p, k) => {
+      if(i > 0 && k === 0) return;
+      if(punkte.length) weg += abstand(punkte[punkte.length - 1].ll, p);
+      punkte.push({ ll: p, weg: weg, kurs: a.kurs, abschnitt: i });
+    });
+  });
+  return punkte;
 }
 
-/* Liegt i auf j? Nicht am gemeinsamen Endpunkt zweier aufeinanderfolgender
-   Abschnitte, sondern auf der Laenge - deshalb muessen mindestens zwei der
-   drei Proben nah an j liegen. */
-function liegtAuf(proben_i, j, tol){
-  let nah = 0;
-  for(const p of proben_i){
-    let d = Infinity;
-    for(let k = 1; k < j.ll.length; k++){
-      const x = abstandZuStrecke(p, j.ll[k - 1], j.ll[k]);
-      if(x < d) d = x;
-      if(d <= tol) break;
-    }
-    if(d <= tol) nah++;
-    if(nah >= 2) return true;
-  }
-  return false;
+function proben(ll){
+  const n = ll.length;
+  if(n < 3) return [0, n - 1].filter((v, i, a) => a.indexOf(v) === i);
+  return [Math.floor(n * 0.25), Math.floor(n * 0.5), Math.floor(n * 0.75)];
 }
 
 export function markiereDoppelt(abschnitte, toleranz){
   const a = abschnitte || [];
+  if(a.length < 2) return a;
   const tol = toleranz || DOPPEL_TOLERANZ;
   const grad = tol / 111320 * 2;
 
-  /* Gitter ueber alle Punkte: so kommen nur die Abschnitte in Frage, die
-     ueberhaupt in der Naehe liegen - sonst waere es jeder gegen jeden. */
+  const punkte = spurPunkteAus(a);
   const netz = new Map();
-  a.forEach((s, i) => {
-    for(const p of s.ll){
-      const k = zelle(p, grad);
-      let l = netz.get(k);
-      if(!l){ l = new Set(); netz.set(k, l); }
-      l.add(i);
-    }
+  punkte.forEach((p, i) => {
+    const k = zelle(p.ll, grad);
+    let l = netz.get(k);
+    if(!l){ l = []; netz.set(k, l); }
+    l.push(i);
   });
 
-  return a.map((s, i) => {
-    const pr = proben(s.ll);
-    const kandidaten = new Set();
-    for(const p of pr){
-      const zl = Math.round(p[0] / grad), zn = Math.round(p[1] / grad);
-      for(let dz = -1; dz <= 1; dz++){
-        for(let dn = -1; dn <= 1; dn++){
-          const l = netz.get((zl + dz) + ':' + (zn + dn));
-          if(l) for(const j of l) if(j !== i) kandidaten.add(j);
+  /* Kommt die Spur an diesem Punkt noch einmal vorbei - weit genug entfernt in
+     der Fahrzeit, damit nicht der eigene Nachbarpunkt gemeint ist, und nicht
+     quer dazu, denn eine Kreuzung ist keine doppelte Strecke? */
+  function nochmal(pi){
+    const p = punkte[pi];
+    const zl = Math.round(p.ll[0] / grad), zn = Math.round(p.ll[1] / grad);
+    for(let dz = -1; dz <= 1; dz++){
+      for(let dn = -1; dn <= 1; dn++){
+        const l = netz.get((zl + dz) + ':' + (zn + dn));
+        if(!l) continue;
+        for(const qi of l){
+          const q = punkte[qi];
+          if(Math.abs(q.weg - p.weg) < DOPPEL_TRENNUNG) continue;
+          const diff = Math.abs(((q.kurs - p.kurs + 540) % 360) - 180);
+          if(diff > RICHTUNG_GLEICH && diff < RICHTUNG_GEGEN) continue;
+          if(abstand(p.ll, q.ll) <= tol) return true;
         }
       }
     }
+    return false;
+  }
 
-    let doppelt = false, versatz = 0;
-    for(const j of kandidaten){
-      const diff = Math.abs(((a[j].kurs - s.kurs + 540) % 360) - 180);
-      const gleich = diff <= RICHTUNG_GLEICH, gegen = diff >= RICHTUNG_GEGEN;
-      /* Kreuzungen sind keine doppelte Strecke: dort laeuft die Spur schraeg
-         zur eigenen Richtung, nicht auf ihr. */
-      if(!gleich && !gegen) continue;
-      if(!liegtAuf(pr, a[j], tol)) continue;
-      doppelt = true;
-      if(gleich && j < i) versatz++;
+  /* Je Abschnitt drei Proben. Eine reicht nicht - eine einzelne Kreuzung mit
+     der eigenen Spur wuerde den ganzen Abschnitt umlegen. */
+  const roh = a.map(s => {
+    const idx = proben(s.ll);
+    let treffer = 0;
+    for(const k of idx){
+      const p = punkte.findIndex(x => x.ll === s.ll[k]);
+      if(p >= 0 && nochmal(p)) treffer++;
     }
-    if(!doppelt && !s.doppelt && !s.versatz) return s;
-    return Object.assign({}, s, { doppelt, versatz });
+    return treffer >= 2;
   });
+
+  /* Glaetten: ein einzelner Ausfall mitten in einer doppelt gefahrenen
+     Strecke - eine Kehre, ein GPS-Ausrutscher - setzt die Spur sonst kurz
+     zurueck auf die Achse und wieder heraus. Das sah kaputter aus als der
+     Fehler war. */
+  const glatt = roh.map((v, i) => {
+    const vor = roh[i - 1], nach = roh[i + 1];
+    if(!v && vor && nach) return true;
+    if(v && vor === false && nach === false) return false;
+    return v;
+  });
+
+  return a.map((s, i) => (glatt[i] === !!s.doppelt ? s : Object.assign({}, s, { doppelt: glatt[i] })));
 }
 
 /* Untergrund nachtragen und neu einfaerben.

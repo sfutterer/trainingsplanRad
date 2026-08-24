@@ -72,11 +72,6 @@
 .windpfeil div{ font-size: 26px; line-height: 34px; text-align: center; color: var(--z5);
   text-shadow: 0 0 4px rgba(0,0,0,.7), 0 0 2px rgba(255,255,255,.5); }
 
-/* Richtungspfeil auf doppelt gefahrenen Abschnitten. Weisser Saum, damit er
-   auf der Spur und auf den Kacheln lesbar bleibt - er sitzt genau dort, wo
-   schon eine farbige Linie liegt. */
-.spurpfeil div{ font-size: 11px; line-height: 12px; text-align: center;
-  text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 1px #fff; }
 
 /* ---- Legende ---- */
 /* Umbrechende Zeile statt Tabelle: die Anzahl der Posten haengt an der Fahrt -
