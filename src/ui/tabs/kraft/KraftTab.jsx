@@ -151,18 +151,12 @@ export function KraftTab(){
   const aktiveUebung = step && step.type === 'work' ? step.exIndex : null;
 
   const legEintrag = coreLog.value.find(e => e && e.kind === 'leg' && e.day === isoDayLocal(today.value)) || null;
-  const legSoll = legRounds(p, w);
 
   const phase = !step ? 'Bereit'
     : step.type === 'work' ? 'Belastung'
     : step.type === 'rest' ? 'Pause'
     : step.type === 'roundrest' ? 'Rundenpause'
     : step.type === 'done' ? 'Fertig' : 'Bereit';
-
-  /* Der Stand des Zirkels gehoert auf den Umschalter: sonst muesste man
-     hinueberwechseln, um zu sehen, wie weit die andere Haelfte ist. */
-  const zirkelStand = step && step.type === 'done' ? '\u2713'
-    : step && step.round ? 'R' + step.round + '/' + cfg.rounds : null;
 
   /* In der Pause die naechste Uebung zeigen - man richtet sich waehrend der
      Pause schon ein, nicht erst wenn die Ansage kommt. */
@@ -179,17 +173,14 @@ export function KraftTab(){
 
   return (
     <>
-      {/* Zwei Segmente an jedem Tag, in derselben Form. Der Umschalter traegt
-          den Stand beider Haelften, damit die gerade nicht gezeigte trotzdem
-          ablesbar bleibt. Wann der Beinblock ansteht, sagt der Plan - die App
-          fuehrt darueber nicht Buch und versperrt keinen Tag. */}
+      {/* Zwei Segmente an jedem Tag, in derselben Form. Nur die Namen der
+          beiden Haelften: Rundenzahl und Fortschritt stehen in den Karten
+          darunter und im Ring, im Umschalter waeren sie ein zweites Mal
+          dasselbe. Wann welche Haelfte ansteht, sagt der Plan - die App
+          versperrt keinen Tag. */}
       <div class="segmented" style="margin:0 0 14px">
-        <button class={'segbtn' + (segment === 'core' ? ' an' : '')} onClick={() => setSegment('core')}>
-          Zirkel{zirkelStand ? ' · ' + zirkelStand : ''}
-        </button>
-        <button class={'segbtn' + (segment === 'leg' ? ' an' : '')} onClick={() => setSegment('leg')}>
-          Beine · {legDoneRounds(legEintrag)}/{legSoll}
-        </button>
+        <button class={'segbtn' + (segment === 'core' ? ' an' : '')} onClick={() => setSegment('core')}>Rumpf</button>
+        <button class={'segbtn' + (segment === 'leg' ? ' an' : '')} onClick={() => setSegment('leg')}>Beine</button>
       </div>
 
       {segment === 'core' && <>
