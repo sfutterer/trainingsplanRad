@@ -122,8 +122,9 @@ Hälften so breit wie eine einfache Linie und liegen auf demselben weißen Rand 
 es sieht also aus wie **eine** Linie in zwei Farben und bleibt dort, wo die
 Straße ist. Wie oft die Strecke gefahren wurde, ändert daran nichts; ein Versatz
 je Durchfahrt addierte sich zu einem Fächer aus einem Dutzend Linien. Die
-Fahrtrichtung steht als weißer Winkel in der Linie, ausgedünnt auf einen je
-Richtung und Bildschirmabstand. Der Versatz rechnet in Bildschirmpunkten und
+Fahrtrichtung steht als weißer Winkel in der Linie – auf der ganzen Strecke,
+nicht nur auf doppelt gefahrenen Stücken –, ausgedünnt auf einen je Richtung und
+Bildschirmabstand. Der Versatz rechnet in Bildschirmpunkten und
 wird nach jedem Zoomen neu gelegt – ein Meter ist in der Gesamtübersicht weniger
 als ein Pixel.
 

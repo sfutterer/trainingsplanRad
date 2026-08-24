@@ -21,6 +21,9 @@
 
    Die Fahrtrichtung steht als weisser Winkel in der Linie, nicht als Pfeil
    daneben: Marker neben der Spur waren bei zwei Spuren nicht mehr zuzuordnen.
+   Die Winkel stehen auf der ganzen Strecke, nicht nur auf den doppelt
+   gefahrenen Stuecken - auf einer Runde ist die Frage "wo ging es hin" genauso
+   berechtigt, und eine Linie ohne Richtung beantwortet sie nicht.
 
    Der Versatz muss in Bildschirmpunkten gerechnet werden, nicht in Metern:
    drei Meter sind bei der Uebersicht ueber eine ganze Fahrt weniger als ein
@@ -75,8 +78,6 @@ const SPUR_HALB = SPUR / 2;
    Dutzend Linien. */
 const VERSATZ_PX = SPUR / 4;
 
-const WINKEL_ABSTAND = 450;   // Meter zwischen zwei Richtungswinkeln
-const WINKEL_JE_GRUPPE = 4;
 const WINKEL_GROESSE = 2.6;   // Bildschirmpunkte, Armlaenge - passt in eine Haelfte
 
 /* Eine Linie seitlich versetzen, in Bildschirmpunkten und rechts der
@@ -118,18 +119,18 @@ function winkel(karte, ll, i){
    Nicht je Zeichengruppe: bei acht Intervallen auf derselben Strecke gibt es
    ein Dutzend Gruppen, und deren Winkel lagen alle auf denselben paar hundert
    Metern - eine weisse Leiter ueber der Spur. Stattdessen werden Kandidaten
-   gesammelt und ausgeduennt: ein Winkel je Richtung und Bildschirmabstand, der
-   Rest fliegt heraus. Damit steht auf jeder der beiden Spuren einer, egal wie
-   oft die Strecke gefahren wurde. */
-const WINKEL_MIN_PX = 70;    // Bildschirmabstand zwischen zwei Winkeln derselben Richtung
-const WINKEL_MAX = 12;
+   entlang der ganzen Strecke gesammelt und dann ausgeduennt: ein Winkel je
+   Richtung und Bildschirmabstand, der Rest fliegt heraus. Auf einer doppelt
+   gefahrenen Strecke bleibt damit je Richtung einer, auf einer einfachen einer
+   je Stueck - unabhaengig davon, wie die Farben die Strecke zerteilen. */
+const WINKEL_ABSTAND = 300;   // Meter zwischen zwei Kandidaten
+const WINKEL_MIN_PX = 70;     // Bildschirmabstand zwischen zwei Winkeln derselben Richtung
+const WINKEL_MAX = 30;
 
 function winkelKandidaten(karte, gelegt){
   const raus = [];
   for(const t of gelegt){
-    if(!t.g.doppelt) continue;
-    const anzahl = Math.max(1, Math.min(WINKEL_JE_GRUPPE,
-      Math.round((t.g.meter || 0) / WINKEL_ABSTAND)));
+    const anzahl = Math.max(1, Math.round((t.g.meter || 0) / WINKEL_ABSTAND));
     for(let k = 0; k < anzahl; k++){
       const i = Math.min(t.ll.length - 2, Math.max(1,
         Math.round((k + 0.5) / anzahl * (t.ll.length - 1))));
@@ -152,7 +153,7 @@ function winkelAusduennen(kandidaten){
     const zuNah = raus.some(v => {
       const dx = v.p.x - k.p.x, dy = v.p.y - k.p.y;
       if(Math.sqrt(dx * dx + dy * dy) > WINKEL_MIN_PX) return false;
-      /* Nah, aber in Gegenrichtung: das ist die andere Spur und darf bleiben. */
+      /* Nah, aber in Gegenrichtung: das ist die andere Haelfte und darf bleiben. */
       return Math.abs(((v.kurs - k.kurs + 540) % 360) - 180) <= 60;
     });
     if(!zuNah) raus.push(k);
@@ -296,7 +297,9 @@ export function StreckenLegende({ bilanz, laeuft }){
   const wegRest = bilanz.wegMeter - (bilanz.klassen['weg'] || 0);
   return (
     <div class="legende">
-      <span class="leghinweis">Farbe: was auf dem Abschnitt am stärksten gebremst hat.</span>
+      <span class="leghinweis">
+        Farbe: was auf dem Abschnitt am stärksten gebremst hat. Die weißen Winkel zeigen die Fahrtrichtung.
+      </span>
       {vorhanden.map(k => (
         <span class="legpost" key={k}>
           <i class={'legfarbe k-' + k}></i>{KLASSE_TEXT[k]} <b>{km(bilanz.klassen[k])}</b>
@@ -309,8 +312,8 @@ export function StreckenLegende({ bilanz, laeuft }){
       )}
       {bilanz.doppeltMeter >= 100 && (
         <span class="leghinweis">
-          {km(bilanz.doppeltMeter)} doppelt gefahren: Hin- und Rückweg liegen dort nebeneinander,
-          die weißen Winkel zeigen die Fahrtrichtung.
+          {km(bilanz.doppeltMeter)} doppelt gefahren: dort teilen sich Hin- und Rückweg die Linie,
+          jede Richtung eine Hälfte.
         </span>
       )}
       {laeuft && <span class="leghinweis">Untergrund wird noch geladen …</span>}
