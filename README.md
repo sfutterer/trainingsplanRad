@@ -115,16 +115,17 @@ Treffen Steigung und Wind zusammen, entscheidet eine grobe Wattschätzung,
 welche der beiden die Farbe bekommt; unbefestigt kommt zusätzlich als
 Punktlinie darüber, damit Schotter nicht verdeckt wird.
 
-Doppelt gefahrene Strecken – beim Intervalltraining die Regel – weichen um eine
-halbe Strichbreite nach rechts der eigenen Fahrtrichtung aus. Rechts ist beim
-Zurückfahren die andere Straßenseite, also entstehen genau **zwei** Spuren: eine
-hin, eine zurück, auch bei zwanzig Wiederholungen. Die Zahl der Durchfahrten
-wird bewusst nicht gezählt – ein Versatz je Durchfahrt addierte sich zu einem
-Fächer aus einem Dutzend Linien. Die Strichbreite ist überall gleich, und die
+Doppelt gefahrene Strecken – beim Intervalltraining die Regel – teilen die Linie
+längs: jede Richtung bekommt eine Hälfte, nach rechts der eigenen Fahrtrichtung,
+und rechts ist beim Zurückfahren die andere Straßenseite. Zusammen sind die
+Hälften so breit wie eine einfache Linie und liegen auf demselben weißen Rand –
+es sieht also aus wie **eine** Linie in zwei Farben und bleibt dort, wo die
+Straße ist. Wie oft die Strecke gefahren wurde, ändert daran nichts; ein Versatz
+je Durchfahrt addierte sich zu einem Fächer aus einem Dutzend Linien. Die
 Fahrtrichtung steht als weißer Winkel in der Linie, ausgedünnt auf einen je
 Richtung und Bildschirmabstand. Der Versatz rechnet in Bildschirmpunkten und
-wird nach jedem Zoomen neu gelegt – drei Meter sind in der Gesamtübersicht
-weniger als ein Pixel.
+wird nach jedem Zoomen neu gelegt – ein Meter ist in der Gesamtübersicht weniger
+als ein Pixel.
 
 Darunter eine Auswertung, die Strecke und Wetter zusammen liest, und am Ende
 ein Fazit: passt die Einheit zum Plan, erklären die Bedingungen eine Abweichung,

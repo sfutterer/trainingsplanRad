@@ -11,12 +11,13 @@
    sonst waere Schotter unsichtbar, sobald am selben Stueck auch Wind oder
    Steigung dazukommt.
 
-   Doppelt gefahrene Strecken - beim Intervalltraining die Regel - weichen um
-   knapp eine halbe Strichbreite nach rechts der eigenen Fahrtrichtung aus.
-   Rechts ist beim Zurueckfahren die andere Strassenseite, also entstehen genau
-   zwei Spuren: eine hin, eine zurueck, auch bei zwanzig Wiederholungen. Die
-   Strichbreite bleibt ueberall gleich - unterschiedlich dicke Linien lasen sich
-   wie ein Fehler.
+   Doppelt gefahrene Strecken - beim Intervalltraining die Regel - teilen sich
+   die Linie laengs: jede Richtung bekommt eine Haelfte, nach rechts der eigenen
+   Fahrtrichtung, und rechts ist beim Zurueckfahren die andere Strassenseite.
+   Zusammen sind die beiden Haelften so breit wie eine einfache Linie und liegen
+   auf demselben weissen Rand - es sieht also aus wie eine Linie in zwei Farben,
+   nicht wie zwei Strassen. Wie oft die Strecke gefahren wurde, aendert daran
+   nichts: es bleibt bei zwei Haelften.
 
    Die Fahrtrichtung steht als weisser Winkel in der Linie, nicht als Pfeil
    daneben: Marker neben der Spur waren bei zwei Spuren nicht mehr zuzuordnen.
@@ -60,18 +61,23 @@ function token(name){
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888';
 }
 
-/* Strichbreiten in Bildschirmpunkten. Ueberall dieselben, auch auf doppelt
-   gefahrenen Abschnitten: der Versatz allein trennt die beiden Spuren. */
-const SPUR = 4.5, RAND = 8.5;
+/* Strichbreiten in Bildschirmpunkten. Die Strecke ist immer gleich breit: eine
+   einfache Linie hat SPUR, zwei Haelften haben je die Haelfte davon und liegen
+   Schulter an Schulter. Der weisse Rand laeuft in beiden Faellen auf der Achse
+   der Strecke - er haelt die Linie zusammen, statt sie zu verdoppeln. */
+const SPUR = 5, RAND = 9;
+const SPUR_HALB = SPUR / 2;
 
-/* Halbe Strichbreite plus eine Haaresbreite: die Spuren beruehren sich, statt
-   auseinanderzulaufen. Ein Versatz je Durchfahrt - die erste Fassung zaehlte
-   sie - wurde beim Zirkeltraining zu einem Faecher aus einem Dutzend Linien. */
-const VERSATZ_PX = 2.6;
+/* Ein Viertel der Strichbreite: damit stossen die beiden Haelften in der Mitte
+   aneinander und der Strich bleibt dort, wo die Strasse ist. Mehr Versatz sah
+   nach zwei verschiedenen Strassen aus. Ein Versatz je Durchfahrt - die erste
+   Fassung zaehlte sie - wurde beim Zirkeltraining zu einem Faecher aus einem
+   Dutzend Linien. */
+const VERSATZ_PX = SPUR / 4;
 
 const WINKEL_ABSTAND = 450;   // Meter zwischen zwei Richtungswinkeln
 const WINKEL_JE_GRUPPE = 4;
-const WINKEL_GROESSE = 3.6;   // Bildschirmpunkte, Armlaenge
+const WINKEL_GROESSE = 2.6;   // Bildschirmpunkte, Armlaenge - passt in eine Haelfte
 
 /* Eine Linie seitlich versetzen, in Bildschirmpunkten und rechts der
    Fahrtrichtung. Auf dem Bildschirm zeigt y nach unten, rechts von (dx, dy)
@@ -192,24 +198,27 @@ export function RouteMap({ latlng, gruppen, windAus }){
           .map(g => ({ g: g, ll: g.doppelt ? versetzt(m, g.ll, VERSATZ_PX) : g.ll,
                        farbe: token(TOKEN[g.klasse] || '--spur') }));
 
+        /* Der Rand liegt auf der Achse, nicht auf der versetzten Haelfte -
+           sonst waere die Strecke dort, wo sie doppelt gefahren wurde, doppelt
+           so breit wie sonst. */
         for(const t of gelegt){
-          L.polyline(t.ll, { color: randFarbe, weight: RAND, opacity: .9,
+          L.polyline(t.g.ll, { color: randFarbe, weight: RAND, opacity: .9,
             lineCap: 'round', lineJoin: 'round' }).addTo(schicht);
         }
         for(const t of gelegt){
-          L.polyline(t.ll, { color: t.farbe, weight: SPUR, opacity: 1,
-            lineCap: 'round', lineJoin: 'round' }).addTo(schicht);
+          L.polyline(t.ll, { color: t.farbe, weight: t.g.doppelt ? SPUR_HALB : SPUR,
+            opacity: 1, lineCap: 'butt', lineJoin: 'round' }).addTo(schicht);
           /* Unbefestigt als feine Punktlinie obendrauf: eine zweite Farbe kann
              der Abschnitt nicht tragen, eine zweite Textur schon. */
           if(t.g.weg){
-            L.polyline(t.ll, { color: '#14150f', weight: 2, opacity: .85,
-              dashArray: '1 6', lineCap: 'round' }).addTo(schicht);
+            L.polyline(t.ll, { color: '#14150f', weight: t.g.doppelt ? 1.4 : 2,
+              opacity: .85, dashArray: '1 6', lineCap: 'round' }).addTo(schicht);
           }
         }
         for(const k of winkelAusduennen(winkelKandidaten(m, gelegt))){
           const w = winkel(m, k.ll, k.i);
           if(!w) continue;
-          L.polyline(w, { color: randFarbe, weight: 1.8, opacity: 1,
+          L.polyline(w, { color: randFarbe, weight: 1.3, opacity: 1,
             lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(schicht);
         }
       }
