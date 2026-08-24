@@ -18,8 +18,8 @@ const ICONS = {
 
 /* Vier Ziele unten - die Bereiche, die waehrend des Trainings gebraucht
    werden. Alles Seltenere steht im Drawer. Die Etiketten muessen bei 375 px
-   in rund 93 px passen; "Rumpf & Kraft" wuerde abgeschnitten, deshalb steht
-   dort "Kraft" und der volle Name im Drawer und in der Titelzeile. */
+   in rund 93 px passen, also ein Wort je Ziel - und ueberall dasselbe Wort:
+   im Drawer und in der Titelzeile steht kein laengerer Name mehr. */
 const ZIELE = [
   { id: 'plan',       label: 'Plan' },
   { id: 'kraft',      label: 'Kraft' },

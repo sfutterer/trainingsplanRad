@@ -22,7 +22,7 @@ const ICONS = {
 export const DRAWER_GRUPPEN = [
   { titel: 'Training', ziele: [
     { id: 'plan',       label: 'Plan' },
-    { id: 'kraft',      label: 'Rumpf & Kraft' },
+    { id: 'kraft',      label: 'Kraft' },
     { id: 'intervalle', label: 'Intervalle' },
     { id: 'analyse',    label: 'Analyse' }
   ]},

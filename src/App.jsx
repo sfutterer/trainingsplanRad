@@ -27,7 +27,7 @@ import { Snackbar } from './ui/components/Snackbar.jsx';
 
 const TABS = {
   plan:          { komp: PlanTab,          titel: 'Plan' },
-  kraft:         { komp: KraftTab,         titel: 'Rumpf & Kraft' },
+  kraft:         { komp: KraftTab,         titel: 'Kraft' },
   intervalle:    { komp: IntervalleTab,    titel: 'Intervalle' },
   analyse:       { komp: AnalyseTab,       titel: 'Analyse' },
   zonen:         { komp: ZonenTab,         titel: 'Zonen & Schwellenwerte' },
