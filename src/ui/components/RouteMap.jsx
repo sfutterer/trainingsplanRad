@@ -23,7 +23,9 @@
    daneben: Marker neben der Spur waren bei zwei Spuren nicht mehr zuzuordnen.
    Die Winkel stehen auf der ganzen Strecke, nicht nur auf den doppelt
    gefahrenen Stuecken - auf einer Runde ist die Frage "wo ging es hin" genauso
-   berechtigt, und eine Linie ohne Richtung beantwortet sie nicht.
+   berechtigt, und eine Linie ohne Richtung beantwortet sie nicht. Gesetzt
+   werden sie in dem Stueck Strecke, das gerade zu sehen ist, und darum auch
+   nach jedem Verschieben neu.
 
    Der Versatz muss in Bildschirmpunkten gerechnet werden, nicht in Metern:
    drei Meter sind bei der Uebersicht ueber eine ganze Fahrt weniger als ein
@@ -116,31 +118,38 @@ function winkel(karte, ll, i){
 
 /* Wo die Winkel sitzen.
 
-   Nicht je Zeichengruppe: bei acht Intervallen auf derselben Strecke gibt es
-   ein Dutzend Gruppen, und deren Winkel lagen alle auf denselben paar hundert
-   Metern - eine weisse Leiter ueber der Spur. Stattdessen werden Kandidaten
-   entlang der ganzen Strecke gesammelt und dann ausgeduennt: ein Winkel je
-   Richtung und Bildschirmabstand, der Rest fliegt heraus. Auf einer doppelt
-   gefahrenen Strecke bleibt damit je Richtung einer, auf einer einfachen einer
-   je Stueck - unabhaengig davon, wie die Farben die Strecke zerteilen. */
-const WINKEL_ABSTAND = 300;   // Meter zwischen zwei Kandidaten
-const WINKEL_MIN_PX = 70;     // Bildschirmabstand zwischen zwei Winkeln derselben Richtung
+   Nicht an festen Metermarken der Strecke: eine Marke alle 300 m ist bei der
+   Uebersicht dicht genug, aber hineingezoomt liegt der Ausschnitt zwischen zwei
+   Marken, und dann steht kein einziger Winkel im Bild. Gemessen wird deshalb in
+   Bildschirmpunkten - alle 70 Punkte entlang der Linie einer, unabhaengig vom
+   Zoom.
+
+   Und nicht je Zeichengruppe: bei acht Intervallen auf derselben Strecke gibt
+   es ein Dutzend Gruppen, deren Winkel alle auf denselben paar hundert Metern
+   laegen - eine weisse Leiter ueber der Spur. Das Ausduennen danach laesst je
+   Richtung einen stehen. */
+const WINKEL_MIN_PX = 70;     // Bildschirmabstand zwischen zwei Winkeln
 const WINKEL_MAX = 30;
 
 function winkelKandidaten(karte, gelegt){
+  /* Nur der sichtbare Ausschnitt, mit etwas Rand. Sonst faellt die Obergrenze
+     auf Kandidaten, die gerade niemand sieht. */
+  const sicht = karte.getBounds().pad(0.2);
   const raus = [];
   for(const t of gelegt){
-    const anzahl = Math.max(1, Math.round((t.g.meter || 0) / WINKEL_ABSTAND));
-    for(let k = 0; k < anzahl; k++){
-      const i = Math.min(t.ll.length - 2, Math.max(1,
-        Math.round((k + 0.5) / anzahl * (t.ll.length - 1))));
-      const p = karte.latLngToLayerPoint(t.ll[i]);
-      const a = karte.latLngToLayerPoint(t.ll[i - 1]);
-      const b = karte.latLngToLayerPoint(t.ll[Math.min(i + 1, t.ll.length - 1)]);
-      const dx = b.x - a.x, dy = b.y - a.y;
-      const laenge = Math.sqrt(dx * dx + dy * dy);
+    const pts = t.ll.map(p => karte.latLngToLayerPoint(p));
+    let seit = WINKEL_MIN_PX;   // der erste Punkt der Gruppe darf gleich einer sein
+    for(let i = 1; i < pts.length - 1; i++){
+      const dx = pts[i].x - pts[i - 1].x, dy = pts[i].y - pts[i - 1].y;
+      seit += Math.sqrt(dx * dx + dy * dy);
+      if(seit < WINKEL_MIN_PX) continue;
+      if(!sicht.contains(t.ll[i])) continue;
+      const a = pts[i - 1], b = pts[i + 1];
+      const rx = b.x - a.x, ry = b.y - a.y;
+      const laenge = Math.sqrt(rx * rx + ry * ry);
       if(!laenge) continue;
-      raus.push({ p: p, kurs: Math.atan2(dx, -dy) * 180 / Math.PI, ll: t.ll, i: i });
+      seit = 0;
+      raus.push({ p: pts[i], kurs: Math.atan2(rx, -ry) * 180 / Math.PI, ll: t.ll, i: i });
     }
   }
   return raus;
@@ -185,6 +194,11 @@ export function RouteMap({ latlng, gruppen, windAus }){
          gehoert der Rand zur Spur, nicht zur Achse der Strecke. */
       const teile = (gruppen && gruppen.length) ? gruppen : [{ klasse: null, ll: latlng }];
       const schicht = L.layerGroup().addTo(m);
+      /* Die Winkel liegen in einer eigenen Schicht: sie haengen am Ausschnitt
+         und werden auch beim Verschieben neu gesetzt, die Linien nur beim
+         Zoomen. */
+      const winkelSchicht = L.layerGroup().addTo(m);
+      let gelegt = [];
       const spurFarbe = token('--spur'), randFarbe = token('--spur-rand');
 
       /* In drei Durchgaengen, nicht Gruppe fuer Gruppe: erst alle weissen
@@ -194,7 +208,7 @@ export function RouteMap({ latlng, gruppen, windAus }){
          und die Winkel gar nicht. */
       function zeichneSpur(){
         schicht.clearLayers();
-        const gelegt = teile
+        gelegt = teile
           .filter(g => g.ll && g.ll.length >= 2)
           .map(g => ({ g: g, ll: g.doppelt ? versetzt(m, g.ll, VERSATZ_PX) : g.ll,
                        farbe: token(TOKEN[g.klasse] || '--spur') }));
@@ -216,11 +230,16 @@ export function RouteMap({ latlng, gruppen, windAus }){
               opacity: .85, dashArray: '1 6', lineCap: 'round' }).addTo(schicht);
           }
         }
+        zeichneWinkel();
+      }
+
+      function zeichneWinkel(){
+        winkelSchicht.clearLayers();
         for(const k of winkelAusduennen(winkelKandidaten(m, gelegt))){
           const w = winkel(m, k.ll, k.i);
           if(!w) continue;
           L.polyline(w, { color: randFarbe, weight: 1.3, opacity: 1,
-            lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(schicht);
+            lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(winkelSchicht);
         }
       }
 
@@ -232,6 +251,7 @@ export function RouteMap({ latlng, gruppen, windAus }){
       /* Der Versatz haengt am Zoom, also muss die Spur nach jedem Zoomen neu
          gelegt werden. Zwischen zwei Zoomstufen bleibt sie unveraendert. */
       m.on('zoomend', zeichneSpur);
+      m.on('moveend', zeichneWinkel);
 
       /* Start hohl, Ziel gefuellt - in derselben Farbe, damit die Karte nicht
          drei Bedeutungen in drei Farben behauptet. */
