@@ -158,15 +158,117 @@ export function zeichenGruppen(abschnitte){
   const raus = [];
   for(const a of (abschnitte || [])){
     const weg = a.untergrund === 'unbefestigt';
+    const doppelt = !!a.doppelt;
+    const versatz = a.versatz || 0;
     const letzte = raus[raus.length - 1];
-    if(letzte && letzte.klasse === a.klasse && letzte.weg === weg){
+    /* Auch die Spur trennt: eine Gruppe wird als eine Linie gezeichnet, und
+       eine Linie kann nicht halb versetzt sein. */
+    if(letzte && letzte.klasse === a.klasse && letzte.weg === weg &&
+       letzte.doppelt === doppelt && letzte.versatz === versatz){
       letzte.ll = letzte.ll.concat(a.ll.slice(1));
       letzte.meter += a.meter;
     } else {
-      raus.push({ klasse: a.klasse, weg: weg, ll: a.ll.slice(), meter: a.meter });
+      raus.push({ klasse: a.klasse, weg: weg, doppelt: doppelt, versatz: versatz,
+                  ll: a.ll.slice(), meter: a.meter });
     }
   }
   return raus;
+}
+
+/* ---------- Doppelt gefahrene Abschnitte ---------- */
+
+/* Beim Intervalltraining faehrt man dieselbe Strasse hin und zurueck. Auf der
+   Karte liegt der Rueckweg dann genau auf dem Hinweg, und sichtbar ist nur,
+   was zuletzt gezeichnet wurde - meist das gruene Stueck ueber dem violetten,
+   obwohl auf dem Hinweg der Wind stand.
+
+   Deshalb wird jeder Abschnitt gefragt, ob die Spur an derselben Stelle noch
+   ein zweites Mal vorbeikommt. Wenn ja, zeichnet die Karte die Durchfahrten
+   nebeneinander statt uebereinander (halbe Breite, seitlich versetzt) und
+   setzt Pfeile in die jeweilige Fahrtrichtung.
+
+   versatz zaehlt nur Durchfahrten in derselben Richtung: Hin- und Rueckweg
+   trennen sich schon dadurch, dass jede Spur nach rechts der eigenen
+   Fahrtrichtung ausweicht - und rechts ist beim Zurueckfahren die andere
+   Strassenseite. Erst wer eine Runde zweimal in derselben Richtung faehrt,
+   braucht eine dritte Spur. */
+
+export const DOPPEL_TOLERANZ = 30;      // Meter zwischen zwei Durchfahrten
+const RICHTUNG_GLEICH = 60;             // Grad: bis dahin dieselbe Richtung
+const RICHTUNG_GEGEN = 120;             // Grad: darueber Gegenrichtung
+
+function zelle(p, grad){
+  return Math.round(p[0] / grad) + ':' + Math.round(p[1] / grad);
+}
+
+function proben(ll){
+  const n = ll.length;
+  if(n < 3) return ll.slice();
+  return [ll[Math.floor(n * 0.25)], ll[Math.floor(n * 0.5)], ll[Math.floor(n * 0.75)]];
+}
+
+/* Liegt i auf j? Nicht am gemeinsamen Endpunkt zweier aufeinanderfolgender
+   Abschnitte, sondern auf der Laenge - deshalb muessen mindestens zwei der
+   drei Proben nah an j liegen. */
+function liegtAuf(proben_i, j, tol){
+  let nah = 0;
+  for(const p of proben_i){
+    let d = Infinity;
+    for(let k = 1; k < j.ll.length; k++){
+      const x = abstandZuStrecke(p, j.ll[k - 1], j.ll[k]);
+      if(x < d) d = x;
+      if(d <= tol) break;
+    }
+    if(d <= tol) nah++;
+    if(nah >= 2) return true;
+  }
+  return false;
+}
+
+export function markiereDoppelt(abschnitte, toleranz){
+  const a = abschnitte || [];
+  const tol = toleranz || DOPPEL_TOLERANZ;
+  const grad = tol / 111320 * 2;
+
+  /* Gitter ueber alle Punkte: so kommen nur die Abschnitte in Frage, die
+     ueberhaupt in der Naehe liegen - sonst waere es jeder gegen jeden. */
+  const netz = new Map();
+  a.forEach((s, i) => {
+    for(const p of s.ll){
+      const k = zelle(p, grad);
+      let l = netz.get(k);
+      if(!l){ l = new Set(); netz.set(k, l); }
+      l.add(i);
+    }
+  });
+
+  return a.map((s, i) => {
+    const pr = proben(s.ll);
+    const kandidaten = new Set();
+    for(const p of pr){
+      const zl = Math.round(p[0] / grad), zn = Math.round(p[1] / grad);
+      for(let dz = -1; dz <= 1; dz++){
+        for(let dn = -1; dn <= 1; dn++){
+          const l = netz.get((zl + dz) + ':' + (zn + dn));
+          if(l) for(const j of l) if(j !== i) kandidaten.add(j);
+        }
+      }
+    }
+
+    let doppelt = false, versatz = 0;
+    for(const j of kandidaten){
+      const diff = Math.abs(((a[j].kurs - s.kurs + 540) % 360) - 180);
+      const gleich = diff <= RICHTUNG_GLEICH, gegen = diff >= RICHTUNG_GEGEN;
+      /* Kreuzungen sind keine doppelte Strecke: dort laeuft die Spur schraeg
+         zur eigenen Richtung, nicht auf ihr. */
+      if(!gleich && !gegen) continue;
+      if(!liegtAuf(pr, a[j], tol)) continue;
+      doppelt = true;
+      if(gleich && j < i) versatz++;
+    }
+    if(!doppelt && !s.doppelt && !s.versatz) return s;
+    return Object.assign({}, s, { doppelt, versatz });
+  });
 }
 
 /* Untergrund nachtragen und neu einfaerben.
@@ -194,7 +296,7 @@ export function streckenBilanz(abschnitte){
     meter: 0, hoch: 0, runter: 0,
     gegenMeter: 0, querMeter: 0, rueckMeter: 0, windMeter: 0,
     gegenSumme: 0,
-    wegMeter: 0, festMeter: 0, unbekanntMeter: 0,
+    wegMeter: 0, festMeter: 0, unbekanntMeter: 0, doppeltMeter: 0,
     steilster: 0, staerksterGegenwind: 0,
     klassen: {}
   };
@@ -216,6 +318,7 @@ export function streckenBilanz(abschnitte){
       else if(s.windAnteil < -0.3) b.rueckMeter += s.meter;
       else b.querMeter += s.meter;
     }
+    if(s.doppelt) b.doppeltMeter += s.meter;
     if(s.untergrund === 'unbefestigt') b.wegMeter += s.meter;
     else if(s.untergrund === 'fest') b.festMeter += s.meter;
     else b.unbekanntMeter += s.meter;

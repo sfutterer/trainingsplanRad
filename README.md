@@ -115,6 +115,14 @@ Treffen Steigung und Wind zusammen, entscheidet eine grobe Wattschätzung,
 welche der beiden die Farbe bekommt; unbefestigt kommt zusätzlich als
 Punktlinie darüber, damit Schotter nicht verdeckt wird.
 
+Doppelt gefahrene Strecken – beim Intervalltraining die Regel – liegen
+nebeneinander statt übereinander: halbe Breite, jede Durchfahrt seitlich
+versetzt nach rechts ihrer eigenen Fahrtrichtung, dazu Pfeile in Fahrtrichtung.
+Hin- und Rückweg trennen sich dadurch von selbst; erst eine Runde, die zweimal
+in derselben Richtung gefahren wurde, braucht eine dritte Spur. Der Versatz
+rechnet in Bildschirmpunkten und wird nach jedem Zoomen neu gelegt – sechs
+Meter sind in der Gesamtübersicht weniger als ein Pixel.
+
 Darunter eine Auswertung, die Strecke und Wetter zusammen liest, und am Ende
 ein Fazit: passt die Einheit zum Plan, erklären die Bedingungen eine Abweichung,
 und was wäre nächstes Mal anders zu machen. Das Fazit steht auch oben in der

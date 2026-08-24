@@ -7,7 +7,8 @@
 import { describe, it, expect } from 'vitest';
 import { abstand, peilung, windAnteil, abstandZuStrecke } from '../src/domain/geo.js';
 import { baueAbschnitte, streckenBilanz, zeichenGruppen, klassifiziere,
-         wegKlasse, untergrundAn, setzeUntergrund, SCHWELLEN } from '../src/domain/strecke.js';
+         wegKlasse, untergrundAn, setzeUntergrund, markiereDoppelt,
+         SCHWELLEN } from '../src/domain/strecke.js';
 import { streckenFazit, umfeldLast } from '../src/domain/fazit.js';
 import { stuetzpunkte, overpassAbfrage, wegeAus,
          untergrundCode, untergrundAusCode } from '../src/data/osm.js';
@@ -253,5 +254,68 @@ describe('Zwischenspeicher Untergrund', () => {
     const mit = setzeUntergrund(a, () => 'unbefestigt');
     expect(mit.every(x => x.klasse === 'weg')).toBe(true);
     expect(streckenBilanz(mit).wegProzent).toBe(100);
+  });
+});
+
+describe('Doppelt gefahrene Abschnitte', () => {
+  /* Hin und zurueck auf derselben Linie - der Intervallfall. */
+  function hinUndZurueck(n){
+    const hin = spurNord(n, 0);
+    const rueck = hin.slice().reverse()
+      .map((p, i) => ({ ll: p.ll, hoehe: p.hoehe, sek: n * 5 + i * 5 }));
+    return hin.concat(rueck);
+  }
+
+  it('erkennt Hin- und Rueckweg als dieselbe Strecke', () => {
+    const a = markiereDoppelt(baueAbschnitte(hinUndZurueck(120), {}));
+    expect(a.length).toBeGreaterThan(4);
+    expect(a.every(x => x.doppelt)).toBe(true);
+    /* Gegenrichtung braucht keinen Versatz: jede Spur weicht nach rechts der
+       eigenen Fahrtrichtung aus, und das sind zwei verschiedene Seiten. */
+    expect(a.every(x => x.versatz === 0)).toBe(true);
+  });
+
+  it('staffelt eine zweimal in derselben Richtung gefahrene Runde', () => {
+    const runde = [];
+    for(let r = 0; r < 2; r++){
+      for(let i = 0; i < 120; i++){
+        const t = i / 120 * 2 * Math.PI;
+        runde.push({ ll: [48.1 + 0.01 * Math.sin(t), 11.5 + 0.014 * Math.cos(t)],
+                     hoehe: 500, sek: (r * 120 + i) * 6 });
+      }
+    }
+    const a = markiereDoppelt(baueAbschnitte(runde, {}));
+    expect(a.some(x => x.versatz === 1)).toBe(true);
+    expect(a.every(x => x.versatz <= 1)).toBe(true);
+  });
+
+  it('laesst eine einfache Strecke unangetastet', () => {
+    const a = markiereDoppelt(baueAbschnitte(spurNord(150, 2), {}));
+    expect(a.some(x => x.doppelt)).toBe(false);
+    expect(streckenBilanz(a).doppeltMeter).toBe(0);
+  });
+
+  it('haelt eine Kreuzung nicht fuer eine doppelte Strecke', () => {
+    /* Nach Norden, dann rechtwinklig nach Osten quer darueber. */
+    const p = [];
+    for(let i = 0; i < 100; i++) p.push({ ll: [48.1 + i * 0.00018, 11.5], hoehe: 500, sek: i * 5 });
+    for(let i = 0; i < 100; i++) p.push({ ll: [48.109, 11.494 + i * 0.00018], hoehe: 500, sek: 500 + i * 5 });
+    const a = markiereDoppelt(baueAbschnitte(p, {}));
+    expect(a.filter(x => x.doppelt).length).toBe(0);
+  });
+
+  it('trennt die Zeichengruppen nach Spur', () => {
+    const a = markiereDoppelt(baueAbschnitte(hinUndZurueck(120), {}));
+    const gemischt = a.map((x, i) => Object.assign({}, x, { versatz: i < 3 ? 1 : 0 }));
+    const g = zeichenGruppen(gemischt);
+    expect(g.length).toBe(2);
+    expect(g[0].versatz).toBe(1);
+    expect(g[0].doppelt).toBe(true);
+  });
+
+  it('zaehlt die doppelt gefahrene Strecke in der Bilanz', () => {
+    const a = markiereDoppelt(baueAbschnitte(hinUndZurueck(120), {}));
+    const b = streckenBilanz(a);
+    expect(b.doppeltMeter).toBeCloseTo(b.meter, 0);
   });
 });

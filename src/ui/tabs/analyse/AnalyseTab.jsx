@@ -14,7 +14,7 @@ import { fetchActivities, fetchStreams, spurMitHoehe, fetchWellness } from '../.
 import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
 import { ladeWege, untergrundCode, untergrundAusCode } from '../../../data/osm.js';
 import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn,
-         setzeUntergrund } from '../../../domain/strecke.js';
+         setzeUntergrund, markiereDoppelt } from '../../../domain/strecke.js';
 import { streckenFazit } from '../../../domain/fazit.js';
 import { melde } from '../../../state/snackbar.js';
 import { zoneSeconds, hrBands } from '../../../domain/zones.js';
@@ -237,7 +237,9 @@ function Detail({ act, onZurueck }){
       }
       if(fehlt.length) melde('Nicht abrufbar: ' + fehlt.join(' · '));
 
-      let abschnitte = baueAbschnitte(spur, { wind });
+      /* Doppelt gefahrene Abschnitte einmal bestimmen: die Geometrie aendert
+         sich durch den Untergrund nicht mehr. */
+      let abschnitte = markiereDoppelt(baueAbschnitte(spur, { wind }));
       setZustand({
         phase: 'fertig', zonen, latlng, wetter, verfassung,
         gruppen: zeichenGruppen(abschnitte), bilanz: streckenBilanz(abschnitte),
