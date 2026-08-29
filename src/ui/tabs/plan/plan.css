@@ -130,24 +130,28 @@ button.dayzeile:active{ background: var(--surface-2); }
 /* ---- Navigation ueber Wochen und Monate ---- */
 
 .card.kalnavi-karte{ padding: 6px 8px; }
-.kalnavi{ display: flex; align-items: center; gap: 4px; }
-.kalnavi .iconbtn{ font-size: 26px; line-height: 1; }
+.kalnavi{ display: flex; align-items: center; gap: 2px; }
+/* In dieser Zeile duerfen die Pfeile enger sein als die 48er-Regel: sie teilen
+   sich den Platz mit Titel und Heute-Feld, und das Ziel bleibt bequem tippbar. */
+.kalnavi .iconbtn{ width: 40px; height: 40px; font-size: 24px; line-height: 1; }
 .kalnavi-titel{
   flex: 1; min-width: 0; text-align: center;
   display: flex; flex-direction: column; line-height: 1.25;
 }
-.kalnavi-titel b{ font-size: 16px; }
+.kalnavi-titel b{ font-size: 16px; white-space: nowrap; }
 .kalnavi-titel span{ font-size: 12px; color: var(--muted); }
-.btn.klein{ min-height: 40px; padding: 0 14px; font-size: 13px; }
-
-/* Der Sprung zum heutigen Tag sitzt in der Titelspalte, nicht am Zeilenende:
-   dort landete er genau auf der Stelle, an der eben noch der Weiter-Pfeil war,
-   und beim mehrfachen Vorblaettern traf der naechste Tipp "Heute". Zentriert
-   unter dem Titel steht er den Pfeilen nicht im Weg, und die aendern ihre
-   Lage nicht mehr, je nachdem ob er sichtbar ist. */
-.kalnavi-titel .heute-sprung{
-  align-self: center;
-  min-height: 30px; margin-top: 4px; padding: 0 16px;
+/* "Heute" sitzt in einem festen Feld links neben den Pfeilen; rechts spiegelt
+   ein unsichtbarer Zwilling desselben Knopfs die Breite, damit der Titel mittig
+   bleibt. Beide Felder stehen immer im Layout - ob der Knopf sichtbar ist oder
+   nicht, aendert weder die Kartenhoehe noch die Lage der Pfeile. Frueher stand
+   er am Zeilenende und rueckte beim Erscheinen auf die Stelle des Weiter-Pfeils;
+   die spaetere Fassung in einer eigenen Zeile liess die Karte beim Blaettern
+   springen. */
+.kalnavi-heute{ flex: 0 0 auto; display: flex; }
+.kalnavi-heute.leer, .kalnavi-heute.spiegel{ visibility: hidden; }
+.kalnavi-heute .heute-sprung{
+  min-height: 30px; padding: 0 10px;
+  font-size: 11.5px; font-weight: 600; border-radius: 15px; white-space: nowrap;
 }
 
 .segmented.ansichtwahl{ margin-bottom: 12px; }

@@ -117,18 +117,18 @@ function Wochenansicht({ anker, setzeAnker, serie }){
     <>
       <div class="card kalnavi-karte">
         <div class="kalnavi">
+          <div class={'kalnavi-heute' + (inDieserWoche ? ' leer' : '')}>
+            <button class="btn tonal heute-sprung" type="button"
+              onClick={() => setzeAnker(heute)}>Heute</button>
+          </div>
           <button class="iconbtn" type="button" aria-label="Vorige Woche"
             onClick={() => setzeAnker(addDays(tage[0], -7))}><span aria-hidden="true">‹</span></button>
-          <div class="kalnavi-titel">
-            <b>Woche {nummer}</b>
-            <span>{spanne}</span>
-            {!inDieserWoche && (
-              <button class="btn tonal klein heute-sprung" type="button"
-                onClick={() => setzeAnker(heute)}>Heute</button>
-            )}
-          </div>
+          <div class="kalnavi-titel"><b>Woche {nummer}</b><span>{spanne}</span></div>
           <button class="iconbtn" type="button" aria-label="Nächste Woche"
             onClick={() => setzeAnker(addDays(tage[0], 7))}><span aria-hidden="true">›</span></button>
+          <div class="kalnavi-heute spiegel" aria-hidden="true">
+            <button class="btn tonal heute-sprung" type="button" tabIndex={-1}>Heute</button>
+          </div>
         </div>
       </div>
 
