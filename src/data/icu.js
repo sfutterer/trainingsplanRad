@@ -10,7 +10,13 @@ export const ICU_BASE = 'https://intervals.icu/api/v1';
 export const ICU_FIELDS = [
   'id','start_date_local','type','name','moving_time','elapsed_time',
   'distance','average_heartrate','max_heartrate','has_heartrate',
-  'icu_training_load','icu_intensity','icu_recording_time'
+  'icu_training_load','icu_intensity','icu_recording_time',
+  /* Fuer die Verlaufsansicht. Die vier kosten keinen zusaetzlichen Abruf, sie
+     haengen an derselben Aktivitaetsliste - und ohne sie muesste die Analyse
+     fuer jede Fahrt die Streams nachladen, nur um eine Kurve zu zeichnen.
+     Fehlt eines der Felder im Konto, sagt die Ansicht das, statt eine leere
+     Kurve wie fehlendes Training aussehen zu lassen. */
+  'average_watts','icu_weighted_avg_watts','decoupling','icu_hr_zone_times'
 ].join(',');
 
 function authHeader(key){

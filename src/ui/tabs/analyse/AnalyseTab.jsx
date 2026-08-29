@@ -1,15 +1,21 @@
-/* Analyse in zwei Schritten: erst die Liste, dann die Auswertung.
+/* Analyse in drei Stufen: Liste, Auswertung einer Fahrt, Verlauf ueber Wochen.
 
    Vorher rechnete ein Knopf den ganzen Zeitraum durch und lud dabei fuer jede
    Fahrt die Streams nach - bei vier Wochen ein Dutzend Abfragen fuer Zahlen,
    von denen man meist eine sehen wollte. Jetzt kostet die Liste eine Abfrage,
    und die teure Auswertung laeuft erst, wenn man eine Fahrt antippt.
 
+   Der Verlauf ist die dritte Stufe und bewusst kein eigener Tab: er beantwortet
+   dieselbe Frage wie die Liste, nur ueber Wochen statt ueber Tage, und er lebt
+   von genau derselben Abfrage. Ein eigener Tab haette sie ein zweites Mal
+   gestellt. Umgeschaltet wird oben, die Liste bleibt der Einstieg.
+
    Bewusst ohne Timer-, Wake-Lock- oder Sprachabhaengigkeit: der Analyseteil
    ist der einzige, der ohne diese Faehigkeiten funktioniert. */
 
 import { useEffect, useState } from 'preact/hooks';
-import { plan, thresholds, startDate, apiKey, coreLog, today, store } from '../../../state/store.js';
+import { plan, thresholds, startDate, apiKey, coreLog, testLog, interimLog,
+         today, store } from '../../../state/store.js';
 import { fetchActivities, fetchStreams, spurMitHoehe, fetchWellness } from '../../../data/icu.js';
 import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
 import { ladeWege, untergrundCode, untergrundAusCode } from '../../../data/osm.js';
@@ -21,6 +27,8 @@ import { zoneSeconds, hrBands } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, weekNumberFor, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { anCompareDay, anWeekTotals, anBuildReport, anFmtMin, anPct, anIsRide,
          verfassungAus } from '../../../domain/analysis.js';
+import { verlaufBericht, zahl } from '../../../domain/verlauf.js';
+import { IndikatorKarte, TrendZeile, Verlaufsgraph } from '../../components/Verlaufsgraph.jsx';
 import { RouteMap, StreckenLegende } from '../../components/RouteMap.jsx';
 import { Auswertung, Fazit, WetterLeiste, ein } from './Auswertung.jsx';
 import { gotoTab } from '../../../App.jsx';
@@ -332,10 +340,177 @@ function Detail({ act, onZurueck }){
   );
 }
 
+/* ---------- Verlauf ueber Wochen ---------- */
+
+function letzterWert(punkte, nk, einheit){
+  if(!punkte || !punkte.length) return null;
+  return zahl(punkte[punkte.length - 1].v, nk) + (einheit ? ' ' + einheit : '');
+}
+
+/* Die Schwellentests bekommen eine eigene Karte statt einer IndikatorKarte:
+   FTP in Watt und LTHR in Schlaegen gehoeren nicht auf dieselbe Achse. Sie in
+   Prozent gegen den ersten Test umzurechnen waere die Alternative gewesen -
+   sie steht schon im Zonen-Tab und beantwortet dort die Frage nach Watt gegen
+   Gewicht. Hier zaehlen die absoluten Werte, weil die Zonen daran haengen. */
+function TestKarte({ tests }){
+  const t = tests;
+  const hatWas = t.ftp.punkte.length || t.lthr.punkte.length || t.sprechtest.punkte.length;
+  if(!hatWas){
+    return (
+      <div class="card">
+        <div class="row"><span>Schwellentests</span><b>noch keiner</b></div>
+        <p class="hint">
+          Der erste Schwellentest steht in Woche 4 an. Bis dahin gibt es keinen gemessenen
+          Anker – im Tab „Zonen“ werden Testergebnis und Sprechtest-Puls eingetragen, danach
+          steht hier ihr Verlauf.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div class="card">
+      <div class="row"><span>Schwellentests</span>
+        <b>{t.anzahl} {t.anzahl === 1 ? 'Test' : 'Tests'}</b></div>
+
+      {t.ftp.punkte.length > 0 && <>
+        <TrendZeile trend={t.ftp.trend} was="FTP" />
+        {!t.ftp.trend.belastbar && t.ftp.vergleich &&
+          <div class="annote">FTP {t.ftp.vergleich.text} – ein Vergleich zweier Termine, kein Trend.</div>}
+        <Verlaufsgraph einheit="W" nachkomma={0}
+          reihen={[{ name: 'FTP', farbe: 'var(--z4)', punkte: t.ftp.punkte, trend: t.ftp.trend }]} />
+      </>}
+
+      {t.lthr.punkte.length > 0 && <>
+        <TrendZeile trend={t.lthr.trend} was="LTHR" />
+        <Verlaufsgraph einheit="bpm" nachkomma={0}
+          reihen={[{ name: 'LTHR', farbe: 'var(--z5)', punkte: t.lthr.punkte, trend: t.lthr.trend }]} />
+      </>}
+
+      {t.sprechtest.punkte.length > 0 && <>
+        <div class="vquelle">Zwischenkontrollen</div>
+        <TrendZeile trend={t.sprechtest.trend} was="Sprechtest-Puls" />
+        <Verlaufsgraph einheit="bpm" nachkomma={0}
+          reihen={[{ name: 'Sprechtest', farbe: 'var(--z2)', punkte: t.sprechtest.punkte,
+                     trend: t.sprechtest.trend }]} />
+        <p class="hint">
+          Bewusst ohne Urteil: ein steigender Sprechtest-Puls kann heißen, dass die Bänder zu
+          eng liegen, und ein fallender kann Müdigkeit sein. Er ist die Gegenprobe zu den
+          Zonen, kein Leistungsmaß.
+        </p>
+      </>}
+
+      <p class="hint">{t.regel}</p>
+    </div>
+  );
+}
+
+function Verlaufsansicht({ acts, wochen, verbunden, range, setRange, laedt }){
+  const th = thresholds.value, start = startDate.value;
+  const b = verlaufBericht({
+    acts, thresholds: th, wochen,
+    testLog: testLog.value, interimLog: interimLog.value, coreLog: coreLog.value,
+    startIso: start ? isoDayLocal(start) : null, verbunden
+  });
+  const ef = b.effizienz, ent = b.entkopplung, u = b.umfang, z = b.zonen, r = b.rumpf;
+
+  const kern = [ef.trend, ent.trend, b.tests.ftp.trend, u.trend, z.z2Trend];
+  const belastbar = kern.filter(x => x && x.belastbar).length;
+  const zonenPunkte = z.punkte.filter(p => p.quelle);
+
+  return (
+    <>
+      <div class="card">
+        <div class="row"><span>Leistungsverlauf</span>
+          <b>{belastbar} von {kern.length} belastbar</b></div>
+        {verbunden && (
+          <div class="field"><span>Zeitraum</span>
+            <select value={range} onChange={e => setRange(e.currentTarget.value)}>
+              <option value="14">Letzte 14 Tage</option>
+              <option value="28">Letzte 4 Wochen</option>
+              <option value="56">Letzte 8 Wochen</option>
+              <option value="all">Ganzer Plan</option>
+            </select></div>
+        )}
+        <p class="hint">
+          {verbunden
+            ? 'Quelle sind die Aufzeichnungen von intervals.icu, ergänzt um Testhistorie, ' +
+              'Zwischenkontrollen und Rumpfprotokoll dieses Geräts. Je länger der Zeitraum, ' +
+              'desto eher trägt eine Aussage – „Ganzer Plan“ liefert die meisten Punkte.'
+            : 'Kein Zugang zu intervals.icu hinterlegt. Angezeigt wird, was lokal vorliegt: ' +
+              'Testhistorie, Zwischenkontrollen, Rumpfprotokoll und die Sollwerte der Wochen. ' +
+              'Effizienzfaktor und Entkopplung brauchen die Aufzeichnungen und bleiben leer.'}
+        </p>
+        <p class="hint">
+          Jede Richtung stammt aus einer Theil-Sen-Steigung, nicht aus dem Vergleich von erstem
+          und letztem Wert. Wo zu wenige Punkte oder zu wenige Wochen vorliegen, steht das da –
+          statt eines Trends, den die Daten nicht hergeben.
+        </p>
+        {laedt && <p class="hint">Aktivitäten werden geladen …</p>}
+      </div>
+
+      <IndikatorKarte
+        titel="Effizienzfaktor"
+        wert={letzterWert(ef.punkte, ef.nachkomma, ef.einheit)}
+        trend={ef.trend}
+        reihen={[{ name: 'EF', farbe: 'var(--z2)', punkte: ef.punkte, trend: ef.trend }]}
+        einheit={ef.einheit} nachkomma={ef.nachkomma}
+        warnung={ef.hinweis}
+        regel={ef.regel + ' ' + ef.bilanz + ' Steigt der Wert über Wochen, wächst die aerobe Basis.'} />
+
+      <IndikatorKarte
+        titel="Aerobe Entkopplung"
+        wert={letzterWert(ent.punkte, 1, '%')}
+        trend={ent.trend}
+        reihen={[{ name: 'Pa:Hf', farbe: 'var(--z3)', punkte: ent.punkte, trend: ent.trend }]}
+        einheit="%" nachkomma={1}
+        hinweis={ent.hinweis}
+        regel={ent.regel + ' Sinkende Entkopplung heißt bessere Grundlage.'} />
+
+      <TestKarte tests={b.tests} />
+
+      <IndikatorKarte
+        titel="Wochenumfang Soll gegen Ist"
+        wert={letzterWert(u.punkte, 0, 'min')}
+        trend={u.trend}
+        weitere={[{ was: 'Erfüllungsquote', trend: u.quoteTrend }]}
+        reihen={[
+          { name: 'Ist', farbe: 'var(--primary)', punkte: u.punkte, trend: u.trend },
+          { name: 'Soll', farbe: 'var(--outline-2)', punkte: u.sollPunkte }
+        ]}
+        einheit="min" nachkomma={0}
+        hinweis={u.hinweis || (u.konsistenz ? u.konsistenz.text : null)}
+        regel={u.regel} />
+
+      <IndikatorKarte
+        titel="Zonenverteilung"
+        wert={zonenPunkte.length ? zonenPunkte[zonenPunkte.length - 1].zusatz : null}
+        trend={z.z2Trend}
+        weitere={[{ was: 'Harte Minuten', trend: z.hartTrend },
+                  { was: 'Z2-Anteil', trend: z.anteilTrend }]}
+        reihen={[
+          { name: 'Z2', farbe: 'var(--z2)', punkte: zonenPunkte.map(p => Object.assign({}, p, { v: p.z2Min })), trend: z.z2Trend },
+          { name: 'hart', farbe: 'var(--z5)', punkte: zonenPunkte.map(p => Object.assign({}, p, { v: p.hartMin })), trend: z.hartTrend }
+        ]}
+        einheit="min" nachkomma={0}
+        hinweis={z.hinweis}
+        regel={z.regel} />
+
+      <IndikatorKarte
+        titel="Rumpfeinheiten je Woche"
+        wert={r.punkte.length ? r.punkte[r.punkte.length - 1].zusatz : null}
+        trend={r.trend}
+        reihen={[{ name: 'Rumpf', farbe: 'var(--z1)', punkte: r.punkte, trend: r.trend }]}
+        einheit="Einheiten" nachkomma={0}
+        regel={r.regel} />
+    </>
+  );
+}
+
 /* ---------- Rahmen ---------- */
 
 export function AnalyseTab(){
   const p = plan.value, th = thresholds.value, start = startDate.value;
+  const [ansicht, setAnsicht] = useState('liste');
   const [range, setRange] = useState('28');
   const [acts, setActs] = useState([]);
   const [laedt, setLaedt] = useState(false);
@@ -368,24 +543,64 @@ export function AnalyseTab(){
 
   useEffect(() => { if(apiKey.value) laden(); }, [range]);
 
-  if(!apiKey.value){
+  if(gewaehlt) return <Detail act={gewaehlt} onZurueck={() => setGewaehlt(null)} />;
+
+  const umschalter = (
+    <div class="segmented" style="margin:0 0 14px">
+      <button class={'segbtn' + (ansicht === 'liste' ? ' an' : '')}
+        onClick={() => setAnsicht('liste')}>Einheiten</button>
+      <button class={'segbtn' + (ansicht === 'verlauf' ? ' an' : '')}
+        onClick={() => setAnsicht('verlauf')}>Verlauf</button>
+    </div>
+  );
+
+  /* Ohne Aktivitaeten steht der Verlauf trotzdem: die Sollwerte der Wochen
+     haengen am Plan, nicht am Zugang. Deshalb hier dieselbe Rechnung wie in
+     laden(), nur mit leerer Aktivitaetsliste - sonst waere die Ansicht ohne
+     API-Key leer, und das sieht aus wie ein Fehler statt wie ein fehlender
+     Zugang. */
+  function wochenFuerVerlauf(){
+    if(wochen) return wochen;
+    if(!p || !start) return [];
+    return anWeekTotals(anBuildReport(p, th, start, vonDatum(), toMidnight(today.value),
+                                      [], null, coreLog.value));
+  }
+
+  if(ansicht === 'verlauf'){
     return (
-      <div class="card">
-        <div class="row"><span>Verbindung</span><b>nicht verbunden</b></div>
-        <p class="hint" style="margin-top:6px">
-          Ohne API-Key kann die App keine Aktivitäten laden. Der Schlüssel wird unter
-          Einstellungen eingetragen – dort steht auch, wo man ihn findet.
-        </p>
-        <button class="btn block" style="margin-top:12px"
-          onClick={() => gotoTab('einstellungen', true)}>Zu den Einstellungen</button>
-      </div>
+      <>
+        {umschalter}
+        {fehler && <div class="card"><div class="meldung fehler"><b>{fehler}</b></div></div>}
+        <Verlaufsansicht acts={acts} wochen={wochenFuerVerlauf()} verbunden={!!apiKey.value}
+          range={range} setRange={setRange} laedt={laedt} />
+      </>
     );
   }
 
-  if(gewaehlt) return <Detail act={gewaehlt} onZurueck={() => setGewaehlt(null)} />;
+  if(!apiKey.value){
+    return (
+      <>
+        {umschalter}
+        <div class="card">
+          <div class="row"><span>Verbindung</span><b>nicht verbunden</b></div>
+          <p class="hint" style="margin-top:6px">
+            Ohne API-Key kann die App keine Aktivitäten laden. Der Schlüssel wird unter
+            Einstellungen eingetragen – dort steht auch, wo man ihn findet.
+          </p>
+          <button class="btn block" style="margin-top:12px"
+            onClick={() => gotoTab('einstellungen', true)}>Zu den Einstellungen</button>
+          <p class="hint">
+            Der Verlauf oben zeigt auch ohne Zugang, was lokal vorliegt: Testhistorie,
+            Zwischenkontrollen, Rumpfprotokoll und die Sollwerte der Wochen.
+          </p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
+      {umschalter}
       <Liste acts={acts} laedt={laedt} fehler={fehler} range={range} setRange={setRange}
         onWaehlen={setGewaehlt} onNeuLaden={laden} />
 
