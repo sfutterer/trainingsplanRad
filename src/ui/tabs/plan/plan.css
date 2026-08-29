@@ -1,11 +1,18 @@
-.card.day{ border-left: 4px solid var(--outline); }
+/* Die Plan-Ansicht.
+
+   Die Tageskarte traegt ihre Innenabstaende seit dem Kalenderumbau nicht mehr
+   selbst, sondern gibt sie an Kopfzeile und Inhalt weiter. Grund: die
+   Klappzeile ist ein <button>, und ein Knopf, der schmaler ist als die Karte,
+   laesst am Rand einen Streifen stehen, auf dem ein Tippen ins Leere geht.
+   Jetzt reicht die Trefferflaeche von Kante zu Kante.
+
+   Nur Rollen aus theme.css, keine festen Farbwerte - sonst bricht eines der
+   drei Theme-Zustaende (System, Hell, Dunkel). */
+
+.card.day{ border-left: 4px solid var(--outline); padding: 0; overflow: hidden; }
 .card.day.heute{ background: var(--surface-2); }
 .card.day.heute .badge{ color: var(--primary); }
-.dayline{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted);
-  text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
 .badge{ color: var(--primary); }
-.daytitle{ font-size:17px; font-weight:700; margin-bottom:4px; }
-.daydetail{ font-size:14px; color:var(--on-surface-var); line-height:1.5; }
 
 /* Die Ueberschriften bleiben neutral. Sieben eingefaerbte Titel
    untereinander waren der Hauptgrund, warum die Seite bunt wirkte - und
@@ -19,6 +26,162 @@
 .card.day.type-core, .card.day.type-sun{ border-left-color: var(--z1); }
 .card.day.type-rest, .card.day.type-restopt{ border-left-color: var(--outline-2); }
 .type-rest .daytitle, .type-restopt .daytitle{ color: var(--muted); font-weight: 600; }
+
+/* ---- Kopfzeile eines Tages ---- */
+
+.dayzeile{
+  display: flex; flex-direction: column; gap: 4px;
+  width: 100%; min-height: 56px;
+  padding: 12px 18px;
+  border: 0; background: none; color: inherit; text-align: left;
+  font: inherit;
+}
+button.dayzeile{ cursor: pointer; position: relative; padding-right: 44px; }
+button.dayzeile:active{ background: var(--surface-2); }
+
+.dayzeile-oben{
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  font-size: 12px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.dayzeile-unten{
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+}
+.daytitle{ font-size: 17px; font-weight: 700; line-height: 1.25; }
+.tagkurz{
+  flex: none; font-size: 13px; font-weight: 600; color: var(--on-surface-var);
+  white-space: nowrap;
+}
+.tagname{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tagmarke{ flex: none; }
+
+/* Zwei Striche als Pfeil, gedreht - ein Zeichen aus der Schrift saesse in
+   jeder Schriftart woanders. */
+.chevron{
+  position: absolute; right: 18px; top: 50%;
+  width: 9px; height: 9px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform .18s ease;
+}
+.chevron.auf{ transform: translateY(-30%) rotate(225deg); }
+
+.dayinhalt{ padding: 0 18px 16px; animation: aufklappen .18s ease-out; }
+@keyframes aufklappen{ from{ opacity: 0; transform: translateY(-4px); } to{ opacity: 1; transform: none; } }
+
+/* theme.css setzt die Dauern global auf nahezu null; die Regel steht hier
+   trotzdem ausdruecklich, damit sie beim Herausloesen der Datei nicht
+   verlorengeht. */
+@media (prefers-reduced-motion: reduce){
+  .dayinhalt{ animation: none; }
+  .chevron{ transition: none; }
+}
+
+/* ---- Kennzahlen und Ablauf ---- */
+
+/* Zwei Spalten, solange Platz ist, sonst eine. auto-fit statt fester Zahl:
+   ein Tag hat zwei Kennzahlen, ein anderer fuenf. */
+.kennzahlen{
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 2px 14px; margin: 0 0 12px;
+}
+/* Der Wert bricht nicht in sich um: "Z2 128-142 bpm" liess sonst das "bpm"
+   allein in die zweite Zeile fallen. Passt das Paar nicht nebeneinander,
+   rutscht der ganze Wert unter die Beschriftung - eine Zahl, die man vor dem
+   Losfahren ablesen will, soll am Stueck dastehen. */
+.kennzahl{
+  display: flex; flex-wrap: wrap; justify-content: space-between;
+  align-items: baseline; gap: 0 10px;
+  padding: 5px 0; border-bottom: 1px solid var(--outline);
+}
+.kennzahl dt{ font-size: 12.5px; color: var(--muted); }
+.kennzahl dd{
+  margin: 0; font-size: 14px; font-weight: 600; text-align: right;
+  white-space: nowrap; margin-left: auto;
+}
+
+.ablauf{ list-style: none; margin: 0; padding: 0; }
+.ablauf li{
+  padding: 8px 0 8px 12px;
+  border-left: 2px solid var(--outline-2);
+  margin-bottom: 2px;
+}
+.ablauf li:last-child{ margin-bottom: 0; }
+.abschnitt-kopf{
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  flex-wrap: wrap;
+}
+.abschnitt-label{ font-size: 13.5px; font-weight: 700; }
+.abschnitt-wert{ font-size: 13.5px; color: var(--on-surface-var); text-align: right; }
+.abschnitt-hinweis{
+  display: block; margin-top: 3px;
+  font-size: 12.5px; color: var(--muted); line-height: 1.45;
+}
+.ablauf.schmal li{ border-left-color: var(--outline); padding-top: 6px; padding-bottom: 6px; }
+
+.zusatz{ margin-top: 14px; }
+.zusatz .listhead{ margin-top: 0; }
+
+.tagbtn{ margin-top: 12px; }
+
+/* ---- Navigation ueber Wochen und Monate ---- */
+
+.card.kalnavi-karte{ padding: 6px 8px; }
+.kalnavi{ display: flex; align-items: center; gap: 4px; }
+.kalnavi .iconbtn{ font-size: 26px; line-height: 1; }
+.kalnavi-titel{
+  flex: 1; min-width: 0; text-align: center;
+  display: flex; flex-direction: column; line-height: 1.25;
+}
+.kalnavi-titel b{ font-size: 16px; }
+.kalnavi-titel span{ font-size: 12px; color: var(--muted); }
+.btn.klein{ min-height: 40px; padding: 0 14px; font-size: 13px; }
+
+.segmented.ansichtwahl{ margin-bottom: 12px; }
+
+/* ---- Monatsraster ---- */
+
+.card.kalender{ padding: 6px 8px 10px; }
+.kalkopf, .kalgitter{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.kalkopf{
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); text-align: center; margin: 4px 0 2px;
+}
+
+/* 48 px hoch, damit das Ziel auch auf einem 360-px-Geraet ueber 44 px bleibt:
+   sieben Spalten teilen sich dort rund 328 px, also gut 46 px je Spalte. */
+.kaltag{
+  min-height: 48px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 4px 0;
+  border: 0; background: none; border-radius: var(--radius-s);
+  color: var(--on-surface); cursor: pointer;
+}
+.kaltag.fremd{ color: var(--muted); opacity: .5; }
+.kaltag[aria-pressed="true"]{ background: var(--surface-3); }
+.kaltag:active{ background: var(--surface-2); }
+
+/* Die Grenze der Trainingswoche im Monatsraster - siehe Dateikopf von
+   Monatsansicht.jsx. Ein Innenschatten statt eines Rahmens, damit die Zelle
+   ihre Groesse behaelt. */
+.kaltag.wochenstart{ box-shadow: inset 2px 0 0 var(--outline-2); }
+
+.kalzahl{
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-variant-numeric: tabular-nums;
+}
+.kaltag.istheute .kalzahl{ background: var(--primary); color: var(--on-primary); font-weight: 700; }
+
+.kalpunkt{ width: 16px; height: 3px; border-radius: 2px; background: var(--outline-2); }
+.kalpunkt.type-ride{ background: var(--z2); }
+.kalpunkt.type-long{ background: var(--z3); }
+.kalpunkt.type-interval{ background: var(--z5); }
+.kalpunkt.type-core, .kalpunkt.type-sun{ background: var(--z1); }
+.kalpunkt.type-rest, .kalpunkt.type-restopt{ background: transparent; }
+
+/* ---- Hinweiskaesten am Tag ---- */
 
 .daynote{
   margin-top:10px; padding:10px 12px; border-radius:var(--radius-s);

@@ -2,9 +2,19 @@
 
    Bewusst ohne Date.now(): jede Funktion bekommt den Zeitpunkt uebergeben.
    Sonst laesst sich der Plan nicht ueber 16 Wochen durchtesten, ohne die
-   Systemuhr zu stellen. */
+   Systemuhr zu stellen.
+
+   Der zweite Abschnitt unten traegt das Kalenderraster der Plan-Ansicht. Er
+   rechnet nur mit Tagen und Monaten und weiss nichts vom Trainingsinhalt -
+   deshalb steht er hier und nicht in day.js. Gerechnet wird durchgehend auf
+   lokalen Mitternachtsdaten und ueber Date.setDate(), weil das die
+   Sommerzeitumstellung mitnimmt; eine Addition von 86400000 ms tut das nicht
+   und verschiebt zweimal im Jahr einen ganzen Tag. */
 
 export const WEEKDAY_NAMES = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+export const WEEKDAY_SHORT = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+export const MONTH_NAMES = ['Januar','Februar','März','April','Mai','Juni','Juli','August',
+                            'September','Oktober','November','Dezember'];
 
 /* Lokaler Kalendertag als YYYY-MM-DD. toISOString() waere falsch: es rechnet
    nach UTC um und liefert oestlich von Greenwich den Vortag. */
@@ -84,4 +94,82 @@ export function testDateFor(plan, week, startDate){
   d.setDate(d.getDate() + (week - 1) * 7);
   while(d.getDay() !== 4) d.setDate(d.getDate() + 1);
   return d;
+}
+
+/* ---- Kalenderraster ---- */
+
+export function addDays(date, n){
+  const x = toMidnight(date);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+
+/* Abstand in ganzen Kalendertagen. Gerundet, nicht abgeschnitten: an den
+   Umstellungswochenenden liegen zwischen zwei Mitternachten 23 oder 25
+   Stunden, und ein Math.floor haette daraus 0 statt 1 Tag gemacht. */
+export function dayOffset(date, from){
+  return Math.round((toMidnight(date) - toMidnight(from)) / 86400000);
+}
+
+export function dayFromIso(iso){
+  const [j, m, t] = String(iso).split('-').map(Number);
+  return new Date(j, m - 1, t);
+}
+
+/* Der erste Tag der Trainingswoche, in der ein Datum liegt.
+
+   Abgeleitet aus dem Startdatum statt auf Samstag festgenagelt. Beide Wege
+   liefern beim ausgelieferten Plan dasselbe, aber nur dieser bleibt mit
+   weekNumberFor in einer Linie, wenn jemand den Beginn auf einen anderen
+   Wochentag legt - sonst zeigte die Wochenansicht sieben Tage an, die zu zwei
+   verschiedenen Wochennummern gehoeren. */
+export function trainingWeekStart(date, startDate){
+  return addDays(startDate, Math.floor(dayOffset(date, startDate) / 7) * 7);
+}
+
+export function trainingWeekDays(date, startDate){
+  const a = trainingWeekStart(date, startDate);
+  const out = [];
+  for(let i = 0; i < 7; i++) out.push(addDays(a, i));
+  return out;
+}
+
+export function startOfMonth(date){
+  const x = toMidnight(date);
+  x.setDate(1);
+  return x;
+}
+
+/* Immer vom Monatsersten aus rechnen. setMonth() auf einem 31. liefert sonst
+   fuer kurze Monate den Folgemonat - aus dem 31. Januar wird der 3. Maerz. */
+export function addMonths(date, n){
+  const x = startOfMonth(date);
+  x.setMonth(x.getMonth() + n);
+  return x;
+}
+
+export function monthLabel(date){
+  return MONTH_NAMES[date.getMonth()] + ' ' + date.getFullYear();
+}
+
+/* Das Monatsraster: volle Wochen vom Wochenbeginn vor dem Monatsersten bis zum
+   Wochenende nach dem Monatsletzten, damit das Gitter rechteckig bleibt.
+   firstDay ist der getDay()-Wert der ersten Spalte. Die Zahl der Zeilen wird
+   gerechnet und nicht auf sechs gesetzt: ein Februar, der an einem Montag
+   beginnt, braucht vier - eine leere Zeile waere sichtbar. */
+export function monthGrid(date, firstDay){
+  const erster = startOfMonth(date);
+  const vor = (((erster.getDay() - firstDay) % 7) + 7) % 7;
+  const tage = dayOffset(addMonths(erster, 1), erster);
+  const zellen = Math.ceil((vor + tage) / 7) * 7;
+  const out = [];
+  for(let i = 0; i < zellen; i++) out.push(addDays(erster, i - vor));
+  return out;
+}
+
+/* Die Kopfzeile des Monatsrasters in derselben Spaltenfolge wie monthGrid. */
+export function weekdayColumns(firstDay){
+  const out = [];
+  for(let i = 0; i < 7; i++) out.push(WEEKDAY_SHORT[(firstDay + i) % 7]);
+  return out;
 }

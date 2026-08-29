@@ -1,13 +1,36 @@
-import { useEffect, useState } from 'preact/hooks';
-import { plan, thresholds, startDate, today, week, apiKey } from '../../../state/store.js';
-import { buildDayInfo, formatDate } from '../../../domain/day.js';
-import { isoDayLocal, toMidnight, phaseName, isWinterBlock, isRecoveryWeek,
-         isTestWeek, testWeeks, testDateFor } from '../../../domain/week.js';
-import { usesCoggan } from '../../../domain/zones.js';
+/* Die Plan-Ansicht als Kalender.
 
-import { fetchWellness } from '../../../data/icu.js';
-import { wellnessSerie, wellnessMassnahmen } from '../../../domain/analysis.js';
-import { gotoTab } from '../../../App.jsx';
+   Vorher lief hier eine feste Schleife ueber sieben Tage ab heute. Das war
+   kein Kalender, sondern ein Ausschnitt: die uebernaechste Woche liess sich
+   nicht ansehen, die vergangene auch nicht, und der Sonntag stand je nach
+   Wochentag mal an erster und mal an letzter Stelle. Jetzt gibt es einen
+   Ankertag, den beide Ansichten teilen - die Wochenansicht zeigt die
+   Trainingswoche, in der er liegt, die Monatsansicht den Monat. Wer im Monat
+   einen Tag antippt und dann auf Woche umschaltet, landet in dessen Woche.
+
+   Die Wochenansicht ist die Voreinstellung, weil die Trainingswoche die
+   Einheit ist, in der geplant wird; der Monat beantwortet die seltenere Frage
+   nach der Lage im Jahr.
+
+   Aufgeklappt ist immer der heutige Tag, die uebrigen auf Tippen. Mehrere
+   duerfen gleichzeitig offen sein - beim Vergleich von Donnerstag und Samstag
+   war das Zuklappen des einen beim Oeffnen des anderen genau die Bewegung, die
+   man nicht wollte.
+
+   Der heutige Tag bekommt keinen Klappknopf, sondern eine feste Kopfzeile. Ein
+   Knopf, der nichts tut, oder ein deaktivierter Knopf ueber einem sichtbaren
+   Inhalt waere ein Bedienelement ohne Bedienung; die uebrigen Tage sind
+   dagegen echte <button> mit aria-expanded. */
+
+import { useState } from 'preact/hooks';
+import { plan, thresholds, startDate, today, week } from '../../../state/store.js';
+import { buildDayInfo } from '../../../domain/day.js';
+import { isoDayLocal, toMidnight, dayFromIso, addDays, phaseName,
+         isWinterBlock, isRecoveryWeek, isTestWeek, testWeeks, testDateFor,
+         trainingWeekDays, trainingWeekStart, weekNumberFor } from '../../../domain/week.js';
+import { usesCoggan } from '../../../domain/zones.js';
+import { useWellness, Tagesinhalt, Tageskopf } from './Tag.jsx';
+import { Monatsansicht } from './Monatsansicht.jsx';
 import './plan.css';
 
 function naechsterTest(p, heute, start){
@@ -53,132 +76,94 @@ function StatusKarte(){
   );
 }
 
-/* Ein Abruf fuer die ganze Woche.
-
-   Die Ampel steht auf zwei Karten (Mittwoch und Donnerstag), gerechnet wird sie
-   aber nur einmal - fuer heute. Zwei Komponenten mit je eigenem useEffect
-   haetten zwei Abfragen fuer dieselbe Antwort ausgeloest.
-
-   Drei Wochen statt einer: das Gate nimmt sich daraus die letzten sieben Tage,
-   der Gewichtstrend braucht mehr Punkte, um eine Gerade zu tragen. */
-const WELLNESS_TAGE = 21;
-
-function useWellness(){
-  const [serie, setSerie] = useState(null);
-  const key = apiKey.value;
-  const heuteIso = isoDayLocal(toMidnight(today.value));
-
-  useEffect(() => {
-    if(!key) return undefined;
-    let abgebrochen = false;
-    const bis = toMidnight(new Date(heuteIso));
-    const von = new Date(bis); von.setDate(von.getDate() - (WELLNESS_TAGE - 1));
-    fetchWellness(key, isoDayLocal(von), heuteIso)
-      .then(d => { if(!abgebrochen) setSerie(wellnessSerie(d, heuteIso)); })
-      .catch(() => {});
-    return () => { abgebrochen = true; };
-  }, [key, heuteIso]);
-
-  return serie;
-}
-
-function Werteleiste({ gate }){
-  const h = gate.heute;
-  const teile = [];
-  if(h.restingHR > 0){
-    teile.push('Ruhepuls ' + Math.round(h.restingHR) + ' bpm' +
-      (gate.rhrAvg ? ' (Schnitt ' + Math.round(gate.rhrAvg) + ')' : ''));
-  }
-  if(h.hrv > 0){
-    teile.push('HRV ' + Math.round(h.hrv) + (gate.hrvAvg ? ' (Schnitt ' + Math.round(gate.hrvAvg) + ')' : ''));
-  }
-  if(h.sleepSecs > 0) teile.push('Schlaf ' + (h.sleepSecs / 3600).toFixed(1).replace('.', ',') + ' h');
-  return <>{teile.join(' · ')}</>;
-}
-
-/* Die Ampel gilt fuer heute, also steht sie auch nur auf der heutigen Karte.
-
-   Vorher hing sie an jedem Donnerstag im Sieben-Tage-Fenster - am Montag also
-   an einer Karte, die drei Tage in der Zukunft liegt, mit den Werten von
-   Montag. Auf kuenftigen Karten bleibt deshalb nur die Regel als Erinnerung,
-   ohne Zahlen. */
-function WellnessAmpel({ info, istHeute, serie }){
-  if(!info.wellness) return null;
-  const regel = <div class="daynote">{plan.value.texts.wellnessRule}</div>;
-  if(!istHeute || !apiKey.value) return regel;
-  if(!serie || !serie.heute) return regel;
-
-  const gate = serie.heute;
-  const vorschau = info.wellness.rolle === 'vorschau';
-
-  if(gate.rot){
-    const mass = wellnessMassnahmen(info.wellness.donnerstag, serie.zweiRot);
-    return (
-      <div class="daynote rot">
-        <b>Wellness-Gate rot{vorschau ? ' (Stand heute)' : ''}:</b> {gate.gruende.join(' · ')}.
-        {vorschau && ' Entscheidend ist der Wert morgen früh – bleibt es dabei:'}
-        <ul>{mass.map((m, i) => <li key={i}>{m}</li>)}</ul>
-      </div>
-    );
-  }
-
+function Wochenzeile({ datum, info, istHeute, offen, umschalten, serie }){
   return (
-    <div class="daynote gruen">
-      <b>Wellness-Gate grün{vorschau ? ' (Stand heute)' : ''}.</b>{' '}
-      <Werteleiste gate={gate} />.{' '}
-      {vorschau
-        ? 'Wenn es morgen früh so bleibt, kann der Qualitätstag wie geplant laufen.'
-        : 'Der Qualitätstag kann wie geplant laufen.'}
+    <div class={'card day type-' + info.type + (istHeute ? ' heute' : '')}>
+      {istHeute
+        ? <div class="dayzeile fest"><Tageskopf datum={datum} info={info} istHeute /></div>
+        : <button class="dayzeile" type="button" aria-expanded={offen ? 'true' : 'false'}
+            onClick={umschalten}>
+            <Tageskopf datum={datum} info={info} mitKurz={!offen} />
+            <span class={'chevron' + (offen ? ' auf' : '')} aria-hidden="true" />
+          </button>}
+      {(istHeute || offen) && (
+        <div class="dayinhalt">
+          <Tagesinhalt info={info} istHeute={istHeute} serie={serie} />
+        </div>
+      )}
     </div>
   );
 }
 
-/* Eigener Kasten, nicht in der Ampel.
-
-   Eine zu schnelle Abnahme ist keine Aussage ueber heute, sondern ueber die
-   letzten Wochen. In den Gruenden des Gates stuende sie waehrend einer Diaet
-   dauerhaft - und ein Gate, das nie gruen wird, beantwortet keine Frage mehr. */
-function AbnehmHinweis({ serie }){
-  if(!serie || !serie.abnehmen) return null;
-  return <div class="daynote gelb"><b>Gewichtstrend:</b> {serie.abnehmen.text}</div>;
-}
-
-function Tageskarten(){
+function Wochenansicht({ anker, setzeAnker, serie }){
   const p = plan.value, th = thresholds.value, start = startDate.value;
-  const serie = useWellness();
-  const karten = [];
-  for(let i = 0; i < 7; i++){
-    const d = new Date(today.value);
-    d.setDate(d.getDate() + i);
-    const info = buildDayInfo(p, th, d, start);
-    karten.push(
-      <div class={'card day type-' + info.type + (i === 0 ? ' heute' : '')} key={i}>
-        <div class="dayline">
-          <span>{formatDate(d)}</span>
-          <span>{i === 0 ? <b class="badge">HEUTE</b> : 'Woche ' + info.week}</span>
+  const heute = toMidnight(today.value);
+  const heuteIso = isoDayLocal(heute);
+
+  /* Offen gehaltene Tage stehen als ISO-Datum, nicht als Index in der Woche -
+     sonst waere beim Blaettern derselbe Wochentag der naechsten Woche
+     mitaufgeklappt. */
+  const [offen, setOffen] = useState(() => []);
+  const umschalten = iso => setOffen(o => o.includes(iso) ? o.filter(x => x !== iso) : o.concat(iso));
+
+  const tage = trainingWeekDays(anker, start);
+  const nummer = Math.max(weekNumberFor(anker, start), 1);
+  const inDieserWoche = isoDayLocal(trainingWeekStart(heute, start)) === isoDayLocal(tage[0]);
+
+  const spanne = tage[0].toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) +
+    '–' + tage[6].toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
+
+  return (
+    <>
+      <div class="card kalnavi-karte">
+        <div class="kalnavi">
+          <button class="iconbtn" type="button" aria-label="Vorige Woche"
+            onClick={() => setzeAnker(addDays(tage[0], -7))}><span aria-hidden="true">‹</span></button>
+          <div class="kalnavi-titel"><b>Woche {nummer}</b><span>{spanne}</span></div>
+          <button class="iconbtn" type="button" aria-label="Nächste Woche"
+            onClick={() => setzeAnker(addDays(tage[0], 7))}><span aria-hidden="true">›</span></button>
+          {!inDieserWoche && (
+            <button class="btn tonal klein" type="button"
+              onClick={() => setzeAnker(heute)}>Heute</button>
+          )}
         </div>
-        <div class="daytitle">{info.title}</div>
-        <div class="daydetail">{info.detail}</div>
-        <WellnessAmpel info={info} istHeute={i === 0} serie={serie} />
-        {i === 0 && <AbnehmHinweis serie={serie} />}
-        {info.showTimerBtn && <button class="btn tonal" style="margin-top:12px"
-          onClick={() => gotoTab('rumpf', true)}>Rumpf-Timer öffnen</button>}
-        {info.showIntervalBtn && <button class="btn tonal" style="margin-top:12px"
-          onClick={() => gotoTab('intervalle', true)}>Intervall-Timer öffnen</button>}
       </div>
-    );
-  }
-  return <>{karten}</>;
+
+      {tage.map(d => {
+        const iso = isoDayLocal(d);
+        return (
+          <Wochenzeile key={iso} datum={d} info={buildDayInfo(p, th, d, start)}
+            istHeute={iso === heuteIso} offen={offen.includes(iso)}
+            umschalten={() => umschalten(iso)} serie={serie} />
+        );
+      })}
+    </>
+  );
 }
-
-
-
 
 export function PlanTab(){
+  const [ansicht, setAnsicht] = useState('woche');
+  const [ankerIso, setAnkerIso] = useState(() => isoDayLocal(toMidnight(today.value)));
+  const anker = dayFromIso(ankerIso);
+  const setzeAnker = d => setAnkerIso(isoDayLocal(d));
+  const serie = useWellness();
+
   return (
     <>
       <StatusKarte />
-      <Tageskarten />
+
+      <div class="segmented ansichtwahl" role="group" aria-label="Ansicht">
+        <button class={'segbtn' + (ansicht === 'woche' ? ' an' : '')} type="button"
+          aria-pressed={ansicht === 'woche' ? 'true' : 'false'}
+          onClick={() => setAnsicht('woche')}>Woche</button>
+        <button class={'segbtn' + (ansicht === 'monat' ? ' an' : '')} type="button"
+          aria-pressed={ansicht === 'monat' ? 'true' : 'false'}
+          onClick={() => setAnsicht('monat')}>Monat</button>
+      </div>
+
+      {ansicht === 'woche'
+        ? <Wochenansicht anker={anker} setzeAnker={setzeAnker} serie={serie} />
+        : <Monatsansicht anker={anker} setzeAnker={setzeAnker} serie={serie} />}
     </>
   );
 }
