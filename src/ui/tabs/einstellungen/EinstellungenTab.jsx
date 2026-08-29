@@ -11,7 +11,7 @@ import { plan, planJson, planSource, settings, setSettings, apiKey, setApiKey,
          resetPlanToDefault, coreLog, testLog, interimLog, PLAN_START_DEFAULT } from '../../../state/store.js';
 import { THEMES } from '../../../state/theme.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
-import { exportAll, importAll, exportFilename } from '../../../data/exportImport.js';
+import { exportAll, importAll, exportFilename, benenne } from '../../../data/exportImport.js';
 import { downloadJson, requestPersistentStorage } from '../../../platform/index.js';
 import { probeCapabilities, probeWellness } from '../../../data/icu.js';
 import { KARTENSTILE, KARTENSTIL_DEFAULT, kartenstil } from '../../../state/kartenstile.js';
@@ -118,10 +118,13 @@ export function EinstellungenTab(){
       catch(e){ return setMeldung({ art:'fehler', titel:'Die Datei ist kein gültiges JSON.', zeilen:[] }); }
       if(!confirm('Sicherung einspielen? Alle jetzigen Daten auf diesem Gerät werden überschrieben.')) return;
       try {
-        const k = await importAll(store.store, json);
-        setMeldung({ art:'ok', titel:'Eingespielt: ' + k.length + ' Einträge aus ' + name, zeilen:['Die App lädt jetzt neu.'] });
+        const r = await importAll(store.store, json);
+        const zeilen = [];
+        if(r.geraeumt.length) zeilen.push('Geleert, weil nicht in der Sicherung: ' + r.geraeumt.map(benenne).join(', ') + '.');
+        zeilen.push('Die App lädt jetzt neu.');
+        setMeldung({ art:'ok', titel:'Eingespielt: ' + r.uebernommen.length + ' Einträge aus ' + name, zeilen });
         setTimeout(() => location.reload(), 900);
-      } catch(e){ setMeldung({ art:'fehler', titel: e.message, zeilen:[] }); }
+      } catch(e){ setMeldung({ art:'fehler', titel: e.titel || e.message, zeilen: e.zeilen || [] }); }
     });
   }
 
