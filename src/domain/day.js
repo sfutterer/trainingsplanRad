@@ -373,6 +373,17 @@ export function buildDayInfo(plan, th, date, startDate){
       }
       lang.push({ label:'Ausrollen', wert:`${sr.cooldownMinutes} min` });
       info.bloecke = lang;
+
+      /* Die Hoehenmeter-Regel steht am Samstag, weil der Plan genau hier den
+         Einstieg vorsieht: Watt- und Sprechtestkontrolle sind vorhanden, und
+         es gibt keinen Ankunftsdruck wie auf dem Pendelweg. Vor Woche 5 ist
+         die Aussage eine andere als danach - flach fahren gegen ersetzen statt
+         addieren -, deshalb zwei Texte statt eines.
+
+         Der Umschaltpunkt ist cogganFromWeek und nicht zufaellig derselbe wie
+         beim Zonenmodell: beide haengen am Schwellentest. Bis dahin soll der
+         Datensatz flach bleiben, danach wird ueber Watt gesteuert. */
+      info.hinweise = [ week < plan.cogganFromWeek ? T.elevationIntro : T.elevationRule ];
       break;
     }
 
