@@ -160,7 +160,7 @@ const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMin
   'legPerSideNote','legAbortSigns',
   'legProgression','legWednesdayNote','coreAbortRule','zoneNoteTransition',
   'zoneNoteCoggan','thresholdTestSummary','intervalRollingStart','intervalRecoveryWeek',
-  'elevationIntro','elevationRule','cadencePyramid','mobilityScope'];
+  'elevationShort','cadencePyramid','mobilityScope'];
 
 export function planValidate(p){
   const err = [];
