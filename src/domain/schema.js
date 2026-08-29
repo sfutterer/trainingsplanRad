@@ -4,6 +4,11 @@
    Meldungen nennen das beanstandete Feld im Klartext. Wer den Plan bearbeitet,
    soll die Stelle finden, ohne den Code zu lesen.
 
+   Beweglichkeit und Koordination werden mit demselben Helfer geprueft wie der
+   Kraftteil, obwohl sie inhaltlich neben dem Radplan stehen: die Uebungen haben
+   dieselbe Gestalt (Schluessel, Name, Bild, Schritte, Ziel), und eine zweite
+   Pruefroutine daneben wuerde bei jeder Aenderung auseinanderlaufen.
+
    Rein: kein DOM, kein fetch. Das Laden steht in data/planSource.js. */
 
 export const PLAN_SCHEMA_VERSION = 1;
@@ -117,6 +122,35 @@ function pvBlocks(err, b, feld){
   pvNum(err, b.restMinutes, feld + '.restMinutes', {min:0});
 }
 
+/* Beweglichkeit und Koordination: gleiche Übungsgestalt wie im Kraftteil, nur
+   ohne Dosierung je Phase - die Dosierung steht als Text an der Übung, weil
+   diese Blöcke an keiner Trainingswoche hängen. Die Schlüssel müssen trotzdem
+   eindeutig sein, sonst überschreiben sich zwei Übungen in jeder Liste, die
+   nach key sucht. */
+function pvBodyBlock(err, b, feld){
+  if(!pvObj(err, b, feld)) return;
+  pvStr(err, b.durationHint, feld + '.durationHint');
+  pvStr(err, b.placement, feld + '.placement');
+  pvStr(err, b.scope, feld + '.scope');
+  const keys = [];
+  if(!pvArr(err, b.exercises, feld + '.exercises', 1)) return;
+  b.exercises.forEach((ex, i) => {
+    const f = feld + '.exercises[' + i + ']';
+    if(!pvObj(err, ex, f)) return;
+    pvStr(err, ex.key, f + '.key');
+    pvStr(err, ex.name, f + '.name');
+    pvStr(err, ex.dosage, f + '.dosage');
+    pvStr(err, ex.focus, f + '.focus');
+    pvStr(err, ex.image, f + '.image');
+    pvStr(err, ex.goal, f + '.goal');
+    if(pvArr(err, ex.steps, f + '.steps', 1)){
+      ex.steps.forEach((s, k) => pvStr(err, s, f + '.steps[' + k + ']'));
+    }
+    if(keys.indexOf(ex.key) >= 0) err.push(f + '.key "' + ex.key + '" kommt doppelt vor.');
+    keys.push(ex.key);
+  });
+}
+
 /* Pflichttexte. Ein fehlender Textbaustein würde sonst als "undefined" in einer
    Tageskarte landen - unauffällig genug, um lange übersehen zu werden. */
 const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMinimum',
@@ -125,7 +159,8 @@ const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMin
   'sundayLegOrder','sundayRideFirst','legNoTimer','legTempo','legTempoPlain',
   'legPerSideNote','legAbortSigns',
   'legProgression','legWednesdayNote','coreAbortRule','zoneNoteTransition',
-  'zoneNoteCoggan','thresholdTestSummary','intervalRollingStart','intervalRecoveryWeek'];
+  'zoneNoteCoggan','thresholdTestSummary','intervalRollingStart','intervalRecoveryWeek',
+  'elevationIntro','elevationRule','cadencePyramid','mobilityScope'];
 
 export function planValidate(p){
   const err = [];
@@ -322,6 +357,19 @@ export function planValidate(p){
             err.push(f + '.' + k + ': der untere Wert (' + s[0] + ') liegt über dem oberen (' + s[1] + ').');
           }
         });
+      });
+    }
+  }
+
+  pvBodyBlock(err, p.mobilityFlow, 'mobilityFlow');
+  if(p.mobilityFlow) pvStr(err, p.mobilityFlow.note, 'mobilityFlow.note');
+
+  pvBodyBlock(err, p.coordination, 'coordination');
+  if(p.coordination){
+    pvNum(err, p.coordination.everyNthDay, 'coordination.everyNthDay', {min:1, int:true});
+    if(pvArr(err, p.coordination.progression, 'coordination.progression', 1)){
+      p.coordination.progression.forEach((s, i) => {
+        pvStr(err, s, 'coordination.progression[' + i + ']');
       });
     }
   }

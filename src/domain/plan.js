@@ -5,11 +5,23 @@
    an globalem Zustand. Hier entsteht stattdessen ein Objekt, das
    weitergereicht wird - dieselben Zahlen, nur greifbar.
 
+   Beweglichkeit und Koordination kommen hier als mobility und coordination an.
+   Sie werden wie der Kraftteil umbenannt (image wird img), damit jede
+   Uebungsanzeige dieselben Feldnamen liest und nicht danach unterscheiden muss,
+   aus welchem Block eine Uebung stammt.
+
    Rein: kein DOM, kein fetch, keine Uhr. */
 
 /* Nach oben offene Zonen stehen in der Datei als null; intern 999, weil die
    Bandsuche mit Zahlen vergleicht. */
 const OPEN_TOP = 999;
+
+function bodyExercises(list){
+  return list.map(ex => ({
+    key: ex.key, name: ex.name, dosage: ex.dosage, focus: ex.focus,
+    img: ex.image, steps: ex.steps, goal: ex.goal
+  }));
+}
 
 export function createPlan(json){
   const weeks = json.weeks;
@@ -78,6 +90,23 @@ export function createPlan(json){
         key: ex.key, name: ex.name, perSide: !!ex.perSide, img: ex.image,
         steps: ex.steps, why: ex.why, progression: ex.progression, goal: ex.goal
       }))
+    },
+
+    mobility: {
+      durationHint: json.mobilityFlow.durationHint,
+      placement: json.mobilityFlow.placement,
+      scope: json.mobilityFlow.scope,
+      note: json.mobilityFlow.note,
+      exercises: bodyExercises(json.mobilityFlow.exercises)
+    },
+
+    coordination: {
+      everyNthDay: json.coordination.everyNthDay,
+      durationHint: json.coordination.durationHint,
+      placement: json.coordination.placement,
+      scope: json.coordination.scope,
+      progression: json.coordination.progression,
+      exercises: bodyExercises(json.coordination.exercises)
     },
 
     texts: json.texts

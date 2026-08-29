@@ -11,7 +11,8 @@
     "zonen": "heartRateZones.transitionBands gelten bis heartRateZones.cogganFromWeek bzw. solange keine LTHR eingetragen ist. Danach rechnet die App die Baender aus der LTHR nach Coggan. Die Baender muessen lueckenlos aneinander anschliessen: max der einen Zone ist min der naechsten. max null heisst offen nach oben.",
     "powerZones": "Bewusst nicht lueckenlos - Coggan ist in vollen Prozentschritten definiert (z1 bis 55 %, z2 ab 56 %). Geprueft wird nur, dass die Zonen aufsteigen.",
     "texts": "Freistehende Saetze aus dem Plan. Sie werden als HTML eingefuegt, einfache Auszeichnung wie <b> ist erlaubt. Saetze mit eingerechneten Zahlen stehen weiterhin im Code, weil sie ohne Vorlagensprache nicht in JSON abbildbar sind.",
-    "bilder": "Neue Bildpfade zusaetzlich in die ASSETS-Liste in sw.js aufnehmen, sonst fehlen sie offline."
+    "bilder": "Neue Bildpfade zusaetzlich in die ASSETS-Liste in sw.js aufnehmen, sonst fehlen sie offline.",
+    "beweglichkeit": "mobilityFlow und coordination stehen bewusst neben dem Radplan, nicht darin. Sie haengen an keiner Woche und an keiner Phase, weil sie radunabhaengig sind und bei Zeitnot ersatzlos entfallen. Deshalb keine Dosierung je Phase wie beim legBlock, sondern ein fester Dosierungstext je Uebung."
   },
 
   "recoveryEveryNthWeek": 4,
@@ -376,6 +377,141 @@
     ]
   },
 
+  "mobilityFlow": {
+    "durationHint": "ca. 5–6 min",
+    "placement": "An jedem Tag möglich, auch am Ruhetag Montag – kollidiert mit nichts im bestehenden Plan. Bewusst kurz gehalten: passt morgens, als Pause im Büro oder abends dazwischen, ein eigener Termin ist nicht nötig.",
+    "scope": "Kein Eintrag im App-Protokoll und keine Auswertung über intervals.icu – reine Körpergewichtsübungen ohne Aufzeichnung.",
+    "note": "Größter Hebel bei Radfahrern: verkürzte Hüftbeuger durch die gebeugte Sitzposition. Statisches Dehnen davon direkt nach der Fahrt, solange der Muskel warm ist, wirkt am zuverlässigsten – 5 min reichen.",
+    "exercises": [
+      {
+        "key": "deepSquat", "name": "Tiefe Kniebeuge halten, seitlich pendeln",
+        "dosage": "60 s", "focus": "Hüfte, Sprunggelenk",
+        "image": "assets/TiefeKniebeuge.webp",
+        "steps": [
+          "Füße etwa schulterbreit, Zehen leicht nach außen, Fersen bleiben am Boden",
+          "So tief in die Hocke setzen, wie der Rücken gerade bleibt, Ellbogen innen an den Knien",
+          "Brust aufrecht halten und die Knie sanft nach außen drücken",
+          "Langsam von einer Ferse zur anderen pendeln, ohne aufzustehen",
+          "Hebt die Ferse ab, eine flache Erhöhung unterlegen statt tiefer zu gehen"
+        ],
+        "goal": "Ziel: Öffnet Hüfte und Sprunggelenk – beide Gelenke arbeiten im Sattel nur in einem schmalen Ausschnitt ihres Bewegungsumfangs."
+      },
+      {
+        "key": "ninetyNinety", "name": "90/90-Wechsel im Sitzen",
+        "dosage": "10 Wdh. je Seite", "focus": "Hüftrotation innen/außen",
+        "image": "assets/NeunzigNeunzig.webp",
+        "steps": [
+          "Im Sitzen beide Beine 90° anwinkeln: ein Bein vor dem Körper, das andere zur Seite",
+          "Aufrecht sitzen, Hände hinter dem Körper abstützen, Becken nicht wegkippen",
+          "Beide Knie gleichzeitig zur anderen Seite absenken – die Bewegung kommt aus der Hüfte",
+          "In der Endposition kurz halten, dann kontrolliert zurückdrehen",
+          "Kein Schwung; zieht es in der Leiste, den Bewegungsumfang kleiner wählen"
+        ],
+        "goal": "Ziel: Innen- und Außenrotation der Hüfte, die beim Treten praktisch nicht vorkommt und deshalb zuerst verloren geht."
+      },
+      {
+        "key": "catCow", "name": "Katze-Kuh und BWS-Rotation im Vierfüßlerstand",
+        "dosage": "8 Wdh. je Seite", "focus": "Brustwirbelsäule",
+        "image": "assets/KatzeKuh.webp",
+        "steps": [
+          "Vierfüßlerstand, Hände unter den Schultern, Knie unter der Hüfte",
+          "Rücken abwechselnd rund machen und sanft absenken, dem Atem folgen",
+          "Danach eine Hand an den Hinterkopf legen und den Ellbogen zur Decke drehen",
+          "Die Drehung aus der Brustwirbelsäule holen, die Lendenwirbelsäule bleibt ruhig",
+          "Je Seite gleich oft, langsam und ohne in den Endanschlag zu ziehen"
+        ],
+        "goal": "Ziel: Hält die Brustwirbelsäule beweglich – sie versteift in der gebeugten Lenkerhaltung als Erstes."
+      },
+      {
+        "key": "shoulderCircles", "name": "Schulterkreisen mit Stab oder Handtuch über Kopf",
+        "dosage": "10 Wdh.", "focus": "Schulter",
+        "image": "assets/Schulterkreisen.webp",
+        "steps": [
+          "Stab oder gespanntes Handtuch mit weitem Griff vor dem Körper halten",
+          "Mit gestreckten Armen über den Kopf und so weit wie möglich nach hinten führen",
+          "Auf demselben Weg zurück, Rippen bleiben unten, kein Hohlkreuz",
+          "Griff so weit wählen, dass die Ellbogen gestreckt bleiben – enger wird er erst später"
+        ],
+        "goal": "Ziel: Voller Bewegungsumfang der Schulter als Gegenstück zur dauerhaften Stützhaltung am Lenker."
+      },
+      {
+        "key": "lungeRotation", "name": "Ausfallschritt mit Rotation zum vorderen Bein",
+        "dosage": "6 je Seite", "focus": "Hüftbeuger, Rotation",
+        "image": "assets/AusfallschrittRotation.webp",
+        "steps": [
+          "Aus dem Stand einen langen Schritt nach vorn setzen, hinteres Knie tief absenken",
+          "Becken bewusst nach vorn schieben, bis der hintere Hüftbeuger zieht",
+          "Oberkörper zum vorderen Bein drehen und die Arme öffnen",
+          "Zurückdrehen, aufrichten, Seite wechseln – kein Schwung aus dem Rücken"
+        ],
+        "goal": "Ziel: Dehnt den Hüftbeuger unter Rotation – der größte Hebel gegen die verkürzte Sitzposition."
+      }
+    ]
+  },
+
+  "coordination": {
+    "everyNthDay": 2,
+    "durationHint": "ca. 5–8 min",
+    "placement": "Alle zwei Tage, zum Beispiel Montag, Mittwoch, Freitag und Sonntag, damit es nicht auf denselben Tag wie Rumpf oder Beinblock fällt. Bewusst kurz gehalten: passt morgens, als Pause im Büro oder abends dazwischen, ein eigener Termin ist nicht nötig.",
+    "scope": "Kein Eintrag im App-Protokoll und keine Auswertung über intervals.icu – reine Körpergewichtsübungen ohne Aufzeichnung.",
+    "progression": [
+      "Einbeinstand mit geschlossenen Augen über 30 s sauber je Seite → instabile Unterlage ergänzen",
+      "Tandemstand auf instabiler Unterlage stabil → zusätzlich die Augen schließen"
+    ],
+    "exercises": [
+      {
+        "key": "singleLegEyesClosed", "name": "Einbeinstand, Augen zu",
+        "dosage": "3 × 20–30 s je Seite", "focus": "Propriozeption",
+        "image": "assets/EinbeinstandAugenZu.webp",
+        "steps": [
+          "Barfuß oder in flachen Schuhen auf ein Bein stellen, Blick zuerst geradeaus",
+          "Standbein leicht beugen, Zehen aktiv in den Boden drücken",
+          "Augen schließen und ruhig weiteratmen",
+          "Eine Wand in Reichweite haben, aber nur im Notfall antippen",
+          "Bei einem Ausgleichsschritt die Zeit neu beginnen"
+        ],
+        "goal": "Ziel: Das Gleichgewicht ohne Augen halten – ohne Sicht bleibt nur die Tiefensensibilität, und genau die lässt mit den Jahren nach."
+      },
+      {
+        "key": "singleLegHeadTurns", "name": "Einbeinstand mit Kopfdrehungen",
+        "dosage": "2 × 20 s je Seite", "focus": "Vestibularis",
+        "image": "assets/EinbeinstandKopfdrehung.webp",
+        "steps": [
+          "Auf ein Bein stellen, Augen offen, Blick geradeaus",
+          "Kopf langsam nach links und rechts drehen, etwa eine Drehung je Sekunde",
+          "Der Oberkörper bleibt ruhig, nur der Kopf bewegt sich",
+          "Bei Schwindel langsamer oder mit kleinerem Winkel drehen"
+        ],
+        "goal": "Ziel: Fordert das Gleichgewichtsorgan zusätzlich – auf dem Rad ist der Schulterblick genau diese Bewegung."
+      },
+      {
+        "key": "crossCrawl", "name": "Diagonalgang mit kontralateralem Arm-Bein-Schwung",
+        "dosage": "20 Schritte", "focus": "Koordination",
+        "image": "assets/Diagonalgang.webp",
+        "steps": [
+          "Betont langsam gehen und jeden Schritt einzeln setzen",
+          "Gegenüberliegenden Arm und Bein gleichzeitig weit nach vorn führen",
+          "Knie deutlich anheben und kurz auf dem Standbein verharren",
+          "Blick geradeaus, Rumpf bleibt aufrecht und ruhig"
+        ],
+        "goal": "Ziel: Übt das über Kreuz laufende Zusammenspiel von Arm und Bein – dieselbe Ansteuerung, die den Tritt rund macht."
+      },
+      {
+        "key": "tandemUnstable", "name": "Tandemstand auf instabiler Unterlage",
+        "dosage": "2 × 30 s", "focus": "Gleichgewicht unter Zusatzreiz",
+        "image": "assets/Tandemstand.webp",
+        "steps": [
+          "Ein Kissen oder ein gerolltes Handtuch auf den Boden legen",
+          "Fersen an Zehen stellen, beide Füße auf einer Linie",
+          "Arme locker seitlich, Gewicht gleichmäßig auf beide Füße",
+          "Steht es sicher: einen Ball werfen und fangen als Zusatzreiz",
+          "Nach der Hälfte den vorderen Fuß wechseln"
+        ],
+        "goal": "Ziel: Gleichgewicht auf schmaler Basis und weichem Untergrund – die Stufe über dem Einbeinstand."
+      }
+    ]
+  },
+
   "texts": {
     "wellnessRule": "Wellness-Gate prüfen: Ruhepuls > 7-Tage-Schnitt + 5 bpm, HRV deutlich darunter oder zwei Nächte unter 6 h Schlaf → Donnerstag wird 60 min Z2, Samstag ohne Blöcke.",
     "mondayRest": "Komplette Erholung – kein Training. Invariante des Plans: der Montag bleibt frei.",
@@ -404,6 +540,10 @@
     "zoneNoteCoggan": "Auch Coggan-Z2 ist breit und reicht oben oft über LT1. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich sein.",
     "thresholdTestSummary": "20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker, 20 min gleichmäßig maximal, 10 min Ausrollen.<br>FTP = Ø-Watt der 20 min × 0,95 · LTHR = Ø-Puls der 20 min.<br>Pacing: die ersten drei Minuten bewusst konservativer als das Ziel, auf die Durchschnittsleistung schauen, nicht auf den Momentanwert.",
     "intervalRollingStart": "Rollender Start: in der letzten Minute der Erholung das Tempo leicht anziehen.",
-    "intervalRecoveryWeek": "Erholungswoche – reduzierter Umfang, kein Z5."
+    "intervalRecoveryWeek": "Erholungswoche – reduzierter Umfang, kein Z5.",
+    "elevationIntro": "Bisher fast nur Flachstrecke. Höhenmeter sind ein eigener Trainingsreiz und kommen deshalb nicht zusätzlich zur laufenden Zeit-Progression, sondern später als entkoppelte Variable: es steigt immer nur eine Größe zur Zeit, die Zonenkalibrierung läuft noch, und Anstiege drücken die Kadenz nach unten.",
+    "elevationRule": "Bis Woche 4 flach fahren – sauberer Datensatz für den Schwellentest. Ab Woche 5 Höhenmeter <b>ersetzen</b> statt addieren: eine flache Einheit gegen eine leicht hügelige mit ähnlicher Zeit tauschen, nicht „+10 % Zeit <b>und</b> Hügel“. Einstieg klein mit 50–100 Hm in einer bestehenden Ausfahrt, bevorzugt am Samstag. Kadenz bewusst hochhalten, nicht unter 70 rpm. Danach die Höhenmeter eigenständig steigern, etwa +10–15 % alle ein bis zwei Wochen, unabhängig von der Zeit-Progression der Woche.",
+    "cadencePyramid": "Kadenzpyramide als Teil des Einfahrens am Mittwoch, alle ein bis zwei Wochen: 30 s je 90 / 100 / 110 / 120 / 110 / 100 / 90 rpm im leichten Gang, Puls bleibt in Z1/Z2, nicht im Sattel hüpfen. Kostet 3,5 min.",
+    "mobilityScope": "Beweglichkeit und Koordination stehen neben dem Radplan, nicht darin: geringe mechanische Belastung, kaum Interferenz mit Kraft- oder Ausdauererholung. Kein Teil der Opferreihenfolge – bei Zeitnot fallen sie ersatzlos und zuerst aus, ohne dass das den Radplan berührt."
   }
 }
