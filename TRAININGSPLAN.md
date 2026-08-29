@@ -18,7 +18,12 @@ Plan muss dieses Dokument mitgezogen werden.
 > **Nachtrag 22.08.2026:** Die Übergangs-Pulszonen wurden nach der ersten ausgewerteten
 > Samstagsausfahrt korrigiert. Z2 liegt bei 128–142 bpm, nicht bei 108–126. Begründung
 > in Abschnitt 1. **Nachtrag 23.08.:** Arbeitsbereich auf 128–135 eingegrenzt, 142 nur
-> noch als harte Obergrenze.
+> noch als harte Obergrenze. **Nachtrag 27.08.:** Abschnitt 10 (Beweglichkeit und
+> Koordination) neu ergänzt — eigenständiger Block außerhalb der Zielhierarchie und der
+> Opferreihenfolge aus Abschnitt 4.
+>
+> **Nachtrag 28.08.:** Abschnitt 1 um eine Notiz zur Einführung von Höhenmetern
+> ergänzt — bewusst entkoppelt von der Dauer-Progression, nicht additiv.
 
 ---
 
@@ -310,7 +315,39 @@ kein Bestandteil des Plans.
 Liegt die selbstgewählte Kadenz deutlich darunter (60–75 ist bei Einsteigern normal),
 in 5er-Schritten über vier bis sechs Wochen herantasten, nicht erzwingen.
 
-**Kadenzpyramide** als Teil des Einfahrens am Dienstag, alle ein bis zwei Wochen:
+### Höhenmeter — Einführung
+
+Bisher nahezu ausschließlich Flachstrecke. Höhenmeter sind ein eigener Trainingsreiz
+und werden **nicht zusätzlich zur laufenden Zeit-Progression** eingeführt, sondern
+später als **eigenständige, entkoppelte Variable** — aus drei Gründen:
+
+1. **Eine Variable zur Zeit.** Die Wochendauer steigt bereits um ~10 %. Höhenmeter
+   gleichzeitig draufzusetzen heißt Zeit, muskuläre Last und HF-Ausschläge parallel
+   zu erhöhen — kippt etwas (Knie, Erholung), ist die Ursache nicht mehr zuzuordnen.
+2. **Zonenkalibrierung läuft noch.** Die Übergangsbänder (128–135 bpm) stammen aus
+   einer bewusst flachen Referenzfahrt; Gelände ist als Störgröße für die
+   Driftanalyse dokumentiert (Abschnitt 1, Methodenhinweis). Hügel vor dem Test am
+   10.09. würden diese Daten verwässern.
+3. **Kadenz am Berg.** Anstiege drücken die Kadenz nach unten — Kraftausdauer mit
+   niedriger Kadenz ist im ersten Jahr ausdrücklich tabu (siehe Trittfrequenz oben).
+   Ungewohnte Steigungen ohne eingeübtes Kadenzmanagement sind hier das größere
+   Risiko als die reine Ausdauerbelastung.
+
+**Vorgehen:**
+
+- **Bis Woche 4 (Test):** weiterhin flaches Gelände, nur die geplante
+  Zeit-Progression fahren — sauberer Datensatz für den Schwellentest.
+- **Ab Woche 5 (Steuerung über Watt):** Höhenmeter **ersetzen** statt addieren —
+  eine flache Einheit gegen eine leicht hügelige mit ähnlicher Zeit tauschen, nicht
+  „+10 % Zeit **und** Hügel".
+- **Einstieg klein:** 50–100 Hm in eine bestehende Ausfahrt einbauen, bevorzugt am
+  **Samstag** (Watt- und Sprechtest-Kontrolle vorhanden, kein Ankunftsdruck wie
+  beim Pendelweg Di/Mi).
+- **Kadenz bewusst hochhalten**, nicht unter 70 rpm, notfalls Übersetzung anpassen.
+- **Danach eigenständige Progression der Höhenmeter** (z. B. +10–15 % alle 1–2
+  Wochen), unabhängig von der Zeit-Progression der Woche.
+
+**Kadenzpyramide** als Teil des Einfahrens am Mittwoch, alle ein bis zwei Wochen:
 30 s je 90 / 100 / 110 / 120 / 110 / 100 / 90 rpm im leichten Gang, Puls bleibt in
 Z1/Z2, nicht im Sattel hüpfen. Kostet 3,5 min.
 
@@ -1273,3 +1310,64 @@ aus der die belegten Leistungszuwächse stammen.
   Pendelzeit, die ohnehin anfällt — als reine Trainingszeit gelesen wäre es zu viel.
   Wenn die Bürotage wegfallen (Homeoffice, Urlaub), sinkt der Umfang automatisch mit;
   das ist kein Planverstoß und muss nicht kompensiert werden.
+
+---
+
+## 10. Beweglichkeit und Koordination
+
+Kein Bestandteil der ursprünglichen Zielhierarchie (Abschnitt 1). Ergänzt am 27.08.2026
+als eigenständiger, radunabhängiger Block. Beweglichkeit und Koordination verlieren mit
+zunehmendem Alter unabhängig von der Ausdauerentwicklung an Substanz; das ist mit reinem
+Ausdauer- und Kraftfokus nicht abgedeckt.
+
+**Bewusst getrennt vom Radplan gehalten:** geringe mechanische Belastung, kaum
+Interferenz mit Kraft- oder Ausdauererholung. Kein Teil der Opferreihenfolge aus
+Abschnitt 4 — fällt bei Zeitnot ersatzlos und zuerst, ohne dass das den Radplan berührt.
+
+### Täglich — Mobility-Flow (5–6 min)
+
+| # | Übung | Dosierung | Fokus |
+|---|---|---|---|
+| 1 | Tiefe Kniebeuge halten, seitlich pendeln | 60 s | Hüfte, Sprunggelenk |
+| 2 | 90/90-Wechsel im Sitzen | 10 Wdh. je Seite | Hüftrotation innen/außen |
+| 3 | Katze-Kuh + BWS-Rotation, Vierfüßlerstand | 8 Wdh. je Seite | Brustwirbelsäule |
+| 4 | Schulterkreisen mit Stab/Handtuch über Kopf | 10 Wdh. | Schulter |
+| 5 | Ausfallschritt mit Rotation zum vorderen Bein | 6 je Seite | Hüftbeuger, Rotation |
+
+**Größter Hebel bei Radfahrern:** verkürzte Hüftbeuger durch die gebeugte Sitzposition.
+Statisches Dehnen davon direkt nach der Fahrt, solange der Muskel warm ist, wirkt am
+zuverlässigsten — 5 min reichen.
+
+### Alle 2 Tage — Gleichgewicht/Koordination (5–8 min)
+
+| # | Übung | Dosierung | Fokus |
+|---|---|---|---|
+| 1 | Einbeinstand, Augen zu | 3 × 20–30 s je Seite | Propriozeption |
+| 2 | Einbeinstand + Kopfdrehungen | 2 × 20 s je Seite | Vestibularis |
+| 3 | Diagonalgang, kontralateraler Arm-Bein-Schwung, betont langsam | 20 Schritte | Koordination |
+| 4 | Tandemstand auf instabiler Unterlage (Kissen/gerolltes Handtuch), ggf. Ball werfen/fangen | 2 × 30 s | Gleichgewicht unter Zusatzreiz |
+
+### Platzierung in der Woche
+
+- **Mobility-Flow:** an jedem Tag möglich, auch am Ruhetag Montag — kollidiert mit
+  nichts im bestehenden Plan.
+- **Gleichgewicht/Koordination:** alle zwei Tage, z. B. Mo/Mi/Fr/So, damit es nicht auf
+  denselben Tag wie Rumpf oder Beinblock fällt.
+- Beide Blöcke sind bewusst kurz gehalten und passen morgens, als Pause im Büro oder
+  abends dazwischen — kein eigener Termin nötig.
+
+### Progressionsregel
+
+Dieselbe Logik wie beim Beinblock (Abschnitt 3): erst weiterrücken, wenn die aktuelle
+Stufe sauber gelingt.
+
+1. Einbeinstand mit geschlossenen Augen > 30 s sauber je Seite → instabile Unterlage
+   ergänzen
+2. Tandemstand auf instabiler Unterlage stabil → zusätzlich Augen schließen
+
+### Abgrenzung
+
+Kein Eintrag im App-Protokoll (`core-session-log`) und keine Auswertung über
+intervals.icu vorgesehen — beides sind reine Körpergewichtsübungen ohne Aufzeichnung.
+Sollte sich das ändern, gehört ein eigener `kind` analog zu `'leg'` in Abschnitt 5.13
+dazu.
