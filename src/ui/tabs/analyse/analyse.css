@@ -69,8 +69,16 @@
   color: var(--muted); font-size: 13.5px; text-align: center; margin: 10px 0;
 }
 .leaflet-container{ background: var(--surface-2); font: inherit; }
-.windpfeil div{ font-size: 26px; line-height: 34px; text-align: center; color: var(--z5);
-  text-shadow: 0 0 4px rgba(0,0,0,.7), 0 0 2px rgba(255,255,255,.5); }
+/* Schild oben rechts in der Karte: Pfeil in Wehrichtung plus die
+   Himmelsrichtung, aus der der Wind kommt. Der Pfeil sieht aus wie die Pfeile
+   im Windfeld darunter, damit klar ist, dass beide dasselbe meinen. */
+.windpfeil{ display: flex; align-items: center; gap: 5px; padding: 3px 7px 3px 5px;
+  background: rgba(255,255,255,.92); border-radius: var(--radius-s);
+  box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.windpfeil svg{ width: 18px; height: 18px; flex: none; fill: none;
+  stroke: var(--sp-wind-stark); stroke-width: 2.4; stroke-linecap: round;
+  stroke-linejoin: round; }
+.windpfeil span{ font-size: 11.5px; font-weight: 700; color: #17181c; white-space: nowrap; }
 
 
 /* ---- Legende ---- */

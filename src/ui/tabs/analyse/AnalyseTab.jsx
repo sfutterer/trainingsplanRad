@@ -328,7 +328,8 @@ function Detail({ act, onZurueck }){
           <WetterLeiste wetter={zustand.wetter} />
           <RouteMap latlng={zustand.latlng} gruppen={zustand.gruppen}
             windAus={zustand.wetter && zustand.wetter.richtung} />
-          <StreckenLegende bilanz={zustand.bilanz} laeuft={zustand.untergrundLaeuft} />
+          <StreckenLegende bilanz={zustand.bilanz} laeuft={zustand.untergrundLaeuft}
+            windAus={zustand.wetter && zustand.wetter.richtung} />
         </div>
       )}
 

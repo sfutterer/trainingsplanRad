@@ -31,6 +31,15 @@
    drei Meter sind bei der Uebersicht ueber eine ganze Fahrt weniger als ein
    Pixel. Deshalb wird die Spur nach jedem Zoomen neu gelegt.
 
+   Die Windrichtung liegt als Feld gleicher Pfeile ueber der Karte, alle in die
+   Richtung zeigend, in die der Wind weht. Ein Raster statt eines einzelnen
+   Pfeils in der Ecke: so sieht man die Windrichtung ueberall dort, wo gerade
+   die Strecke liegt, und der Pfeil mit Schaft und Spitze ist als Richtung zu
+   lesen, nicht als Symbol. Die Pfeile folgen nicht der Spur, sondern stehen im
+   festen Bildschirmraster - daran unterscheiden sie sich von den weissen
+   Fahrtrichtungs-Winkeln. Ein Schild oben rechts benennt zusaetzlich die
+   Himmelsrichtung, aus der der Wind kommt.
+
    Kacheln kommen zur Laufzeit aus dem Netz. Offline bleibt die Karte leer -
    das steht dann auch dort, statt eine graue Flaeche zu zeigen. */
 
@@ -38,6 +47,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { mapKey, settings } from '../../state/store.js';
 import { kachelQuelle, KARTENSTIL_DEFAULT } from '../../state/kartenstile.js';
 import { KLASSEN, KLASSE_TEXT } from '../../domain/strecke.js';
+import { richtungKurz } from '../../data/wetter.js';
 
 /* Leaflet wird erst geladen, wenn eine Karte gebraucht wird. Eingebunden
    kostet es rund 45 kB gzip - die duerfen nicht auf dem Start liegen, nur
@@ -170,6 +180,50 @@ function winkelAusduennen(kandidaten){
   return raus;
 }
 
+/* Das Windfeld ueber der Karte.
+
+   Ein Raster gleicher Pfeile, alle in die Richtung, in die der Wind weht
+   (windAus + 180 - die Meldung nennt die Richtung, AUS der er kommt). Anders
+   als die weissen Fahrtrichtungs-Winkel folgen die Windpfeile nicht der Spur,
+   sondern liegen im festen Bildschirmraster und zeigen ausnahmslos gleich -
+   daran liest man sie als Wind und nicht als Streckenrichtung. Sie liegen
+   unter der Spur und halb durchsichtig, damit die Strecke oben bleibt.
+
+   Gerechnet wird in Containerpunkten, also haengt das Feld am Ausschnitt und
+   wird nach jedem Zoomen und Verschieben neu gelegt. */
+const WIND_RASTER = 92;      // Bildschirmabstand zwischen zwei Pfeilen
+const WIND_LAENGE = 20;      // Laenge des Schafts
+const WIND_SPITZE = 6.5;     // Laenge der beiden Schenkel der Pfeilspitze
+const WIND_SPITZE_WINKEL = 0.5;   // Radiant, halber Oeffnungswinkel der Spitze
+
+function windPfeile(karte, nachGrad){
+  const b = nachGrad * Math.PI / 180;
+  const ux = Math.sin(b), uy = -Math.cos(b);   // Wehrichtung, y zeigt nach unten
+  const hx = -ux, hy = -uy;                     // von der Spitze zurueck zum Schaft
+  const dreh = (w, x, y) => [Math.cos(w) * x - Math.sin(w) * y, Math.sin(w) * x + Math.cos(w) * y];
+  const [s1x, s1y] = dreh(WIND_SPITZE_WINKEL, hx, hy);
+  const [s2x, s2y] = dreh(-WIND_SPITZE_WINKEL, hx, hy);
+  const groesse = karte.getSize();
+  const halb = WIND_LAENGE / 2;
+  const pt = (x, y) => karte.containerPointToLatLng([x, y]);
+  const raus = [];
+  let reihe = 0;
+  for(let y = WIND_RASTER / 2; y < groesse.y; y += WIND_RASTER, reihe++){
+    const versatz = (reihe % 2) * (WIND_RASTER / 2);   // Reihen auf Luecke
+    for(let x = WIND_RASTER / 2 + versatz; x < groesse.x; x += WIND_RASTER){
+      const tailX = x - ux * halb, tailY = y - uy * halb;
+      const tipX = x + ux * halb, tipY = y + uy * halb;
+      raus.push([pt(tailX, tailY), pt(tipX, tipY)]);
+      raus.push([
+        pt(tipX + s1x * WIND_SPITZE, tipY + s1y * WIND_SPITZE),
+        pt(tipX, tipY),
+        pt(tipX + s2x * WIND_SPITZE, tipY + s2y * WIND_SPITZE)
+      ]);
+    }
+  }
+  return raus;
+}
+
 export function RouteMap({ latlng, gruppen, windAus }){
   const box = useRef(null);
   const [fehler, setFehler] = useState(null);
@@ -193,6 +247,9 @@ export function RouteMap({ latlng, gruppen, windAus }){
       /* Jede Gruppe bekommt ihren eigenen weissen Rand: bei versetzten Spuren
          gehoert der Rand zur Spur, nicht zur Achse der Strecke. */
       const teile = (gruppen && gruppen.length) ? gruppen : [{ klasse: null, ll: latlng }];
+      /* Das Windfeld ganz unten, direkt ueber den Kacheln: es ordnet die
+         Strecke ein, darf sie aber nicht verdecken. */
+      const windSchicht = L.layerGroup().addTo(m);
       const schicht = L.layerGroup().addTo(m);
       /* Die Winkel liegen in einer eigenen Schicht: sie haengen am Ausschnitt
          und werden auch beim Verschieben neu gesetzt, die Linien nur beim
@@ -233,6 +290,23 @@ export function RouteMap({ latlng, gruppen, windAus }){
         zeichneWinkel();
       }
 
+      function zeichneWind(){
+        windSchicht.clearLayers();
+        if(windAus == null) return;
+        const linien = windPfeile(m, (windAus + 180) % 360);
+        const windFarbe = token('--sp-wind-stark');
+        /* Erst alle weissen Kaschierungen, dann alle Farben - sonst frisst der
+           Rand des naechsten Pfeils die Spitze des vorigen. */
+        for(const l of linien){
+          L.polyline(l, { color: randFarbe, weight: 3.6, opacity: .45,
+            lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(windSchicht);
+        }
+        for(const l of linien){
+          L.polyline(l, { color: windFarbe, weight: 1.6, opacity: .8,
+            lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(windSchicht);
+        }
+      }
+
       function zeichneWinkel(){
         winkelSchicht.clearLayers();
         for(const k of winkelAusduennen(winkelKandidaten(m, gelegt))){
@@ -247,11 +321,14 @@ export function RouteMap({ latlng, gruppen, windAus }){
          gibt es erst, wenn die Karte eine Mitte und eine Zoomstufe hat. */
       const umriss = L.latLngBounds(latlng);
       m.fitBounds(umriss, { padding: [18, 18] });
+      zeichneWind();
       zeichneSpur();
       /* Der Versatz haengt am Zoom, also muss die Spur nach jedem Zoomen neu
-         gelegt werden. Zwischen zwei Zoomstufen bleibt sie unveraendert. */
-      m.on('zoomend', zeichneSpur);
-      m.on('moveend', zeichneWinkel);
+         gelegt werden. Zwischen zwei Zoomstufen bleibt sie unveraendert. Das
+         Windfeld haengt am ganzen Ausschnitt und wird auch beim Verschieben
+         mitgezogen. */
+      m.on('zoomend', () => { zeichneWind(); zeichneSpur(); });
+      m.on('moveend', () => { zeichneWind(); zeichneWinkel(); });
 
       /* Start hohl, Ziel gefuellt - in derselben Farbe, damit die Karte nicht
          drei Bedeutungen in drei Farben behauptet. */
@@ -260,20 +337,27 @@ export function RouteMap({ latlng, gruppen, windAus }){
       L.circleMarker(latlng[latlng.length - 1], { radius: 6, color: randFarbe, weight: 3, fillColor: spurFarbe, fillOpacity: 1 })
         .addTo(m).bindTooltip('Ziel');
 
-      /* Der Windpfeil zeigt, wohin der Wind weht - nicht, woher er kommt.
-         Andersherum liest ihn jeder falsch.
+      /* Die Windpfeile zeigen, wohin der Wind weht - nicht, woher er kommt.
+         Andersherum liest sie jeder falsch. Das Feld ueber der Karte sagt das
+         schon; dieses Schild dazu benennt die Himmelsrichtung, aus der der
+         Wind kommt, so wie sie auch in der Auswertung steht.
 
          Als Bedienelement, nicht als Marker an der Nordostecke: der Marker sass
          genau auf der Ecke und wurde von overflow:hidden zu drei Vierteln
          abgeschnitten - und beim Neueinpassen rutschte er aus dem Bild. */
       if(windAus != null){
-        const pfeil = L.control({ position: 'topright' });
-        pfeil.onAdd = () => {
+        const schild = L.control({ position: 'topright' });
+        schild.onAdd = () => {
           const d = L.DomUtil.create('div', 'windpfeil');
-          d.innerHTML = '<div style="transform:rotate(' + ((windAus + 180) % 360) + 'deg)">↑</div>';
+          const dreh = (windAus + 180) % 360;
+          d.innerHTML =
+            '<svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(' + dreh + 'deg)">' +
+              '<path d="M12 3 L12 21 M12 3 L7 10 M12 3 L17 10" />' +
+            '</svg>' +
+            '<span>Wind aus ' + richtungKurz(windAus) + '</span>';
           return d;
         };
-        pfeil.addTo(m);
+        schild.addTo(m);
       }
 
       /* Leaflet misst beim Anlegen manchmal zu frueh, wenn der Container
@@ -285,6 +369,7 @@ export function RouteMap({ latlng, gruppen, windAus }){
         if(!m) return;
         m.invalidateSize();
         m.fitBounds(umriss, { padding: [18, 18] });
+        zeichneWind();
         zeichneSpur();
       }, 120);
     }).catch(e => setFehler('Karte konnte nicht geladen werden: ' + e.message));
@@ -310,7 +395,7 @@ export function RouteMap({ latlng, gruppen, windAus }){
    Fehler. Jetzt zeigt die Punktlinie nur den Rest: den Schotter, dem eine
    andere Farbe zusteht, weil dort etwas Staerkeres gebremst hat. So addieren
    sich die Zeilen zur Gesamtstrecke. */
-export function StreckenLegende({ bilanz, laeuft }){
+export function StreckenLegende({ bilanz, laeuft, windAus }){
   if(!bilanz) return null;
   const km = m => (m / 1000).toFixed(1).replace('.', ',') + ' km';
   const vorhanden = KLASSEN.filter(k => (bilanz.klassen[k] || 0) >= 100);
@@ -319,6 +404,7 @@ export function StreckenLegende({ bilanz, laeuft }){
     <div class="legende">
       <span class="leghinweis">
         Farbe: was auf dem Abschnitt am stärksten gebremst hat. Die weißen Winkel zeigen die Fahrtrichtung.
+        {windAus != null && ' Die violetten Pfeile über der Karte zeigen, wohin der Wind weht (aus ' + richtungKurz(windAus) + ').'}
       </span>
       {vorhanden.map(k => (
         <span class="legpost" key={k}>
