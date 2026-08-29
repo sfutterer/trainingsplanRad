@@ -16,10 +16,19 @@
    Die zweistufige Progression steht als zwei nummerierte Stufen und nicht als
    Fliesstext: sie ist eine Freischaltregel - die zweite Stufe gilt erst, wenn
    die erste sauber gelingt - und keine Steigerung, die mit der Woche
-   weiterrueckt. */
+   weiterrueckt.
+
+   Der gefuehrte Ablauf liegt in Koerperablauf.jsx, gemeinsam mit dem der
+   Beweglichkeit. Hier zaehlt die Uhr an drei der vier Uebungen, denn hier steht
+   die Dosierung in Sekunden - "3 × 20–30 s je Seite" laesst sich nicht im Kopf
+   mitzaehlen, waehrend man mit geschlossenen Augen auf einem Bein steht. Der
+   Ablauf haelt nach jedem Satz an und schaltet nie von selbst in die naechste
+   Uebung; die Freischaltregel bleibt damit eine Entscheidung des Nutzers und
+   keine der App. */
 
 import { plan, today, startDate } from '../../../state/store.js';
 import { toMidnight } from '../../../domain/week.js';
+import { Koerperablauf } from './Koerperablauf.jsx';
 
 /* Ganze Tage zwischen zwei Mitternachten. Gerundet statt abgeschnitten: in den
    Umstellungsnaechten liegen 23 oder 25 Stunden zwischen zwei Mitternachten,
@@ -67,21 +76,8 @@ export function Koordination({ onOpen }){
         </ol>
       </div>
 
-      <div class="card">
-        <div class="row"><span>Übungen</span><b>{uebungen.length} Stück</b></div>
-        <div class="exlist koerperliste" style="margin-top:8px">
-          {uebungen.map((ex, i) => (
-            <button class="exrow" key={ex.key} onClick={() => onOpen(i)}>
-              <span class="exname">
-                {i + 1}. {ex.name}
-                <small><b>{ex.dosage}</b> · {ex.focus}</small>
-              </span>
-              <span class="ziel">›</span>
-            </button>
-          ))}
-        </div>
-        <p class="hint">{c.scope}</p>
-      </div>
+      <Koerperablauf uebungen={uebungen} hint={c.scope} timerId="koordination"
+        mengeText={uebungen.length + ' Stück'} onOpen={onOpen} />
     </>
   );
 }

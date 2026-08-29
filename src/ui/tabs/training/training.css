@@ -104,8 +104,8 @@
 }
 
 /* Gefuehrter Ablauf: eine Uebung fuellt die Karte, der Balken zeigt, wie viele
-   noch kommen. Kein Ring und keine Sekunden - hier wird geschaltet, nicht
-   gezaehlt. */
+   noch kommen. Weitergeschaltet wird immer von Hand - der Ring zaehlt nur die
+   Haltezeit der einen Uebung, die gerade dran ist. */
 .ablaufbalken{ display: flex; gap: 4px; margin: 10px 0 14px; }
 .ablaufbalken span{
   flex: 1; height: 4px; border-radius: 2px; background: var(--surface-3);
@@ -122,3 +122,14 @@
 .ablaufschritte{ padding-left: 20px; margin: 0 0 14px; }
 .ablaufschritte li{ margin-bottom: 7px; font-size: 14.5px; line-height: 1.45; }
 .ablaufbild{ max-height: 34dvh; object-fit: contain; }
+
+/* Deutlich kleiner als im Zirkel: dort steht der Ring allein im Blickfeld,
+   hier teilen sich Ring, Bild und Schritte eine Karte, die ohnehin scrollt.
+   Ueber 30 dvh schoebe der Ring das Uebungsbild komplett unter den Rand. */
+.ablaufring .ring{ --ring-max: 260px; --ring-hoehe: 30dvh; }
+.ablaufring{ margin-bottom: 4px; }
+
+/* Beenden steht nicht in der Reihe: dort liegen Zurueck, Start und Naechste,
+   und eine vierte Taste in derselben Zeile waere auf 375 px nicht mehr zu
+   treffen. Unten und ohne Betonung, weil es die seltenste Handlung ist. */
+.ablaufende{ margin-top: -6px; }

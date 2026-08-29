@@ -1,7 +1,8 @@
-/* Ablaeufe der beiden Timer. Reine Datenerzeugung - was daraus wird, entscheidet
+/* Ablaeufe aller Timer. Reine Datenerzeugung - was daraus wird, entscheidet
    die Engine. */
 
 import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, repTarget } from '../core.js';
+import { zeitDosis } from '../koerper.js';
 import { thursdayPlan } from '../day.js';
 import { zoneText, zoneSpan, wattText } from '../zones.js';
 
@@ -23,6 +24,33 @@ export function buildCircuitSequence(plan, { workSec, restSec, roundRestSec, rou
       if(i !== ex.length - 1) seq.push({ type:'rest', label:'Pause', duration:restSec, round:r });
     });
     if(r < rounds) seq.push({ type:'roundrest', label:'Rundenpause', duration:roundRestSec, round:r });
+  }
+  seq.push({ type:'done', label:'Fertig!', duration:0 });
+  return seq;
+}
+
+/* Eine Uebung aus Beweglichkeit oder Koordination, ihre Haltezeiten.
+
+   Zwei Unterschiede zum Zirkel, beide beabsichtigt. Erstens endet die Folge
+   mit der Uebung: in der naechsten steht man erst, wenn Weiter gedrueckt wird.
+   Zweitens stehen zwischen den Saetzen keine Pausenschritte - im Plan steht
+   keine Satzpause, also erfindet die App auch keine. Der Ablauf haelt
+   stattdessen nach jedem Satz an und wartet auf einen Tipp; die Zeit zum
+   Seitenwechsel nimmt sich jeder selbst.
+
+   Liefert null, wenn die Dosierung in Wiederholungen steht - dann gibt es
+   nichts zu zaehlen. */
+export function buildHoldSequence(ex){
+  const d = zeitDosis(ex && ex.dosage);
+  if(!d) return null;
+  const seiten = d.jeSeite ? 2 : 1;
+  const seq = [];
+  for(let satz = 1; satz <= d.saetze; satz++){
+    for(let seite = 1; seite <= seiten; seite++){
+      seq.push({ type:'hold', label: ex.name, duration: d.sekunden,
+                 satz, saetze: d.saetze,
+                 seite: d.jeSeite ? seite : null, seiten: d.jeSeite ? seiten : null });
+    }
   }
   seq.push({ type:'done', label:'Fertig!', duration:0 });
   return seq;

@@ -12,13 +12,18 @@
    durchgegangen wird. Ein Timer je Segment wuerde beim Umschalten
    zurueckgesetzt.
 
+   Beweglichkeit und Koordination haben inzwischen eine eigene Uhr fuer ihre
+   zeitdosierten Uebungen. Sie steht bewusst neben dem Zirkel und nicht in ihm:
+   beide koennen gleichzeitig laufen, deshalb melden sich alle Timer unter
+   eigenem Namen bei timerState an, statt ein gemeinsames Boolean zu setzen.
+
    Beweglichkeit und Koordination schreiben bewusst nichts ins Protokoll -
    coreLog bleibt den beiden Kraftteilen vorbehalten, so wie es der Plan
    vorgibt. */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, week, settings, coreLog, saveCoreLog, today, startDate } from '../../../state/store.js';
-import { timerLaeuft } from '../../../state/timerState.js';
+import { meldeTimer } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
 import { buildCircuitSequence } from '../../../domain/timer/sequences.js';
 import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
@@ -119,7 +124,7 @@ export function TrainingTab(){
         beep(880, 300); beep(1046, 300, 200);
         speak('Training abgeschlossen. Gut gemacht!', s.voice);
         if(logRef.current){ logRef.current.finished = true; persist(); logRef.current = null; }
-        timerLaeuft.value = false;
+        meldeTimer('zirkel', false);
         vibrate([60, 40, 60]);
         /* Der Zirkel ist das Aufwaermen des Beinblocks - wer ihn beendet, will
            dorthin. An jedem Tag gleich: welcher Tag wofuer vorgesehen ist,
@@ -144,7 +149,7 @@ export function TrainingTab(){
                                     heldSec: gehalten, sollSec: step.duration });
       persist();
     }));
-    return () => { ab.forEach(f => f()); timer.reset(); timerLaeuft.value = false; };
+    return () => { ab.forEach(f => f()); timer.reset(); meldeTimer('zirkel', false); };
   }, [s.voice]);
 
   function starten(){
@@ -155,7 +160,7 @@ export function TrainingTab(){
       logStart();
     }
     timer.toggle();
-    timerLaeuft.value = timer.running;
+    meldeTimer('zirkel', timer.running);
     tickState(x => x + 1);
   }
   function zuruecksetzen(){
@@ -168,10 +173,10 @@ export function TrainingTab(){
     }
     timer.reset(buildCircuitSequence(p, cfg));
     timer.reset();
-    timerLaeuft.value = false;
+    meldeTimer('zirkel', false);
     tickState(x => x + 1);
   }
-  function weiter(){ timer.skip(); timerLaeuft.value = timer.running; tickState(x => x + 1); }
+  function weiter(){ timer.skip(); meldeTimer('zirkel', timer.running); tickState(x => x + 1); }
 
   const step = timer.step;
   const laeuft = timer.running;

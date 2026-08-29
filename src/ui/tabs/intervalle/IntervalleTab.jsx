@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, thresholds, week, settings } from '../../../state/store.js';
-import { timerLaeuft } from '../../../state/timerState.js';
+import { meldeTimer } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
 import { buildIntervalSequence, buildTestSequence, intervalDefaults,
          totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
@@ -67,7 +67,7 @@ export function IntervalleTab(){
       else if(step.type === 'done'){
         beep(880, 300); beep(1046, 300, 200); vibrate([60, 40, 60]);
         speak('Einheit abgeschlossen. Stark gemacht!', s.voice);
-        timerLaeuft.value = false;
+        meldeTimer('intervalle', false);
       }
     }));
     ab.push(timer.on('tick', ({ step, secondsLeft, sekundenwechsel }) => {
@@ -98,7 +98,7 @@ export function IntervalleTab(){
         f.minute = true; speak('Noch eine Minute.', s.voice);
       }
     }));
-    return () => { ab.forEach(f => f()); timer.reset(); timerLaeuft.value = false; };
+    return () => { ab.forEach(f => f()); timer.reset(); meldeTimer('intervalle', false); };
   }, [s.voice]);
 
   function starten(){
@@ -107,11 +107,11 @@ export function IntervalleTab(){
       timer.load(sequenz());
     }
     timer.toggle();
-    timerLaeuft.value = timer.running;
+    meldeTimer('intervalle', timer.running);
     tickState(x => x + 1);
   }
-  function zuruecksetzen(){ cancelSpeech(); timer.reset(); timerLaeuft.value = false; tickState(x => x + 1); }
-  function weiter(){ timer.skip(); timerLaeuft.value = timer.running; tickState(x => x + 1); }
+  function zuruecksetzen(){ cancelSpeech(); timer.reset(); meldeTimer('intervalle', false); tickState(x => x + 1); }
+  function weiter(){ timer.skip(); meldeTimer('intervalle', timer.running); tickState(x => x + 1); }
 
   const vorschau = timer.sequence.length ? timer.sequence : sequenz();
   const step = timer.step;
