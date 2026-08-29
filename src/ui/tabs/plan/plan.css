@@ -9,22 +9,24 @@
    Nur Rollen aus theme.css, keine festen Farbwerte - sonst bricht eines der
    drei Theme-Zustaende (System, Hell, Dunkel). */
 
-.card.day{ border-left: 4px solid var(--outline); padding: 0; overflow: hidden; }
+.card.day{ padding: 0; overflow: hidden; }
 .card.day.heute{ background: var(--surface-2); }
 .card.day.heute .badge{ color: var(--primary); }
 .badge{ color: var(--primary); }
 
-/* Die Ueberschriften bleiben neutral. Sieben eingefaerbte Titel
-   untereinander waren der Hauptgrund, warum die Seite bunt wirkte - und
-   die Farbe sagte nichts, was der Titel nicht schon sagt.
+/* Die Tageskarte traegt keine Typfarbe mehr.
 
-   Der Typ steckt jetzt allein in der linken Kante: schmal, ruhig, und im
-   Augenwinkel trotzdem unterscheidbar. */
-.card.day.type-ride{ border-left-color: var(--z2); }
-.card.day.type-long{ border-left-color: var(--z3); }
-.card.day.type-interval{ border-left-color: var(--z5); }
-.card.day.type-core, .card.day.type-sun{ border-left-color: var(--z1); }
-.card.day.type-rest, .card.day.type-restopt{ border-left-color: var(--outline-2); }
+   Erst waren es eingefaerbte Ueberschriften, dann nur noch eine schmale Kante
+   links. Beides beantwortete keine Frage: der Titel steht in derselben Zeile
+   und sagt bereits, ob der Tag eine Ausfahrt, ein Intervalltag oder ein
+   Ruhetag ist. Die Kante war eine zweite Angabe derselben Sache - und sieben
+   Streifen untereinander liessen die Woche unruhiger aussehen als sie ist.
+
+   Im Monatsraster bleiben die Farbpunkte: dort steht kein Titel, der Punkt
+   ist die einzige Angabe zum Tag.
+
+   Ruhetage behalten den gedaempften Titel - kein Farbcode, sondern eine
+   Zuruecknahme des Gewichts an einem Tag ohne Vorgabe. */
 .type-rest .daytitle, .type-restopt .daytitle{ color: var(--muted); font-weight: 600; }
 
 /* ---- Kopfzeile eines Tages ---- */
