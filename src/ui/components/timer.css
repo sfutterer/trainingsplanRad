@@ -119,3 +119,28 @@
   padding: 2px 8px; border-radius: 999px; vertical-align: 1px;
 }
 .illu.vorschau img{ opacity: .82; }
+
+/* Uebungsbild und sein Platzhalter. Die Bilder zu Beweglichkeit und
+   Koordination liegen noch nicht im Ordner assets, die Pfade stehen aber schon
+   im Plan. Schlaegt das Laden fehl, tritt eine Kachel im Bildformat an die
+   Stelle des Bildes - kein kaputtes Bildsymbol, und die Hoehe bleibt gleich,
+   auch wenn die Datei spaeter dazukommt. Steht hier und nicht im Training-Tab,
+   weil der Uebungsdialog dieselben Bilder zeigt und vom Intervalle-Tab
+   ebenfalls geoeffnet wird. */
+.exbild{ width: 100%; display: block; border-radius: var(--radius-s); }
+.exbild-leer{
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; aspect-ratio: 4 / 3; padding: 10px 14px;
+  background: var(--surface-2);
+  border: 1px dashed var(--outline-2);
+  color: var(--muted); text-align: center;
+  font-size: 13.5px; font-weight: 600; line-height: 1.3;
+}
+.exbild-leer svg{ width: 28px; height: 28px; opacity: .65; }
+.exbild-leer small{
+  font-size: 11px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase;
+}
+/* Im Uebungsblock gibt das Bild als Erstes nach, wenn der Platz eng wird - der
+   Platzhalter folgt denselben Regeln. */
+.illu .exbild-leer{ min-height: 0; flex: 0 1 auto; }
+.dialog .exbild{ border-radius: 12px; margin-bottom: 12px; }

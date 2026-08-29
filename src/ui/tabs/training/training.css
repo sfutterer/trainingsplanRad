@@ -1,3 +1,21 @@
+/* Vier Segmente in einer Zeile. Die Regeln stehen hier und nicht in app.css:
+   .segmented traegt dort drei Optionen, und dieser Bereich ist der einzige mit
+   vier. Bei 375 px bleiben je Knopf rund 86 px - "Beweglichkeit" passt dort nur
+   mit kleinerer Schrift, deshalb waechst sie erst mit der Breite mit. Der
+   Umbruch ist die Reserve fuer sehr schmale Geraete: zwei Zeilen zu je 13 px
+   passen in die 48 px Mindesthoehe, abgeschnittene Etiketten waeren schlimmer.
+   Verworfen: zwei gestaffelte Leisten - die vier Bausteine sind gleichrangig,
+   und jede zweite Ebene kostet einen Tipp. */
+.segmented.vier{ margin: 0 0 14px; }
+.segmented.vier .segbtn{
+  padding: 4px 6px;
+  font-size: clamp(11px, 3vw, 14px);
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  white-space: normal;
+  hyphens: auto;
+}
+
 .leggrid{ margin: 12px 0 10px; }
 .leghead, .legrow{
   display: grid;
@@ -34,3 +52,73 @@
   font-size: 13.5px; font-weight: 600; cursor: pointer;
 }
 .laufstreifen b{ font-variant-numeric: tabular-nums; }
+
+/* ---- Beweglichkeit und Koordination ---- */
+
+/* Zwei Zeilen je Uebung: oben der Name, darunter Dosierung und Fokus. Die
+   Dosierung ist die Anweisung und steht deshalb in der Textfarbe, der Fokus
+   daneben nur als Einordnung. Eine dritte Spalte rechts waere bei
+   "3 x 20-30 s je Seite" auf 375 px zu schmal geworden. */
+.koerperliste .exrow{ align-items: center; padding: 8px 0; }
+.exname{
+  display: flex; flex-direction: column; gap: 3px;
+  font-size: 14.5px; font-weight: 600; line-height: 1.25; min-width: 0;
+}
+.exname small{ font-size: 12.5px; font-weight: 400; color: var(--muted); }
+.exname small b{ color: var(--on-surface); font-weight: 600; }
+
+/* Der eine Satz, der bei Radfahrern den groessten Unterschied macht - er darf
+   nicht wie eine Fussnote aussehen. */
+.merksatz{
+  margin: 10px 0 0; padding: 12px 14px;
+  background: var(--primary-container); color: var(--on-primary-container);
+  border-radius: var(--radius-s);
+  font-size: 13.5px; line-height: 1.5;
+}
+
+/* Heute dran oder nicht. Gruen faerbt nur den dranstehenden Tag, sonst bleibt
+   die Kachel neutral: ein roter Ruhetag waere eine Wertung, die der Plan nicht
+   vorsieht. */
+.tagchip{
+  margin: 10px 0 0; padding: 10px 14px;
+  background: var(--surface-2); color: var(--on-surface-var);
+  border-radius: var(--radius-s);
+  font-size: 13.5px; font-weight: 600; line-height: 1.4;
+}
+.tagchip.an{ background: var(--ok-bg); color: var(--ok); }
+
+/* Zwei Stufen, nicht zwei Saetze: die Nummer traegt die Aussage, dass die
+   zweite erst nach der ersten kommt. */
+.stufen{ list-style: none; margin: 12px 0 0; padding: 0; }
+.stufen li{
+  display: flex; gap: 12px; align-items: baseline;
+  padding: 10px 0; border-bottom: 1px solid var(--outline);
+  font-size: 14px; line-height: 1.45;
+}
+.stufen li:last-child{ border-bottom: 0; }
+.stufennr{
+  flex: none;
+  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--on-primary-container); background: var(--primary-container);
+  padding: 3px 9px; border-radius: 999px;
+}
+
+/* Gefuehrter Ablauf: eine Uebung fuellt die Karte, der Balken zeigt, wie viele
+   noch kommen. Kein Ring und keine Sekunden - hier wird geschaltet, nicht
+   gezaehlt. */
+.ablaufbalken{ display: flex; gap: 4px; margin: 10px 0 14px; }
+.ablaufbalken span{
+  flex: 1; height: 4px; border-radius: 2px; background: var(--surface-3);
+}
+.ablaufbalken span.an{ background: var(--primary); }
+.ablaufname{ margin: 12px 0 8px; font-size: 18px; }
+.dosisgross{
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--ok-bg); border-radius: var(--radius-s);
+  padding: 10px 12px; margin-bottom: 12px;
+  font-size: 16px; font-weight: 700;
+}
+.dosisgross small{ font-size: 12.5px; font-weight: 400; color: var(--muted); }
+.ablaufschritte{ padding-left: 20px; margin: 0 0 14px; }
+.ablaufschritte li{ margin-bottom: 7px; font-size: 14.5px; line-height: 1.45; }
+.ablaufbild{ max-height: 34dvh; object-fit: contain; }

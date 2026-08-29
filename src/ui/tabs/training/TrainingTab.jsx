@@ -1,21 +1,49 @@
+/* Sammelbereich fuer alles, was ohne Rad stattfindet: Rumpf, Beine,
+   Beweglichkeit, Koordination.
+
+   Vier Segmente flach nebeneinander statt zweier gestaffelter Leisten. Eine
+   zweite Ebene ("Kraft" mit Unterauswahl, "Mobilitaet" mit Unterauswahl) waere
+   ein Tipp mehr fuer jeden Wechsel und wuerde verbergen, dass es vier
+   gleichrangige Bausteine sind. Die vier Etiketten passen in eine Zeile,
+   sobald die Schrift mitskaliert - die Regeln dafuer stehen in training.css.
+
+   Der Rumpf-Timer lebt weiterhin in dieser Datei und nicht in den Segmenten:
+   er laeuft weiter, waehrend im Beinblock gezaehlt oder die Beweglichkeit
+   durchgegangen wird. Ein Timer je Segment wuerde beim Umschalten
+   zurueckgesetzt.
+
+   Beweglichkeit und Koordination schreiben bewusst nichts ins Protokoll -
+   coreLog bleibt den beiden Kraftteilen vorbehalten, so wie es der Plan
+   vorgibt. */
+
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, week, settings, coreLog, saveCoreLog, today, startDate } from '../../../state/store.js';
 import { timerLaeuft } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
 import { buildCircuitSequence } from '../../../domain/timer/sequences.js';
 import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
-         repShort, repLong, legDose, legRounds, legRepText, legRepMin,
+         repShort, legDose, legRounds, legRepText, legRepMin,
          legDoneRounds, legAborts } from '../../../domain/core.js';
 import { isoDayLocal, weekNumberFor } from '../../../domain/week.js';
 import { ProgressRing } from '../../components/ProgressRing.jsx';
 import { ExerciseDialog } from '../../components/ExerciseDialog.jsx';
+import { Uebungsbild } from './Uebungsbild.jsx';
+import { Beweglichkeit } from './Beweglichkeit.jsx';
+import { Koordination } from './Koordination.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 import '../../components/timer.css';
-import './kraft.css';
+import './training.css';
 
 const FARBE = { work:'var(--work)', rest:'var(--rest)', roundrest:'var(--rest)', prep:'var(--prep)', done:'var(--work)' };
 
-export function KraftTab(){
+const SEGMENTE = [
+  { id: 'core',         label: 'Rumpf' },
+  { id: 'leg',          label: 'Beine' },
+  { id: 'mobility',     label: 'Beweglichkeit' },
+  { id: 'coordination', label: 'Koordination' }
+];
+
+export function TrainingTab(){
   const p = plan.value, w = week.value;
   const dow = today.value.getDay();
   const s = settings.value;
@@ -173,15 +201,27 @@ export function KraftTab(){
 
   return (
     <>
-      {/* Zwei Segmente an jedem Tag, in derselben Form. Nur die Namen der
-          beiden Haelften: Rundenzahl und Fortschritt stehen in den Karten
-          darunter und im Ring, im Umschalter waeren sie ein zweites Mal
-          dasselbe. Wann welche Haelfte ansteht, sagt der Plan - die App
-          versperrt keinen Tag. */}
-      <div class="segmented" style="margin:0 0 14px">
-        <button class={'segbtn' + (segment === 'core' ? ' an' : '')} onClick={() => setSegment('core')}>Rumpf</button>
-        <button class={'segbtn' + (segment === 'leg' ? ' an' : '')} onClick={() => setSegment('leg')}>Beine</button>
+      {/* Vier Segmente an jedem Tag, in derselben Form. Nur die Namen der
+          Bausteine: Rundenzahl und Fortschritt stehen in den Karten darunter
+          und im Ring, im Umschalter waeren sie ein zweites Mal dasselbe. Wann
+          welcher Baustein ansteht, sagt der Plan - die App versperrt keinen
+          Tag. */}
+      <div class="segmented vier" role="tablist" aria-label="Trainingsbausteine">
+        {SEGMENTE.map(seg => (
+          <button key={seg.id} class={'segbtn' + (segment === seg.id ? ' an' : '')}
+            role="tab" aria-selected={segment === seg.id ? 'true' : 'false'}
+            onClick={() => setSegment(seg.id)}>{seg.label}</button>
+        ))}
       </div>
+
+      {/* Der Zirkel laeuft weiter, waehrend in den anderen Segmenten gelesen
+          oder gezaehlt wird. Ohne diesen Streifen liefe er unsichtbar - man
+          hoert ihn nur noch. */}
+      {segment !== 'core' && step && step.type !== 'done' && (
+        <button class="laufstreifen" onClick={() => setSegment('core')}>
+          <span>Zirkel {laeuft ? 'läuft' : 'pausiert'} ›</span><b>{sec} s</b>
+        </button>
+      )}
 
       {segment === 'core' && <>
       {/* Ring, Bild und Bedienung sind eine Einheit: was zur laufenden Uebung
@@ -200,7 +240,7 @@ export function KraftTab(){
 
         {bild && (
           <div class={'illu' + (vorschau ? ' vorschau' : '')}>
-            <img src={bild.img} alt={bild.name} loading="lazy" onClick={() => setDialogEx({ kind:'core', i: bildIndex })} />
+            <Uebungsbild src={bild.img} name={bild.name} onClick={() => setDialogEx({ kind:'core', i: bildIndex })} />
             <div class="cap">
               {vorschau ? <span class="tag">Als Nächstes</span> : null}
               <b>{bild.name}</b>{bild.steps && bild.steps[0] ? ' · ' + bild.steps[0] : ''}
@@ -246,16 +286,14 @@ export function KraftTab(){
       </div>
       </>}
 
-      {segment === 'leg' && <>
-      {/* Der Zirkel laeuft weiter, waehrend hier gezaehlt wird. Ohne diesen
-          Streifen liefe er unsichtbar - man hoert ihn nur noch. */}
-      {step && step.type !== 'done' && (
-        <button class="laufstreifen" onClick={() => setSegment('core')}>
-          <span>Zirkel {laeuft ? 'läuft' : 'pausiert'} ›</span><b>{sec} s</b>
-        </button>
-      )}
-      <Beinblock eintrag={legEintrag} onOpen={i => setDialogEx({ kind:'leg', i })} />
-      </>}
+      {segment === 'leg' &&
+        <Beinblock eintrag={legEintrag} onOpen={i => setDialogEx({ kind:'leg', i })} />}
+
+      {segment === 'mobility' &&
+        <Beweglichkeit onOpen={i => setDialogEx({ kind:'mobility', i })} />}
+
+      {segment === 'coordination' &&
+        <Koordination onOpen={i => setDialogEx({ kind:'coordination', i })} />}
 
       {dialogEx && <ExerciseDialog spec={dialogEx} workSec={cfg.workSec} onClose={() => setDialogEx(null)} />}
     </>

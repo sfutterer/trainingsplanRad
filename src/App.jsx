@@ -16,7 +16,7 @@ import { NavDrawer } from './ui/components/NavDrawer.jsx';
 import { HeuteOverlay } from './ui/components/HeuteOverlay.jsx';
 import { tab, ready, planError, plan } from './state/store.js';
 import { PlanTab } from './ui/tabs/plan/PlanTab.jsx';
-import { KraftTab } from './ui/tabs/kraft/KraftTab.jsx';
+import { TrainingTab } from './ui/tabs/training/TrainingTab.jsx';
 import { IntervalleTab } from './ui/tabs/intervalle/IntervalleTab.jsx';
 import { AnalyseTab } from './ui/tabs/analyse/AnalyseTab.jsx';
 import { ZonenTab } from './ui/tabs/zonen/ZonenTab.jsx';
@@ -27,7 +27,7 @@ import { Snackbar } from './ui/components/Snackbar.jsx';
 
 const TABS = {
   plan:          { komp: PlanTab,          titel: 'Plan' },
-  kraft:         { komp: KraftTab,         titel: 'Kraft' },
+  training:      { komp: TrainingTab,      titel: 'Training' },
   intervalle:    { komp: IntervalleTab,    titel: 'Intervalle' },
   analyse:       { komp: AnalyseTab,       titel: 'Analyse' },
   zonen:         { komp: ZonenTab,         titel: 'Zonen & Schwellenwerte' },
@@ -35,7 +35,17 @@ const TABS = {
   about:         { komp: AboutTab,         titel: 'Über die App' }
 };
 
-function gotoTab(id, push){
+/* Alte Bereichsnamen, die auf den Sammelbereich Training zeigen. "kraft" steht
+   in Lesezeichen und im Verlauf, seit der Bereich noch nur den Zirkel und den
+   Beinblock trug; "rumpf" wurde nie vergeben, aber aus dem Plan heraus
+   angesprungen. Beide hier abzufangen ist billiger, als einen Link ins Leere
+   laufen zu lassen - gotoTab verwirft unbekannte Namen sonst still. */
+const ALIAS = { kraft: 'training', rumpf: 'training' };
+
+function tabId(id){ return ALIAS[id] || id; }
+
+function gotoTab(roh, push){
+  const id = tabId(roh);
   if(!TABS[id] || tab.value === id) return;
   tab.value = id;
   if(push) history.pushState({ tab: id }, '', '#' + id);
@@ -60,7 +70,7 @@ export function App(){
     /* Ein unbekannter Anker landet auf dem Plan statt in einem Zustand, den
        es nicht gibt - etwa ein alter Lesezeichen-Link aus der Zeit, als der
        Bereich noch "heute" hiess. */
-    const start = (location.hash || '').replace('#', '');
+    const start = tabId((location.hash || '').replace('#', ''));
     tab.value = TABS[start] ? start : 'plan';
     history.replaceState({ tab: tab.value }, '', '#' + tab.value);
 
@@ -69,7 +79,7 @@ export function App(){
          Dialog gleich zwei Ebenen zurueck. */
       if(drawerRef.current){ setDrawer(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
       if(glockeRef.current){ setGlocke(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
-      const id = (e.state && e.state.tab) || 'plan';
+      const id = tabId((e.state && e.state.tab) || 'plan');
       if(TABS[id]) gotoTab(id, false);
     };
     window.addEventListener('popstate', onPop);
@@ -103,7 +113,7 @@ export function App(){
 
   const eintrag = TABS[tab.value] || TABS.plan;
   const Aktiv = eintrag.komp;
-  const imUntermenue = ['plan','kraft','intervalle','analyse'].includes(tab.value);
+  const imUntermenue = ['plan','training','intervalle','analyse'].includes(tab.value);
 
   return (
     <div class="shell">
