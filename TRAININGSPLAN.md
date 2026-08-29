@@ -10,20 +10,13 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 2, Stand 22.08.2026.** Überarbeitet nach einer Analyse gegen den Stand der
-> Trainingslehre (Zonenmodelle, San Millán, VO2max-Protokolle, Krafttraining). Die
-> Änderungen gegenüber Fassung 1 sind in Abschnitt 9 begründet. Der Plan reicht jetzt
-> bis Woche 16 statt in einen unbefristeten Erhaltungszyklus zu laufen.
->
-> **Nachtrag 22.08.2026:** Die Übergangs-Pulszonen wurden nach der ersten ausgewerteten
-> Samstagsausfahrt korrigiert. Z2 liegt bei 128–142 bpm, nicht bei 108–126. Begründung
-> in Abschnitt 1. **Nachtrag 23.08.:** Arbeitsbereich auf 128–135 eingegrenzt, 142 nur
-> noch als harte Obergrenze. **Nachtrag 27.08.:** Abschnitt 10 (Beweglichkeit und
-> Koordination) neu ergänzt — eigenständiger Block außerhalb der Zielhierarchie und der
-> Opferreihenfolge aus Abschnitt 4.
->
-> **Nachtrag 28.08.:** Abschnitt 1 um eine Notiz zur Einführung von Höhenmetern
-> ergänzt — bewusst entkoppelt von der Dauer-Progression, nicht additiv.
+> **Umfang dieses Dokuments.** Der Plan ist gegen den Stand der Trainingslehre angelegt
+> (Zonenmodelle, San Millán, VO2max-Protokolle, Krafttraining) und reicht über vier
+> Blöcke bis Woche 16; ab Woche 17 folgt der Winterblock (Abschnitt 8). Beschrieben sind
+> Grundlagen und Zonen (Abschnitt 1), der Wochenplan mit Tests (2), Rumpf-Zirkel und
+> Beinblock (3), die Anpassungsoptionen bei Planabweichungen (4), die App (5), der
+> Datenzugriff über intervals.icu (6), die Auswertung (7), der Winterblock (8) sowie
+> Beweglichkeit und Koordination als eigenständiger Block (9).
 
 ---
 
@@ -47,12 +40,21 @@ eine Übergangszeit ohne Watt (Woche 1–3) und den regulären Betrieb ab Woche 
 - **Phase 1 (Woche 1–4):** Grundlage, Tempo-Intervalle in Z3. Woche 4 mit Schwellentest.
 - **Phase 2 (Woche 5–8):** VO2max-Intervalle, 5 × 4 min.
 - **Phase 3 (Woche 9–12):** Grundlagenblock, drei Z2-Tage, keine harten Intervalle.
-  Woche 12 mit Retest.
-- **Phase 4 (Woche 13–16):** Schwellenblock, 3 × 10–12 min. Woche 16 mit Retest.
+  Woche 12 mit Retest. VO2max-Blöcke laufen 3–6 Wochen; danach braucht es wieder
+  Grundlage oder einen anderen Reiz, sonst stagniert der Effekt.
+- **Phase 4 (Woche 13–16):** Schwellenblock, 3 × 10–12 min. Woche 16 mit Retest. Ein
+  anderer Reiz statt einer Wiederholung derselben 4-min-Intervalle — das verhindert
+  Plateau und Monotonie.
 - **Ab Woche 17:** Winterblock, siehe Abschnitt 8.
 
 **Erholungswochen:** reduzierter Umfang **und** reduzierte Intensität. Keine Z5-Arbeit,
 keine Blöcke am Samstag.
+
+**Zum 3:1-Rhythmus:** Für einen Einsteiger mit dieser Aufbaurate wäre 2:1 (zwei
+Belastungswochen, eine Erholungswoche) die sicherere Wahl. Der 3:1-Rhythmus ist
+beibehalten, weil `week % 4 === 0` die App-Logik einfach hält; die Absicherung
+übernimmt das Wellness-Gate. Häuft sich Müdigkeit, ist der Wechsel auf 2:1 die erste
+Stellschraube.
 
 ### Startdatum und Kalender
 
@@ -110,6 +112,10 @@ Direkte Strecke ca. 13 km; die Streckenwahl ist so angelegt, dass in Z2 mindeste
 die Solldauer zusammenkommt — **gesteuert wird über die Zeit, nicht über die Distanz.**
 Im Zweifel länger.
 
+**Warum der Mittwoch überhaupt dazugehört:** Empfohlen sind drei bis vier echte Z2-Tage
+pro Woche. Der Pendelweg nutzt Zeit, die ohnehin verbraucht wird — die günstigste Form
+von Mehrumfang.
+
 | Tag | Strecke | Charakter |
 |---|---|---|
 | **Dienstag** | verlängert, ca. 20 km+ | die volle Z2-Einheit nach Plan |
@@ -142,26 +148,27 @@ Abend rund zehn Stunden Erholung.
 
 ### Pulszonen — Übergangsfassung (Woche 1 bis 4)
 
-**Korrigiert am 22.08.2026, methodisch nachgeschärft am 23.08.2026.** Die ursprünglichen
-Bänder waren glatte %HFmax-Dekaden bei einer angenommenen HFmax von 180 bpm. Die
-Dekaden-Aufteilung hat sich als falsch erwiesen; die HFmax-Annahme selbst trägt vorerst.
+| Zone | bpm | Verwendung |
+|---|---|---|
+| unter Z1 | < 100 | Rollen, Pause |
+| Z1 | 100–128 | Erholung, Einfahren, optionale Fahrten |
+| **Z2 Arbeitsbereich** | **128–135** | **Grundlagenausdauer — hier fahren** |
+| Z2 Obergrenze | 135–142 | nur kurzzeitig, siehe unten |
+| Z3 | 142–155 | Tempo |
+| Z4 | 155–168 | Übergang, im Plan nicht angesteuert |
+| Z5 | > 168 | VO2max |
 
-| Zone | bpm **(gültig)** | ursprünglich | Verwendung |
-|---|---|---|---|
-| unter Z1 | < 100 | < 90 | Rollen, Pause |
-| Z1 | 100–128 | 90–108 | Erholung, Einfahren, optionale Fahrten |
-| **Z2 Arbeitsbereich** | **128–135** | 108–126 | **Grundlagenausdauer — hier fahren** |
-| Z2 Obergrenze | 135–142 | — | nur kurzzeitig, siehe unten |
-| Z3 | 142–155 | 126–144 | Tempo |
-| Z4 | 155–168 | 144–162 | Übergang, im Plan nicht angesteuert |
-| Z5 | > 168 | 162–180 | VO2max |
+Nicht mehr gültig, aber für das Nachrechnen alter Auswertungen nötig: die glatten
+%HFmax-Dekaden bei einer angenommenen HFmax von 180 bpm (Z1 90–108, Z2 108–126,
+Z3 126–144, Z4 144–162, Z5 162–180). Die Dekaden-Aufteilung ist falsch; die
+HFmax-Annahme selbst trägt vorerst.
 
 **Der Arbeitsbereich 128–135 ist belegt, die Obergrenze 142 nicht.** Grundlagenfahrten
 werden in 128–135 gefahren. 142 ist eine harte Grenze, kein Ziel.
 
-#### Woher die Korrektur kommt
+#### Datengrundlage der Bänder
 
-Datengrundlage: Samstagsausfahrt 22.08.2026, 143 min, 46,9 km, 113 hm, überwiegend flach.
+Samstagsausfahrt 22.08.2026, 143 min, 46,9 km, 113 hm, überwiegend flach.
 Unbefestigter Untergrund überwiegend im ersten Drittel, komplett in der ersten Hälfte.
 Letztes Drittel mit Ortschaften, Kreuzungen, Orientierung und einsetzender Dunkelheit.
 
@@ -186,8 +193,8 @@ typisch wäre. Die elf kurzen Blöcke über 144 sehen nach echten Antritten aus.
 
 #### Driftanalyse — und warum die Obergrenze unsicher ist
 
-Die erste Auswertung nannte 1,8 % Drift über die Hälften. **Dieser Wert war zu grob
-gerechnet.** Bei feinerer Aufteilung und nach Herausfiltern aller Stop-and-go-Phasen
+Grob über die Hälften gerechnet ergeben sich 1,8 % Drift — zu grob. Bei feinerer
+Aufteilung und nach Herausfiltern aller Stop-and-go-Phasen
 (nur Segmente ≥ 120 s durchgehend > 15 km/h, zusammen 83 von 143 min):
 
 | Drittel | Steady-Zeit | Ø km/h | Ø HF | EF (km/h ÷ HF) |
@@ -231,8 +238,7 @@ ist dafür ein schlechter Stellvertreter — Wind, Untergrund und Steigung verf�
 Ab dem Powermeter rechnet intervals.icu das Decoupling aus Watt, dann ist die Frage
 endgültig geklärt.
 
-Die Bänder gelten bis zum Test am 10.09.2026 und ersetzen bis dahin die alte Tabelle
-vollständig — auch rückwirkend in der Auswertung.
+Die Bänder gelten bis zum Test am 10.09.2026 — auch rückwirkend in der Auswertung.
 
 Weiterhin gilt: **der Sprechtest sticht die Zahl.** Die Bänder sind eine Hilfslinie, die
 Atmung ist die Steuergröße.
@@ -245,7 +251,7 @@ und müssen neu gerechnet werden, bevor sie vergleichbar sind.
 
 #### Methodenhinweis für künftige Driftanalysen
 
-Der erste Anlauf war methodisch zu grob. Für alle weiteren Auswertungen gilt:
+Für alle Driftauswertungen gilt:
 
 1. **Nicht nur Hälften vergleichen** — Drittel zeigen Effekte, die die Zweiteilung
    verdeckt.
@@ -261,6 +267,10 @@ Der erste Anlauf war methodisch zu grob. Für alle weiteren Auswertungen gilt:
 Nach dem Test am 10.09. werden beide Zonensätze **nach Coggan** gesetzt, in
 intervals.icu **und** in der App identisch. Damit entfällt die eigene Zonenrechnung als
 Pflichtweg und `icu_hr_zone_times` wird wieder verwendbar.
+
+**Anker ist die LTHR, nicht die HFmax:** Die Schwelle verschiebt sich mit der Form, die
+HFmax nicht. Die fünf Coggan-Zonen passen 1:1 auf das bestehende Z1–Z5-Modell und auf
+die Leistungszonen.
 
 **Herzfrequenz, % LTHR:**
 
@@ -299,6 +309,10 @@ vertieft, aber ruhig und rhythmisch. Wird das Sprechen kurzatmig, ist LT1 übers
 | Sa Basis | HF Z2 + Sprechtest | Decoupling nach der Fahrt |
 | Sa Blöcke | Watt 80–88 % FTP | HF steigt langsam, ist normal |
 | Fr/So optional | HF unter Z2-Obergrenze | — |
+
+**Warum ab Woche 5 die Watt führen:** Leistung reagiert verzögerungsfrei, der Puls hinkt
+60–90 s nach. Für 4-min-Intervalle ist der Puls als Steuergröße deshalb ungeeignet — er
+bestätigt am Intervallende, er steuert nicht.
 
 ### Trittfrequenz — ab Woche 4
 
@@ -343,7 +357,7 @@ später als **eigenständige, entkoppelte Variable** — aus drei Gründen:
 - **Einstieg klein:** 50–100 Hm in eine bestehende Ausfahrt einbauen, bevorzugt am
   **Samstag** (Watt- und Sprechtest-Kontrolle vorhanden, kein Ankunftsdruck wie
   beim Pendelweg Di/Mi).
-- **Kadenz bewusst hochhalten**, nicht unter 70 rpm, notfalls Übersetzung anpassen.
+- **Kadenz bewusst hochhalten**, nicht unter 70 rpm (siehe Trittfrequenz oben).
 - **Danach eigenständige Progression der Höhenmeter** (z. B. +10–15 % alle 1–2
   Wochen), unabhängig von der Zeit-Progression der Woche.
 
@@ -356,7 +370,9 @@ Jahr. Hohe Pedalkräfte bei untrainierter Beinmuskulatur belasten das Knie.
 
 ### Wellness-Gate
 
-Morgens vor dem Donnerstag zu prüfen, Datenquelle `GET /athlete/0/wellness`:
+Bei dieser Aufbaurate die wichtigste Sicherung: Ruhepuls, HRV und Schlaf liegen über die
+API ohnehin vor. Morgens vor dem Donnerstag zu prüfen, Datenquelle
+`GET /athlete/0/wellness`:
 
 ```
 Ruhepuls > 7-Tage-Schnitt + 5 bpm          ODER
@@ -407,8 +423,16 @@ Woche 1 ist ohne Mittwochsfahrt gefahren worden. Der Sprung von Woche 1 auf Woch
 (+23 %) ist der Einführung des Pendeltags geschuldet und einmalig; ab Woche 3 liegt
 die Steigerung je Belastungswoche bei rund 10 %.
 
+**Zum Einstiegssprung:** von 120 auf 319 Minuten in drei Wochen ist viel. Ab Woche 5
+liegt die Steigerung unter 10 % je Belastungswoche.
+
 **Z2-Summe pro Woche** ist die Kennzahl, die zählt — Zielgröße 300–400 min. Woche 3
 kommt auf rund 260 min, Phase 3 auf über 380 min.
+
+**Phase 3 erreicht bis zu 435 min Rad pro Woche.** Ein großer Teil davon ist Pendelzeit,
+die ohnehin anfällt — als reine Trainingszeit gelesen wäre es zu viel. Fallen die
+Bürotage weg (Homeoffice, Urlaub), sinkt der Umfang automatisch mit; das ist kein
+Planverstoß und muss nicht kompensiert werden.
 
 **Zugrundeliegende Reihen** (Index 0 = Woche 1):
 
@@ -443,8 +467,11 @@ Belastung und Pause.
 
 Einfahren immer 15 min, Ausrollen 12 min. Die Wiederholungszahl in Phase 2 ist **fest
 bei 5** — die Progression läuft über die Leistung, nicht über mehr Wiederholungen.
+6–8 Wiederholungen liegen über allem, was als Einstiegsdosis belegt ist.
 
-**Samstag:** Basis Z2. Z3-Blöcke nur in den Wochen 6, 10 und 14 (`Woche ≥ 5 und
+**Samstag:** Basis Z2. Ein Intensitätstag pro Woche genügt bei diesem Wochenumfang, und
+der Donnerstag ist der wertvollere davon — zwei harte Tage bei 5–6 h Wochenumfang gehen
+zulasten der Erholung. Z3-Blöcke deshalb nur in den Wochen 6, 10 und 14 (`Woche ≥ 5 und
 Woche % 2 === 0 und Woche % 4 ≠ 0`), dann 2 × 12 min in der **zweiten Hälfte** der
 Fahrt mit 8 min lockerem Rollen dazwischen. In allen übrigen Wochen reines Z2.
 Einfahren 15 min, Ausrollen 10 min.
@@ -466,6 +493,9 @@ Gelten für Phase 1 besonders, weil dort ohne Watt gefahren wird:
 6. **Uhr fest und höher tragen**, ein bis zwei Fingerbreit über dem Handgelenkknochen.
 
 ### Schwellentest (Woche 4, 12, 16 — Donnerstag)
+
+Ohne Messung ist jede Zonenvorgabe eine Vermutung: geschätzte bpm-Werte aus
+`220 − Alter` tragen den Plan nicht. Der Test liefert FTP und LTHR als gemessene Anker.
 
 | Schritt | Dauer |
 |---|---|
@@ -676,10 +706,11 @@ Bewegungsqualität, nicht um Maximalkraft.
 
 *Warum überhaupt: die Studienlage zum Krafttraining für Radfahrer (2 × pro Woche,
 Fokus Beine, 3 Sätze à 4–10 Wdh.) zeigt bessere Effizienz und rund 5 % mehr Leistung im
-40-min-Test. Der Zirkel aus Fassung 1 enthielt außer dem Hüftheben keine Beinarbeit.
-Die hier gewählte Körpergewichts-Dosierung liegt bewusst unterhalb dieser Studienlage —
-sie ist der Einstieg, nicht das Ziel. Die belegte Dosierung mit hoher Last steht im
-Winterblock (Abschnitt 8) an.*
+40-min-Test. Genau dort liegen die belegten Effekte für Radfahrer, und der Rumpf-Zirkel
+allein deckt außer dem Hüftheben keine Beinarbeit ab. Die hier gewählte
+Körpergewichts-Dosierung liegt bewusst unterhalb dieser Studienlage — sie ist der
+Einstieg, nicht das Ziel. Die belegte Dosierung mit hoher Last steht im Winterblock
+(Abschnitt 8) an.*
 
 ### Dosierungsmodell
 
@@ -759,23 +790,21 @@ langsam absenken. Das Knie bleibt gestreckt, aber nicht überstreckt.
 
 ### Bewusste Entscheidungen bei der Zirkelgestaltung
 
-Diese Punkte sind Ergebnis einer Überarbeitung, nicht Zufall — bitte nicht
-„zurückoptimieren":
+Diese Punkte sind bewusst so gesetzt — bitte nicht „zurückoptimieren":
 
 - **Haltezeit bei 40 s gedeckelt.** Längere Einzelhalte lassen bei Einsteigern die Form
   zerfallen und fördern Pressatmung. Gesteigert wird über eine zusätzliche Runde, nicht
   über längere Halte.
-- **Belastung : Pause mindestens 1 : 0,5.** Eine frühere Fassung lag bei 1 : 0,27 und
-  führte reproduzierbar zum Formeinbruch in Runde 2.
+- **Belastung : Pause mindestens 1 : 0,5.** Ein Verhältnis von 1 : 0,27 führt
+  reproduzierbar zum Formeinbruch in Runde 2.
 - **Dead Bug und Bird Dog sind alternierend**, nicht „halten mit Seitenwechsel zur
   Halbzeit".
 - **Kein Superman / keine Rückenextension.** Hyperextension in Bauchlage erzeugt hohe
   Kompression in der Lendenwirbelsäule; Bird Dog deckt die hintere Kette sicherer ab.
-  Ersetzt durch das Hüftheben.
-- **Der volle Zirkel liegt am Sonntag, nicht am Mittwoch.** In Fassung 1 lag die
-  anstrengendere Einheit zwischen Dienstag und Donnerstag und laugte den Qualitätstag
-  aus. Jetzt liegt sie vor dem Ruhetag Montag, und der Beinblock hat vier Tage Abstand
-  zum Donnerstag.
+  An seine Stelle tritt das Hüftheben.
+- **Der volle Zirkel liegt am Sonntag, nicht am Mittwoch.** Läge die anstrengendere
+  Einheit zwischen Dienstag und Donnerstag, laugte sie den Qualitätstag aus. So liegt
+  sie vor dem Ruhetag Montag, und der Beinblock hat vier Tage Abstand zum Donnerstag.
 
 ---
 
@@ -913,12 +942,20 @@ fehlende Einheit, einmal als unerwartete.
 Solange das nicht in der App abgebildet ist: bei getauschten Tagen die Tagesbewertung
 ignorieren und nur die **Wochensummen** (Gesamtdauer, Z2-Minuten, harte Zeit) betrachten.
 
+### 4.14 Dienstag zeitlich nicht machbar
+
+Der Dienstag wächst auf 85–90 min. Das sind rund 30 km vor Arbeitsbeginn, plus Puffer,
+Umziehen und Duschen — realistisch gut zwei Stunden. Geht das nicht auf: **Dienstag bei
+75 min deckeln und die Differenz auf den Samstag legen.** Der Samstag hat keine
+Zeitgrenze, der Dienstag schon; für das Ziel Grundlagenumfang ist gleichgültig, auf
+welchem Tag die Minuten liegen.
+
 ---
 
 ## 5. Die App
 
-Einzelne HTML-Datei, PWA, installierbar, offline nutzbar. Keine Abhängigkeiten, alle
-Bilder als Base64 eingebettet. Gehostet auf GitHub Pages.
+Einzelne HTML-Datei, PWA, installierbar, offline nutzbar. Keine Abhängigkeiten.
+Gehostet auf GitHub Pages.
 
 ### Tabs
 
@@ -935,20 +972,18 @@ Ausrollen, Zonenanzeige und Sprachansage. Ebenfalls aus der Woche vorbelegt.
 
 **Analyse** — Abgleich der tatsächlichen Aktivitäten mit dem Plan, siehe Abschnitt 7.
 
-### Stand der Umsetzung in der App
+### Was die App rechnet und anzeigt
 
-Der Code ist auf Fassung 2 angepasst (23.08.2026). Umgesetzt:
-
-1. Reihen `TUE_MIN`, `SAT_MIN`, `SUN_MIN`, `CORE_*` auf 16 Werte erweitert, `WED_MIN` und
-   `LEG_ROUNDS` neu. Die Wochensummen der App stimmen mit denen in Abschnitt 2 überein.
-2. Vier Phasen statt zwei; der `weekIndex`-Erhaltungszyklus ist entfallen. Nach Woche 16
-   zeigt der Tab „Heute" den Winterblock als Hinweis an und lässt die Wochenwerte auf
-   Woche 16 stehen.
-3. Die Donnerstag-Wiederholungsformel ist durch `thursdayPlan()` ersetzt — eine Tabelle je
-   Phase, inklusive Testwochen und Erholungswoche 8 ohne Z5.
+1. Wochenwerte aus den Reihen `TUE_MIN`, `WED_MIN`, `SAT_MIN`, `SUN_MIN`, `CORE_*` und
+   `LEG_ROUNDS` über 16 Wochen. Die Wochensummen der App stimmen mit denen in
+   Abschnitt 2 überein.
+2. Vier Phasen. Nach Woche 16 zeigt der Tab „Heute" den Winterblock als Hinweis an und
+   lässt die Wochenwerte auf Woche 16 stehen.
+3. Der Donnerstag kommt aus `thursdayPlan()` — eine Tabelle je Phase, inklusive
+   Testwochen und Erholungswoche 8 ohne Z5.
 4. Rumpf: Sonntag volle Runden, Mittwoch fest 2. Beinblock am Sonntag als Liste ohne Timer.
 5. Samstag-Blöcke nur in Woche 6, 10 und 14 (2 × 12 min, 8 min Rollen dazwischen).
-6. Zweiter Zonensatz: bis Woche 4 die Übergangsbänder, ab Woche 5 Coggan aus der LTHR,
+6. Zwei Zonensätze: bis Woche 4 die Übergangsbänder, ab Woche 5 Coggan aus der LTHR,
    Wattbereiche aus der FTP. Ohne eingetragenen Testwert laufen die Übergangsbänder weiter
    und die App sagt das ausdrücklich.
 7. Kadenzziele ab Woche 4 in den Tageskarten und im Intervalltimer.
@@ -970,21 +1005,21 @@ Der Code ist auf Fassung 2 angepasst (23.08.2026). Umgesetzt:
     die aktuelle Z2-Obergrenze gehalten. Hinweis auf den nächsten Testtermin ab 14 Tagen
     vorher.
 
-**Bewusst nicht übernommen:** die harte Z2-Obergrenze 142. Die App zeigt Z2 als
+**Bewusst nicht in der App:** die harte Z2-Obergrenze 142. Die App zeigt Z2 als
 128–135 bpm. Der Wert 142 ist unbelegt — der Drift der Referenzfahrt kratzt mit 4–6,5 %
-am Zielwert — und wäre, sobald er in der App steht, ein Ziel geworden statt einer Grenze.
+am Zielwert — und wäre, sobald er in der App steht, ein Ziel statt einer Grenze.
 Sobald eine Ausfahrt konsequent bei 128–135 gefahren und der Drift unter 5 % liegt, kann
 die Obergrenze nachgezogen werden.
 
-**Übungsbilder** liegen als `.webp` im Ordner `assets/` statt als base64 im HTML; der
-Service Worker legt sie mit in den Cache. Das hat `index.html` von 1,2 MB auf rund 230 KB
-verkleinert.
+**Übungsbilder** liegen als `.webp` im Ordner `assets/`, nicht als base64 im HTML; der
+Service Worker legt sie mit in den Cache. `index.html` bleibt dadurch bei rund 230 KB
+statt 1,2 MB.
 
 ### Der Plan liegt in `plan.json`, nicht im Code
 
-Seit 23.08.2026 stehen alle Plandaten in `plan.json` neben `index.html`. Der Code hält
-keine Planwerte mehr — er lädt sie beim Start und rechnet damit. Damit lässt sich der Plan
-ändern, ohne JavaScript anzufassen.
+Alle Plandaten stehen in `plan.json` neben `index.html`. Der Code hält keine Planwerte —
+er lädt sie beim Start und rechnet damit. Damit lässt sich der Plan ändern, ohne
+JavaScript anzufassen.
 
 | In der JSON | Im Code geblieben |
 |---|---|
@@ -1003,8 +1038,8 @@ Trainingsplan. Sollen sie konfigurierbar werden, gehören sie in einen eigenen A
 
 - Die Wochen stehen als Objekte in `weeks[]`, nicht als parallele Reihen. Ein Fehler bleibt
   damit lokal statt eine ganze Reihe gegen die anderen zu verschieben.
-- **Nach jeder Änderung `CACHE_VERSION` in `sw.js` hochzählen**, sonst zeigt die
-  installierte App noch den alten Plan.
+- **Nach jeder Änderung `CACHE_VERSION` in `sw.js` hochzählen** (siehe PWA-Eigenheiten
+  unten), sonst zeigt die installierte App noch den alten Plan.
 - Eine neue Übung braucht zusätzlich einen Eintrag in der `ASSETS`-Liste in `sw.js`,
   damit das Bild offline verfügbar ist.
 - Die Texte in `texts` werden als HTML eingefügt; `<` und `&` darin zerlegen die Anzeige.
@@ -1088,8 +1123,8 @@ keine Datenkontinuität.
 
 Die eFTP-Schätzung findet sich auf der **Power**-Seite. Bis zum ersten Test ist sie
 mangels harter Anstrengungen wenig belastbar; ab Woche 5 ist sie eine brauchbare
-Zwischenkontrolle zwischen den Tests. Sobald ein echter Testwert vorliegt, FTP auf
-manuell stellen, damit ein einzelner Antritt am Berg den Wert nicht überschreibt.
+Zwischenkontrolle zwischen den Tests. Zum Umstellen der FTP auf manuell siehe die
+Checkliste in Abschnitt 2.
 
 ### Lesen
 
@@ -1163,9 +1198,8 @@ verfügbaren Daten und Operationen verwenden.
 Vollständig auswertbar. Die App vergleicht je Tag:
 
 - **Dauer** gegen den Sollwert, Toleranz 15 %
-- **Zonenverteilung** aus dem Puls-Stream gegen die Bänder aus Abschnitt 1. Die Bänder
-  wurden am 22.08. korrigiert — Auswertungen älterer Fahrten sind mit den alten Bändern
-  entstanden und vor jedem Vergleich neu zu rechnen.
+- **Zonenverteilung** aus dem Puls-Stream gegen die Bänder aus Abschnitt 1 — zu älteren
+  Auswertungen siehe den Hinweis dort.
 - **Z2-Tage:** Warnung bei mehr als 15 % der Zeit in Z4/Z5 — eine zu hart gefahrene
   Grundlagenfahrt kostet die Erholung für die Intervalle. Warnung auch, wenn unter 40 %
   in Z2 und unter 75 % in Z1–Z2 liegen.
@@ -1184,6 +1218,9 @@ Vollständig auswertbar. Die App vergleicht je Tag:
 - **Optionale Fahrten (Freitag, Sonntag):** werden bewusst **nicht am Umfang gemessen** —
   kürzer oder gar nicht ist bei einer freiwilligen Einheit kein Fehler. Bewertet wird
   die Intensität: über 25 % der Zeit oberhalb Z2 gilt als zu hart.
+- **Fahrzeit getrennt summieren:** geplante und optionale Fahrzeit werden getrennt
+  gerechnet und getrennt ausgewiesen. Beides zusammen gegen nur die geplanten
+  Radeinheiten zu rechnen, schiebt die Kennzahl „Abweichung Fahrzeit" nach oben.
 
 ### Zusätzliche Kennzahlen ab Woche 4
 
@@ -1230,12 +1267,6 @@ Rad: Typ enthält `ride`, `cycl`, `bike`, `biking` oder `spinning`.
 Kraft: Typ enthält `weight`, `strength`, `core`, `workout`, `yoga`, `pilates` oder
 `training`.
 
-### Behobene Ungenauigkeit
-
-Die Kennzahl „Abweichung Fahrzeit" rechnete in Fassung 1 alle gefahrenen Minuten gegen
-nur die geplanten Radeinheiten; optionale Fahrten schoben den Wert nach oben. **Geplante
-und optionale Fahrzeit werden ab Fassung 2 getrennt summiert und getrennt ausgewiesen.**
-
 ---
 
 ## 8. Ab Woche 17 — Winterblock
@@ -1263,62 +1294,12 @@ aus der die belegten Leistungszuwächse stammen.
 
 ---
 
-## 9. Was sich gegenüber Fassung 1 geändert hat und warum
+## 9. Beweglichkeit und Koordination
 
-| # | Änderung | Begründung |
-|---|---|---|
-| 1 | Samstag ist reines Z2, Blöcke nur alle vier Wochen | Fassung 1 hatte zwei harte Tage bei 5–6 h Wochenumfang. Bei einem Intensitätstag pro Woche ist der Donnerstag der wertvollere. |
-| 2 | Donnerstag Phase 2 fest bei 5 × 4 min | 6–8 Wiederholungen liegen über allem, was als Einstiegsdosis belegt ist. Progression läuft über Watt. |
-| 3 | Wiederholungsformel entfernt | `weekIndex` und `4 + floor((Woche−1)/2)` widersprachen sich ab Woche 9 (6 vs. 8 Wdh.). Tabelle je Phase statt Formel. |
-| 4 | Erholungswochen ohne Z5 | Woche 8 hatte in Fassung 1 5 × 4 min Z5 — die Standarddosis, nicht eine Erholungsdosis. Umfang sank um 30 %, Intensität nur um 17 %. |
-| 5 | Schwellentest in Woche 4, 12, 16 | Der ganze Plan hing an sechs geschätzten bpm-Werten (220 − Alter). Ohne Messung ist jede Zonenvorgabe eine Vermutung. |
-| 6 | Zweiter Zonensatz nach Watt, Coggan | Leistung reagiert verzögerungsfrei; Puls hinkt 60–90 s nach. Für 4-min-Intervalle ist Puls als Steuergröße ungeeignet. |
-| 7 | Coggan statt %HFmax, LTHR statt HFmax als Anker | Die Schwelle verschiebt sich mit der Form, HFmax nicht. Coggan 5 Zonen passen 1:1 auf das bestehende Z1–Z5-Modell und auf die Leistungszonen. |
-| 8 | Sprechtest als oberste Instanz für Z2 | Auch Coggan-Z2 ist breit und liegt oben oft über LT1. |
-| 9 | Rumpf: Sonntag voll, Mittwoch verkürzt | Fassung 1 legte die anstrengendere Einheit zwischen Dienstag und Donnerstag — das war im Dokument selbst als Risiko notiert. |
-| 10 | Beinblock am Sonntag | Der Zirkel enthielt außer dem Hüftheben keine Beinarbeit. Genau dort liegen die belegten Effekte für Radfahrer. |
-| 11 | Phase 3 als reiner Grundlagenblock | Fassung 1 lief ab Woche 9 unbefristet im VO2max-Muster. Solche Blöcke laufen 3–6 Wochen, danach braucht es Grundlage oder einen anderen Reiz. |
-| 12 | Phase 4 als Schwellenblock | Anderer Reiz statt Wiederholung derselben 4-min-Intervalle. Verhindert Plateau und Monotonie. |
-| 13 | Wellness-Gate | Ruhepuls, HRV und Schlaf lagen bereits über die API vor, wurden aber nirgends verwendet. Bei dieser Aufbaurate die wichtigste Sicherung. |
-| 14 | Kadenzziele ab Woche 4 | Sensor vorhanden, im Plan bisher nicht abgebildet. Manuelles Zählen ist ausdrücklich nicht vorgesehen. |
-| 15 | Neue Kennzahlen (Decoupling, EF, Leistungsabfall, CTL-Rampe) | Erst diese Größen beantworten, ob die Grundlage tatsächlich wächst. |
-| 16 | Winterblock statt Endlosschleife | Der Plan lief in Fassung 1 unbefristet weiter, ohne Dunkelheit oder Wetter zu berücksichtigen. |
-| 19 | Übergangszonen korrigiert: Z2-Arbeitsbereich 128–135, harte Obergrenze 142 | Die alten Bänder wiesen 80 % einer sauber gefahrenen Grundlagenausfahrt als Z3 aus — die Dekaden-Aufteilung lag eine Stufe zu tief. Die Obergrenze bleibt unsicher, weil der Drift mit 4–6,5 % am Zielwert kratzt. |
-| 18 | Anpassungsoptionen als eigener Abschnitt | Fassung 1 kannte nur den Idealfall. Im Voraus festgelegte Ausweichvarianten verhindern, dass unter Zeitdruck gestapelt statt verschoben wird. |
-| 17 | Mittwoch als dritter Z2-Tag über den Arbeitsweg | Fassung 1 hatte zwei echte Z2-Tage, empfohlen sind drei bis vier. Der Pendelweg nutzt Zeit, die ohnehin verbraucht wird — die günstigste Form von Mehrumfang. Kurz gehalten, weil er direkt vor dem Qualitätstag liegt. |
-
-### Bewusst **nicht** geändert
-
-- **3:1-Rhythmus** (drei Belastungswochen, eine Erholungswoche). Für einen Einsteiger
-  mit dieser Aufbaurate wäre 2:1 die sicherere Wahl. Beibehalten, weil `week % 4 === 0`
-  die App-Logik einfach hält. Das Wellness-Gate übernimmt die Absicherung. Falls sich
-  Müdigkeit häuft, ist der Wechsel auf 2:1 die erste Stellschraube.
-- **Der Einstiegssprung in Woche 1–3.** Von 120 auf 319 Minuten in drei Wochen ist viel.
-  Die Wochen sind gefahren bzw. laufen; rückwirkend zu bremsen bringt nichts. Ab Woche 5
-  liegt die Steigerung unter 10 % je Belastungswoche.
-- **Alle Entscheidungen zum Rumpf-Zirkel** aus Fassung 1 (Deckel bei 40 s, Verhältnis
-  1:0,5, alternierende Übungen, kein Superman). Die sind sachlich richtig.
-
-### Unter Vorbehalt
-
-- **Dienstag wächst auf 85–90 min.** Das sind rund 30 km vor Arbeitsbeginn, plus
-  Puffer, Umziehen und Duschen — realistisch gut zwei Stunden. Falls das nicht
-  aufgeht: Dienstag bei 75 min deckeln und die Differenz auf den Samstag legen. Der
-  Samstag hat keine Zeitgrenze, der Dienstag schon. Für das Ziel Grundlagenumfang ist
-  gleichgültig, auf welchem Tag die Minuten liegen.
-- **Phase 3 erreicht bis zu 435 min Rad pro Woche.** Ein großer Teil davon ist
-  Pendelzeit, die ohnehin anfällt — als reine Trainingszeit gelesen wäre es zu viel.
-  Wenn die Bürotage wegfallen (Homeoffice, Urlaub), sinkt der Umfang automatisch mit;
-  das ist kein Planverstoß und muss nicht kompensiert werden.
-
----
-
-## 10. Beweglichkeit und Koordination
-
-Kein Bestandteil der ursprünglichen Zielhierarchie (Abschnitt 1). Ergänzt am 27.08.2026
-als eigenständiger, radunabhängiger Block. Beweglichkeit und Koordination verlieren mit
-zunehmendem Alter unabhängig von der Ausdauerentwicklung an Substanz; das ist mit reinem
-Ausdauer- und Kraftfokus nicht abgedeckt.
+Kein Bestandteil der Zielhierarchie aus Abschnitt 1, sondern ein eigenständiger,
+radunabhängiger Block. Beweglichkeit und Koordination verlieren mit zunehmendem Alter
+unabhängig von der Ausdauerentwicklung an Substanz; das ist mit reinem Ausdauer- und
+Kraftfokus nicht abgedeckt.
 
 **Bewusst getrennt vom Radplan gehalten:** geringe mechanische Belastung, kaum
 Interferenz mit Kraft- oder Ausdauererholung. Kein Teil der Opferreihenfolge aus
@@ -1369,5 +1350,5 @@ Stufe sauber gelingt.
 
 Kein Eintrag im App-Protokoll (`core-session-log`) und keine Auswertung über
 intervals.icu vorgesehen — beides sind reine Körpergewichtsübungen ohne Aufzeichnung.
-Sollte sich das ändern, gehört ein eigener `kind` analog zu `'leg'` in Abschnitt 5.13
-dazu.
+Sollte sich das ändern, gehört ein eigener `kind` analog zu `'leg'` dazu (Abschnitt 5,
+Punkt 13).
