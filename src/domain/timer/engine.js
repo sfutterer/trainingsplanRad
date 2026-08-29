@@ -124,6 +124,16 @@ export function createTimer({ now = () => Date.now(), setInterval: si = setInter
     }
   }
 
+  /* Einen Schritt zurueck. Bewusst ohne 'leave': zurueckblaettern heisst "das
+     zaehlt nicht, ich mache es noch einmal" - haette der Schritt sein Ergebnis
+     schon gemeldet, stuende er zweimal im Protokoll. Und bewusst angehalten:
+     Zurueck ist eine Korrektur und kein Weiterlauf. */
+  function back(){
+    if(index <= 0) return;
+    stop();
+    enterStep(index - 1);
+  }
+
   function reset(newSeq){
     if(index >= 0 && current() && current().type !== 'done'){
       emit('leave', { step: current(), index, restSeconds: secondsLeft(), abandoned: true });
@@ -141,7 +151,7 @@ export function createTimer({ now = () => Date.now(), setInterval: si = setInter
       const i = listeners[name].indexOf(fn); if(i >= 0) listeners[name].splice(i, 1);
     }; },
     load(newSeq){ reset(newSeq); },
-    start, pause, skip, reset,
+    start, pause, skip, back, reset,
     toggle(){ running ? pause() : start(); },
     get running(){ return running; },
     get index(){ return index; },

@@ -7,15 +7,22 @@
    gleichrangige Bausteine sind. Die vier Etiketten passen in eine Zeile,
    sobald die Schrift mitskaliert - die Regeln dafuer stehen in training.css.
 
-   Der Rumpf-Timer lebt weiterhin in dieser Datei und nicht in den Segmenten:
-   er laeuft weiter, waehrend im Beinblock gezaehlt oder die Beweglichkeit
-   durchgegangen wird. Ein Timer je Segment wuerde beim Umschalten
-   zurueckgesetzt.
+   Alle vier Bausteine folgen demselben Geruest aus Baustein.jsx: Kopf, Buehne,
+   Inhalt, Hinweise, Schluss. Vorher hatte jeder seinen eigenen Bauplan - der
+   Start lag mal oben, mal am Ende der letzten Karte, mal gar nicht, und die
+   Hinweise standen an vier verschiedenen Stellen.
 
-   Beweglichkeit und Koordination haben inzwischen eine eigene Uhr fuer ihre
-   zeitdosierten Uebungen. Sie steht bewusst neben dem Zirkel und nicht in ihm:
-   beide koennen gleichzeitig laufen, deshalb melden sich alle Timer unter
-   eigenem Namen bei timerState an, statt ein gemeinsames Boolean zu setzen.
+   Alle vier bleiben montiert und werden nur ausgeblendet. Das ist kein Detail:
+   die Timer haengen an den Bausteinen, und ein ausgehaengter Baustein nimmt
+   seine laufende Uhr mit. Genau das passierte bisher bei Beweglichkeit und
+   Koordination - der Rumpfzirkel lief beim Umschalten weiter, ihre Haltezeit
+   wurde stillschweigend verworfen. Preact haelt den Zustand der versteckten
+   Baeume, das Zeichnen kostet nichts, solange ihre Uhren stillstehen.
+
+   Der Rumpf-Timer lebt weiterhin in dieser Datei: er ist der Timer dieses
+   einen Bausteins, so wie der Beinblock und die beiden Koerperbloecke ihren
+   eigenen mitbringen. Alle melden sich unter eigenem Namen bei timerState an,
+   damit mehrere gleichzeitig laufen koennen.
 
    Beweglichkeit und Koordination schreiben bewusst nichts ins Protokoll -
    coreLog bleibt den beiden Kraftteilen vorbehalten, so wie es der Plan
@@ -23,16 +30,15 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, week, settings, coreLog, saveCoreLog, today, startDate } from '../../../state/store.js';
-import { meldeTimer } from '../../../state/timerState.js';
+import { meldeTimer, laufendeTimer } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
 import { buildCircuitSequence } from '../../../domain/timer/sequences.js';
 import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
-         repShort, legDose, legRounds, legRepText, legRepMin,
-         legDoneRounds, legAborts } from '../../../domain/core.js';
+         repShort } from '../../../domain/core.js';
 import { isoDayLocal, weekNumberFor } from '../../../domain/week.js';
-import { ProgressRing } from '../../components/ProgressRing.jsx';
 import { ExerciseDialog } from '../../components/ExerciseDialog.jsx';
-import { Uebungsbild } from './Uebungsbild.jsx';
+import { Baustein, Buehne, Uebungsliste } from './Baustein.jsx';
+import { Beinblock } from './Beinblock.jsx';
 import { Beweglichkeit } from './Beweglichkeit.jsx';
 import { Koordination } from './Koordination.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
@@ -134,7 +140,9 @@ export function TrainingTab(){
     }));
     ab.push(timer.on('tick', ({ secondsLeft, sekundenwechsel }) => {
       tickState(x => x + 1);
-      if(sekundenwechsel && secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
+      if(!sekundenwechsel) return;
+      if(secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
+      meldeTimer('zirkel', true, { label:'Zirkel', segment:'core', sek: secondsLeft });
     }));
     ab.push(timer.on('leave', ({ step, restSeconds }) => {
       const l = logRef.current;
@@ -160,10 +168,10 @@ export function TrainingTab(){
       logStart();
     }
     timer.toggle();
-    meldeTimer('zirkel', timer.running);
+    meldeTimer('zirkel', timer.running, { label:'Zirkel', segment:'core', sek: timer.secondsLeft() });
     tickState(x => x + 1);
   }
-  function zuruecksetzen(){
+  function abbrechen(){
     cancelSpeech();
     const l = logRef.current;
     if(l){
@@ -176,7 +184,19 @@ export function TrainingTab(){
     meldeTimer('zirkel', false);
     tickState(x => x + 1);
   }
-  function weiter(){ timer.skip(); meldeTimer('zirkel', timer.running); tickState(x => x + 1); }
+  function weiter(){
+    timer.skip();
+    meldeTimer('zirkel', timer.running, { label:'Zirkel', segment:'core', sek: timer.secondsLeft() });
+    tickState(x => x + 1);
+  }
+  /* Zurueck meldet dem Protokoll nichts: die Engine haelt an und blaettert
+     stumm, der wiederholte Satz zaehlt einmal. */
+  function zurueck(){
+    cancelSpeech();
+    timer.back();
+    meldeTimer('zirkel', false);
+    tickState(x => x + 1);
+  }
 
   const step = timer.step;
   const laeuft = timer.running;
@@ -204,6 +224,13 @@ export function TrainingTab(){
   }
   const bild = bildIndex == null ? null : p.circuit.exercises[bildIndex];
 
+  const tagText = dow === 3 ? 'Mittwoch – verkürzter Zirkel'
+    : dow === 0 ? 'Sonntag – voller Zirkel' : 'kein Zirkeltag laut Plan';
+
+  /* Jeder Timer, der in einem anderen Baustein laeuft, bekommt einen Streifen.
+     Ohne ihn liefe er unsichtbar - man hoert ihn nur noch. */
+  const fremde = laufendeTimer.value.filter(t => t.segment && t.segment !== segment);
+
   return (
     <>
       {/* Vier Segmente an jedem Tag, in derselben Form. Nur die Namen der
@@ -219,151 +246,97 @@ export function TrainingTab(){
         ))}
       </div>
 
-      {/* Der Zirkel laeuft weiter, waehrend in den anderen Segmenten gelesen
-          oder gezaehlt wird. Ohne diesen Streifen liefe er unsichtbar - man
-          hoert ihn nur noch. */}
-      {segment !== 'core' && step && step.type !== 'done' && (
-        <button class="laufstreifen" onClick={() => setSegment('core')}>
-          <span>Zirkel {laeuft ? 'läuft' : 'pausiert'} ›</span><b>{sec} s</b>
+      {fremde.map(t => (
+        <button key={t.id} class="laufstreifen" onClick={() => setSegment(t.segment)}>
+          <span>{t.label} läuft ›</span><b>{t.sek != null ? t.sek + ' s' : ''}</b>
         </button>
-      )}
+      ))}
 
-      {segment === 'core' && <>
-      {/* Ring, Bild und Bedienung sind eine Einheit: was zur laufenden Uebung
-          gehoert, muss ohne Scrollen sichtbar sein. Die Hoehe des Blocks ist
-          in timer.css auf den Platz zwischen den Leisten begrenzt. */}
-      <div class="uebungsblock">
-        <ProgressRing
-          fraction={timer.fraction()}
-          color={FARBE[step ? step.type : 'prep'] || 'var(--prep)'}
-          phase={phase}
-          time={step ? (step.type === 'done' ? '0' : String(sec)) : String(cfg.workSec)}
-          exercise={step ? step.label : 'Tippen zum Starten'}
-          meta={step && step.round ? 'Runde ' + step.round + ' / ' + cfg.rounds : ''}
-          onTap={starten}
-        />
-
-        {bild && (
-          <div class={'illu' + (vorschau ? ' vorschau' : '')}>
-            <Uebungsbild src={bild.img} name={bild.name} onClick={() => setDialogEx({ kind:'core', i: bildIndex })} />
-            <div class="cap">
-              {vorschau ? <span class="tag">Als Nächstes</span> : null}
-              <b>{bild.name}</b>{bild.steps && bild.steps[0] ? ' · ' + bild.steps[0] : ''}
+      <div hidden={segment !== 'core'}>
+        <Baustein
+          titel="Rumpf"
+          meta={cfg.rounds + ' Runden · ca. ' + coreMinutes(p, w, cfg.rounds) + ' min'}
+          status={<p class="tagchip">Woche {w} · {tagText}</p>}
+          buehne={
+            <Buehne
+              ring={{ fraction: timer.fraction(),
+                      color: FARBE[step ? step.type : 'prep'] || 'var(--prep)',
+                      phase,
+                      time: step ? (step.type === 'done' ? '0' : String(sec)) : String(cfg.workSec),
+                      exercise: step ? step.label : p.circuit.exercises[0].name,
+                      meta: step && step.round ? 'Runde ' + step.round + ' / ' + cfg.rounds
+                                               : 'Als Erstes · ' + repShort(p.circuit.exercises[0], cfg.workSec) }}
+              bild={bild ? { src: bild.img, name: bild.name, vorschau,
+                             cap: <b>{bild.name}</b>,
+                             onClick: () => setDialogEx({ kind:'core', i: bildIndex }) } : null}
+              zurueck={{ onClick: zurueck, disabled: !step || timer.index <= 0 }}
+              haupt={{ label: laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
+                       onClick: starten }}
+              weiter={{ onClick: weiter, disabled: !step || step.type === 'done' }}
+              ende={step ? { label:'Abbrechen', onClick: abbrechen } : null} />
+          }
+          hinweise={[p.texts.coreAbortRule]}
+          schluss={
+            <div class="card">
+              <div class="row"><span>Einstellungen</span><b>Woche {w}</b></div>
+              <div class="field"><span>Belastung (Sek.)</span>
+                <input type="number" inputmode="numeric" value={cfg.workSec}
+                  onInput={e => setCfg({ ...cfg, workSec: parseInt(e.currentTarget.value, 10) || cfg.workSec })} /></div>
+              <div class="field"><span>Pause (Sek.)</span>
+                <input type="number" inputmode="numeric" value={cfg.restSec}
+                  onInput={e => setCfg({ ...cfg, restSec: parseInt(e.currentTarget.value, 10) || cfg.restSec })} /></div>
+              <div class="field"><span>Rundenpause (Sek.)</span>
+                <input type="number" inputmode="numeric" value={cfg.roundRestSec}
+                  onInput={e => setCfg({ ...cfg, roundRestSec: parseInt(e.currentTarget.value, 10) || cfg.roundRestSec })} /></div>
+              <div class="field"><span>Runden</span>
+                <input type="number" inputmode="numeric" value={cfg.rounds}
+                  onInput={e => setCfg({ ...cfg, rounds: parseInt(e.currentTarget.value, 10) || cfg.rounds })} /></div>
             </div>
+          }>
+
+          {/* Die Liste bleibt waehrend des Laufs stehen und markiert die
+              aktive Uebung - dieselbe Zeilenform wie in den anderen drei
+              Bausteinen, mit der Dosierung unter dem Namen. */}
+          <div class="card">
+            <div class="row"><span>Übungen</span>
+              <b>{step && step.round ? 'Runde ' + step.round + ' von ' + cfg.rounds
+                                     : p.circuit.exercises.length + ' im Zirkel'}</b></div>
+            <Uebungsliste
+              uebungen={p.circuit.exercises.map(ex => ({
+                key: ex.name, name: ex.name, dosis: repShort(ex, cfg.workSec),
+                /* Nur bei Wiederholungen: dort ist das Zeitfenster die zweite
+                   Haelfte der Anweisung. Bei "35 s halten" stuende sonst
+                   dieselbe Zahl zweimal in einer Zeile. */
+                fokus: ex.mode === 'reps' ? 'in ' + cfg.workSec + ' s' : null
+              }))}
+              aktiv={aktiveUebung}
+              onOpen={i => setDialogEx({ kind:'core', i })} />
+
+            {/* Die Schritte der laufenden Uebung unter der Liste - wie im
+                gefuehrten Ablauf. Auf dem Boden liegend ist das Bottom Sheet
+                ein Tipp zu weit. */}
+            {aktiveUebung != null ? (
+              <ol class="ablaufschritte">
+                {p.circuit.exercises[aktiveUebung].steps.map((t, i) => <li key={i}>{t}</li>)}
+              </ol>
+            ) : null}
           </div>
-        )}
-
-        <div class="controls">
-          <button class="btn secondary" onClick={zuruecksetzen}>Reset</button>
-          <button class="btn gross" onClick={starten}>{laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Weiter' : 'Start')}</button>
-          <button class="btn secondary" onClick={weiter}>Weiter</button>
-        </div>
+        </Baustein>
       </div>
 
-      <div class="card">
-        <div class="row"><span>Zirkel</span><b>{cfg.rounds} Runden · ca. {coreMinutes(p, w, cfg.rounds)} min</b></div>
-        <div class="exlist" style="margin-top:8px">
-          {p.circuit.exercises.map((ex, i) => (
-            <button class={'exrow' + (aktiveUebung === i ? ' aktiv' : '')} key={i}
-              onClick={() => setDialogEx({ kind:'core', i })}>
-              <span>{i + 1}. {ex.name}</span>
-              <span class="ziel">{repShort(ex, cfg.workSec)} ›</span>
-            </button>
-          ))}
-        </div>
-        <p class="hint">{p.texts.coreAbortRule}</p>
+      <div hidden={segment !== 'leg'}>
+        <Beinblock eintrag={legEintrag} onOpen={i => setDialogEx({ kind:'leg', i })} />
       </div>
 
-      <div class="card">
-        <div class="row"><span>Einstellungen</span><b>Woche {w}, {dow === 3 ? 'Mittwoch (verkürzt)' : dow === 0 ? 'Sonntag (voll)' : 'heute'}</b></div>
-        <div class="field"><span>Belastung (Sek.)</span>
-          <input type="number" inputmode="numeric" value={cfg.workSec}
-            onInput={e => setCfg({ ...cfg, workSec: parseInt(e.currentTarget.value, 10) || cfg.workSec })} /></div>
-        <div class="field"><span>Pause (Sek.)</span>
-          <input type="number" inputmode="numeric" value={cfg.restSec}
-            onInput={e => setCfg({ ...cfg, restSec: parseInt(e.currentTarget.value, 10) || cfg.restSec })} /></div>
-        <div class="field"><span>Rundenpause (Sek.)</span>
-          <input type="number" inputmode="numeric" value={cfg.roundRestSec}
-            onInput={e => setCfg({ ...cfg, roundRestSec: parseInt(e.currentTarget.value, 10) || cfg.roundRestSec })} /></div>
-        <div class="field"><span>Runden</span>
-          <input type="number" inputmode="numeric" value={cfg.rounds}
-            onInput={e => setCfg({ ...cfg, rounds: parseInt(e.currentTarget.value, 10) || cfg.rounds })} /></div>
+      <div hidden={segment !== 'mobility'}>
+        <Beweglichkeit onOpen={i => setDialogEx({ kind:'mobility', i })} />
       </div>
-      </>}
 
-      {segment === 'leg' &&
-        <Beinblock eintrag={legEintrag} onOpen={i => setDialogEx({ kind:'leg', i })} />}
-
-      {segment === 'mobility' &&
-        <Beweglichkeit onOpen={i => setDialogEx({ kind:'mobility', i })} />}
-
-      {segment === 'coordination' &&
-        <Koordination onOpen={i => setDialogEx({ kind:'coordination', i })} />}
+      <div hidden={segment !== 'coordination'}>
+        <Koordination onOpen={i => setDialogEx({ kind:'coordination', i })} />
+      </div>
 
       {dialogEx && <ExerciseDialog spec={dialogEx} workSec={cfg.workSec} onClose={() => setDialogEx(null)} />}
     </>
-  );
-}
-
-/* ---- Beinblock: Wiederholungen zaehlen, kein Timer ---- */
-function Beinblock({ eintrag, onOpen }){
-  const p = plan.value, w = week.value;
-  const dose = legDose(p, w);
-  const rounds = legRounds(p, w);
-  const tag = isoDayLocal(today.value);
-
-  function setzen(exIndex, runde, wert){
-    const liste = coreLog.value.slice();
-    let e = liste.find(x => x && x.kind === 'leg' && x.day === tag);
-    if(!e){
-      e = { kind:'leg', id:'leg-' + tag, day: tag, week: w, plannedRounds: rounds,
-            exercises: p.legs.exercises.map(ex => ({ key: ex.key, name: ex.name,
-              target: legRepMin(ex, dose), reps: [] })) };
-      liste.push(e);
-    }
-    e.plannedRounds = rounds;
-    const ex = e.exercises[exIndex];
-    while(ex.reps.length < runde) ex.reps.push(null);
-    ex.reps[runde - 1] = wert > 0 ? wert : null;
-    saveCoreLog(liste);
-  }
-
-  const voll = legDoneRounds(eintrag);
-  const ab = legAborts(eintrag);
-
-  return (
-    <div class="card">
-      <div class="row"><span>Beinblock</span><b>{rounds} Runden</b></div>
-      <p class="hint" style="margin-top:2px">
-        Pause {p.legs.restBetweenExercisesSeconds} s zwischen den Übungen,{' '}
-        {p.legs.restBetweenRoundsSeconds} s zwischen den Runden. {p.texts.legTempoPlain}
-      </p>
-
-      <div class="leggrid" style={'--runden:' + rounds}>
-        <div class="leghead"><span>Übung</span><span>Ziel</span>
-          {Array.from({ length: rounds }, (_, i) => <span key={i}>R{i + 1}</span>)}</div>
-        {p.legs.exercises.map((ex, i) => (
-          <div class="legrow" key={ex.key}>
-            <button class="legname" onClick={() => onOpen(i)}>{ex.name} ›</button>
-            <span class="legziel">{legRepText(ex, dose)}</span>
-            {Array.from({ length: rounds }, (_, r) => {
-              const v = eintrag && eintrag.exercises[i] ? eintrag.exercises[i].reps[r] : null;
-              return <input key={r} type="number" inputmode="numeric" min="0" max="60"
-                placeholder={String(legRepMin(ex, dose))} value={v > 0 ? v : ''}
-                onChange={e => setzen(i, r + 1, parseInt(e.currentTarget.value, 10) || 0)} />;
-            })}
-          </div>
-        ))}
-      </div>
-
-      <div class="legsum">
-        <b>{voll} / {rounds}</b> volle Runden protokolliert
-        {ab ? ' · ' + ab + (ab === 1 ? ' Satz' : ' Sätze') + ' unter dem Wiederholungsziel' : ''}
-        {dose.extra ? <><br />{dose.extra}</> : null}
-      </div>
-
-      <p class="hint">{p.texts.legAbortSigns}</p>
-      <p class="hint">{p.texts.legProgression}</p>
-    </div>
   );
 }

@@ -16,7 +16,57 @@
   hyphens: auto;
 }
 
-.leggrid{ margin: 12px 0 10px; }
+/* ---- Buehne ohne Uhr ----
+
+   Steht an der Stelle des Rings, wenn die Uebung keine Zeitdosis hat: der
+   Beinblock zaehlt Wiederholungen, und in der Beweglichkeit steht bei drei von
+   fuenf Uebungen "10 Wdh. je Seite". Ein Ring auf 0 waere ein Versprechen auf
+   eine Zeit, die der Plan dort nicht vorgibt.
+
+   Bewusst dieselbe Typografie wie im Ring - Etikett klein und gesperrt, die
+   Zahl gross, darunter der Name. Wer vom Zirkel herkommt, liest dieselbe
+   Reihenfolge, nur ohne Kreis drumherum. Die Hoehe folgt dem Ring, damit die
+   Tastenreihe beim Umschalten zwischen zeitdosierten und gezaehlten Uebungen
+   nicht springt. */
+.dosisbuehne{
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; text-align: center;
+  min-height: min(300px, 88vw, 36dvh);
+  margin: 4px auto 12px; padding: 18px 20px;
+  width: 100%;
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+.dosisbuehne .phase{
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.dosisbuehne b{
+  font-size: clamp(28px, 9vw, 44px); font-weight: 700; line-height: 1.1;
+  letter-spacing: -.02em;
+}
+.dosisbuehne .ex{ font-size: 15px; font-weight: 600; line-height: 1.25; }
+.dosisbuehne small{ font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+
+/* Quittieren auf dem Boden, oft mit nassen Haenden: zwei 48-dp-Tasten neben
+   dem Feld sind schneller als die Systemtastatur. */
+.wdhfeld{
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 12px;
+}
+.wdhfeld .btn{ min-width: 56px; padding: 0; font-size: 22px; }
+.wdhfeld input{
+  min-height: 48px; width: 84px;
+  background: var(--surface-2); border: 1px solid var(--outline);
+  border-radius: var(--radius-s); color: var(--on-surface);
+  text-align: center; font-size: 22px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.wdhfeld small{ font-size: 13px; color: var(--muted); }
+
+/* ---- Beinblock: Protokollraster ---- */
+
+.leggrid{ margin: 12px 0 0; }
 .leghead, .legrow{
   display: grid;
   grid-template-columns: 1fr 76px repeat(var(--runden), 52px);
@@ -35,15 +85,14 @@
   border-radius: var(--radius-s); color: var(--on-surface);
   text-align: center; font-size: 15px;
 }
-.legsum{
-  background: var(--surface-2); border-radius: var(--radius-s);
-  padding: 10px 12px; font-size: 13px; color: var(--muted); line-height: 1.5;
-}
-.legsum b{ color: var(--on-surface); }
+/* Die Zelle, an der der gefuehrte Ablauf gerade steht. Ohne die Markierung
+   muesste man aus Runde und Uebung selbst zurueckrechnen, welches der zwoelf
+   Felder gemeint ist. */
+.legrow input.aktiv{ border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 
-/* Ruecksprung zum laufenden Zirkel. Der Timer laeuft weiter, waehrend im
-   Beinblock gezaehlt wird - der Streifen ist die einzige Stelle, an der man
-   das noch sieht. */
+/* Ruecksprung zu einem Timer, der in einem anderen Baustein laeuft. Seit alle
+   vier Bausteine montiert bleiben, kann das jeder von ihnen sein - der
+   Streifen ist die einzige Stelle, an der man eine fremde Uhr noch sieht. */
 .laufstreifen{
   display: flex; justify-content: space-between; align-items: center;
   width: 100%; min-height: 44px; margin-bottom: 12px; padding: 0 16px;
@@ -53,12 +102,16 @@
 }
 .laufstreifen b{ font-variant-numeric: tabular-nums; }
 
-/* ---- Beweglichkeit und Koordination ---- */
+/* ---- Uebungslisten ----
 
-/* Zwei Zeilen je Uebung: oben der Name, darunter Dosierung und Fokus. Die
+   Zwei Zeilen je Uebung: oben der Name, darunter Dosierung und Fokus. Die
    Dosierung ist die Anweisung und steht deshalb in der Textfarbe, der Fokus
    daneben nur als Einordnung. Eine dritte Spalte rechts waere bei
-   "3 x 20-30 s je Seite" auf 375 px zu schmal geworden. */
+   "3 x 20-30 s je Seite" auf 375 px zu schmal geworden.
+
+   Gilt seit dem Umbau fuer alle Bausteine: der Zirkel hatte vorher eine
+   einzeilige Form mit dem Ziel rechts, und derselbe Blick fand die Dosierung
+   je nach Segment an einer anderen Stelle. */
 .koerperliste .exrow{ align-items: center; padding: 8px 0; }
 .exname{
   display: flex; flex-direction: column; gap: 3px;
@@ -76,9 +129,10 @@
   font-size: 13.5px; line-height: 1.5;
 }
 
-/* Heute dran oder nicht. Gruen faerbt nur den dranstehenden Tag, sonst bleibt
-   die Kachel neutral: ein roter Ruhetag waere eine Wertung, die der Plan nicht
-   vorsieht. */
+/* Der eine Status im Kopf jedes Bausteins: heute dran oder nicht, wie viele
+   Runden stehen, welcher Tag es ist. Gruen faerbt nur, was erledigt oder
+   dran ist, sonst bleibt die Kachel neutral: ein roter Ruhetag waere eine
+   Wertung, die der Plan nicht vorsieht. */
 .tagchip{
   margin: 10px 0 0; padding: 10px 14px;
   background: var(--surface-2); color: var(--on-surface-var);
@@ -103,33 +157,63 @@
   padding: 3px 9px; border-radius: 999px;
 }
 
-/* Gefuehrter Ablauf: eine Uebung fuellt die Karte, der Balken zeigt, wie viele
-   noch kommen. Weitergeschaltet wird immer von Hand - der Ring zaehlt nur die
-   Haltezeit der einen Uebung, die gerade dran ist. */
-.ablaufbalken{ display: flex; gap: 4px; margin: 10px 0 14px; }
-.ablaufbalken span{
-  flex: 1; height: 4px; border-radius: 2px; background: var(--surface-3);
-}
-.ablaufbalken span.an{ background: var(--primary); }
-.ablaufname{ margin: 12px 0 8px; font-size: 18px; }
-.dosisgross{
-  display: flex; flex-direction: column; gap: 2px;
-  background: var(--ok-bg); border-radius: var(--radius-s);
-  padding: 10px 12px; margin-bottom: 12px;
-  font-size: 16px; font-weight: 700;
-}
-.dosisgross small{ font-size: 12.5px; font-weight: 400; color: var(--muted); }
-.ablaufschritte{ padding-left: 20px; margin: 0 0 14px; }
+/* Die Schritte der laufenden Uebung, unter der Liste. Vorher fuellte die
+   Uebung die ganze Karte und die Liste verschwand dafuer - man sah nicht mehr,
+   was noch kommt. Jetzt bleibt die Liste stehen und markiert die Zeile, die
+   dran ist; der Fortschrittsbalken darueber ist damit ueberfluessig geworden. */
+.ablaufschritte{ padding-left: 20px; margin: 12px 0 0; }
 .ablaufschritte li{ margin-bottom: 7px; font-size: 14.5px; line-height: 1.45; }
-.ablaufbild{ max-height: 34dvh; object-fit: contain; }
+.ablaufschritte li:last-child{ margin-bottom: 0; }
 
-/* Deutlich kleiner als im Zirkel: dort steht der Ring allein im Blickfeld,
-   hier teilen sich Ring, Bild und Schritte eine Karte, die ohnehin scrollt.
-   Ueber 30 dvh schoebe der Ring das Uebungsbild komplett unter den Rand. */
-.ablaufring .ring{ --ring-max: 260px; --ring-hoehe: 30dvh; }
-.ablaufring{ margin-bottom: 4px; }
+/* Beenden steht nicht in der Reihe: dort liegen Zurueck, Haupttaste und
+   Weiter, und eine vierte Taste in derselben Zeile waere auf 375 px nicht mehr
+   zu treffen. Unten und ohne Betonung, weil es die seltenste Handlung ist. */
+.ablaufende{ margin-top: -6px; margin-bottom: 12px; }
 
-/* Beenden steht nicht in der Reihe: dort liegen Zurueck, Start und Naechste,
-   und eine vierte Taste in derselben Zeile waere auf 375 px nicht mehr zu
-   treffen. Unten und ohne Betonung, weil es die seltenste Handlung ist. */
-.ablaufende{ margin-top: -6px; }
+/* Die Dosis-Buehne folgt denselben Regeln wie der Ring: feste Groesse, und
+   nachgeben darf nur das Bild darunter. */
+.uebungsblock .dosisbuehne{ flex: none; }
+
+/* ---- Kopfzeile eines Bausteins ----
+
+   Eine Zeile, keine Karte. Als Karte mit dem Status darin nahm der Kopf ueber
+   100 px direkt ueber der Buehne - genug, um die Tastenreihe hinter die
+   Navigationsleiste zu schieben. Name und Dauer reichen an dieser Stelle; der
+   Status steht unter der Buehne, wo er niemandem den Ring wegnimmt. */
+.bausteinkopf{
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 0 4px 10px;
+  font-size: 14px; color: var(--on-surface-var);
+}
+.bausteinkopf b{ color: var(--on-surface); font-weight: 600; text-align: right; }
+
+/* Der Uebungsblock beginnt jetzt unter der Segmentleiste und der Kopfzeile,
+   nicht mehr direkt unter dem Titel. Die Rechnung aus timer.css kennt nur
+   Titel- und Navigationsleiste und liesse den Block 100 px zu hoch werden -
+   die Tastenreihe landete unter der Navigation. */
+.uebungsblock{
+  max-height: calc(100dvh - 266px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+
+/* Der Status steht unter der Buehne und damit vor der Uebungsliste - dieselbe
+   Stelle in allen vier Bausteinen. Der obere Abstand faellt weg, weil ueber
+   ihm schon die Tastenreihe ihren eigenen hat. */
+.uebungsblock + .tagchip,
+.uebungsblock + .merksatz,
+.ablaufende + .tagchip,
+.ablaufende + .merksatz{ margin-top: 0; margin-bottom: 12px; }
+
+/* Laeuft eine Uhr in einem anderen Baustein, schiebt sich ihr
+   Ruecksprungstreifen ueber die Buehne. Er muss dem Block seine eigene Hoehe
+   abnehmen, sonst rutscht genau dann die Tastenreihe unter die
+   Navigationsleiste, wenn zwei Bausteine gleichzeitig laufen. */
+.laufstreifen ~ div .uebungsblock{
+  max-height: calc(100dvh - 322px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+
+/* Das Bild gibt als Erstes nach, wenn der Platz eng wird - aber nicht bis auf
+   null. Unter der Bildunterschrift stuende sonst gar nichts mehr, und eine
+   Beschriftung ohne Bild liest sich wie ein Ladefehler. Lieber ein Streifen,
+   den ein Tipp gross oeffnet. */
+.uebungsblock .illu img,
+.uebungsblock .illu .exbild-leer{ min-height: 64px; }

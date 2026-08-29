@@ -114,3 +114,21 @@ export function remainingAfter(seq, index){
   for(let i = index + 1; i < seq.length; i++) sum += seq[i].duration;
   return sum;
 }
+
+/* Eine einzelne Pause des Beinblocks.
+
+   Der Beinblock zaehlt Wiederholungen, keine Sekunden - eine Kniebeuge mit 3 s
+   Absenken laesst sich nicht gegen eine Uhr fahren, ohne genau das Tempo zu
+   verlieren, das den Reiz ausmacht. Die Pausen dazwischen stehen dagegen als
+   Zahlen im Plan und wurden bisher nur als Fliesstext angezeigt.
+
+   Deshalb keine Folge ueber den ganzen Block, sondern eine Uhr je Pause: der
+   Satz selbst endet, wenn der Nutzer "Erledigt" drueckt, und erst danach hat
+   die Uhr etwas zu zaehlen. Eine durchgehende Sequenz haette die Saetze mit
+   einer erfundenen Dauer versehen muessen. */
+export function buildLegRestSequence(seconds, label){
+  return [
+    { type:'rest', label: label || 'Pause', duration: Math.max(1, Math.round(seconds)) },
+    { type:'done', label:'Weiter', duration: 0 }
+  ];
+}

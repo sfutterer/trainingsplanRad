@@ -16,7 +16,9 @@
    Die zweistufige Progression steht als zwei nummerierte Stufen und nicht als
    Fliesstext: sie ist eine Freischaltregel - die zweite Stufe gilt erst, wenn
    die erste sauber gelingt - und keine Steigerung, die mit der Woche
-   weiterrueckt.
+   weiterrueckt. Sie steht als letzte Karte, weil sie einmal gelesen und dann
+   fuer Wochen nicht mehr angesehen wird; bisher lag sie zwischen Kopf und
+   Uebungen mitten im Weg.
 
    Der gefuehrte Ablauf liegt in Koerperablauf.jsx, gemeinsam mit dem der
    Beweglichkeit. Hier zaehlt die Uhr an drei der vier Uebungen, denn hier steht
@@ -28,7 +30,8 @@
 
 import { plan, today, startDate } from '../../../state/store.js';
 import { toMidnight } from '../../../domain/week.js';
-import { Koerperablauf } from './Koerperablauf.jsx';
+import { Baustein } from './Baustein.jsx';
+import { useKoerperablauf } from './Koerperablauf.jsx';
 
 /* Ganze Tage zwischen zwei Mitternachten. Gerundet statt abgeschnitten: in den
    Umstellungsnaechten liegen 23 oder 25 Stunden zwischen zwei Mitternachten,
@@ -52,32 +55,36 @@ export function Koordination({ onOpen }){
     : inTagen === 2 ? 'übermorgen'
     : 'in ' + inTagen + ' Tagen';
 
+  const { buehne, liste } = useKoerperablauf({
+    uebungen, timerId: 'koordination',
+    label: 'Koordination', segment: 'coordination', onOpen
+  });
+
   return (
-    <>
-      <div class="card">
-        <div class="row"><span>Koordination</span><b>{c.durationHint} · alle {rhythmus} Tage</b></div>
-        {rest == null
-          ? <p class="tagchip">Ohne Startdatum lässt sich der Rhythmus nicht ausrechnen.</p>
-          : <p class={'tagchip' + (istHeute ? ' an' : '')}>
-              {istHeute ? 'Heute ist Koordinationstag.' : 'Heute nicht dran – der nächste ist ' + naechster + '.'}
-            </p>}
-        <p class="hint">{c.placement}</p>
-      </div>
-
-      <div class="card">
-        <div class="row"><span>Freischaltregel</span><b>zwei Stufen</b></div>
-        <p class="hint" style="margin-top:2px">
-          Keine Wochenprogression: erst weiterrücken, wenn die aktuelle Stufe sauber gelingt.
-        </p>
-        <ol class="stufen">
-          {c.progression.map((s, i) => (
-            <li key={i}><span class="stufennr">Stufe {i + 1}</span><span>{s}</span></li>
-          ))}
-        </ol>
-      </div>
-
-      <Koerperablauf uebungen={uebungen} hint={c.scope} timerId="koordination"
-        mengeText={uebungen.length + ' Stück'} onOpen={onOpen} />
-    </>
+    <Baustein
+      titel="Koordination"
+      meta={c.durationHint + ' · alle ' + rhythmus + ' Tage'}
+      status={rest == null
+        ? <p class="tagchip">Ohne Startdatum lässt sich der Rhythmus nicht ausrechnen.</p>
+        : <p class={'tagchip' + (istHeute ? ' an' : '')}>
+            {istHeute ? 'Heute ist Koordinationstag.' : 'Heute nicht dran – der nächste ist ' + naechster + '.'}
+          </p>}
+      buehne={buehne}
+      hinweise={[c.placement, c.scope]}
+      schluss={
+        <div class="card">
+          <div class="row"><span>Freischaltregel</span><b>zwei Stufen</b></div>
+          <p class="hint" style="margin-top:2px">
+            Keine Wochenprogression: erst weiterrücken, wenn die aktuelle Stufe sauber gelingt.
+          </p>
+          <ol class="stufen">
+            {c.progression.map((s, i) => (
+              <li key={i}><span class="stufennr">Stufe {i + 1}</span><span>{s}</span></li>
+            ))}
+          </ol>
+        </div>
+      }>
+      {liste}
+    </Baustein>
   );
 }

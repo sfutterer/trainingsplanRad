@@ -7,16 +7,20 @@
 
    Die Uhr laeuft nur an den zeitdosierten Uebungen. Welche das sind, sagt die
    Dosierung im Plan (siehe domain/koerper.js); "10 Wdh. je Seite" bekommt
-   weiterhin keinen Ring, weil daneben eine Uhr nichts zu tun haette.
+   weiterhin keinen Ring, weil daneben eine Uhr nichts zu tun haette. An deren
+   Stelle tritt die Dosierung selbst auf der Buehne, und die Haupttaste heisst
+   "Erledigt" statt "Start" - die Bedienung bleibt damit an derselben Stelle,
+   ohne eine Zeit zu versprechen, die der Plan nicht vorgibt.
 
    Kein Zirkel: die Uhr schaltet nie in die naechste Uebung. Sie zaehlt die
    Saetze einer Uebung ab und haelt dann an - weiter geht es erst auf Weiter.
    Zwischen zwei Saetzen haelt sie ebenfalls an, weil der Plan keine Satzpause
    nennt: eine erfundene Zahl waere hier schlechter als ein Tipp auf den Ring.
 
-   Bedienung und Farben folgen dem Rumpfzirkel: derselbe Ring, dieselbe
-   Anordnung Zurueck/Start/Weiter, dieselben Toene. Wer den Zirkel kennt, muss
-   hier nichts Neues lernen.
+   Die Buehne steht oben, auch bevor der Ablauf laeuft. Vorher lag der Start
+   als Knopf unter der Uebungsliste - man musste erst an fuenf Zeilen vorbei,
+   um ihn zu finden, waehrend der Rumpfzirkel oben startete. Jetzt liegt der
+   Start in allen vier Bausteinen am selben Fleck.
 
    Bewusst ohne Protokoll - der Plan sieht fuer diese beiden Bloecke keine
    Aufzeichnung vor, daran aendert der Timer nichts. */
@@ -27,8 +31,7 @@ import { meldeTimer } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
 import { buildHoldSequence } from '../../../domain/timer/sequences.js';
 import { zeitDosis } from '../../../domain/koerper.js';
-import { ProgressRing } from '../../components/ProgressRing.jsx';
-import { Uebungsbild } from './Uebungsbild.jsx';
+import { Buehne, Uebungsliste } from './Baustein.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
 /* Satz und Seite in einer Zeile - beides nur, wenn es mehr als eines gibt.
@@ -41,7 +44,10 @@ function satzText(step){
   return teile.join(' · ');
 }
 
-export function Koerperablauf({ uebungen, hint, timerId, mengeText, onOpen }){
+/* Buehne und Liste kommen getrennt zurueck: der Baustein steckt die eine in
+   den Buehnen-Platz und die andere in den Inhalt, damit die Reihenfolge fuer
+   alle vier gleich bleibt. */
+export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
   const s = settings.value;
   /* -1 heisst: kein Ablauf, nur die Liste. */
   const [schritt, setSchritt] = useState(-1);
@@ -51,9 +57,9 @@ export function Koerperablauf({ uebungen, hint, timerId, mengeText, onOpen }){
   const timer = timerRef.current;
 
   const laufend = schritt >= 0 && schritt < uebungen.length;
-  const aktuelle = laufend ? uebungen[schritt] : null;
+  const aktuelle = laufend ? uebungen[schritt] : uebungen[0];
   const letzte = schritt === uebungen.length - 1;
-  const zeit = aktuelle ? zeitDosis(aktuelle.dosage) : null;
+  const zeit = laufend ? zeitDosis(aktuelle.dosage) : null;
 
   /* Die Ansagen brauchen die naechste Uebung, die Abonnenten haengen aber nur
      an der Stimme. Ueber ein Ref bleiben sie aktuell, ohne bei jedem Schritt
@@ -92,7 +98,9 @@ export function Koerperablauf({ uebungen, hint, timerId, mengeText, onOpen }){
     }));
     ab.push(timer.on('tick', ({ secondsLeft, sekundenwechsel }) => {
       tickState(x => x + 1);
-      if(sekundenwechsel && secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
+      if(!sekundenwechsel) return;
+      if(secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
+      meldeTimer(timerId, true, { label, segment, sek: secondsLeft });
     }));
     return () => { ab.forEach(f => f()); };
   }, [s.voice, timerId]);
@@ -101,10 +109,10 @@ export function Koerperablauf({ uebungen, hint, timerId, mengeText, onOpen }){
      verworfen - eine halb gelaufene Uebung setzt nicht heimlich fort, wenn man
      spaeter zurueckblaettert. */
   useEffect(() => {
-    timer.reset(aktuelle && zeit ? buildHoldSequence(aktuelle) : []);
+    timer.reset(laufend && zeit ? buildHoldSequence(aktuelle) : []);
     meldeTimer(timerId, false);
     tickState(x => x + 1);
-  }, [schritt, aktuelle && aktuelle.key]);
+  }, [schritt, laufend && aktuelle.key]);
 
   useEffect(() => () => { timer.reset(); meldeTimer(timerId, false); }, [timerId]);
 
@@ -116,7 +124,7 @@ export function Koerperablauf({ uebungen, hint, timerId, mengeText, onOpen }){
       timer.load(buildHoldSequence(aktuelle));
     }
     timer.toggle();
-    meldeTimer(timerId, timer.running);
+    meldeTimer(timerId, timer.running, { label, segment, sek: timer.secondsLeft() });
     tickState(x => x + 1);
   }
 
@@ -127,6 +135,12 @@ export function Koerperablauf({ uebungen, hint, timerId, mengeText, onOpen }){
     setSchritt(ziel);
   }
 
+  function beginnen(){
+    primeSpeech();
+    ensureWakeLock();
+    setSchritt(0);
+  }
+
   const step = timer.step;
   const laeuft = timer.running;
   const sec = timer.secondsLeft();
@@ -135,91 +149,69 @@ export function Koerperablauf({ uebungen, hint, timerId, mengeText, onOpen }){
     : step.type === 'done' ? 'Fertig'
     : laeuft ? 'Halten' : 'Pause';
 
-  return (
+  const zurueck = { onClick: () => blaettern(schritt - 1), disabled: !laufend || schritt === 0 };
+  const weiter  = { label: letzte ? 'Fertig' : 'Weiter',
+                    onClick: () => blaettern(letzte ? -1 : schritt + 1), disabled: !laufend };
+  const ende    = laufend ? { label:'Ablauf beenden', onClick: () => blaettern(-1) } : null;
+
+  /* Drei Zustaende, eine Anordnung. Bereit zeigt die erste Uebung, damit die
+     Buehne nicht leer steht und man vor dem Start sieht, was kommt.
+
+     Die angehaltene Uhr laeuft auf "Fortsetzen" weiter und nicht auf "Weiter":
+     Weiter heisst in allen vier Bausteinen dasselbe, naemlich naechste Uebung. */
+  const buehne = !laufend ? (
+    <Buehne
+      dosis={{ phase:'Bereit', wert: uebungen.length + ' Übungen',
+               exercise: uebungen[0].name, meta: 'Als Erstes · ' + uebungen[0].dosage }}
+      haupt={{ label:'Ablauf starten', onClick: beginnen }}
+      zurueck={{ disabled: true }} weiter={{ disabled: true }} />
+  ) : zeit ? (
+    <Buehne
+      ring={{ fraction: timer.fraction(),
+              color: step && step.type !== 'done' ? 'var(--work)' : 'var(--prep)',
+              phase,
+              time: step ? (step.type === 'done' ? '0' : String(sec)) : String(zeit.sekunden),
+              exercise: step ? step.label : aktuelle.name,
+              meta: step ? satzText(step) : aktuelle.dosage }}
+      bild={{ src: aktuelle.img, name: aktuelle.name,
+              cap: <b>{aktuelle.name}</b>, onClick: () => onOpen(schritt) }}
+      zurueck={zurueck}
+      haupt={{ label: laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
+               onClick: starten }}
+      weiter={weiter} ende={ende} />
+  ) : (
+    <Buehne
+      dosis={{ phase:'Übung ' + (schritt + 1) + ' / ' + uebungen.length,
+               wert: aktuelle.dosage, exercise: aktuelle.name, meta: aktuelle.focus }}
+      bild={{ src: aktuelle.img, name: aktuelle.name,
+              cap: <b>{aktuelle.name}</b>, onClick: () => onOpen(schritt) }}
+      zurueck={zurueck}
+      haupt={{ label:'Erledigt', onClick: () => blaettern(letzte ? -1 : schritt + 1) }}
+      weiter={weiter} ende={ende} />
+  );
+
+  /* Die Liste bleibt waehrend des Ablaufs stehen und markiert die laufende
+     Uebung, statt zu verschwinden. Der frueher noetige Fortschrittsbalken
+     entfaellt damit: die markierte Zeile sagt dasselbe und zeigt zusaetzlich,
+     was noch kommt. */
+  const liste = (
     <div class="card">
+      <div class="row"><span>Übungen</span>
+        <b>{laufend ? 'Übung ' + (schritt + 1) + ' von ' + uebungen.length
+                    : uebungen.length + ' in Folge'}</b></div>
+      <Uebungsliste
+        uebungen={uebungen.map(ex => ({
+          key: ex.key, name: ex.name, dosis: ex.dosage, fokus: ex.focus,
+          rechts: zeitDosis(ex.dosage) ? 'Timer ›' : '›'
+        }))}
+        aktiv={laufend ? schritt : null}
+        onOpen={onOpen} />
+
       {laufend ? (
-        <>
-          <div class="row"><span>Geführter Ablauf</span><b>Übung {schritt + 1} von {uebungen.length}</b></div>
-          <div class="ablaufbalken" aria-hidden="true">
-            {uebungen.map((ex, i) => <span key={ex.key} class={i <= schritt ? 'an' : ''}></span>)}
-          </div>
-
-          {zeit && (
-            <div class="ablaufring">
-              <ProgressRing
-                fraction={timer.fraction()}
-                color={step && step.type !== 'done' ? 'var(--work)' : 'var(--prep)'}
-                phase={phase}
-                time={step ? (step.type === 'done' ? '0' : String(sec)) : String(zeit.sekunden)}
-                exercise={step ? step.label : 'Tippen zum Starten'}
-                meta={step ? satzText(step) : aktuelle.dosage}
-                onTap={starten}
-              />
-            </div>
-          )}
-
-          <Uebungsbild src={aktuelle.img} name={aktuelle.name} klasse="ablaufbild"
-            onClick={() => onOpen(schritt)} />
-
-          <h3 class="ablaufname">{aktuelle.name}</h3>
-          <div class="dosisgross">{aktuelle.dosage}<small>{aktuelle.focus}</small></div>
-          <ol class="ablaufschritte">{aktuelle.steps.map((t, i) => <li key={i}>{t}</li>)}</ol>
-
-          {/* Zeitdosiert liegt die grosse Taste auf Start/Pause wie im Zirkel,
-              und die Taste daneben rueckt eine Uebung weiter - nie die Uhr.
-              Ohne Uhr bleibt Weiter die Haupttaste, weil es dann die einzige
-              Bewegung im Ablauf ist.
-
-              Die angehaltene Uhr laeuft auf "Fortsetzen" weiter und nicht auf
-              "Weiter": Weiter heisst in beiden Fassungen dasselbe, naemlich
-              naechste Uebung. Im Zirkel tragen beide Tasten dieselbe
-              Aufschrift - hier stehen sie direkt nebeneinander und meinten
-              Verschiedenes. */}
-          {zeit ? (
-            <>
-              <div class="controls">
-                <button class="btn secondary" onClick={() => blaettern(schritt - 1)}
-                  disabled={schritt === 0}>Zurück</button>
-                <button class="btn gross" onClick={starten}>
-                  {laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start')}</button>
-                <button class="btn secondary" onClick={() => blaettern(letzte ? -1 : schritt + 1)}>
-                  {letzte ? 'Fertig' : 'Weiter'}</button>
-              </div>
-              <button class="btn secondary block ablaufende"
-                onClick={() => blaettern(-1)}>Ablauf beenden</button>
-            </>
-          ) : (
-            <div class="controls">
-              <button class="btn secondary" onClick={() => blaettern(schritt - 1)}
-                disabled={schritt === 0}>Zurück</button>
-              <button class="btn gross" onClick={() => blaettern(letzte ? -1 : schritt + 1)}>
-                {letzte ? 'Fertig' : 'Weiter'}</button>
-              <button class="btn secondary" onClick={() => blaettern(-1)}>Beenden</button>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          <div class="row"><span>Übungen</span><b>{mengeText}</b></div>
-          {/* Der Hinweis auf die Uhr steht in der Zeile und nicht erst im
-              Ablauf: sonst überrascht es, dass die eine Übung einen Ring
-              bekommt und die nächste nicht. */}
-          <div class="exlist koerperliste" style="margin-top:8px">
-            {uebungen.map((ex, i) => (
-              <button class="exrow" key={ex.key} onClick={() => onOpen(i)}>
-                <span class="exname">
-                  {i + 1}. {ex.name}
-                  <small><b>{ex.dosage}</b> · {ex.focus}</small>
-                </span>
-                <span class="ziel">{zeitDosis(ex.dosage) ? 'Timer ›' : '›'}</span>
-              </button>
-            ))}
-          </div>
-          <button class="btn tonal block" style="margin-top:14px"
-            onClick={() => setSchritt(0)}>Geführten Ablauf starten</button>
-        </>
-      )}
-      <p class="hint">{hint}</p>
+        <ol class="ablaufschritte">{aktuelle.steps.map((t, i) => <li key={i}>{t}</li>)}</ol>
+      ) : null}
     </div>
   );
+
+  return { buehne, liste };
 }

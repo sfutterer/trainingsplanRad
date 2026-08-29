@@ -13,26 +13,32 @@
    Koordination. Er zaehlt genau dort Sekunden, wo der Plan Sekunden vorgibt -
    von den fuenf Uebungen ist das nur die tiefe Kniebeuge mit 60 s; neben
    "10 Wdh. je Seite" haette eine Uhr nichts zu tun. In die naechste Uebung
-   schaltet er nie von selbst: das bleibt der Weiter-Taste vorbehalten. */
+   schaltet er nie von selbst: das bleibt der Weiter-Taste vorbehalten.
+
+   Der Merksatz ist der eine Status dieses Bausteins und steht deshalb im Kopf.
+   Alles Weitere aus dem Plan ist ein Hinweis und steht unten - dieselbe
+   Aufteilung wie in den anderen drei Bausteinen. */
 
 import { plan } from '../../../state/store.js';
-import { Koerperablauf } from './Koerperablauf.jsx';
+import { Baustein } from './Baustein.jsx';
+import { useKoerperablauf } from './Koerperablauf.jsx';
 
 export function Beweglichkeit({ onOpen }){
   const m = plan.value.mobility;
 
-  return (
-    <>
-      <div class="card">
-        <div class="row"><span>Beweglichkeit</span><b>{m.durationHint} · täglich</b></div>
-        {/* Der Hinweis steht hervorgehoben, weil er die eine Sache benennt, die
-            bei Radfahrern den groessten Unterschied macht. */}
-        <p class="merksatz">{m.note}</p>
-        <p class="hint">{m.placement}</p>
-      </div>
+  const { buehne, liste } = useKoerperablauf({
+    uebungen: m.exercises, timerId: 'beweglichkeit',
+    label: 'Beweglichkeit', segment: 'mobility', onOpen
+  });
 
-      <Koerperablauf uebungen={m.exercises} hint={m.scope} timerId="beweglichkeit"
-        mengeText={m.exercises.length + ' in Folge'} onOpen={onOpen} />
-    </>
+  return (
+    <Baustein
+      titel="Beweglichkeit"
+      meta={m.durationHint + ' · täglich'}
+      status={<p class="merksatz">{m.note}</p>}
+      buehne={buehne}
+      hinweise={[m.placement, m.scope]}>
+      {liste}
+    </Baustein>
   );
 }
