@@ -140,6 +140,16 @@ button.dayzeile:active{ background: var(--surface-2); }
 .kalnavi-titel span{ font-size: 12px; color: var(--muted); }
 .btn.klein{ min-height: 40px; padding: 0 14px; font-size: 13px; }
 
+/* Der Sprung zum heutigen Tag sitzt in der Titelspalte, nicht am Zeilenende:
+   dort landete er genau auf der Stelle, an der eben noch der Weiter-Pfeil war,
+   und beim mehrfachen Vorblaettern traf der naechste Tipp "Heute". Zentriert
+   unter dem Titel steht er den Pfeilen nicht im Weg, und die aendern ihre
+   Lage nicht mehr, je nachdem ob er sichtbar ist. */
+.kalnavi-titel .heute-sprung{
+  align-self: center;
+  min-height: 30px; margin-top: 4px; padding: 0 16px;
+}
+
 .segmented.ansichtwahl{ margin-bottom: 12px; }
 
 /* ---- Monatsraster ---- */

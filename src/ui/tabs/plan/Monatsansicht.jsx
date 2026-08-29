@@ -65,13 +65,15 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
         <div class="kalnavi">
           <button class="iconbtn" type="button" aria-label="Voriger Monat"
             onClick={() => blaettern(-1)}><span aria-hidden="true">‹</span></button>
-          <div class="kalnavi-titel"><b>{monthLabel(monat)}</b></div>
+          <div class="kalnavi-titel">
+            <b>{monthLabel(monat)}</b>
+            {!gleicherMonat(monat, heute) && (
+              <button class="btn tonal klein heute-sprung" type="button"
+                onClick={() => setzeAnker(heute)}>Heute</button>
+            )}
+          </div>
           <button class="iconbtn" type="button" aria-label="Nächster Monat"
             onClick={() => blaettern(1)}><span aria-hidden="true">›</span></button>
-          {!gleicherMonat(monat, heute) && (
-            <button class="btn tonal klein" type="button"
-              onClick={() => setzeAnker(heute)}>Heute</button>
-          )}
         </div>
 
         <div class="kalkopf" aria-hidden="true">
