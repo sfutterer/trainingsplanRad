@@ -40,7 +40,25 @@ export default defineConfig({
            Update-Banner schaltet um. Kein halber Stand, kein Reload mitten im
            Intervall, und kein Ueberspringen einer Version. */
         navigateFallback: 'index.html',
-        cleanupOutdatedCaches: true
+        cleanupOutdatedCaches: true,
+        /* Das Profilbild kommt von Google und faellt damit nicht in den
+           Precache. Ohne diese Regel steht oben rechts unterwegs immer nur der
+           Ersatz aus Anfangsbuchstaben - und genau unterwegs ist die App
+           offline. Ein Bild, das sich praktisch nie aendert, darf aus dem
+           Cache kommen.
+
+           statuses 0 mit aufnehmen: das Bild wird ohne CORS geladen, die
+           Antwort ist deshalb opaque und traegt Status 0. Ohne den Eintrag
+           landet nie etwas im Cache. */
+        runtimeCaching: [{
+          urlPattern: /^https:\/\/lh3\.googleusercontent\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'profilbilder',
+            expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            cacheableResponse: { statuses: [0, 200] }
+          }
+        }]
       },
       devOptions: { enabled: false }
     })

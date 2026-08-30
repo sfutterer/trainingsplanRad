@@ -2,3 +2,7 @@ node_modules/
 dist/
 dev-dist/
 *.log
+# Die eigene Client-ID bleibt lokal. .env.example ist die Vorlage und gehoert
+# ins Repo.
+.env
+.env.local

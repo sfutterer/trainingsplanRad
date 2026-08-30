@@ -6,13 +6,18 @@
    waehrend des Trainings minutenlang laeuft, ist das der Unterschied. */
 
 import { signal, computed } from '@preact/signals';
-import { localStorageAdapter, createRepos, KEYS } from '../data/storage.js';
+import { createRepos, KEYS } from '../data/storage.js';
 import { loadPlan, parsePlan, PlanError } from '../data/planSource.js';
 import { toMidnight, isoDayLocal, weekNumberFor } from '../domain/week.js';
 import * as platform from '../platform/index.js';
 import { theme } from './theme.js';
+import { initAuth, profilSpeicher } from './auth.js';
 
-export const store = createRepos(localStorageAdapter());
+/* Nicht mehr direkt auf localStorage, sondern auf den Profiladapter: er stellt
+   jedem Schluessel den Praefix des angemeldeten Profils voran. Fuer alles
+   darunter aendert sich nichts - createRepos und jeder Aufrufer sehen
+   weiterhin "core-session-log". */
+export const store = createRepos(profilSpeicher);
 
 /* --- Kern --- */
 export const plan        = signal(null);   // normalisiertes Modell
@@ -45,6 +50,12 @@ export const week = computed(() => {
 });
 
 export async function boot(){
+  /* Ganz zuerst, noch vor dem Plan: erst wenn feststeht, welches Profil aktiv
+     ist, zeigt der Speicher auf den richtigen Bestand. Ein eigener Plan
+     gehoert dem Profil wie alles andere auch - laedt man ihn vorher, bekommt
+     jedes Profil den Plan dessen, der zuletzt einen importiert hat. */
+  await initAuth();
+
   /* Plan zuerst: ohne ihn zeigt die App nichts an. */
   try {
     const r = await loadPlan(store);

@@ -14,7 +14,9 @@ import { NavigationBar } from './ui/components/NavigationBar.jsx';
 import { AppBar } from './ui/components/AppBar.jsx';
 import { NavDrawer } from './ui/components/NavDrawer.jsx';
 import { HeuteOverlay } from './ui/components/HeuteOverlay.jsx';
+import { ProfilSheet } from './ui/components/ProfilSheet.jsx';
 import { ready, planError, plan, discardOwnPlanAndReload } from './state/store.js';
+import { profil } from './state/auth.js';
 import { tab, gotoTab, tabId, BEREICHE, HAUPTZIELE } from './state/navigation.js';
 import { PlanTab } from './ui/tabs/plan/PlanTab.jsx';
 import { TrainingTab } from './ui/tabs/training/TrainingTab.jsx';
@@ -85,6 +87,7 @@ const KOMPONENTEN = {
 export function App(){
   const [drawer, setDrawer] = useState(false);
   const [glocke, setGlocke] = useState(false);
+  const [profilOffen, setProfilOffen] = useState(false);
   const [erhoben, setErhoben] = useState(false);
 
   /* Echte Refs, keine frisch gebauten Objekte: der popstate-Handler wird
@@ -92,8 +95,10 @@ export function App(){
      Durchlaufs. */
   const drawerRef = useRef(false);
   const glockeRef = useRef(false);
+  const profilRef = useRef(false);
   drawerRef.current = drawer;
   glockeRef.current = glocke;
+  profilRef.current = profilOffen;
 
   useEffect(() => {
     /* Ein unbekannter Anker landet auf dem Plan statt in einem Zustand, den
@@ -107,6 +112,7 @@ export function App(){
          Dialog gleich zwei Ebenen zurueck. */
       if(drawerRef.current){ setDrawer(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
       if(glockeRef.current){ setGlocke(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
+      if(profilRef.current){ setProfilOffen(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
       gotoTab((e.state && e.state.tab) || 'plan', false);
     };
     window.addEventListener('popstate', onPop);
@@ -162,6 +168,8 @@ export function App(){
         onMenu={() => { setDrawer(true); history.pushState({ tab: tab.value, overlay:'drawer' }, '', '#' + tab.value); }}
         onGlocke={() => { setGlocke(true); history.pushState({ tab: tab.value, overlay:'glocke' }, '', '#' + tab.value); }}
         glockeAktiv={glocke}
+        profil={profil.value}
+        onProfil={() => { setProfilOffen(true); history.pushState({ tab: tab.value, overlay:'profil' }, '', '#' + tab.value); }}
       />
       <main class={'content' + (imUntermenue ? '' : ' ohne-leiste')}>
         <div class="page"><Aktiv /></div>
@@ -180,6 +188,8 @@ export function App(){
       {glocke && <HeuteOverlay
         onClose={() => setGlocke(false)}
         onZumPlan={() => { setGlocke(false); gotoTab('plan', true); }} />}
+
+      {profilOffen && <ProfilSheet onClose={() => setProfilOffen(false)} />}
     </div>
   );
 }

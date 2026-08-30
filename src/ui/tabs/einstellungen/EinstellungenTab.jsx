@@ -19,6 +19,9 @@ import { KARTENSTILE, KARTENSTIL_DEFAULT, kartenstil } from '../../../state/kart
 import { PLAN_SCHEMA_VERSION } from '../../../data/planSource.js';
 import { Gruppe, Zeile, Schalter } from '../../components/SettingsList.jsx';
 import { Segmented } from '../../components/Segmented.jsx';
+import { profil, profile, clientId, setzeClientId, entferneProfil,
+         neuStarten } from '../../../state/auth.js';
+import { clientIdAusBuild } from '../../../data/google.js';
 
 /* Ein Schluesselfeld klappt unter seiner Zeile auf. Kein eigener Bildschirm:
    man traegt ihn genau einmal ein. */
@@ -43,6 +46,39 @@ function SchluesselZeile({ titel, wert, platzhalter, hilfe, onSave }){
     </>
   );
 }
+
+const HILFE_KONTO = (
+  <>
+    <p>Die Anmeldung trennt die Daten mehrerer Personen an einem Browser. Jedes Konto
+       bekommt einen eigenen Bestand: Protokolle, Testhistorie, Erhebungen,
+       Schwellenwerte, Zugänge, Plan und Einstellungen.</p>
+    <p><b>Es wird nichts hochgeladen und nichts abgeglichen.</b> Alles bleibt im Speicher
+       dieses Geräts. Wer die App auf zwei Geräten benutzt, hat auch mit demselben Konto
+       zwei getrennte Bestände – dafür ist weiterhin die Sicherung da.</p>
+    <p>Und sie ist kein Schutz: ohne Server lässt sich das Token nicht prüfen, und wer den
+       Speicher dieses Browsers öffnet, liest jedes Profil ohne Anmeldung. Sie ordnet
+       Daten zu, sie verschließt sie nicht.</p>
+  </>
+);
+
+const HILFE_CLIENT_ID = (
+  <>
+    <p>Ohne sie geht die Anmeldung nicht. Sie ist kein Geheimnis – sie steht in jedem
+       Aufruf, den der Browser an Google schickt.</p>
+    <ol>
+      <li>In der <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer">Google Cloud Console</a> ein Projekt anlegen.</li>
+      <li>Unter <b>APIs &amp; Services → OAuth consent screen</b> die Zustimmungsseite ausfüllen.</li>
+      <li><b>Credentials → Create credentials → OAuth client ID</b>, Typ <b>Web application</b>.</li>
+      <li>Bei <b>Authorized JavaScript origins</b> die Herkunft der Seite eintragen –
+          für die veröffentlichte App <code>https://sfutterer.github.io</code>, zum
+          Entwickeln zusätzlich <code>http://localhost:5173</code>.</li>
+      <li>Die erzeugte <b>Client ID</b> hier einsetzen. Sie endet auf
+          <code>.apps.googleusercontent.com</code>.</li>
+    </ol>
+    <p>Wer die App selbst baut, kann sie stattdessen als <code>VITE_GOOGLE_CLIENT_ID</code>
+       in den Build geben. Das Feld hier überschreibt sie.</p>
+  </>
+);
 
 const HILFE_ICU = (
   <>
@@ -70,6 +106,76 @@ const HILFE_KARTE = (
     <p>Der Anbieter sieht dabei, welche Kartenausschnitte du abrufst, also grob, wo du fährst.</p>
   </>
 );
+
+/* Das Konto in den Einstellungen: was oben rechts nicht hingehoert.
+
+   Im Sheet hinter dem Profilbild steht, was man im Betrieb braucht - anmelden,
+   wechseln, abmelden. Hier stehen die beiden Dinge, die man genau einmal tut
+   und die dort nur im Weg waeren: die Client-ID eintragen und ein Profil samt
+   seinen Daten wieder loswerden. */
+function KontoGruppe({ melde }){
+  const [idOffen, setIdOffen] = useState(false);
+  const [text, setText] = useState('');
+  const ich = profil.value;
+  const id = clientId.value;
+  const ausBuild = clientIdAusBuild();
+
+  async function entfernen(p){
+    const ja = await bestaetige({
+      titel: 'Profil „' + (p.name || p.email) + '" entfernen?',
+      text: 'Alle Daten dieses Profils werden von diesem Gerät gelöscht – Trainingsprotokolle, '
+          + 'Testhistorie, Erhebungen, Zugänge und der Plan. Das lässt sich nicht rückgängig '
+          + 'machen; nur eine vorher heruntergeladene Sicherung bringt sie zurück.',
+      jaLabel: 'Entfernen', gefahr: true
+    });
+    if(!ja) return;
+    /* Das eigene Profil zu entfernen zieht den Bestand unter der laufenden App
+       weg - dann gilt dieselbe Regel wie bei jedem Profilwechsel. */
+    const eigenes = ich && ich.id === p.id;
+    await entferneProfil(p.id);
+    if(eigenes) return neuStarten();
+    melde({ art:'ok', titel:'Profil entfernt: ' + (p.name || p.email), zeilen:[] });
+  }
+
+  return (
+    <Gruppe titel="Konto">
+      <Zeile titel="Angemeldet"
+        wert={ich ? (ich.name + ' · ' + ich.email) : 'nein – Daten dieses Browsers'}
+        hilfe={HILFE_KONTO} />
+      <Zeile titel="Google-Client-ID"
+        wert={id
+          ? (id.slice(0, 14) + '…' + (ausBuild && id === ausBuild ? ' · aus dem Build' : ' · hier eingetragen'))
+          : 'nicht hinterlegt – Anmeldung nicht möglich'}
+        hilfe={HILFE_CLIENT_ID}
+        onClick={() => { setText(id === ausBuild ? '' : id); setIdOffen(o => !o); }} />
+      {idOffen && (
+        <div class="szeile-eingabe">
+          <input type="text" value={text} autocomplete="off" autocapitalize="off" spellcheck={false}
+            aria-label="Google-Client-ID"
+            placeholder="…apps.googleusercontent.com"
+            onInput={e => setText(e.currentTarget.value)} />
+          <button class="btn" onClick={async () => {
+            await setzeClientId(text);
+            setIdOffen(false);
+            melde({ art:'ok', titel:'Client-ID gesichert.', zeilen:[] });
+          }}>Sichern</button>
+          {id && id !== ausBuild && (
+            <button class="btn secondary" onClick={async () => {
+              await setzeClientId('');
+              setText(''); setIdOffen(false);
+              melde({ art:'ok', titel: ausBuild ? 'Wieder die ID aus dem Build.' : 'Client-ID gelöscht.', zeilen:[] });
+            }}>Löschen</button>
+          )}
+        </div>
+      )}
+      {profile.value.map(p => (
+        <Zeile key={p.id} titel={'Profil entfernen: ' + (p.name || p.email)}
+          wert={(ich && ich.id === p.id ? 'das gerade offene Profil · ' : '') + 'löscht seine Daten auf diesem Gerät'}
+          onClick={() => entfernen(p)} />
+      ))}
+    </Gruppe>
+  );
+}
 
 export function EinstellungenTab(){
   const [meldung, setMeldung] = useState(null);
@@ -107,8 +213,9 @@ export function EinstellungenTab(){
       catch(e){ return setMeldung({ art:'fehler', titel:'Die Datei ist kein gültiges JSON.', zeilen:[] }); }
       const ja = await bestaetige({
         titel: 'Sicherung einspielen?',
-        text: 'Alle jetzigen Daten auf diesem Gerät werden überschrieben – Trainingsprotokolle, '
-            + 'Testhistorie, Erhebungen, Zugänge und der Plan. Was in der Datei fehlt, wird gelöscht.',
+        text: 'Alle jetzigen Daten dieses Profils werden überschrieben – Trainingsprotokolle, '
+            + 'Testhistorie, Erhebungen, Zugänge und der Plan. Was in der Datei fehlt, wird gelöscht. '
+            + 'Andere Profile auf dem Gerät bleiben unberührt.',
         jaLabel: 'Einspielen', gefahr: true
       });
       if(!ja) return;
@@ -148,6 +255,8 @@ export function EinstellungenTab(){
           {meldung.zeilen.length > 0 && <ul>{meldung.zeilen.map((z, i) => <li key={i}>{z}</li>)}</ul>}
         </div>
       )}
+
+      <KontoGruppe melde={setMeldung} />
 
       <Gruppe titel="Zugänge">
         <SchluesselZeile titel="intervals.icu" wert={apiKey.value} platzhalter="API-Key"
@@ -267,10 +376,12 @@ export function EinstellungenTab(){
                  nur im Speicher dieses einen Browserprofils.</p>
               <p>Ein „Browserdaten löschen“, ein Gerätewechsel oder ein Neuinstallieren der App – und
                  sie sind weg. Diese Datei ist die einzige Kopie, die es gibt.</p>
+              <p>Gesichert wird das Profil, das gerade offen ist. Wer zwei Konten benutzt, lädt
+                 zwei Dateien herunter – und spielt sie auch je Profil wieder ein.</p>
             </>
           }
           onClick={sichern} />
-        <Zeile titel="Sicherung einspielen" wert="überschreibt alle Daten auf diesem Gerät"
+        <Zeile titel="Sicherung einspielen" wert="überschreibt alle Daten dieses Profils"
           onClick={zurueckspielen} />
         <Zeile titel="Speicher dauerhaft anfordern" wert="schützt vor automatischem Aufräumen"
           hilfe={<p>Bittet den Browser, die Daten bei Platzmangel nicht zu löschen. Kein Ersatz für die Sicherung.</p>}

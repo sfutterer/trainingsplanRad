@@ -48,7 +48,7 @@ die Fassung aus dem Repo.
 | Verzeichnis | Inhalt |
 |---|---|
 | `src/domain/` | Plan, Zonen, Analyse, Timer. Rein: kein DOM, kein fetch, keine Uhr außer als Parameter |
-| `src/data/` | Speicher, `plan.json`, intervals.icu |
+| `src/data/` | Speicher, Profile, Google-Anmeldung, `plan.json`, intervals.icu |
 | `src/platform/` | Wake Lock, Sprachausgabe, Töne, Haptik – jede darf ausfallen |
 | `src/state/` | Signals |
 | `src/ui/` | Komponenten und die fünf Bereiche |
@@ -71,17 +71,65 @@ Nebeneffekt, dass man Nutzertext im Diff sofort erkennt.
 dafür sorgt `.editorconfig`. `npm run check` läuft Linter, Tests und Build in
 der Reihenfolge, in der auch die GitHub-Action sie ausführt.
 
+## Anmeldung und Profile
+
+Oben rechts steht das Profilbild. Dahinter lässt sich ein Google-Konto anmelden;
+jedes angemeldete Konto bekommt einen **eigenen Datenbestand** – Protokolle,
+Testhistorie, Erhebungen, Schwellenwerte, Zugänge, Plan und Einstellungen.
+
+Was die Anmeldung **nicht** tut: hochladen, abgleichen, schützen. Es gibt kein
+Backend. Alles bleibt im `localStorage` des Geräts, und ohne Server lässt sich
+die Signatur des ID-Tokens nicht prüfen – wer den Speicher dieses Browsers
+öffnet, liest jedes Profil ohne Anmeldung. Die Anmeldung **ordnet Daten zu, sie
+verschließt sie nicht**. Für zwei Geräte bleibt die Sicherung der Weg.
+
+Ohne Anmeldung läuft die App unverändert weiter, auf demselben Bestand wie
+bisher: das lokale Profil benutzt die Schlüssel ohne Präfix, angemeldete
+Profile liegen unter `profil:google:<sub>:`. Die `sub` ist die Kontokennung von
+Google und nicht die Mailadresse – die kann sich ändern, ohne dass der Bestand
+mitwandern soll.
+
+**Beim Update:** der Bestand, der vor der ersten Anmeldung auf dem Gerät lag,
+wandert vollständig in das **erste Profil, das sich anmeldet**, und wird dort
+angezeigt. Das passiert genau einmal; ein zweites Konto fängt leer an. Ein
+Merker im Speicher hält fest, wer ihn bekommen hat.
+
+### Client-ID einrichten
+
+Ohne Google-Client-ID ist der Anmeldeknopf wirkungslos. Sie ist kein Geheimnis –
+sie steht in jedem Aufruf, den der Browser an Google schickt.
+
+1. In der [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   ein Projekt anlegen, den OAuth consent screen ausfüllen.
+2. **Credentials → Create credentials → OAuth client ID**, Typ *Web application*.
+3. Bei **Authorized JavaScript origins** die Herkunft eintragen:
+   `https://sfutterer.github.io` für die veröffentlichte App, zum Entwickeln
+   zusätzlich `http://localhost:5173`.
+4. Die Client ID entweder in der App unter **Einstellungen → Konto** eintragen
+   oder als `VITE_GOOGLE_CLIENT_ID` in den Build geben – lokal über eine
+   `.env`-Datei (siehe `.env.example`), im Deploy über die Repository-Variable
+   `GOOGLE_CLIENT_ID` unter Settings → Secrets and variables → Actions →
+   Variables. Das Feld in der App überschreibt den Wert aus dem Build.
+
+Ist keine hinterlegt, sagt das Profil-Sheet das und verweist auf die Zeile in
+den Einstellungen.
+
 ## Daten sichern
 
 Trainingsprotokolle, Testhistorie und Erhebungen liegen nur im `localStorage`
 dieses einen Browserprofils. Unter „Einstellungen“ steht der Knopf für die
 Sicherung – das ist die einzige Kopie, die es gibt.
 
+Die Sicherung umfasst **ein Profil**: den Bestand, der beim Herunterladen offen
+ist. Wer zwei Konten benutzt, lädt zwei Dateien herunter. Wer angemeldet ist und
+eine Sicherung einspielt, überschreibt damit nur sein eigenes Profil; die
+Profilliste des Geräts und die Anmeldung selbst stehen nicht in der Datei.
+
 ## Aufbau der Oberfläche
 
 Unten die vier Bereiche, die während des Trainings gebraucht werden: **Plan**,
 **Kraft**, **Intervalle**, **Analyse**. Oben links das Menü mit allen Bereichen,
-oben rechts die Glocke mit dem Tagesüberblick.
+oben rechts die Glocke mit dem Tagesüberblick und daneben das Profilbild.
 
 Nur über das Menü erreichbar, weil man sie selten braucht:
 
@@ -98,6 +146,7 @@ Nur über das Menü erreichbar, weil man sie selten braucht:
 | Thunderforest | Kartenkacheln in der Analyse (Atlas, OpenCycleMap, Landscape) | optional, sonst OpenStreetMap |
 | Open-Meteo | Temperatur, Feuchte, Niederschlag und Wind je Stunde | keiner |
 | Overpass (OpenStreetMap) | Untergrund der gefahrenen Wege | keiner |
+| Google | Anmeldung, trennt die Profile auf einem Gerät | optional, Client-ID (siehe oben) |
 
 Die Anleitung, wo man die Schlüssel bekommt, steht in der App hinter dem
 Fragezeichen der jeweiligen Zeile.

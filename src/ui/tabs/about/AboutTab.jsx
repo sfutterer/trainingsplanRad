@@ -69,6 +69,19 @@ export function AboutTab(){
                  der Fahrt. Der Stil steht in den Einstellungen unter Darstellung.</p>
             </>
           } />
+        <Zeile titel="Google" wert="Anmeldung · Client-ID optional"
+          hilfe={
+            <>
+              <p>Erst beim Antippen von „Anmelden“ wird das Skript von Google geladen – wer
+                 sich nie anmeldet, spricht nie mit Google, und die App startet auch ohne Netz.</p>
+              <p>Zurück kommt ein Token mit Kontokennung, Name, Mailadresse und Bild. Daraus
+                 entsteht ein Profil auf diesem Gerät. <b>Es geht nichts hinaus</b> – keine
+                 Trainingsdaten, keine Fahrten, keine Koordinaten.</p>
+              <p>Die Anmeldung trennt Bestände, sie schützt sie nicht: ohne Server lässt sich
+                 das Token nicht prüfen, und der Speicher dieses Browsers steht jedem offen,
+                 der ihn aufmacht.</p>
+            </>
+          } />
       </Gruppe>
 
       <Gruppe titel="Wenn etwas nicht antwortet">
@@ -90,9 +103,13 @@ export function AboutTab(){
         <Zeile titel="Was gespeichert wird"
           wert="Protokolle, Schwellenwerte, Einstellungen, Schlüssel"
           hilfe={
-            <p>Alles im Speicher dieses Browserprofils, nichts in einer Cloud. Die Sicherung
-               unter Einstellungen schreibt eine JSON-Datei, die alles enthält – das ist die
-               einzige Kopie, die es sonst gibt.</p>
+            <>
+              <p>Alles im Speicher dieses Browserprofils, nichts in einer Cloud. Die Sicherung
+                 unter Einstellungen schreibt eine JSON-Datei, die alles enthält – das ist die
+                 einzige Kopie, die es sonst gibt.</p>
+              <p>Ist ein Konto angemeldet, liegt jeder Bestand für sich, und die Sicherung
+                 umfasst das Profil, das gerade offen ist. Zwei Konten heißt zwei Dateien.</p>
+            </>
           } />
       </Gruppe>
 
