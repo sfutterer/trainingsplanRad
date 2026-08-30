@@ -14,7 +14,7 @@ import { NavigationBar } from './ui/components/NavigationBar.jsx';
 import { AppBar } from './ui/components/AppBar.jsx';
 import { NavDrawer } from './ui/components/NavDrawer.jsx';
 import { HeuteOverlay } from './ui/components/HeuteOverlay.jsx';
-import { ready, planError, plan } from './state/store.js';
+import { ready, planError, plan, discardOwnPlanAndReload } from './state/store.js';
 import { tab, gotoTab, tabId, BEREICHE, HAUPTZIELE } from './state/navigation.js';
 import { PlanTab } from './ui/tabs/plan/PlanTab.jsx';
 import { TrainingTab } from './ui/tabs/training/TrainingTab.jsx';
@@ -138,6 +138,12 @@ export function App(){
           Solange das nicht behoben ist, zeigt die App keine Trainingsvorgaben –
           lieber gar keine Zahl als eine falsche.
         </p>
+        {/* Nur bei einem kaputten eigenen Plan: dieser Bildschirm ersetzt die
+            ganze App, der Knopf in den Einstellungen ist von hier aus nicht
+            erreichbar. Ohne diesen Ausweg bliebe die App verriegelt. */}
+        {e.istEigener && <button class="btn" type="button" onClick={discardOwnPlanAndReload}>
+          Eigenen Plan verwerfen und Default laden
+        </button>}
       </div>
     );
   }

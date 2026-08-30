@@ -47,8 +47,19 @@ function planWeek(plan, week){
   return plan.weeks[weekIndex(plan, week)];
 }
 
+/* Erholungswochen stehen einzeln in plan.json.
+
+   Bis Fassung 2 rechnete diese Funktion week % recoveryEveryNthWeek === 0. Der
+   3:1-Rhythmus war im Trainingsplan selbst als Risiko benannt, mit der
+   Begruendung, die Formel halte die App-Logik einfach - kein Trainingsargument.
+   Fassung 3 faehrt ab Woche 5 im 2:1-Rhythmus, und der laesst sich mit keinem
+   Modulo schreiben, weil die erste Erholungswoche noch aus dem 3:1-Teil stammt.
+
+   Ein Nebeneffekt der Liste ist gewollt: nach der letzten Planwoche gibt es
+   keine Erholungswochen mehr. Die Formel haette dort weitergezaehlt und im
+   Winterblock beliebige Wochen als Erholung ausgewiesen. */
 export function isRecoveryWeek(plan, week){
-  return week % plan.recoveryEveryNthWeek === 0;
+  return plan.recoveryWeeks.indexOf(week) >= 0;
 }
 
 export function isWinterBlock(plan, week){

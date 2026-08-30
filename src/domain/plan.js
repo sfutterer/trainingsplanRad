@@ -56,7 +56,8 @@ export function createPlan(json){
   return {
     raw: json,
     weekCount: weeks.length,
-    recoveryEveryNthWeek: json.recoveryEveryNthWeek,
+    recoveryWeeks: json.recoveryWeeks.slice(),
+    volumeCapPercent: json.weeklyVolumeCapPercent,
     phaseNames,
     weeks,
     winterBlock: json.winterBlock,
@@ -74,6 +75,7 @@ export function createPlan(json){
 
     interval: json.intervalTimer,
     thresholdTest: json.thresholdTest,
+    testTaper: json.testTaper,
 
     circuit: {
       prepSeconds: json.coreCircuit.prepSeconds,
@@ -91,6 +93,9 @@ export function createPlan(json){
       durationHint: json.legBlock.durationHint,
       shortList: json.legBlock.shortList,
       doseByPhase: json.legBlock.doseByPhase,
+      sorenessNote: json.legBlock.sorenessNote,
+      sorenessWarning: json.legBlock.sorenessWarning,
+      sorenessLevels: json.legBlock.sorenessLevels,
       exercises: json.legBlock.exercises.map(ex => ({
         key: ex.key, name: ex.name, perSide: !!ex.perSide, img: ex.image,
         steps: ex.steps, why: ex.why, progression: ex.progression, goal: ex.goal
@@ -113,6 +118,11 @@ export function createPlan(json){
       progression: json.coordination.progression,
       exercises: bodyExercises(json.coordination.exercises)
     },
+
+    /* Der Knochenreiz ist keine Uebungsliste, sondern eine einzige Vorgabe mit
+       Begruendung - deshalb keine Umbenennung wie bei den drei Bloecken
+       darueber, sondern der Abschnitt so, wie er in der Datei steht. */
+    bone: json.boneStimulus || null,
 
     texts: json.texts
   };

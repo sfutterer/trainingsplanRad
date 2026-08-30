@@ -15,6 +15,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import { createPlan } from '../src/domain/plan.js';
 import { toMidnight, dayFromIso } from '../src/domain/week.js';
+import * as D from '../src/domain/day.js';
 import {
   isRide, isStrength, localDay, recordingNote, fmtMin, pct, downgrade,
   estimateRounds, compareDay, weekTotals, buildReport,
@@ -323,6 +324,45 @@ describe('Wochensummen', () => {
     expect(w[0].week).toBe(1);
     expect(Math.round(w[0].istSec / 60)).toBe(180);
     expect(w[0].tage).toBe(2);
+  });
+
+  /* Der Umfangsdeckel aus Fassung 3. Bis dahin warnte die Analyse nur nach
+     unten - zu wenig Umfang war ein Befund, zu viel keiner. Genau das war der
+     Fehler: der Ist-Umfang der ersten drei Wochen lag 10 bis 35 % ueber Plan. */
+  it('meldet eine Woche ueber dem Umfangsdeckel', () => {
+    const FR = dayFromIso('2026-08-21');
+    const ueber = D.weekCapMinutes(plan, 1) + 30;
+    const rows = buildReport(plan, TH, START, SA, FR, [
+      Object.assign(fahrt(ueber), { start_date_local: '2026-08-15T09:00:00' })
+    ], null, []);
+    const w = weekTotals(rows, plan)[0];
+    expect(w.planMin).toBe(D.weekPlanMinutes(plan, 1));
+    expect(w.capMin).toBe(D.weekCapMinutes(plan, 1));
+    expect(w.ueberDeckel).toBe(true);
+  });
+
+  it('schweigt, solange die Woche unter dem Deckel bleibt', () => {
+    const FR = dayFromIso('2026-08-21');
+    const rows = buildReport(plan, TH, START, SA, FR, [
+      Object.assign(fahrt(D.weekPlanMinutes(plan, 1)), { start_date_local: '2026-08-15T09:00:00' })
+    ], null, []);
+    expect(weekTotals(rows, plan)[0].ueberDeckel).toBe(false);
+  });
+
+  /* Eine angebrochene Woche kann den Deckel nicht ueberschreiten, nur
+     unterbieten: die Aktivitaeten sind vollstaendig, der Plan dagegen nicht. */
+  it('wertet eine unvollstaendig erfasste Woche nicht gegen den Deckel', () => {
+    const rows = buildReport(plan, TH, START, SA, SO, [
+      Object.assign(fahrt(D.weekCapMinutes(plan, 1) + 60), { start_date_local: '2026-08-15T09:00:00' })
+    ], null, []);
+    const w = weekTotals(rows, plan)[0];
+    expect(w.vollstaendig).toBe(false);
+    expect(w.ueberDeckel).toBe(false);
+  });
+
+  it('kommt ohne Plan aus und laesst den Deckel dann weg', () => {
+    const rows = buildReport(plan, TH, START, SA, SO, [], null, []);
+    expect(weekTotals(rows)[0].capMin).toBeUndefined();
   });
 
   it('ordnet jede Aktivitaet ihrem lokalen Tag zu', () => {

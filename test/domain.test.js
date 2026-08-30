@@ -20,7 +20,19 @@
    nur behaupten: beide Abzuege sind um genau 1944 Zeichen kuerzer, und das
    sind 18 Wochen mal 6 Baender mal die 18 Zeichen von ,"color":"#xxxxxx".
    Die beiden Abzuege ohne Baender - Tageskarten und Wiederholungsziele -
-   haben ihre Pruefsumme unveraendert behalten. */
+   haben ihre Pruefsumme unveraendert behalten.
+
+   Neu gesetzt am 30.08.2026 auf Fassung 3 des Trainingsplans. Der
+   Gleichheitsnachweis gegen die Einzeldatei-Fassung ist damit zu Ende: der
+   Plan selbst hat sich geaendert - 2:1-Rhythmus ab Woche 5, neue
+   Phasengrenzen, Tests in Woche 4, 10 und 16, zweite Beineinheit am Dienstag,
+   Erhaltungsreiz am Mittwoch. Was die Pruefsummen ab hier sichern, ist nicht
+   mehr die Gleichheit mit dem alten Stand, sondern dass eine kuenftige
+   Codeaenderung die Zahlen der Fassung 3 nicht anfasst. Die Kennzahlen weiter
+   unten pruefen dieselben Zahlen gegen das Dokument und sind die Stelle, an
+   der ein Fehler benannt wird; die Pruefsumme sagt nur, dass sich etwas
+   geaendert hat. Die Wiederholungsziele des Zirkels sind unveraendert - ihre
+   Pruefsumme steht deshalb noch auf dem alten Wert. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -45,7 +57,7 @@ function dumpWeeks(th){
       + ' recovery=' + W.isRecoveryWeek(plan, w) + ' winter=' + W.isWinterBlock(plan, w)
       + ' test=' + W.isTestWeek(plan, w) + ' coreRounds=' + C.coreRounds(plan, w)
       + ' coreWork=' + C.coreWorkSeconds(plan, w) + ' coreRest=' + C.coreRestSeconds(plan, w)
-      + ' legRounds=' + C.legRounds(plan, w)
+      + ' legRounds=' + C.legRounds(plan, w) + ' tueLegRounds=' + C.tuesdayLegRounds(plan, w)
       + ' coreMinFull=' + C.coreMinutes(plan, w, C.coreRounds(plan, w))
       + ' coreMinWed=' + C.coreMinutes(plan, w, plan.circuit.wednesdayRounds)
       + ' thursday=' + j(D.thursdayPlan(plan, w)) + ' saturday=' + j(D.saturdayBlocks(plan, w))
@@ -94,8 +106,45 @@ describe('plan.json', () => {
 
   it('lehnt eine fremde Schemafassung ab', () => {
     const k = structuredClone(json);
-    k.schemaVersion = 2;
-    expect(planValidate(k)[0]).toContain('diese App liest Fassung 1');
+    k.schemaVersion = 3;
+    expect(planValidate(k)[0]).toContain('diese App liest Fassung 2');
+  });
+
+  /* Fassung 2 kannte recoveryEveryNthWeek und keine recoveryWeeks. Ein solcher
+     Plan darf nicht halb durchlaufen: die Erholungswochen entschieden ueber
+     Beinblock-Dosierung und Samstagsbloecke, und ohne die Liste stuenden dort
+     stillschweigend andere Zahlen. */
+  it('lehnt einen Plan der Fassung 2 ab', () => {
+    const k = structuredClone(json);
+    k.schemaVersion = 1;
+    expect(planValidate(k)[0]).toContain('diese App liest Fassung 2');
+  });
+
+  it('meldet eine Erholungswoche jenseits des Planendes', () => {
+    const k = structuredClone(json);
+    k.recoveryWeeks = [4, 7, 10, 13, 99];
+    expect(planValidate(k).join(' ')).toContain('nur 16 Wochen');
+  });
+
+  it('meldet eine unsortierte Erholungswochenliste', () => {
+    const k = structuredClone(json);
+    k.recoveryWeeks = [4, 10, 7, 13, 16];
+    expect(planValidate(k).join(' ')).toContain('aufsteigen');
+  });
+
+  /* Der Erhaltungsreiz haengt an der Mittwochsfahrt. Steht er in einer Woche
+     ohne Fahrt, gibt es nichts, woran er haengen koennte - und die Karte
+     zeigte ihn trotzdem an. */
+  it('meldet einen Erhaltungsreiz ohne Mittwochsfahrt', () => {
+    const k = structuredClone(json);
+    k.weeks[0].wednesdayExtra = structuredClone(k.weeks[10].wednesdayExtra);
+    expect(planValidate(k).join(' ')).toContain('wednesdayExtra');
+  });
+
+  it('verlangt volle Dosis in der ersten Muskelkater-Stufe', () => {
+    const k = structuredClone(json);
+    k.legBlock.sorenessLevels[0].dose = 'low';
+    expect(planValidate(k).join(' ')).toContain('Voreinstellung');
   });
 
   /* Ein Tippfehler in einem optionalen Feld fiel vorher stillschweigend durch,
@@ -116,11 +165,11 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: '7ab6c788063489d8', len: 12175 });
+      .toEqual({ hash: '9eaad8b2e2b99721', len: 12261 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: 'cc350b5e06fa622c', len: 43550 });
+      .toEqual({ hash: '7ca89f2ce8191479', len: 47567 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -143,30 +192,72 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + D.buildDayInfo(plan, th, date, start).detail);
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: 'ccfbafaef8a8d781', len: 36607 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '5b140423d9bc7d4c', len: 40395 });
   });
 });
 
 describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
+  /* Die Zeile "Soll" aus Abschnitt 2 der Fassung 3. Sie wird gerechnet und
+     nicht gepflegt - stuende sie zusaetzlich in plan.json, waere sie die
+     zweite Zahl fuer dieselbe Sache. */
   it('Wochenumfaenge Rad stimmen mit Abschnitt 2 ueberein', () => {
-    const soll = [266, 326, 359, 255, 373, 393, 403, 253, 410, 430, 435, 270, 392, 413, 418, 270];
+    const soll = [266, 326, 359, 255, 373, 393, 253, 398, 408, 270, 430, 445, 265, 412, 428, 275];
     const ist = [];
-    for(let w = 1; w <= 16; w++){
-      const week = plan.weeks[W.weekIndex(plan, w)];
-      ist.push(week.tuesdayMinutes + week.wednesdayMinutes + D.thursdayPlan(plan, w).minutes
-             + week.saturdayMinutes + week.sundayOptionalMinutes);
-    }
+    for(let w = 1; w <= 16; w++) ist.push(D.weekPlanMinutes(plan, w));
     expect(ist).toEqual(soll);
   });
 
-  it('Z3-Bloecke am Samstag nur in Woche 6, 10 und 14', () => {
-    const mit = [];
-    for(let w = 1; w <= 16; w++) if(D.saturdayBlocks(plan, w)) mit.push(w);
-    expect(mit).toEqual([6, 10, 14]);
+  /* Die Zeile "Max (+10 %)" derselben Tabelle. */
+  it('Umfangsdeckel stimmt mit Abschnitt 2 ueberein', () => {
+    const max = [293, 359, 395, 281, 410, 432, 278, 438, 449, 297, 473, 490, 292, 453, 471, 303];
+    const ist = [];
+    for(let w = 1; w <= 16; w++) ist.push(D.weekCapMinutes(plan, w));
+    expect(ist).toEqual(max);
   });
 
-  it('Schwellentest in Woche 4, 12 und 16', () => {
-    expect(W.testWeeks(plan)).toEqual([4, 12, 16]);
+  it('Erholungswochen sind 4, 7, 10, 13 und 16', () => {
+    const rec = [];
+    for(let w = 1; w <= 16; w++) if(W.isRecoveryWeek(plan, w)) rec.push(w);
+    expect(rec).toEqual([4, 7, 10, 13, 16]);
+  });
+
+  /* Die alte Formel week % 4 === 0 haette im Winterblock weitergezaehlt und
+     dort beliebige Wochen als Erholung ausgewiesen. */
+  it('kennt nach dem Planende keine Erholungswochen mehr', () => {
+    expect(W.isRecoveryWeek(plan, 20)).toBe(false);
+    expect(W.isRecoveryWeek(plan, 24)).toBe(false);
+  });
+
+  it('Phasengrenzen sind 1-4, 5-10, 11-13 und 14-16', () => {
+    const phasen = [];
+    for(let w = 1; w <= 16; w++) phasen.push(W.phaseOf(plan, w));
+    expect(phasen).toEqual([1,1,1,1, 2,2,2,2,2,2, 3,3,3, 4,4,4]);
+  });
+
+  it('Z3-Bloecke am Samstag nur in Woche 6, 9 und 12', () => {
+    const mit = [];
+    for(let w = 1; w <= 16; w++) if(D.saturdayBlocks(plan, w)) mit.push(w);
+    expect(mit).toEqual([6, 9, 12]);
+  });
+
+  it('Schwellentest in Woche 4, 10 und 16', () => {
+    expect(W.testWeeks(plan)).toEqual([4, 10, 16]);
+  });
+
+  it('zweite Beineinheit am Dienstag nur in Woche 11, 12, 14 und 15', () => {
+    const mit = [];
+    for(let w = 1; w <= 16; w++) if(C.tuesdayLegRounds(plan, w)) mit.push(w);
+    expect(mit).toEqual([11, 12, 14, 15]);
+    /* Phase 3 traegt die zweite Einheit, Phase 4 nur noch die Erhaltungsdosis. */
+    expect([C.tuesdayLegRounds(plan, 11), C.tuesdayLegRounds(plan, 14)]).toEqual([2, 1]);
+  });
+
+  it('Erhaltungsreiz am Mittwoch nur in Woche 11 und 12', () => {
+    const mit = [];
+    for(let w = 1; w <= 16; w++){
+      if(plan.weeks[W.weekIndex(plan, w)].wednesdayExtra) mit.push(w);
+    }
+    expect(mit).toEqual([11, 12]);
   });
 
   it('Z2 der Uebergangsfassung ist 128 bis 142 bpm', () => {
@@ -230,5 +321,68 @@ describe('Beinblock im Wochenplan', () => {
     expect(C.coreRoundsForDay(plan, 5, 3)).toBe(2);
     expect(C.coreRoundsForDay(plan, 5, 0)).toBe(3);
     expect(C.legRounds(plan, 5)).toBe(2);
+  });
+
+  it('gibt am Dienstag die zweite Einheit, sonst die Sonntagsdosis', () => {
+    expect(C.legRoundsForDay(plan, 11, 2)).toBe(2);   // Dienstag, zweite Einheit
+    expect(C.legRoundsForDay(plan, 11, 0)).toBe(3);   // Sonntag, voller Block
+    /* Ohne zweite Einheit gilt auch am Dienstag der Sonntagswert - wer den
+       Block ausserhalb des Plans oeffnet, bekommt eine Dosis und keine Null. */
+    expect(C.legRoundsForDay(plan, 5, 2)).toBe(2);
+  });
+});
+
+describe('Muskelkater-Regel', () => {
+  const stufen = () => C.sorenessLevels(plan).map(l => l.key);
+
+  it('faehrt ohne Angabe die volle Spanne', () => {
+    const voll = C.legDose(plan, 11);
+    expect(voll.squat[0]).not.toBe(voll.squat[1]);
+  });
+
+  it('zieht bei leichtem Kater auf den unteren Rand', () => {
+    const voll = C.legDose(plan, 11);
+    const leicht = C.legDose(plan, 11, stufen()[1]);
+    expect(leicht.squat).toEqual([voll.squat[0], voll.squat[0]]);
+    expect(leicht.calf).toEqual([voll.calf[0], voll.calf[0]]);
+  });
+
+  it('laesst den Block bei ausgepraegtem Kater entfallen', () => {
+    expect(C.legSkipped(plan, stufen()[2])).toBe(true);
+    expect(C.legSkipped(plan, stufen()[0])).toBe(false);
+  });
+
+  /* Eine unbekannte Stufe darf nicht in die reduzierte Dosis fallen: ein alter
+     Protokolleintrag mit einem geloeschten Schluessel wuerde sonst still die
+     Wiederholungszahl senken. */
+  it('faellt bei unbekanntem Schluessel auf die erste Stufe zurueck', () => {
+    expect(C.sorenessLevel(plan, 'gibtesnicht').key).toBe(stufen()[0]);
+    expect(C.legDose(plan, 11, 'gibtesnicht')).toEqual(C.legDose(plan, 11));
+  });
+});
+
+describe('Testanlauf', () => {
+  const testTag = W.testDateFor(plan, 4, start);
+
+  it('legt jeden Anlaufschritt auf seinen Tag', () => {
+    for(const s of plan.testTaper.steps){
+      const d = W.addDays(testTag, s.offsetDays);
+      const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, d, start);
+      expect(info.hinweise.join(' ')).toContain(s.text);
+    }
+  });
+
+  it('kuendigt den Test ab dem Vorlauf an, davor nicht', () => {
+    const drin = D.testTaperFor(plan, W.addDays(testTag, -plan.testTaper.leadDays), start);
+    const draussen = D.testTaperFor(plan, W.addDays(testTag, -plan.testTaper.leadDays - 1), start);
+    expect(drin && drin.week).toBe(4);
+    expect(draussen).toBe(null);
+  });
+
+  it('haengt die Go/No-Go-Liste an den Testtag und an keinen anderen', () => {
+    const test = D.buildDayInfo(plan, Z.NO_THRESHOLDS, testTag, start);
+    const vortag = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -1), start);
+    expect(test.checkliste.punkte).toEqual(plan.testTaper.goNoGo);
+    expect(vortag.checkliste).toBeUndefined();
   });
 });

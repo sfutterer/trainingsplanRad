@@ -201,3 +201,8 @@
    den ein Tipp gross oeffnet. */
 .uebungsblock .illu img,
 .uebungsblock .illu .exbild-leer{ min-height: 64px; }
+
+/* Die Muskelkater-Abfrage ist eine Einstellung fuer heute und keine
+   Ansichtsumschaltung - deshalb rolle="radio" und ein Abstand, der sie von der
+   Zeile darueber loest statt sie an sie anzuschliessen. */
+.katerwahl{ margin-top: 8px; }

@@ -18,7 +18,7 @@
 
    Rein: kein DOM, kein fetch, keine Uhr. */
 
-import { buildDayInfo } from './day.js';
+import { buildDayInfo, weekPlanMinutes, weekCapMinutes } from './day.js';
 import { legDoneRounds, legAborts } from './core.js';
 import { isoDayLocal } from './week.js';
 import { T } from './texte.js';
@@ -426,7 +426,22 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
     return row;
   }
 
-  /* Ab hier: Radeinheit mit messbarem Soll. */
+  /* Ab hier: Radeinheit mit messbarem Soll.
+
+     Der Dienstag traegt ab Woche 11 abends eine zweite Beineinheit. Sie wird
+     hier bewertet und nicht im Rumpftag-Zweig, weil der Dienstag ein Radtag
+     ist und der Beinblock danebensteht. Vor der Rad-Auswertung, damit sie auch
+     an einem Tag ohne Fahrt erhalten bleibt - der Zweig darunter kehrt dann
+     zurueck.
+
+     Die Rundenschaetzung aus der Garmin-Dauer greift hier bewusst nicht: sie
+     laeuft nur auf Rumpftagen. Eine kurze Krafteinheit am Dienstagabend als
+     Sonntagszirkel zu lesen, waere genau der Fehler, vor dem der
+     Trainingsplan warnt. */
+  if(t.legRounds){
+    row.notes.push(...legNotes(row, row.legSessions, t));
+  }
+
   if(!rides.length){
     row.status = 'miss'; row.badge = 'ausgefallen';
     row.notes.push({ kind:'bad', text: t.test ? T.testFehlt : T.fahrtFehlt });
@@ -474,19 +489,43 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
    meldet einen Tausch doppelt, einmal als fehlende und einmal als unerwartete
    Einheit. Gesamtdauer, Z2-Minuten und harte Zeit ueber die Woche sagen
    dagegen unabhaengig vom Wochentag, ob die Woche gestimmt hat. */
-export function weekTotals(rows){
+export function weekTotals(rows, plan){
   const byWeek = {};
   for(const r of rows){
     const w = byWeek[r.week] = byWeek[r.week] ||
-      { week:r.week, sollMin:0, istSec:0, optSec:0, z2Sec:0, hardSec:0, tage:0 };
+      { week:r.week, sollMin:0, istSec:0, optSec:0, z2Sec:0, hardSec:0, tage:0, zeilen:0 };
     w.sollMin += r.plannedMinutes || 0;
     w.istSec  += (r.plannedRideSec || 0) + (r.optionalRideSec || 0);
     w.optSec  += r.optionalRideSec || 0;
     w.z2Sec   += r.z2Sec || 0;
     w.hardSec += r.hardSec || 0;
+    w.zeilen  += 1;
     if(r.acts.length) w.tage += 1;
   }
-  return Object.keys(byWeek).map(k => byWeek[k]).sort((a, b) => a.week - b.week);
+
+  const liste = Object.keys(byWeek).map(k => byWeek[k]).sort((a, b) => a.week - b.week);
+
+  /* Der Umfangsdeckel aus Fassung 3: zulaessig ist der Planwert plus
+     weeklyVolumeCapPercent. Er ersetzt die Ramp-Rate als Fruehwarnung, solange
+     die CTL unter 20 liegt - dort sind fuenf CTL-Punkte pro Woche eine
+     Verdopplung der Grundlast und keine Obergrenze.
+
+     planMin ist die Wochensumme des Plans, sollMin die Summe der Tage im
+     abgefragten Zeitraum. Beide werden gebraucht: nur planMin ist mit der
+     Tabelle im Trainingsplan vergleichbar, und nur sollMin bleibt richtig,
+     wenn der Zeitraum mitten in einer Woche beginnt. Deshalb warnt der Deckel
+     ausschliesslich bei vollstaendig erfassten Wochen - eine halbe Woche kann
+     ihn nicht ueberschreiten, nur unterbieten. */
+  if(plan){
+    for(const w of liste){
+      if(w.week < 1 || w.week > plan.weekCount) continue;
+      w.planMin = weekPlanMinutes(plan, w.week);
+      w.capMin = weekCapMinutes(plan, w.week);
+      w.vollstaendig = w.zeilen >= 7;
+      w.ueberDeckel = w.vollstaendig && Math.round(w.istSec / 60) > w.capMin;
+    }
+  }
+  return liste;
 }
 
 /* Bericht ueber einen Zeitraum. Rumpf- und Beinblock-Eintraege kommen getrennt

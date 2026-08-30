@@ -150,4 +150,20 @@ export async function resetPlanToDefault(){
   planSource.value = r.source;
 }
 
+/* Derselbe Verwurf, aber vom Fehlerbildschirm aus.
+
+   Dort ist boot() in seinem catch-Zweig stehengeblieben: Startdatum,
+   Schwellenwerte, Protokolle und Einstellungen sind nie geladen worden.
+   resetPlanToDefault allein setzt zwar den Plan, laesst aber startDate auf
+   null - die Wochenrechnung lieferte danach vierstellige Wochennummern.
+
+   Deshalb ein vollstaendiger Neustart statt eines zweiten boot()-Laufs: boot
+   haengt einen visibilitychange-Zuhoerer an, den ein zweiter Aufruf verdoppeln
+   wuerde. Das Neuladen ist ohnehin das, was der Hinweis auf dem Bildschirm
+   ankuendigt. */
+export async function discardOwnPlanAndReload(){
+  await store.clearPlanOverride();
+  location.reload();
+}
+
 export { KEYS, PlanError, theme };

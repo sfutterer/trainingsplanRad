@@ -38,6 +38,11 @@ Beim Laden wird geprüft. Ist etwas falsch, zeigt die App eine Meldung mit dem
 beanstandeten Feld und **keine Zahlen** – lieber gar keine Vorgabe als eine
 falsche.
 
+Die Datei trägt eine `schemaVersion`; mit Fassung 3 des Trainingsplans steht sie
+auf 2. Ein älterer, lokal gespeicherter Plan wird deshalb abgelehnt statt halb
+weitergerechnet – im Tab „Plan“ auf „Auf Default zurücksetzen“, dann gilt wieder
+die Fassung aus dem Repo.
+
 ## Aufbau
 
 | Verzeichnis | Inhalt |

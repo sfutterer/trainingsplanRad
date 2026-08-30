@@ -25,13 +25,14 @@
 
 import {
   weekNumberFor, weekIndex, phaseOf, isRecoveryWeek, isWinterBlock,
-  thursdayData, saturdayBlockData, dayOffset
+  thursdayData, saturdayBlockData, dayOffset, testWeeks, testDateFor
 } from './week.js';
 import {
   zoneText, zoneSpan, targetText, withCadence, wattText,
   distanceSuffix, estimateDistance, showsDistance, cadenceText
 } from './zones.js';
-import { coreWorkSeconds, coreRestSeconds, coreRounds, coreMinutes, legRounds } from './core.js';
+import { coreWorkSeconds, coreRestSeconds, coreRounds, coreMinutes, legRounds,
+         rundenText } from './core.js';
 
 /* Der Donnerstag je Woche. Die Wiederholungsformel aus Fassung 1 ist entfallen;
    massgeblich ist die Tabelle in plan.json. Die Gesamtdauer wird gerechnet,
@@ -61,6 +62,67 @@ export function saturdayBlocks(plan, week){
   if(!b) return null;
   return { reps: b.reps, minutes: b.minutes, restMinutes: b.restMinutes,
            hardMinutes: b.reps * b.minutes };
+}
+
+/* ---- Wochenumfang und Deckel ----
+
+   Die Summe steht im Trainingsplan als Zeile "Soll" und wird hier gerechnet,
+   nicht gepflegt. Der Deckel darueber ist seit Fassung 3 die erste
+   Absicherung: er ersetzt die Ramp-Rate, die bei einer CTL um 10 nichts mehr
+   aussagt - fuenf Punkte pro Woche sind dort eine Verdopplung der Grundlast.
+
+   Der optionale Sonntag zaehlt mit, weil er in der Tabelle des Plans mitzaehlt.
+   Der Freitag nicht: er ist eine Entscheidung, keine Vorgabe. */
+export function weekPlanMinutes(plan, week){
+  const w = plan.weeks[weekIndex(plan, week)];
+  return w.tuesdayMinutes + w.wednesdayMinutes + thursdayPlan(plan, week).minutes
+       + w.saturdayMinutes + w.sundayOptionalMinutes;
+}
+
+export function weekCapMinutes(plan, week){
+  return Math.round(weekPlanMinutes(plan, week) * (1 + plan.volumeCapPercent / 100));
+}
+
+/* ---- Testanlauf ----
+
+   Die Schritte haengen als Tagesabstand am Testtermin. Welcher Wochentag das
+   ist, ergibt sich aus dem Startdatum - haette die Datei Wochentage genannt,
+   liefen beide auseinander, sobald jemand den Planbeginn verschiebt.
+
+   Rueckgabe auch am Testtag selbst, wo es keinen Schritt gibt: dort haengt die
+   Go/No-Go-Liste dran. */
+export function testTaperFor(plan, date, startDate){
+  const tt = plan.testTaper;
+  if(!tt || !Array.isArray(tt.steps)) return null;
+  for(const w of testWeeks(plan)){
+    const d = testDateFor(plan, w, startDate);
+    const off = dayOffset(date, d);
+    if(off > 1) continue;                 // dieser Test liegt zurueck
+    if(off < -tt.leadDays) return null;   // der naechste ist noch zu weit weg
+    return { week: w, date: d, offset: off,
+             step: tt.steps.find(s => s.offsetDays === off) || null };
+  }
+  return null;
+}
+
+function deDatum(d){
+  return String(d.getDate()).padStart(2, '0') + '.' +
+         String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+}
+
+function taperHinweis(plan, taper){
+  const kopf = 'Testanlauf zum ' + deDatum(taper.date) + ' (Woche ' + taper.week + '): ';
+  if(taper.step) return kopf + taper.step.label + ' – ' + taper.step.text;
+  /* Am Testtag traegt die Karte die Go/No-Go-Liste, davor genuegt die
+     Ankuendigung. Ein zweiter Satz daneben waere doppelt. */
+  if(taper.offset < 0) return kopf + plan.testTaper.intro;
+  return null;
+}
+
+/* "5,5 min" - der Erhaltungsreiz ist keine ganze Minute lang, und auf 6
+   aufgerundet stuende in der Karte mehr, als der Plan verlangt. */
+function minutenText(sek){
+  return String(Math.round(sek / 6) / 10).replace('.', ',') + ' min';
 }
 
 /* ---- Bausteine der strukturierten Beschreibung ---- */
@@ -178,6 +240,20 @@ function zusatzBloecke(plan, date, startDate){
     });
   }
 
+  /* Der Knochenreiz haengt am Mobility-Flow und ist ausdruecklich keine eigene
+     Einheit: er zaehlt in der Wochenrechnung nicht mit und erzeugt keine
+     messbare Erholungslast. Ausgelassen wird er an den Tagen, die die Datei
+     nennt - im ausgelieferten Plan der Mittwoch, weil danach der Qualitaetstag
+     kommt. */
+  const bone = plan.bone;
+  if(bone && (bone.skipWeekdays || []).indexOf(date.getDay()) < 0){
+    out.push({
+      label: bone.label,
+      wert: bone.dosage,
+      hinweis: `${bone.frequency} ${bone.note}`
+    });
+  }
+
   return out;
 }
 
@@ -203,18 +279,35 @@ function montag(c){
   };
 }
 
-/* Dienstag: verlaengerter Arbeitsweg, gesteuert ueber die Zeit. */
+/* Dienstag: verlaengerter Arbeitsweg, gesteuert ueber die Zeit.
+
+   Ab Woche 11 kommt abends die zweite Beineinheit dazu. Sie steht je Woche in
+   plan.json und nicht als Phasenregel hier: massgeblich ist der Abstand zum
+   Qualitaetstag, und der haengt daran, was am Donnerstag steht. */
 function dienstag(c){
   const { plan, th, week, T, z2 } = c;
   const dur = c.w.tuesdayMinutes;
-  return {
-    type:'ride', title:'Rad – Grundlagenausdauer (Z2)',
+  const beine = c.w.tuesdayLegRounds || 0;
+
+  const info = {
+    type:'ride',
+    title: beine > 0 ? 'Rad – Grundlagenausdauer (Z2) + Beinblock' : 'Rad – Grundlagenausdauer (Z2)',
     detail:`${dur} min${distanceSuffix(plan, dur, week)} · ${z2()}. ${T.tuesdayCommute}`,
     kennzahlen: rideKennzahlen(plan, th, week, dur, 'z2'),
     bloecke: [
       { label:'Grundlagenfahrt', wert:`${dur} min · ${z2()}`, hinweis:T.tuesdayCommute }
     ]
   };
+
+  if(beine > 0){
+    const nachsatz = `${T.legNoTimer}, ${plan.legs.durationHint}. ${T.legTuesdayNote}`;
+    info.detail += ` Abends Beinblock: ${rundenText(beine)} ${plan.legs.shortList} – ${nachsatz}`;
+    info.kennzahlen.push({ label:'Beinblock', wert:`${rundenText(beine)} (abends)` });
+    info.bloecke.push({ label:'Beinblock (abends)',
+      wert:`${rundenText(beine)} ${plan.legs.shortList}`, hinweis: nachsatz });
+    info.showLegBtn = true;
+  }
+  return info;
 }
 
 /* Mittwoch: verkuerzter Zirkel, dazu in den meisten Wochen eine kurze Fahrt.
@@ -250,6 +343,19 @@ function mittwoch(c){
         hinweis:`${T.wednesdayMinimum} ${lockerer}` },
       zirkel
     ];
+
+    /* Der Erhaltungsreiz der Phase 3 haengt an der Mittwochsfahrt und steht
+       deshalb zwischen Fahrt und Zirkel, nicht als Fussnote darunter. */
+    const extra = c.w.wednesdayExtra;
+    if(extra){
+      const sek = extra.reps * extra.workSeconds + (extra.reps - 1) * extra.restSeconds;
+      const ablauf = `${extra.reps}× ${extra.workSeconds} s ${extra.effort} / ` +
+                     `${extra.restSeconds} s ${extra.restEffort}`;
+      info.detail += ` Dazu ${extra.label}: ${ablauf}, zusammen ca. ${minutenText(sek)}.`;
+      info.kennzahlen.push({ label: extra.label, wert:`${extra.reps} × ${extra.workSeconds} s` });
+      info.bloecke.splice(1, 0, { label: extra.label,
+        wert:`${ablauf} · ca. ${minutenText(sek)}`, hinweis: extra.note });
+    }
   } else {
     info = { type:'core', title:'Rumpf/Oberkörper-Stabilität',
       detail:`${T.wednesdayNoRide} ${rumpf}`, showTimerBtn:true };
@@ -281,6 +387,16 @@ function donnerstag(c){
     ];
     info.bloecke = testBloecke(plan, th, week);
     info.hinweise = [T.thursdayTest];
+
+    /* Die vier Punkte werden am Testmorgen abgehakt, nicht gelesen - deshalb
+       eine eigene Liste und kein weiterer Absatz zwischen den Hinweisen. Der
+       TSB steht bewusst nicht dabei: bei einer CTL um 10 waere er ein
+       Kriterium, das den Test dauerhaft blockiert. */
+    const tt = plan.testTaper;
+    if(tt){
+      info.checkliste = { titel: tt.goNoGoTitel, punkte: tt.goNoGo, note: tt.goNoGoNote };
+      info.hinweise.push(tt.shiftRule);
+    }
   } else if(t.kind === 'z2'){
     info = { type:'ride', title:t.title,
       detail:`${t.minutes} min${distanceSuffix(plan, t.minutes, week)} · ${z2()}. ${T.thursdayBaseDay}` };
@@ -473,6 +589,16 @@ export function buildDayInfo(plan, th, date, startDate){
   info.bloecke = info.bloecke ?? [];
   info.hinweise = info.hinweise ?? [];
   info.zusatz = zusatzBloecke(plan, date, startDate);
+
+  /* Der Testanlauf steht an dem Tag, fuer den er gilt, und nicht als Liste in
+     der Statuskarte. Eine Vorgabe fuer den kommenden Dienstag nuetzt am
+     Dienstag etwas, nicht heute. */
+  const taper = vorStart ? null : testTaperFor(plan, date, startDate);
+  if(taper){
+    info.testTaper = taper;
+    const satz = taperHinweis(plan, taper);
+    if(satz) info.hinweise.push(satz);
+  }
   return info;
 }
 
@@ -489,8 +615,12 @@ function buildDayTarget(plan, date, week){
       return { sport:'rest' };
 
     case 2:
+      /* legRounds steht auch am Dienstag im Soll, sobald die Woche eine zweite
+         Beineinheit vorsieht - sonst waere sie in der Anzeige geplant und in
+         der Auswertung nicht vorhanden. */
       return { sport:'ride', minutes:w.tuesdayMinutes,
-               km:estimateDistance(plan, w.tuesdayMinutes, week), zone:'z2', commute:true };
+               km:estimateDistance(plan, w.tuesdayMinutes, week), zone:'z2', commute:true,
+               legRounds: w.tuesdayLegRounds || 0 };
 
     case 3: {
       const rounds = plan.circuit.wednesdayRounds;

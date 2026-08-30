@@ -21,6 +21,7 @@ import { streckenFazit } from '../../../domain/fazit.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { compareDay, weekTotals, buildReport, fmtMin, pct,
          isRide } from '../../../domain/analysis.js';
+import { T } from '../../../domain/texte.js';
 import { verlaufBericht } from '../../../domain/verlauf.js';
 import { useFahrtauswertung } from './useFahrtauswertung.js';
 import { zahl } from '../../../domain/zahlen.js';
@@ -376,7 +377,7 @@ export function AnalyseTab(){
       a.sort((x, y) => (x.start_date_local < y.start_date_local ? 1 : -1));
       setActs(a);
       /* Wochensummen ohne Streams - eine Abfrage, kein Nachladen. */
-      setWochen(weekTotals(buildReport(p, th, start, from, to, a, null, coreLog.value)));
+      setWochen(weekTotals(buildReport(p, th, start, from, to, a, null, coreLog.value), p));
     } catch(e){ setFehler(e.message); }
     finally { setLaedt(false); }
   }
@@ -403,7 +404,7 @@ export function AnalyseTab(){
     if(wochen) return wochen;
     if(!p || !start) return [];
     return weekTotals(buildReport(p, th, start, vonDatum(), toMidnight(today.value),
-                                      [], null, coreLog.value));
+                                      [], null, coreLog.value), p);
   }
 
   if(ansicht === 'verlauf'){
@@ -452,12 +453,22 @@ export function AnalyseTab(){
             const diff = w.sollMin ? Math.round((ist - w.sollMin) / w.sollMin * 100) : null;
             return (
               <div class="listrow" key={w.week}>
-                <span>Woche {w.week}</span>
+                <span>Woche {w.week}{w.ueberDeckel ? ' · über dem Deckel' : ''}</span>
                 <span>{ist} min{w.sollMin ? ' / ' + w.sollMin + ' min (' + (diff >= 0 ? '+' : '') + diff + ' %)' : ''}</span>
               </div>
             );
           })}
+          {/* Der Deckel ist seit Fassung 3 die erste Absicherung und ersetzt
+              die Ramp-Rate. Er steht nur da, wo er etwas aussagt: bei einer
+              vollstaendig erfassten Woche. Eine halbe Woche kann ihn nicht
+              ueberschreiten, nur unterbieten. */}
+          {wochen.filter(w => w.ueberDeckel).map(w => (
+            <p class="hint warn" key={'d' + w.week}>
+              Woche {w.week}: {T.deckelUeberschritten(Math.round(w.istSec / 60), w.planMin, w.capMin)}
+            </p>
+          ))}
           <p class="hint">Z2-Summe pro Woche ist die Kennzahl, die zählt – Zielgröße 300–400 min.</p>
+          <p class="hint">{p.texts.volumeCap}</p>
         </div>
       )}
     </>

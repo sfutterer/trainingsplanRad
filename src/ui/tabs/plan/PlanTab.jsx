@@ -46,14 +46,23 @@ const ANSICHTEN = [
   { id: 'monat', label: 'Monat' }
 ];
 
+/* Die Ankuendigung des naechsten Tests.
+
+   Das Fenster stand bis Fassung 2 fest auf 14 Tagen. Seit Fassung 3 gibt es
+   einen verbindlichen Anlauf, und dessen Vorlauf steht in plan.json - beide
+   Zahlen nebeneinander wuerden auseinanderlaufen. Die Tagesvorgaben des
+   Anlaufs stehen bewusst nicht hier, sondern auf der Karte des Tages, fuer den
+   sie gelten. */
 function naechsterTest(p, heute, start){
+  const vorlauf = p.testTaper ? p.testTaper.leadDays : 14;
   for(const w of testWeeks(p)){
     const d = testDateFor(p, w, start);
     const tage = Math.round((d - toMidnight(heute)) / 86400000);
     if(tage < 0) continue;
     if(tage === 0) return 'Heute ist Schwellentest (Woche ' + w + '). Danach FTP und LTHR unten eintragen.';
-    if(tage <= 14) return 'Nächster Schwellentest: ' + d.toLocaleDateString('de-DE') +
-      ' (Woche ' + w + '), in ' + tage + (tage === 1 ? ' Tag' : ' Tagen') + '.';
+    if(tage <= vorlauf) return 'Nächster Schwellentest: ' + d.toLocaleDateString('de-DE') +
+      ' (Woche ' + w + '), in ' + tage + (tage === 1 ? ' Tag' : ' Tagen') +
+      '. Der Testanlauf läuft – die Vorgabe steht auf der jeweiligen Tageskarte.';
     return null;
   }
   return null;

@@ -27,17 +27,35 @@ import { plan, week, settings, coreLog, saveCoreLog, today } from '../../../stat
 import { meldeTimer } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
 import { buildLegRestSequence } from '../../../domain/timer/sequences.js';
-import { legDose, legRounds, legRepText, legRepMin, legDoneRounds, legAborts } from '../../../domain/core.js';
+import { legDose, legRoundsForDay, legRepText, legRepMin, legDoneRounds, legAborts,
+         sorenessLevels, sorenessLevel, legSkipped, rundenText } from '../../../domain/core.js';
 import { isoDayLocal } from '../../../domain/week.js';
 import { Baustein } from './Baustein.jsx';
+import { Segmented } from '../../components/Segmented.jsx';
 import { Buehne } from '../../components/Buehne.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
 export function Beinblock({ eintrag, onOpen }){
   const p = plan.value, w = week.value;
   const s = settings.value;
-  const dose = legDose(p, w);
-  const rounds = legRounds(p, w);
+  const stufen = sorenessLevels(p);
+
+  /* Der Muskelkater steuert die Dosierung des Tages und nicht nur einen Text.
+
+     Er ist in den ersten Wochen der Regelfall und nicht die Ausnahme: der Reiz
+     kommt vom exzentrischen Absenken, das beim Radfahren praktisch nicht
+     vorkommt. Ohne diese Abfrage gibt es nur zwei schlechte Antworten - voll
+     durchziehen oder ganz ausfallen lassen.
+
+     Die Stufe kommt aus dem Protokoll des Tages, wenn dort schon eine steht:
+     wer zwischen zwei Runden den Tab wechselt, soll nicht wieder bei "frei"
+     anfangen. */
+  const [kater, setKater] = useState(() => (eintrag && eintrag.soreness) || (stufen[0] && stufen[0].key));
+  const stufe = sorenessLevel(p, kater);
+  const entfaellt = legSkipped(p, kater);
+
+  const dose = legDose(p, w, kater);
+  const rounds = legRoundsForDay(p, w, today.value.getDay());
   const uebungen = p.legs.exercises;
   const tag = isoDayLocal(today.value);
   const zellen = rounds * uebungen.length;
@@ -70,6 +88,9 @@ export function Beinblock({ eintrag, onOpen }){
       liste.push(e);
     }
     e.plannedRounds = rounds;
+    /* Die Stufe wandert mit ins Protokoll: eine Runde am unteren Rand ist ohne
+       den Grund dafuer spaeter nicht von einer abgebrochenen zu unterscheiden. */
+    e.soreness = kater;
     const ex = e.exercises[i];
     while(ex.reps.length < r) ex.reps.push(null);
     ex.reps[r - 1] = v > 0 ? v : null;
@@ -188,9 +209,19 @@ export function Beinblock({ eintrag, onOpen }){
   const sec = timer.secondsLeft();
   const naechste = naechsteRef.current;
 
-  const buehne = !laufend ? (
+  const buehne = entfaellt ? (
+    /* Bei ausgepraegtem Muskelkater entfaellt der Block. Die Taste bleibt
+       sichtbar und gesperrt statt zu verschwinden: ein Knopf, der weg ist,
+       sieht aus wie ein Fehler, ein gesperrter sagt, dass die Entscheidung
+       oben getroffen wurde. */
     <Buehne
-      dosis={{ phase:'Bereit', wert: rounds + ' Runden',
+      dosis={{ phase:'Entfällt heute', wert: stufe.label,
+               exercise: stufe.text, meta: p.legs.sorenessWarning }}
+      haupt={{ label:'Ablauf starten', onClick: starten, disabled: true }}
+      zurueck={{ disabled: true }} weiter={{ disabled: true }} />
+  ) : !laufend ? (
+    <Buehne
+      dosis={{ phase:'Bereit', wert: rundenText(rounds),
                exercise: uebungen.map(e => e.name).join(' · '),
                meta: 'Pause ' + p.legs.restBetweenExercisesSeconds + ' s · Rundenpause '
                      + p.legs.restBetweenRoundsSeconds + ' s' }}
@@ -227,7 +258,7 @@ export function Beinblock({ eintrag, onOpen }){
   return (
     <Baustein
       titel="Beinblock"
-      meta={rounds + ' Runden · ' + p.legs.durationHint}
+      meta={entfaellt ? 'entfällt heute' : rundenText(rounds) + ' · ' + p.legs.durationHint}
       status={
         <p class={'tagchip' + (rounds > 0 && voll >= rounds ? ' an' : '')}>
           {voll} / {rounds} volle Runden protokolliert
@@ -239,9 +270,25 @@ export function Beinblock({ eintrag, onOpen }){
         'Pause ' + p.legs.restBetweenExercisesSeconds + ' s zwischen den Übungen, '
           + p.legs.restBetweenRoundsSeconds + ' s zwischen den Runden. ' + p.texts.legTempoPlain,
         dose.extra,
+        p.legs.sorenessNote,
+        p.legs.sorenessWarning,
         p.texts.legAbortSigns,
         p.texts.legProgression
       ]}>
+
+      {/* Die Abfrage steht vor dem Raster und nicht in den Hinweisen: sie ist
+          eine Eingabe, keine Erlaeuterung, und sie aendert die Zahlen, die
+          darunter stehen. Waehrend eines laufenden Ablaufs gesperrt - die
+          Wiederholungsziele der bereits quittierten Saetze wuerden sonst
+          nachtraeglich gegen eine andere Spanne gelesen. */}
+      <div class="card">
+        <div class="row"><span>Muskelkater in den Oberschenkeln</span><b>heute</b></div>
+        <Segmented rolle="radio" label="Muskelkater" klasse="katerwahl"
+          ziele={stufen.map(l => ({ id: l.key, label: l.label, disabled: laufend }))}
+          aktiv={kater} onWaehlen={setKater} />
+        <p class="hint">{stufe ? stufe.text : ''}</p>
+      </div>
+
 
       {/* Das Raster ist Uebungsliste und Protokoll in einem: dieselbe Zeile
           traegt Name, Dosierung und die Zahlen des Tages. Eine zweite Liste

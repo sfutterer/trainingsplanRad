@@ -148,6 +148,22 @@ function Abschnitte({ liste, geordnet, klasse }){
   return geordnet ? <ol class={klasse}>{inhalt}</ol> : <ul class={klasse}>{inhalt}</ul>;
 }
 
+/* Die Go/No-Go-Liste am Testmorgen.
+
+   Eigene Liste und kein weiterer Absatz zwischen den Hinweisen: die vier
+   Punkte werden abgehakt, nicht gelesen, und ein Fliesstext mit vier
+   Bedingungen darin laesst sich am Testmorgen nicht abhaken. */
+function Checkliste({ liste }){
+  if(!liste || !liste.punkte || !liste.punkte.length) return null;
+  return (
+    <div class="checkliste">
+      <div class="listhead">{liste.titel}</div>
+      <ul>{liste.punkte.map((p, i) => <li key={i}>{p}</li>)}</ul>
+      {liste.note && <p class="hint">{liste.note}</p>}
+    </div>
+  );
+}
+
 /* Die wichtigste Kennzahl fuer die zugeklappte Zeile. Die erste ist es immer:
    day.js setzt sie bewusst an den Anfang - Dauer, sonst Umfang. */
 function ersteKennzahl(info){
@@ -194,6 +210,7 @@ export function Tagesinhalt({ info, istHeute, serie }){
     <>
       <Kennzahlen liste={info.kennzahlen} />
       <Abschnitte liste={info.bloecke} geordnet klasse="ablauf" />
+      <Checkliste liste={info.checkliste} />
       {(info.hinweise || []).map((h, i) => <p class="hint" key={i}>{h}</p>)}
 
       {info.zusatz && info.zusatz.length > 0 && (
@@ -211,6 +228,11 @@ export function Tagesinhalt({ info, istHeute, serie }){
           stillschweigend, der Knopf tat also nichts. */}
       {info.showTimerBtn && <button class="btn tonal tagbtn" type="button"
         onClick={() => gotoTab('training', true)}>Rumpf-Timer öffnen</button>}
+      {/* Der Dienstag ab Woche 11 traegt nur den Beinblock, keinen Zirkel -
+          ein Knopf mit der Aufschrift "Rumpf-Timer" fuehrte dort in die Irre.
+          Beide landen im selben Bereich, benennen aber, was ansteht. */}
+      {info.showLegBtn && <button class="btn tonal tagbtn" type="button"
+        onClick={() => gotoTab('training', true)}>Beinblock öffnen</button>}
       {info.showIntervalBtn && <button class="btn tonal tagbtn" type="button"
         onClick={() => gotoTab('intervalle', true)}>Intervall-Timer öffnen</button>}
     </>

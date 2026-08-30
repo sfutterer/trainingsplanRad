@@ -146,6 +146,19 @@ button.dayzeile:active{ background: var(--surface-2); }
 .zusatz{ margin-top: 14px; }
 .zusatz .listhead{ margin-top: 0; }
 
+/* Go/No-Go am Testmorgen. Abgesetzt und mit Randmarke, weil die Liste eine
+   Entscheidung traegt und nicht nur eine Erlaeuterung: alle vier Punkte
+   muessen zutreffen, sonst wird verschoben. */
+.checkliste{
+  margin-top: 14px; padding: 10px 12px;
+  border-left: 3px solid var(--prep);
+  background: var(--surface-2); border-radius: 8px;
+}
+.checkliste .listhead{ margin-top: 0; }
+.checkliste ul{ margin: 6px 0 0; padding-left: 18px; }
+.checkliste li{ margin: 4px 0; line-height: 1.45; }
+.checkliste .hint{ margin-top: 8px; }
+
 .tagbtn{ margin-top: 12px; }
 
 /* ---- Navigation ueber Wochen und Monate ---- */

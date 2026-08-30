@@ -221,10 +221,21 @@ describe('Strukturierte Tagesbeschreibung', () => {
     expect(ohne.zusatz.map(z => z.label)).not.toContain('Koordination');
   });
 
-  it('kommt ohne mobility und coordination aus', () => {
+  it('haengt den Knochenreiz an, aber nicht am Tag vor dem Qualitaetstag', () => {
+    /* skipWeekdays nennt im ausgelieferten Plan den Mittwoch: der Reiz ist zwar
+       ermuedungsfrei, aber der Donnerstag ist der Qualitaetstag. */
+    const woche = 2;
+    const mittwoch = buildDayInfo(plan, th, tagIn(woche, 3), START);
+    const dienstag = buildDayInfo(plan, th, tagIn(woche, 2), START);
+    expect(dienstag.zusatz.map(z => z.label)).toContain(plan.bone.label);
+    expect(mittwoch.zusatz.map(z => z.label)).not.toContain(plan.bone.label);
+  });
+
+  it('kommt ohne mobility, coordination und Knochenreiz aus', () => {
     const kahl = Object.assign({}, plan);
     delete kahl.mobility;
     delete kahl.coordination;
+    delete kahl.bone;
     expect(buildDayInfo(kahl, th, START, START).zusatz).toEqual([]);
   });
 });

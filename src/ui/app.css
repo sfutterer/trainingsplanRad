@@ -274,6 +274,8 @@
 }
 .planerror h2{ margin: 0 0 10px; font-size: 19px; color: var(--miss); }
 .planerror li{ margin-bottom: 6px; font-size: 14px; }
+/* Der einzige Knopf auf diesem Bildschirm - er darf die ganze Breite haben. */
+.planerror .btn{ margin-top: 14px; width: 100%; }
 
 .meldung{
   margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-s);

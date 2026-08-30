@@ -40,11 +40,19 @@ export async function loadPlan(repos, fetchImpl){
       return { plan: parsePlan(eigener, 'eigener Plan'), source: 'override', json: eigener };
     } catch(e){
       /* Der eigene Plan ist kaputt. Nicht still auf den Default zurueckfallen -
-         sonst rechnet die App mit anderen Zahlen, als der Nutzer eingestellt hat. */
-      throw new PlanError('Dein eigener Plan ist nicht verwendbar.',
+         sonst rechnet die App mit anderen Zahlen, als der Nutzer eingestellt hat.
+
+         Der Fehlerbildschirm ersetzt die ganze App: es gibt in diesem Zustand
+         keine Tabs, also auch nicht den Knopf in den Einstellungen, auf den der
+         Hinweis bis zum 30.08.2026 verwies. Stattdessen traegt der Fehler jetzt
+         die Marke istEigener, und der Bildschirm bietet das Verwerfen selbst
+         an - sonst ist die App mit einem alten eigenen Plan verriegelt. */
+      const pe = new PlanError('Dein eigener Plan ist nicht verwendbar.',
         (e.zeilen || [e.message]).concat([
-          'Der Default aus dem Repo liegt weiter bereit: im Tab „Plan" auf „Auf Default zurücksetzen".'
+          'Der Default aus dem Repo liegt weiter bereit – unten verwerfen und neu laden.'
         ]));
+      pe.istEigener = true;
+      throw pe;
     }
   }
 

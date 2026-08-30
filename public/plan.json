@@ -1,26 +1,30 @@
 {
-  "schemaVersion": 1,
-  "planName": "Trainingsplan Radfahren – Fassung 2",
+  "schemaVersion": 2,
+  "planName": "Trainingsplan Radfahren – Fassung 3",
 
   "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
     "bearbeiten": "Zahlen und Texte hier aendern und die Datei speichern. Den Service Worker erzeugt vite-plugin-pwa beim Bauen; er nimmt plan.json selbsttaetig in den Precache. Eine Fassungsnummer von Hand gibt es nicht mehr.",
+    "fassung3": "Stand 30.08.2026. Gegenueber Fassung 2 geaendert: 2:1-Rhythmus ab Woche 5 mit fester Erholungswochenliste, neue Phasengrenzen 1-4 / 5-10 / 11-13 / 14-16, Tests in Woche 4, 10 und 16, Samstagsbloecke in 6, 9 und 12, Erhaltungsreiz am Mittwoch in Woche 11 und 12, zweite Beineinheit am Dienstag ab Woche 11, Umfangsdeckel, Muskelkater-Regel, Testanlauf und Knochenreiz.",
     "weeks": "Ein Objekt je Trainingswoche. Alles, was zu einer Woche gehoert, steht beisammen - anders als in parallelen Reihen kann sich hier nichts gegeneinander verschieben. Die Reihenfolge muss bei 1 beginnen und darf keine Luecke haben.",
-    "nachDemPlanende": "Nach der letzten Woche gilt winterBlock. Die Wochenwerte bleiben auf der letzten Planwoche stehen, Donnerstag und Samstag kommen aus winterBlock.",
-    "erholungswochen": "recoveryEveryNthWeek beschreibt den Rhythmus (4 = 3:1). Reduzierte Umfaenge stehen trotzdem ausgeschrieben in weeks - der Rhythmus steuert nur Beschriftung und Beinblock-Dosierung.",
+    "nachDemPlanende": "Nach der letzten Woche gilt winterBlock. Die Wochenwerte bleiben auf der letzten Planwoche stehen, Donnerstag und Samstag kommen aus winterBlock. Ab Fassung 3 traegt der Block keinen Winterplan mehr, sondern die Merkposten fuer den Nachfolgeplan.",
+    "erholungswochen": "recoveryWeeks nennt die Erholungswochen einzeln. Bis Fassung 2 stand hier recoveryEveryNthWeek und die App rechnete week % n === 0; der 2:1-Rhythmus ab Woche 5 laesst sich so nicht mehr abbilden. Reduzierte Umfaenge stehen wie bisher ausgeschrieben in weeks - die Liste steuert nur Beschriftung, Samstagsbloecke und die Beinblock-Dosierung.",
+    "umfangsdeckel": "weeklyVolumeCapPercent ist der zulaessige Aufschlag auf die Wochensumme Rad (Di + Mi + Do + Sa + So). Die Analyse warnt, wenn eine vollstaendig erfasste Woche darueber liegt. Er ersetzt die Ramp-Rate als Fruehwarnung, solange die CTL unter 20 liegt.",
     "zonen": "heartRateZones.transitionBands gelten bis heartRateZones.cogganFromWeek bzw. solange keine LTHR eingetragen ist. Danach rechnet die App die Baender aus der LTHR nach Coggan. Die Baender muessen lueckenlos aneinander anschliessen: max der einen Zone ist min der naechsten. max null heisst offen nach oben.",
     "powerZones": "Bewusst nicht lueckenlos - Coggan ist in vollen Prozentschritten definiert (z1 bis 55 %, z2 ab 56 %). Geprueft wird nur, dass die Zonen aufsteigen.",
     "texts": "Freistehende Saetze aus dem Plan. Reiner Text ohne Auszeichnung - die Anzeige setzt sie als Textknoten, Markierungen wie <b> erschienen woertlich. Saetze mit eingerechneten Zahlen stehen weiterhin im Code, weil sie ohne Vorlagensprache nicht in JSON abbildbar sind.",
     "bilder": "Bild als .webp mit 1400x934 in public/assets ablegen und den Pfad hier eintragen. Der Precache von vite-plugin-pwa greift alle .webp selbsttaetig ab, eine eigene Liste gibt es nicht. Fehlt eine Datei, zeigt die Anzeige eine Platzhalterkachel statt eines kaputten Bildes.",
-    "beweglichkeit": "mobilityFlow und coordination stehen bewusst neben dem Radplan, nicht darin. Sie haengen an keiner Woche und an keiner Phase, weil sie radunabhaengig sind und bei Zeitnot ersatzlos entfallen. Deshalb keine Dosierung je Phase wie beim legBlock, sondern ein fester Dosierungstext je Uebung.",
-    "sprache": "Die Schluessel sind englisch, alle Werte und dieser Block sind deutsch. Absicht: die Schluessel bleiben maschinennah und stimmen mit den Feldnamen im Code ueberein, alles Erklaerende bleibt in der Sprache der App. Dieser Block hiess bis zum 29.08.2026 dokumentation und war damit der einzige deutsche Schluessel unter zwanzig englischen.",
+    "beweglichkeit": "mobilityFlow, coordination und boneStimulus stehen bewusst neben dem Radplan, nicht darin. Sie haengen an keiner Woche und an keiner Phase, weil sie radunabhaengig sind. Deshalb keine Dosierung je Phase wie beim legBlock, sondern ein fester Dosierungstext je Uebung. Seit Fassung 3 sind sie ausdruecklich kein Teil der Opferreihenfolge mehr - sie kosten keine Erholung.",
+    "sprache": "Die Schluessel sind englisch, alle Werte und dieser Block sind deutsch. Absicht: die Schluessel bleiben maschinennah und stimmen mit den Feldnamen im Code ueberein, alles Erklaerende bleibt in der Sprache der App.",
     "farben": "Die Zonenfarben standen bis zum 29.08.2026 hier als Hexwerte und gleichzeitig als Tokens in src/ui/theme.css - beide wurden benutzt, also hatte dieselbe Zone je nach Anzeige eine andere Farbe, und die Fassung aus dieser Datei folgte dem Dunkelmodus nicht. Welche Farbe eine Zone traegt, ist Darstellung und keine Trainingsvorgabe; sie steht deshalb nur noch in theme.css.",
-    "wiederholungenInWeeks": "Das thursday-Objekt steht in den Wochen 1-3, 5-7 und 13-15 jeweils woertlich gleich da. Das ist Absicht und kein Copy-Paste-Rest: jede Woche bleibt fuer sich lesbar, und nichts kann sich gegeneinander verschieben. Eine Vorlagensektion mit Verweisen waere kuerzer, verlangte aber beim Lesen jedes Mal einen zweiten Blick an eine andere Stelle - bei sechzehn Wochen der schlechtere Tausch.",
+    "wiederholungenInWeeks": "Das thursday-Objekt steht in mehreren Wochen woertlich gleich da. Das ist Absicht und kein Copy-Paste-Rest: jede Woche bleibt fuer sich lesbar, und nichts kann sich gegeneinander verschieben.",
     "unbekannteSchluessel": "Die Pruefung meldet Schluessel der obersten Ebene, die sie nicht kennt. Ein Tippfehler in einem optionalen Feld wurde vorher stillschweigend verworfen, und die App rechnete mit dem Standardwert weiter - das widerspricht dem Grundsatz, lieber gar keine Zahl zu zeigen als eine falsche.",
     "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach."
   },
 
-  "recoveryEveryNthWeek": 4,
+  "recoveryWeeks": [4, 7, 10, 13, 16],
+  "weeklyVolumeCapPercent": 10,
+
   "phaseNames": {
     "1": "Grundlage",
     "2": "VO2max",
@@ -33,6 +37,7 @@
       "week": 1, "phase": 1,
       "tuesdayMinutes": 60, "wednesdayMinutes": 0, "saturdayMinutes": 120, "sundayOptionalMinutes": 30,
       "coreWorkSeconds": 25, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
       "thursday": {"kind": "intervals", "title": "Rad – Tempo-Intervalle", "zone": "z3", "reps": 4, "workMinutes": 5, "restMinutes": 3, "power": null},
       "saturdayBlocks": null
     },
@@ -40,6 +45,7 @@
       "week": 2, "phase": 1,
       "tuesdayMinutes": 70, "wednesdayMinutes": 40, "saturdayMinutes": 130, "sundayOptionalMinutes": 30,
       "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
       "thursday": {"kind": "intervals", "title": "Rad – Tempo-Intervalle", "zone": "z3", "reps": 4, "workMinutes": 5, "restMinutes": 3, "power": null},
       "saturdayBlocks": null
     },
@@ -47,6 +53,7 @@
       "week": 3, "phase": 1,
       "tuesdayMinutes": 80, "wednesdayMinutes": 40, "saturdayMinutes": 140, "sundayOptionalMinutes": 35,
       "coreWorkSeconds": 35, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
       "thursday": {"kind": "intervals", "title": "Rad – Tempo-Intervalle", "zone": "z3", "reps": 5, "workMinutes": 5, "restMinutes": 3, "power": null},
       "saturdayBlocks": null
     },
@@ -54,6 +61,7 @@
       "week": 4, "phase": 1,
       "tuesdayMinutes": 45, "wednesdayMinutes": 30, "saturdayMinutes": 90, "sundayOptionalMinutes": 25,
       "coreWorkSeconds": 25, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
       "thursday": {"kind": "test", "title": "Rad – Schwellentest", "zone": "z4", "minutes": 65},
       "saturdayBlocks": null
     },
@@ -61,6 +69,7 @@
       "week": 5, "phase": 2,
       "tuesdayMinutes": 85, "wednesdayMinutes": 40, "saturdayMinutes": 150, "sundayOptionalMinutes": 35,
       "coreWorkSeconds": 30, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
       "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
       "saturdayBlocks": null
     },
@@ -68,87 +77,110 @@
       "week": 6, "phase": 2,
       "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 160, "sundayOptionalMinutes": 40,
       "coreWorkSeconds": 35, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
       "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
       "saturdayBlocks": {"reps": 2, "minutes": 12, "restMinutes": 8}
     },
     {
       "week": 7, "phase": 2,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 170, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 2,
-      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 8, "phase": 2,
       "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 100, "sundayOptionalMinutes": 25,
       "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
       "thursday": {"kind": "intervals", "title": "Rad – Sweetspot (Erholungswoche)", "zone": "z3", "reps": 4, "workMinutes": 3, "restMinutes": 3, "power": "ca. 95 % FTP"},
       "saturdayBlocks": null
     },
     {
-      "week": 9, "phase": 3,
-      "tuesdayMinutes": 85, "wednesdayMinutes": 60, "saturdayMinutes": 155, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 35, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 70},
+      "week": 8, "phase": 2,
+      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 165, "sundayOptionalMinutes": 40,
+      "coreWorkSeconds": 35, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
+      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
       "saturdayBlocks": null
     },
     {
-      "week": 10, "phase": 3,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 60, "saturdayMinutes": 165, "sundayOptionalMinutes": 40,
+      "week": 9, "phase": 2,
+      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 175, "sundayOptionalMinutes": 40,
       "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 75},
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
+      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
       "saturdayBlocks": {"reps": 2, "minutes": 12, "restMinutes": 8}
+    },
+    {
+      "week": 10, "phase": 2,
+      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 100, "sundayOptionalMinutes": 25,
+      "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
+      "thursday": {"kind": "test", "title": "Rad – Schwellentest (Retest)", "zone": "z4", "minutes": 65},
+      "saturdayBlocks": null
     },
     {
       "week": 11, "phase": 3,
       "tuesdayMinutes": 90, "wednesdayMinutes": 60, "saturdayMinutes": 170, "sundayOptionalMinutes": 40,
       "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 75},
+      "tuesdayLegRounds": 2,
+      "wednesdayExtra": {
+        "label": "Erhaltungsreiz",
+        "reps": 6, "workSeconds": 30, "restSeconds": 30,
+        "effort": "zügig", "restEffort": "locker rollen",
+        "note": "An die Mittwochsfahrt angehängt. Phase 3 hat keinen harten Reiz, und die VO2max bildet sich von allen Größen am schnellsten zurück. Der Mittwoch ist hier nicht mehr der Schontag vor dem Qualitätstag, weil es keinen gibt."
+      },
+      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 70},
       "saturdayBlocks": null
     },
     {
       "week": 12, "phase": 3,
-      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 100, "sundayOptionalMinutes": 25,
-      "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "thursday": {"kind": "test", "title": "Rad – Schwellentest", "zone": "z4", "minutes": 65},
-      "saturdayBlocks": null
+      "tuesdayMinutes": 90, "wednesdayMinutes": 60, "saturdayMinutes": 180, "sundayOptionalMinutes": 40,
+      "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
+      "tuesdayLegRounds": 2,
+      "wednesdayExtra": {
+        "label": "Erhaltungsreiz",
+        "reps": 6, "workSeconds": 30, "restSeconds": 30,
+        "effort": "zügig", "restEffort": "locker rollen",
+        "note": "An die Mittwochsfahrt angehängt. Phase 3 hat keinen harten Reiz, und die VO2max bildet sich von allen Größen am schnellsten zurück. Der Mittwoch ist hier nicht mehr der Schontag vor dem Qualitätstag, weil es keinen gibt."
+      },
+      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 75},
+      "saturdayBlocks": {"reps": 2, "minutes": 12, "restMinutes": 8}
     },
     {
-      "week": 13, "phase": 4,
-      "tuesdayMinutes": 85, "wednesdayMinutes": 40, "saturdayMinutes": 160, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "thursday": {"kind": "intervals", "title": "Rad – Schwellenintervalle", "zone": "z4", "reps": 3, "workMinutes": 10, "restMinutes": 5, "power": "90–95 % FTP"},
+      "week": 13, "phase": 3,
+      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 105, "sundayOptionalMinutes": 25,
+      "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
+      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (Erholungswoche)", "zone": "z2", "minutes": 55},
       "saturdayBlocks": null
     },
     {
       "week": 14, "phase": 4,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 170, "sundayOptionalMinutes": 40,
+      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 175, "sundayOptionalMinutes": 40,
       "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "thursday": {"kind": "intervals", "title": "Rad – Schwellenintervalle", "zone": "z4", "reps": 3, "workMinutes": 12, "restMinutes": 5, "power": "90–95 % FTP"},
-      "saturdayBlocks": {"reps": 2, "minutes": 12, "restMinutes": 8}
+      "tuesdayLegRounds": 1, "wednesdayExtra": null,
+      "thursday": {"kind": "intervals", "title": "Rad – Schwellenintervalle", "zone": "z4", "reps": 3, "workMinutes": 10, "restMinutes": 5, "power": "90–95 % FTP"},
+      "saturdayBlocks": null
     },
     {
       "week": 15, "phase": 4,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 175, "sundayOptionalMinutes": 40,
+      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 185, "sundayOptionalMinutes": 40,
       "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
+      "tuesdayLegRounds": 1, "wednesdayExtra": null,
       "thursday": {"kind": "intervals", "title": "Rad – Schwellenintervalle", "zone": "z4", "reps": 3, "workMinutes": 12, "restMinutes": 5, "power": "90–95 % FTP"},
       "saturdayBlocks": null
     },
     {
       "week": 16, "phase": 4,
-      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 100, "sundayOptionalMinutes": 25,
+      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 105, "sundayOptionalMinutes": 25,
       "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "thursday": {"kind": "test", "title": "Rad – Schwellentest", "zone": "z4", "minutes": 65},
+      "tuesdayLegRounds": 0, "wednesdayExtra": null,
+      "thursday": {"kind": "test", "title": "Rad – Schwellentest (Retest)", "zone": "z4", "minutes": 65},
       "saturdayBlocks": null
     }
   ],
 
   "winterBlock": {
     "phase": 5,
-    "name": "Winterblock",
-    "thursday": {"kind": "intervals", "title": "Rad – Schwellenintervalle", "zone": "z4", "reps": 3, "workMinutes": 12, "restMinutes": 5, "power": "90–95 % FTP"},
+    "name": "Nach dem Plan",
+    "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer", "zone": "z2", "minutes": 75},
     "saturdayBlocks": null,
-    "note": "Der 16-Wochen-Plan ist durch. Ab hier gilt der Winterblock: mit Rolle bleibt die Struktur und wird über ERG genauer, ohne Rolle wandert die Intensität aufs Wochenende und der Beinblock wird zum Hauptinhalt (2× pro Woche, 3 Sätze à 4–10 Wdh. mit Last). Die Wochenwerte unten stehen weiter auf Woche 16."
+    "note": "Der 16-Wochen-Plan endet am 04.12.2026. Danach wird auf Basis der drei Testergebnisse und der Auswertung ein neuer Plan geschrieben – dieser wird nicht fortgeschrieben. Offen: Entwicklung von FTP, LTHR und Gewicht, Rolle oder Smarttrainer für den Winter, Zieltermin und Zielereignis, Höhenmeter als eigenständige Progression, lange Ausfahrten jenseits von drei Stunden. Die Wochenwerte unten stehen weiter auf Woche 16."
   },
 
   "heartRateZones": {
@@ -180,7 +212,7 @@
   },
 
   "cadenceTargets": {
-    "fromWeek": 4,
+    "fromWeek": 3,
     "byZone": {"z1": null, "z2": "85–90 rpm", "z3": "85–90 rpm", "z4": "85–90 rpm", "z5": "95–100 rpm"}
   },
 
@@ -226,6 +258,30 @@
     ]
   },
 
+  "testTaper": {
+    "leadDays": 10,
+    "intro": "Der Testanlauf läuft. Er ist verbindlich: ein blind gepacter Test fällt zu niedrig aus und verzerrt die Zonen für den gesamten Folgeblock.",
+    "steps": [
+      {"offsetDays": -7, "label": "7 Tage davor (Do)", "text": "Statt der Qualitätseinheit: 15 min Einfahren, 2 × 6 min im angestrebten Testtempo, 6 min Pause dazwischen, 10 min Ausrollen. Das liefert die Wattzahl, auf die im Test gezielt wird."},
+      {"offsetDays": -6, "label": "6 Tage davor (Fr)", "text": "Ruhe."},
+      {"offsetDays": -5, "label": "5 Tage davor (Sa)", "text": "90 min reines Z2 statt der geplanten langen Ausfahrt."},
+      {"offsetDays": -4, "label": "4 Tage davor (So)", "text": "Nur Rumpf-Zirkel, kein Beinblock."},
+      {"offsetDays": -3, "label": "3 Tage davor (Mo)", "text": "Ruhe."},
+      {"offsetDays": -2, "label": "2 Tage davor (Di)", "text": "45 min, direkte Strecke, unteres Z2 – nicht verlängern."},
+      {"offsetDays": -1, "label": "Tag davor (Mi)", "text": "30 min Z1 mit 3 × 1 min zügig / 1 min locker, kein Rumpf. Die Öffner stellen nach zwei ruhigen Tagen die Spritzigkeit her, ohne Ermüdung zu erzeugen."},
+      {"offsetDays": 1, "label": "Tag danach (Fr)", "text": "Ruhe oder 30 min Z1. Der Test war eine harte Einheit."}
+    ],
+    "goNoGoTitel": "Go/No-Go am Testmorgen",
+    "goNoGo": [
+      "Ruhepuls höchstens 5 bpm über dem Sieben-Tage-Schnitt",
+      "Kein Muskelkater in den Oberschenkeln",
+      "Zwei Nächte hintereinander mindestens 7 Stunden Schlaf",
+      "Kein Infekt im Anflug, unter 30 °C, kein Sturm"
+    ],
+    "goNoGoNote": "Alle vier Punkte müssen zutreffen. Der TSB ist bewusst kein Kriterium: bei einer CTL um 10 ist ein Wert über −10 rechnerisch kaum zu erreichen, ein solches Kriterium würde den Test dauerhaft blockieren.",
+    "shiftRule": "Fällt das Go/No-Go durch, wird nach hinten verschoben – ohne Ersatzeinheit und ohne Tausch. Testtag: Ruhe oder höchstens 40 min Z1, die Einheit entfällt ersatzlos. Freitag Ruhetag. Der Test läuft am Samstag und ersetzt dort die lange Ausfahrt der neuen Woche, er kommt nicht dazu. Sonntag nur Rumpf-Zirkel, kein Beinblock. Bei einer zweiten Absage: Test am Donnerstag der Folgewoche, die betreffende Woche wird zur Grundlagenwoche."
+  },
+
   "coreCircuit": {
     "prepSeconds": 10,
     "roundRestSeconds": 60,
@@ -253,7 +309,7 @@
           "Ca. 2 s ziehen und kurz halten, 1 s zurück",
           "Schultern bleiben unten, kein Hochziehen zu den Ohren"
         ],
-        "goal": "Ziel: Wichtig gegen das typische Einsinken in den Schultern bei langem Rennradfahren."
+        "goal": "Ziel: Wichtig gegen das typische Einsinken in den Schultern bei langem Fahren."
       },
       {
         "name": "Unterarmstütz (Plank)", "mode": "hold",
@@ -331,6 +387,13 @@
     "restBetweenRoundsSeconds": 60,
     "durationHint": "ca. 8–12 min",
     "shortList": "Kniebeuge, Split Squat und Wadenheben",
+    "sorenessNote": "Muskelkater in den Oberschenkeln ist in den ersten Wochen zu erwarten. Er kommt überwiegend nicht von der Samstagsausfahrt, sondern vom exzentrischen Absenken im Beinblock – ein Reiz, der beim Radfahren praktisch nicht vorkommt. Nach zwei bis drei gleichartigen Belastungen reagiert die Muskulatur deutlich weniger; nach etwa vier Wochen ist das Thema erledigt.",
+    "sorenessWarning": "Kein normaler Muskelkater ist: einseitig statt symmetrisch, punktuell lokalisierbar statt diffus, scharf statt dumpf, in Ruhe vorhanden, beim Fahren schlechter statt besser, oder länger als drei Tage anhaltend. Dann Pause und Ursache klären.",
+    "sorenessLevels": [
+      {"key": "frei",   "label": "frei",              "dose": "full", "text": "Volle Wiederholungsspanne."},
+      {"key": "leicht", "label": "leichter Kater",    "dose": "low",  "text": "Unteres Ende der Wiederholungsspanne, volle Runden."},
+      {"key": "stark",  "label": "ausgeprägt",        "dose": "skip", "text": "Beinblock entfällt heute, nur Rumpf-Zirkel."}
+    ],
     "doseByPhase": {
       "1": {"squat": [8, 10],  "split": [6, 6], "calf": [10, 10], "extra": null},
       "2": {"squat": [10, 12], "split": [8, 8], "calf": [12, 12], "extra": null},
@@ -517,20 +580,30 @@
     ]
   },
 
+  "boneStimulus": {
+    "label": "Knochenreiz",
+    "dosage": "20–30 beidbeinige Sprünge, zügig, weich landen",
+    "frequency": "2–3 × pro Woche, unter 1 min.",
+    "skipWeekdays": [3],
+    "placement": "An den Mobility-Flow gehängt, nicht am Tag vor dem Qualitätstag. Ausdrücklich keine eigene Einheit: zählt in der Wochenrechnung nicht mit, taucht in keiner Opferreihenfolge auf, erzeugt keine messbare Erholungslast.",
+    "note": "Radfahren ist nicht gewichtstragend und leistet für die Knochendichte nichts. Der Reiz, der dort wirkt, ist kurz, stoßhaltig und ermüdungsfrei – bei laufendem Kaloriendefizit der einzige Reiz im Programm, den das Rad prinzipiell nicht liefern kann.",
+    "progression": "Steigerung erst, wenn 30 Sprünge ohne Ermüdung und mit weicher Landung gelingen: dann einbeinig, wenige Wiederholungen je Seite."
+  },
+
   "texts": {
-    "wellnessRule": "Wellness-Gate prüfen: Ruhepuls > 7-Tage-Schnitt + 5 bpm, HRV deutlich darunter oder zwei Nächte unter 6 h Schlaf → Donnerstag wird 60 min Z2, Samstag ohne Blöcke.",
+    "wellnessRule": "Wellness-Gate prüfen: Ruhepuls > 7-Tage-Schnitt + 5 bpm, HRV deutlich darunter oder zwei Nächte unter 6 h Schlaf → Donnerstag wird 60 min Z2, Samstag ohne Blöcke. Zwei rote Tage hintereinander → die gesamte Woche als Erholungswoche.",
     "mondayRest": "Komplette Erholung – kein Training. Invariante des Plans: der Montag bleibt frei.",
-    "tuesdayCommute": "Arbeitsweg, verlängerte Strecke – gesteuert wird über die Zeit, nicht über die Distanz. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich bleiben.",
-    "wednesdayMinimum": "Die Zeit ist eine Untergrenze, länger ist kein Planverstoß.",
+    "tuesdayCommute": "Arbeitsweg, verlängerte Strecke – gesteuert wird über die Zeit, nicht über die Distanz. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich bleiben. Die Verlängerung hat seit Fassung 3 eine Obergrenze: lieber den Planwert treffen als im Zweifel länger.",
+    "wednesdayMinimum": "Die Zeit ist eine Untergrenze für den Tag, aber die Wochensumme deckelt trotzdem.",
     "wednesdayEasyDefault": "Bewusst der lockerste Fahrtag der Woche: unteres bis mittleres Z2, nicht am Sprechtest-Limit. Der Donnerstag ist der Qualitätstag.",
-    "wednesdayEasyPhase3": "In Phase 3 ist der Donnerstag selbst ein Z2-Tag – der Mittwoch darf deshalb länger sein.",
+    "wednesdayEasyPhase3": "In Phase 3 ist der Donnerstag selbst ein Z2-Tag – der Mittwoch darf deshalb länger sein und trägt den Erhaltungsreiz.",
     "wednesdayNoRide": "Keine Mittwochsfahrt in dieser Woche.",
-    "thursdayTest": "65 min: 20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker rollen, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95, LTHR = Ø-Puls der 20 min. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad. Bei schlechtem Schlaf, Infekt, über 30 °C oder Sturm auf den Samstag verschieben.",
+    "thursdayTest": "65 min: 20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker rollen, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95, LTHR = Ø-Puls der 20 min. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad, gleicher Reifendruck – sonst ist der Retest nicht vergleichbar.",
     "thursdayBaseDay": "Phase 3 hat keine harten Intervalle – dieser Tag ist der dritte Grundlagentag der Woche.",
     "thursdayNoTimer": "In Phase 3 gibt es keine harten Intervalle – der Timer ist an diesem Tag nicht nötig.",
     "thursdayIntervalTail": "Die letzte Wiederholung soll die härteste sein.",
     "saturdayRecovery": "Erholungswoche: komplett locker, keine Blöcke",
-    "saturdayPureZ2": "Reines Z2 – keine Blöcke. Das ist der Regelfall; Blöcke gibt es nur in Woche 6, 10 und 14.",
+    "saturdayPureZ2": "Reines Z2 – keine Blöcke. Das ist der Regelfall; Blöcke gibt es nur in Woche 6, 9 und 12.",
     "sundayLegOrder": "Der Zirkel ist das Aufwärmen, der Beinblock wird nie kalt begonnen.",
     "sundayRideFirst": "die Fahrt kommt vor den Beinblock, nicht danach",
     "legNoTimer": "Wiederholungen zählen, kein Timer",
@@ -538,16 +611,18 @@
     "legTempoPlain": "3 s absenken, 1 s heben, keine Pause unten, kein Schwung.",
     "legPerSideNote": "Eine Seite komplett, dann wechseln.",
     "legAbortSigns": "Abbruchzeichen: Knie fällt beim Aufrichten nach innen, Rücken rundet unten, Ferse hebt sich, Oberkörper kippt beim Split Squat zur Seite. Lieber 6 saubere Wiederholungen als 12 schlechte.",
-    "legProgression": "Weiterrücken erst, wenn das obere Ende der Spanne an zwei Sonntagen in allen Runden mit sauberer Form erreicht wurde: mehr Wiederholungen → mehr Runden → schwierigere Variante → Zusatzgewicht. Nicht über das Tempo und nicht über mehr Übungen.",
+    "legProgression": "Die Progression ist von den Phasengrenzen entkoppelt: weitergerückt wird, sobald das obere Ende der Spanne an zwei aufeinanderfolgenden Sonntagen in allen Runden mit sauberer Form erreicht wurde – auch wenn die Phase das noch nicht vorsieht. Reihenfolge: mehr Wiederholungen → mehr Runden → schwierigere Variante → Zusatzgewicht. Nicht über das Tempo und nicht über mehr Übungen.",
     "legWednesdayNote": "Mittwoch ist der verkürzte Zirkel ohne Beinblock. Fällt der Sonntag aus, wird der Beinblock nicht auf den Mittwoch nachgeholt – ausgefallen ist ausgefallen.",
+    "legTuesdayNote": "Zweite Beineinheit am Abend, am unteren Rand der Wiederholungsspanne. Erst ab Phase 3 möglich: davor liegt der Qualitätstag am Donnerstag keine 40 Stunden entfernt. In Phase 4 nur noch Erhaltungsdosis – Kraft zu erhalten braucht deutlich weniger Reiz als Kraft aufzubauen.",
     "coreAbortRule": "Regel: Wenn die Form kippt – Hüfte hängt durch, Rücken wird rund, Zittern – ist der Satz zu Ende. Abbrechen ist besser als schlecht weitermachen; eine Runde weniger kostet nichts.",
     "zoneNoteTransition": "Arbeitsannahme, kein gemessener Wert – ein Datenpunkt, eine ungeprüfte HFmax, Geschwindigkeit statt Leistung. Das Band reicht wie im Plan bis 142; belegt ist aber nur der Arbeitsbereich 128–135, dort wird gefahren. 142 ist eine harte Grenze, kein Ziel. Der Sprechtest sticht die Zahl.",
-    "zoneNoteCoggan": "Auch Coggan-Z2 ist breit und reicht oben oft über LT1. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich sein.",
+    "zoneNoteCoggan": "Auch Coggan-Z2 ist breit und reicht oben oft über LT1. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich sein. Zweite Kontrollinstanz ist der Drift – liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band lag.",
     "thresholdTestSummary": "20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95 · LTHR = Ø-Puls der 20 min. Pacing: die ersten drei Minuten bewusst konservativer als das Ziel, auf die Durchschnittsleistung schauen, nicht auf den Momentanwert.",
     "intervalRollingStart": "Rollender Start: in der letzten Minute der Erholung das Tempo leicht anziehen.",
     "intervalRecoveryWeek": "Erholungswoche – reduzierter Umfang, kein Z5.",
-    "elevationShort": "Ersetzen statt addieren: eine flache Einheit gegen eine hügelige mit ähnlicher Zeit tauschen, Kadenz nicht unter 70 rpm.",
+    "elevationShort": "Ersetzen statt addieren: eine flache Einheit gegen eine hügelige mit ähnlicher Zeit tauschen, Kadenz nicht unter 70 rpm – passende Übersetzung ist die wirksamere Lösung als Disziplin am Berg.",
     "cadencePyramid": "Kadenzpyramide als Teil des Einfahrens am Mittwoch, alle ein bis zwei Wochen: 30 s je 90 / 100 / 110 / 120 / 110 / 100 / 90 rpm im leichten Gang, Puls bleibt in Z1/Z2, nicht im Sattel hüpfen. Kostet 3,5 min.",
-    "mobilityScope": "Beweglichkeit und Koordination stehen neben dem Radplan, nicht darin: geringe mechanische Belastung, kaum Interferenz mit Kraft- oder Ausdauererholung. Kein Teil der Opferreihenfolge – bei Zeitnot fallen sie ersatzlos und zuerst aus, ohne dass das den Radplan berührt."
+    "volumeCap": "Die Wochensumme Rad ist eine Obergrenze, kein Sollwert. Wird sie überschritten, wird in der Folgewoche gekürzt, nicht kompensiert. Das ersetzt die Ramp-Rate als Absicherung, solange die CTL unter 20 liegt.",
+    "mobilityScope": "Beweglichkeit, Koordination und Knochenreiz stehen neben dem Radplan, nicht darin: geringe mechanische Belastung, kaum Interferenz mit Kraft- oder Ausdauererholung. Seit Fassung 3 ausdrücklich kein Teil der Opferreihenfolge – der Block kostet keine Erholung und hat keinen Grund, zuerst zu fallen."
   }
 }

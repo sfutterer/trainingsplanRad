@@ -11,7 +11,7 @@
 
    Rein: kein DOM, kein fetch. Das Laden steht in data/planSource.js. */
 
-export const PLAN_SCHEMA_VERSION = 1;
+export const PLAN_SCHEMA_VERSION = 2;
 
 const PV_ZONE_KEYS = ['unter','z1','z2','z3','z4','z5'];
 
@@ -121,6 +121,22 @@ function pvBlocks(err, b, feld){
   pvNum(err, b.restMinutes, feld + '.restMinutes', {min:0});
 }
 
+/* Ein an einen Tag angehaengter kurzer Reiz - in Fassung 3 der Erhaltungsreiz
+   am Mittwoch der Wochen 11 und 12. Bewusst ohne Zone: der Plan schreibt hier
+   keine Zone vor, sondern eine Anstrengung ("zuegig"), und eine erfundene Zone
+   waere eine Zahl, die niemand gemessen hat. */
+function pvExtra(err, x, feld){
+  if(x === null || x === undefined) return;
+  if(!pvObj(err, x, feld)) return;
+  pvStr(err, x.label, feld + '.label');
+  pvNum(err, x.reps, feld + '.reps', {min:1, int:true});
+  pvNum(err, x.workSeconds, feld + '.workSeconds', {min:1, int:true});
+  pvNum(err, x.restSeconds, feld + '.restSeconds', {min:0, int:true});
+  pvStr(err, x.effort, feld + '.effort');
+  pvStr(err, x.restEffort, feld + '.restEffort');
+  pvStr(err, x.note, feld + '.note');
+}
+
 /* Beweglichkeit und Koordination: gleiche Uebungsgestalt wie im Kraftteil, nur
    ohne Dosierung je Phase - die Dosierung steht als Text an der Uebung, weil
    diese Bloecke an keiner Trainingswoche haengen. Die Schluessel muessen trotzdem
@@ -157,9 +173,9 @@ const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMin
   'thursdayBaseDay','thursdayNoTimer','thursdayIntervalTail','saturdayRecovery','saturdayPureZ2',
   'sundayLegOrder','sundayRideFirst','legNoTimer','legTempo','legTempoPlain',
   'legPerSideNote','legAbortSigns',
-  'legProgression','legWednesdayNote','coreAbortRule','zoneNoteTransition',
+  'legProgression','legWednesdayNote','legTuesdayNote','coreAbortRule','zoneNoteTransition',
   'zoneNoteCoggan','thresholdTestSummary','intervalRollingStart','intervalRecoveryWeek',
-  'elevationShort','cadencePyramid','mobilityScope'];
+  'elevationShort','cadencePyramid','volumeCap','mobilityScope'];
 
 /* Die Schluessel der obersten Ebene, die es geben darf.
 
@@ -167,10 +183,10 @@ const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMin
    gehoert in die Datei, und ohne diesen Eintrag waere er ein Verstoss. */
 const PV_TOP_KEYS = [
   'schemaVersion', 'planName', 'documentation',
-  'recoveryEveryNthWeek', 'phaseNames', 'weeks', 'winterBlock',
+  'recoveryWeeks', 'weeklyVolumeCapPercent', 'phaseNames', 'weeks', 'winterBlock',
   'heartRateZones', 'powerZones', 'cadenceTargets', 'speedEstimate',
-  'saturdayRide', 'fridayOptional', 'intervalTimer', 'thresholdTest',
-  'coreCircuit', 'legBlock', 'mobilityFlow', 'coordination', 'texts'
+  'saturdayRide', 'fridayOptional', 'intervalTimer', 'thresholdTest', 'testTaper',
+  'coreCircuit', 'legBlock', 'mobilityFlow', 'coordination', 'boneStimulus', 'texts'
 ];
 
 export function planValidate(p){
@@ -200,7 +216,26 @@ export function planValidate(p){
     }
   }
 
-  pvNum(err, p.recoveryEveryNthWeek, 'recoveryEveryNthWeek', {min:2, int:true});
+  /* Bis Fassung 2 stand hier recoveryEveryNthWeek und die App rechnete
+     week % n === 0. Der 2:1-Rhythmus ab Woche 5 laesst sich so nicht abbilden -
+     die Erholungswochen stehen deshalb einzeln da. Aufsteigend und ohne
+     Dopplung, sonst waere die Reihenfolge Zufall und eine Woche zweimal
+     genannt. */
+  if(pvArr(err, p.recoveryWeeks, 'recoveryWeeks', 1)){
+    let vorige = 0;
+    p.recoveryWeeks.forEach((w, i) => {
+      const f = 'recoveryWeeks[' + i + ']';
+      if(!pvNum(err, w, f, {min:1, int:true})) return;
+      if(w <= vorige){
+        err.push(f + ' ist ' + w + ' – die Erholungswochen müssen aufsteigen und dürfen sich nicht wiederholen.');
+      }
+      if(Array.isArray(p.weeks) && w > p.weeks.length){
+        err.push(f + ' ist ' + w + ', der Plan hat aber nur ' + p.weeks.length + ' Wochen.');
+      }
+      vorige = w;
+    });
+  }
+  pvNum(err, p.weeklyVolumeCapPercent, 'weeklyVolumeCapPercent', {min:0});
   pvObj(err, p.phaseNames, 'phaseNames');
 
   /* Zonen zuerst: die Wochen verweisen mit ihren Zonenschluesseln darauf. */
@@ -256,8 +291,13 @@ export function planValidate(p){
       });
       pvNum(err, w.coreRounds, name + '.coreRounds', {min:1, int:true});
       pvNum(err, w.legRounds, name + '.legRounds', {min:0, int:true});
+      pvNum(err, w.tuesdayLegRounds, name + '.tuesdayLegRounds', {min:0, int:true});
       pvThursday(err, w.thursday, name + '.thursday', zonen);
       pvBlocks(err, w.saturdayBlocks, name + '.saturdayBlocks');
+      pvExtra(err, w.wednesdayExtra, name + '.wednesdayExtra');
+      if(w.wednesdayExtra && !(w.wednesdayMinutes > 0)){
+        err.push(name + '.wednesdayExtra hängt an einer Mittwochsfahrt, aber wednesdayMinutes ist 0.');
+      }
     });
   }
 
@@ -327,6 +367,56 @@ export function planValidate(p){
     });
   }
 
+  /* Der Testanlauf. Die Schritte haengen als Tagesabstand am Testtermin, nicht
+     an Wochentagen: welcher Wochentag ein Abstand ist, ergibt sich aus dem
+     Startdatum, und ein zweites Mal hingeschriebener Wochentag liefe davon
+     weg, sobald jemand den Planbeginn verschiebt. */
+  if(pvObj(err, p.testTaper, 'testTaper')){
+    pvNum(err, p.testTaper.leadDays, 'testTaper.leadDays', {min:1, int:true});
+    pvStr(err, p.testTaper.intro, 'testTaper.intro');
+    pvStr(err, p.testTaper.goNoGoTitel, 'testTaper.goNoGoTitel');
+    pvStr(err, p.testTaper.goNoGoNote, 'testTaper.goNoGoNote');
+    pvStr(err, p.testTaper.shiftRule, 'testTaper.shiftRule');
+    if(pvArr(err, p.testTaper.goNoGo, 'testTaper.goNoGo', 1)){
+      p.testTaper.goNoGo.forEach((s, i) => pvStr(err, s, 'testTaper.goNoGo[' + i + ']'));
+    }
+    const gesehen = [];
+    if(pvArr(err, p.testTaper.steps, 'testTaper.steps', 1)){
+      p.testTaper.steps.forEach((s, i) => {
+        const f = 'testTaper.steps[' + i + ']';
+        if(!pvObj(err, s, f)) return;
+        if(!pvNum(err, s.offsetDays, f + '.offsetDays', {int:true})) return;
+        pvStr(err, s.label, f + '.label');
+        pvStr(err, s.text, f + '.text');
+        if(gesehen.indexOf(s.offsetDays) >= 0){
+          err.push(f + '.offsetDays ' + s.offsetDays + ' kommt doppelt vor – je Tag gibt es genau eine Vorgabe.');
+        }
+        gesehen.push(s.offsetDays);
+        if(Math.abs(s.offsetDays) > p.testTaper.leadDays + 7){
+          err.push(f + '.offsetDays ist ' + s.offsetDays + ' und liegt damit weit außerhalb des Anlaufs.');
+        }
+      });
+    }
+  }
+
+  if(p.boneStimulus !== undefined && pvObj(err, p.boneStimulus, 'boneStimulus')){
+    ['label','dosage','frequency','placement','note','progression'].forEach(k => {
+      pvStr(err, p.boneStimulus[k], 'boneStimulus.' + k);
+    });
+    if(p.boneStimulus.skipWeekdays !== undefined){
+      if(!Array.isArray(p.boneStimulus.skipWeekdays)){
+        err.push('boneStimulus.skipWeekdays muss eine Liste von Wochentagen sein (0 = Sonntag).');
+      } else {
+        p.boneStimulus.skipWeekdays.forEach((d, i) => {
+          const f = 'boneStimulus.skipWeekdays[' + i + ']';
+          if(pvNum(err, d, f, {min:0, int:true}) && d > 6){
+            err.push(f + ' ist ' + d + ' – erlaubt sind 0 (Sonntag) bis 6 (Samstag).');
+          }
+        });
+      }
+    }
+  }
+
   if(pvObj(err, p.coreCircuit, 'coreCircuit')){
     pvNum(err, p.coreCircuit.prepSeconds, 'coreCircuit.prepSeconds', {min:0, int:true});
     pvNum(err, p.coreCircuit.roundRestSeconds, 'coreCircuit.roundRestSeconds', {min:0, int:true});
@@ -353,6 +443,32 @@ export function planValidate(p){
     pvNum(err, p.legBlock.restBetweenRoundsSeconds, 'legBlock.restBetweenRoundsSeconds', {min:0, int:true});
     pvStr(err, p.legBlock.durationHint, 'legBlock.durationHint');
     pvStr(err, p.legBlock.shortList, 'legBlock.shortList');
+    pvStr(err, p.legBlock.sorenessNote, 'legBlock.sorenessNote');
+    pvStr(err, p.legBlock.sorenessWarning, 'legBlock.sorenessWarning');
+
+    /* Die Muskelkater-Stufen. Die erste ist die Voreinstellung und muss
+       deshalb die volle Dosis tragen - stuende dort "low", waere der
+       Regelfall stillschweigend die reduzierte Spanne. */
+    const dosen = ['full','low','skip'];
+    if(pvArr(err, p.legBlock.sorenessLevels, 'legBlock.sorenessLevels', 2)){
+      const sk = [];
+      p.legBlock.sorenessLevels.forEach((lv, i) => {
+        const f = 'legBlock.sorenessLevels[' + i + ']';
+        if(!pvObj(err, lv, f)) return;
+        pvStr(err, lv.key, f + '.key');
+        pvStr(err, lv.label, f + '.label');
+        pvStr(err, lv.text, f + '.text');
+        if(dosen.indexOf(lv.dose) < 0){
+          err.push(f + '.dose ist ' + JSON.stringify(lv.dose) + ' – erlaubt sind ' + dosen.join(', ') + '.');
+        }
+        if(i === 0 && lv.dose !== 'full'){
+          err.push(f + '.dose ist "' + lv.dose + '" – die erste Stufe ist die Voreinstellung und muss "full" sein.');
+        }
+        if(sk.indexOf(lv.key) >= 0) err.push(f + '.key "' + lv.key + '" kommt doppelt vor.');
+        sk.push(lv.key);
+      });
+    }
+
     const keys = [];
     if(pvArr(err, p.legBlock.exercises, 'legBlock.exercises', 1)){
       p.legBlock.exercises.forEach((ex, i) => {

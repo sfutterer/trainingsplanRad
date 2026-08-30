@@ -131,6 +131,15 @@ export const T = {
     + 'Beides im Tab „Heute“ unter Schwellenwerte eintragen und in intervals.icu '
     + 'übernehmen, danach Power Zones und HR Zones auf Coggan.',
 
+  /* ---- Wochenumfang ---- */
+
+  deckelUeberschritten: (ist, plan, cap) =>
+    ist + ' min gefahren, der Deckel liegt bei ' + cap + ' min (Plan ' + plan + ' min). '
+    + 'In der Folgewoche kürzen, nicht kompensieren.',
+
+  deckelHinweis: cap =>
+    'Obergrenze dieser Woche: ' + cap + ' min.',
+
   /* ---- Zonen ---- */
 
   z2ZuHart: (ueber, sehrHart, erlaubt) =>
