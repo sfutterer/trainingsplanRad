@@ -10,6 +10,7 @@
    verlaengert die Seite auf das Dreifache. */
 
 import { useState } from 'preact/hooks';
+import { Icon } from './Icon.jsx';
 
 export function Gruppe({ titel, children }){
   return (
@@ -38,9 +39,7 @@ export function Zeile({ titel, wert, hilfe, onClick, rechts, disabled }){
         {hilfe && (
           <button class="hilfebtn" aria-label={'Erklärung zu ' + titel} aria-expanded={offen ? 'true' : 'false'}
             onClick={e => { e.stopPropagation(); setOffen(o => !o); }}>
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26A1.96 1.96 0 0 0 12 7a2 2 0 0 0-2 2H8a4 4 0 1 1 8 0c0 .88-.36 1.68-.93 2.25z" />
-            </svg>
+            <Icon name="hilfe" />
           </button>
         )}
       </div>

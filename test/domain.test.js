@@ -9,7 +9,18 @@
    Nachgezogen am 23.08.2026: Z2 der Uebergangsfassung reicht jetzt wie im
    Trainingsplan bis 142 statt bis 135, Z3 beginnt entsprechend bei 142. Die
    Abzuege unterscheiden sich gegenueber dem alten Stand ausschliesslich in
-   diesen beiden Zahlen und den daraus erzeugten Texten. */
+   diesen beiden Zahlen und den daraus erzeugten Texten.
+
+   Nachgezogen am 29.08.2026: die Zonenfarbe ist aus dem Modell verschwunden.
+   Sie stand als Hexwert in plan.json und noch einmal als Token in theme.css,
+   beide wurden benutzt - dieselbe Zone hatte je nach Anzeige eine andere
+   Farbe, und die Fassung aus plan.json folgte dem Dunkelmodus nicht.
+
+   Dass sich sonst nichts geaendert hat, laesst sich hier ausrechnen und nicht
+   nur behaupten: beide Abzuege sind um genau 1944 Zeichen kuerzer, und das
+   sind 18 Wochen mal 6 Baender mal die 18 Zeichen von ,"color":"#xxxxxx".
+   Die beiden Abzuege ohne Baender - Tageskarten und Wiederholungsziele -
+   haben ihre Pruefsumme unveraendert behalten. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -86,13 +97,26 @@ describe('plan.json', () => {
     k.schemaVersion = 2;
     expect(planValidate(k)[0]).toContain('diese App liest Fassung 1');
   });
+
+  /* Ein Tippfehler in einem optionalen Feld fiel vorher stillschweigend durch,
+     und die App rechnete mit dem Standardwert weiter. */
+  it('meldet einen unbekannten Schluessel der obersten Ebene', () => {
+    const k = structuredClone(json);
+    k.saturdayRid = k.saturdayRide;
+    expect(planValidate(k).join(' ')).toContain('saturdayRid');
+  });
+
+  it('laesst den Dokumentationsblock stehen', () => {
+    expect(json.documentation).toBeTypeOf('object');
+    expect(planValidate(json)).toEqual([]);
+  });
 });
 
 describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: 'f2d67a5f210db4ae', len: 14119 });
+      .toEqual({ hash: '7ab6c788063489d8', len: 12175 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
@@ -119,7 +143,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + D.buildDayInfo(plan, th, date, start).detail);
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '2e1d91d772534831', len: 38551 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: 'ccfbafaef8a8d781', len: 36607 });
   });
 });
 
@@ -149,10 +173,23 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
     const b = Z.zoneBand(plan, Z.NO_THRESHOLDS, 'z2', 2);
     expect([b.min, b.max]).toEqual([128, 142]);
   });
+
+  /* Die Farbe einer Zone ist Darstellung und steht in theme.css, nicht im
+     Plan. Stuende sie wieder in plan.json, haette dieselbe Zone erneut zwei
+     Farben - und die aus der Datei folgte dem Dunkelmodus nicht. Deshalb hier
+     als Test und nicht nur als Kommentar. */
+  it('fuehrt keine Farben im Zonenmodell', () => {
+    const felder = Z.hrBands(plan, { ftp: 212, lthr: 163, hrmax: 187 }, 8)
+      .concat(Z.hrBands(plan, Z.NO_THRESHOLDS, 1))
+      .flatMap(b => Object.keys(b));
+    expect([...new Set(felder)].sort()).toEqual(['key', 'label', 'max', 'min']);
+
+    const roh = json.heartRateZones;
+    expect(roh.transitionBands.concat(roh.cogganBands).some(b => 'color' in b)).toBe(false);
+  });
 });
 
 describe('Beinblock-Protokoll', () => {
-  const dose = { squat:[8,10], split:[6,6], calf:[10,10], extra:null };
   const leer = { plannedRounds: 2, exercises: [] };
   const teil = { plannedRounds: 2, exercises: [
     { key:'squat', target:8,  reps:[10, 9] },

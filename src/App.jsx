@@ -14,44 +14,73 @@ import { NavigationBar } from './ui/components/NavigationBar.jsx';
 import { AppBar } from './ui/components/AppBar.jsx';
 import { NavDrawer } from './ui/components/NavDrawer.jsx';
 import { HeuteOverlay } from './ui/components/HeuteOverlay.jsx';
-import { tab, ready, planError, plan } from './state/store.js';
+import { ready, planError, plan } from './state/store.js';
+import { tab, gotoTab, tabId, BEREICHE, HAUPTZIELE } from './state/navigation.js';
 import { PlanTab } from './ui/tabs/plan/PlanTab.jsx';
 import { TrainingTab } from './ui/tabs/training/TrainingTab.jsx';
 import { IntervalleTab } from './ui/tabs/intervalle/IntervalleTab.jsx';
-import { AnalyseTab } from './ui/tabs/analyse/AnalyseTab.jsx';
-import { ZonenTab } from './ui/tabs/zonen/ZonenTab.jsx';
-import { EinstellungenTab } from './ui/tabs/einstellungen/EinstellungenTab.jsx';
-import { AboutTab } from './ui/tabs/about/AboutTab.jsx';
 import { UpdateBanner } from './ui/components/UpdateBanner.jsx';
 import { Snackbar } from './ui/components/Snackbar.jsx';
+import { Bestaetigung } from './ui/components/Bestaetigung.jsx';
 
-const TABS = {
-  plan:          { komp: PlanTab,          titel: 'Plan' },
-  training:      { komp: TrainingTab,      titel: 'Training' },
-  intervalle:    { komp: IntervalleTab,    titel: 'Intervalle' },
-  analyse:       { komp: AnalyseTab,       titel: 'Analyse' },
-  zonen:         { komp: ZonenTab,         titel: 'Zonen & Schwellenwerte' },
-  einstellungen: { komp: EinstellungenTab, titel: 'Einstellungen' },
-  about:         { komp: AboutTab,         titel: 'Über die App' }
-};
+/* Vier Bereiche kommen nachgeladen, drei nicht.
 
-/* Alte Bereichsnamen, die auf den Sammelbereich Training zeigen. "kraft" steht
-   in Lesezeichen und im Verlauf, seit der Bereich noch nur den Zirkel und den
-   Beinblock trug; "rumpf" wurde nie vergeben, aber aus dem Plan heraus
-   angesprungen. Beide hier abzufangen ist billiger, als einen Link ins Leere
-   laufen zu lassen - gotoTab verwirft unbekannte Namen sonst still. */
-const ALIAS = { kraft: 'training', rumpf: 'training' };
+   Die Trennung folgt der Frage, was beim Start gebraucht wird. Plan, Training
+   und Intervalle sind das, wofuer man die App oeffnet, und sie muessen sofort
+   dastehen - beim Rumpfzirkel steht man schon auf der Matte. Analyse, Zonen,
+   Einstellungen und Ueber die App ruft man dagegen bewusst auf und wartet
+   dabei ohne Weiteres einen Wimpernschlag.
 
-function tabId(id){ return ALIAS[id] || id; }
+   Der Gewinn liegt fast ganz beim Analysebereich: er zieht verlauf.js,
+   analysis.js, strecke.js, fazit.js, wellness.js und den OSM-Teil hinter sich
+   her - zusammen der groesste Brocken nach Leaflet, und wer nur den Plan und
+   den Zirkel benutzt, lud ihn bisher bei jedem Start mit.
 
-function gotoTab(roh, push){
-  const id = tabId(roh);
-  if(!TABS[id] || tab.value === id) return;
-  tab.value = id;
-  if(push) history.pushState({ tab: id }, '', '#' + id);
-  const c = document.querySelector('.content');
-  if(c) c.scrollTop = 0;
+   Ein Ladehinweis fehlt bewusst: die Dateien liegen nach dem ersten Start im
+   Precache des Service Workers, der Wechsel dauert dann Millisekunden. Ein
+   Spinner, der aufblitzt und sofort wieder geht, ist unruhiger als nichts.
+
+   Von Hand statt mit lazy und Suspense aus preact/compat: die beiden gibt es
+   im Kern nicht, und compat nur dafuer hereinzuziehen kostet mehr, als das
+   Aufteilen einspart - dieselbe Rechnung, mit der auch die Diagramme ohne
+   Bibliothek auskommen. Der geladene Bereich bleibt im Abschluss stehen, damit
+   ein zweiter Besuch nicht wieder durch den leeren Zustand geht. */
+function nachladen(laden){
+  let geladen = null;
+  return function Nachgeladen(props){
+    const [, neu] = useState(0);
+    useEffect(() => {
+      if(geladen) return undefined;
+      let weg = false;
+      laden().then(k => { geladen = k; if(!weg) neu(x => x + 1); });
+      return () => { weg = true; };
+    }, []);
+    const Bereich = geladen;
+    return Bereich ? <Bereich {...props} /> : null;
+  };
 }
+
+const AnalyseTab = nachladen(() =>
+  import('./ui/tabs/analyse/AnalyseTab.jsx').then(m => m.AnalyseTab));
+const ZonenTab = nachladen(() =>
+  import('./ui/tabs/zonen/ZonenTab.jsx').then(m => m.ZonenTab));
+const EinstellungenTab = nachladen(() =>
+  import('./ui/tabs/einstellungen/EinstellungenTab.jsx').then(m => m.EinstellungenTab));
+const AboutTab = nachladen(() =>
+  import('./ui/tabs/about/AboutTab.jsx').then(m => m.AboutTab));
+
+/* Nur die Zuordnung Bereich zu Komponente. Die Namen und die Frage, welche
+   Kennung gueltig ist, stehen in state/navigation.js - sonst muessten die
+   Bereiche den Rahmen kennen, um zueinander springen zu koennen. */
+const KOMPONENTEN = {
+  plan:          PlanTab,
+  training:      TrainingTab,
+  intervalle:    IntervalleTab,
+  analyse:       AnalyseTab,
+  zonen:         ZonenTab,
+  einstellungen: EinstellungenTab,
+  about:         AboutTab
+};
 
 export function App(){
   const [drawer, setDrawer] = useState(false);
@@ -70,8 +99,7 @@ export function App(){
     /* Ein unbekannter Anker landet auf dem Plan statt in einem Zustand, den
        es nicht gibt - etwa ein alter Lesezeichen-Link aus der Zeit, als der
        Bereich noch "heute" hiess. */
-    const start = tabId((location.hash || '').replace('#', ''));
-    tab.value = TABS[start] ? start : 'plan';
+    tab.value = tabId((location.hash || '').replace('#', '')) || 'plan';
     history.replaceState({ tab: tab.value }, '', '#' + tab.value);
 
     const onPop = e => {
@@ -79,8 +107,7 @@ export function App(){
          Dialog gleich zwei Ebenen zurueck. */
       if(drawerRef.current){ setDrawer(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
       if(glockeRef.current){ setGlocke(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
-      const id = tabId((e.state && e.state.tab) || 'plan');
-      if(TABS[id]) gotoTab(id, false);
+      gotoTab((e.state && e.state.tab) || 'plan', false);
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -92,6 +119,12 @@ export function App(){
     const auf = () => setErhoben(c.scrollTop > 4);
     c.addEventListener('scroll', auf, { passive: true });
     return () => c.removeEventListener('scroll', auf);
+    /* ready.value ist Absicht und keine ueberfluessige Abhaengigkeit: .content
+       gibt es erst, wenn der Plan geladen ist. Der Linter kennt Signals nicht
+       und haelt jeden Zugriff ausserhalb der Komponente fuer unveraenderlich -
+       hier faellt aber genau dieser Wert von false auf true, und erst danach
+       findet querySelector etwas. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready.value]);
 
   if(planError.value){
@@ -111,15 +144,15 @@ export function App(){
 
   if(!ready.value || !plan.value) return null;
 
-  const eintrag = TABS[tab.value] || TABS.plan;
-  const Aktiv = eintrag.komp;
-  const imUntermenue = ['plan','training','intervalle','analyse'].includes(tab.value);
+  const aktuell = KOMPONENTEN[tab.value] ? tab.value : 'plan';
+  const Aktiv = KOMPONENTEN[aktuell];
+  const imUntermenue = HAUPTZIELE.includes(aktuell);
 
   return (
     <div class="shell">
       <AppBar
         erhoben={erhoben}
-        titel={eintrag.titel}
+        titel={BEREICHE[aktuell]}
         onMenu={() => { setDrawer(true); history.pushState({ tab: tab.value, overlay:'drawer' }, '', '#' + tab.value); }}
         onGlocke={() => { setGlocke(true); history.pushState({ tab: tab.value, overlay:'glocke' }, '', '#' + tab.value); }}
         glockeAktiv={glocke}
@@ -130,6 +163,7 @@ export function App(){
 
       <UpdateBanner />
       <Snackbar />
+      <Bestaetigung />
 
       {imUntermenue && <NavigationBar active={tab.value} onSelect={id => gotoTab(id, true)} />}
 
@@ -143,5 +177,3 @@ export function App(){
     </div>
   );
 }
-
-export { gotoTab };

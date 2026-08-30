@@ -10,6 +10,8 @@
    hier sind Erfahrungswerte und stehen deshalb in der App, nicht in
    plan.json. */
 
+import { zahl } from './zahlen.js';
+
 export const LAST = {
   gegenViel: 55, gegenEtwas: 35,      // Prozent der Strecke gegen den Wind
   hmViel: 10, hmEtwas: 6,             // Hoehenmeter je Kilometer
@@ -20,10 +22,14 @@ export const LAST = {
   boe: 45                             // km/h
 };
 
+/* Eine Stelle hinter dem Komma, deutsch geschrieben. Frueher hiess das hier
+   ein() - genau wie eine zweite Funktion in Auswertung.jsx, die dasselbe
+   versprach und 20 als "20,0" statt als "20" schrieb. Jetzt rechnen beide
+   mit zahl(v, 1). */
+const zahl1 = v => zahl(v, 1);
+
 function kmh(v){ return Math.round(v) + ' km/h'; }
 function pz(v){ return Math.round(v) + ' %'; }
-/* Eine Stelle hinter dem Komma, deutsch geschrieben. */
-function ein(v){ return (Math.round(v * 10) / 10).toString().replace('.', ','); }
 
 /* Wie schwer waren die Bedingungen? Der Punktwert entscheidet nur darueber, ob
    eine Abweichung als erklaert durchgeht - er wird nirgends angezeigt. */
@@ -50,14 +56,14 @@ export function umfeldLast(bilanz, wetter, verfassung){
     const hm = Math.round(bilanz.hoch);
     if(bilanz.hmProKm >= LAST.hmViel){
       punkte += 2;
-      teile.push({ art: 'berg', text: hm + ' Höhenmeter auf ' + ein(bilanz.km) + ' km (' +
-        ein(bilanz.hmProKm) + ' hm/km) – ' + pz(bilanz.bergProzent) + ' der Strecke ging bergauf.' });
+      teile.push({ art: 'berg', text: hm + ' Höhenmeter auf ' + zahl1(bilanz.km) + ' km (' +
+        zahl1(bilanz.hmProKm) + ' hm/km) – ' + pz(bilanz.bergProzent) + ' der Strecke ging bergauf.' });
     } else if(bilanz.hmProKm >= LAST.hmEtwas){
       punkte += 1;
-      teile.push({ art: 'berg', text: hm + ' Höhenmeter auf ' + ein(bilanz.km) + ' km (' +
-        ein(bilanz.hmProKm) + ' hm/km), steilster Abschnitt ' + ein(bilanz.steilster) + ' %.' });
+      teile.push({ art: 'berg', text: hm + ' Höhenmeter auf ' + zahl1(bilanz.km) + ' km (' +
+        zahl1(bilanz.hmProKm) + ' hm/km), steilster Abschnitt ' + zahl1(bilanz.steilster) + ' %.' });
     } else {
-      teile.push({ art: 'berg', text: 'Flach: ' + hm + ' Höhenmeter auf ' + ein(bilanz.km) + ' km.' });
+      teile.push({ art: 'berg', text: 'Flach: ' + hm + ' Höhenmeter auf ' + zahl1(bilanz.km) + ' km.' });
     }
   }
 
@@ -83,7 +89,7 @@ export function umfeldLast(bilanz, wetter, verfassung){
     }
     if(wetter.regen >= LAST.regen){
       punkte += 1;
-      teile.push({ art: 'regen', text: ein(wetter.regen) + ' mm Niederschlag in der Stunde.' });
+      teile.push({ art: 'regen', text: zahl1(wetter.regen) + ' mm Niederschlag in der Stunde.' });
     }
     if(wetter.boe >= LAST.boe){
       punkte += 1;
@@ -113,7 +119,7 @@ export function umfeldLast(bilanz, wetter, verfassung){
     } else if(verfassung.kurzeNaechte === 1){
       punkte += 1;
       teile.push({ art: 'verfassung', text: 'Die Nacht davor blieb unter 6 h (' +
-        ein(verfassung.sleepSecs / 3600) + ' h).' });
+        zahl1(verfassung.sleepSecs / 3600) + ' h).' });
     }
   }
 
@@ -146,7 +152,7 @@ function umfeldMassnahmen(bilanz, wetter, ziel, verfassung){
 
 /* Aus Tagesbewertung, Strecke und Wetter das Fazit.
 
-   row kommt aus anCompareDay - status, badge und notes sind dort schon
+   row kommt aus compareDay - status, badge und notes sind dort schon
    entschieden. Hier wird nichts umbewertet: eine zu harte Fahrt bleibt zu
    hart. Nur die Erklaerung kommt dazu, und die Frage, was daraus folgt. */
 export function streckenFazit(row, bilanz, wetter, verfassung){

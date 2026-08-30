@@ -19,20 +19,32 @@
    die Gerade ist die Aussage, die Messwerte sind der Beleg. */
 
 import { useState } from 'preact/hooks';
-import { zahl } from '../../domain/verlauf.js';
+import { zahl } from '../../domain/zahlen.js';
 import './verlauf.css';
 
 const B = 320, H = 132;                       // Zeichenflaeche im viewBox
 const L = 34, R = 42, O = 12, U = 22;         // Raender fuer Beschriftung
 
-function spanne(werte){
+/* mindest gibt eine Untergrenze fuer die gezeigte Spanne vor.
+
+   Ohne sie fuellt der Graph immer die ganze Hoehe, egal wie klein die
+   Unterschiede sind - ein Watt zwischen zwei Schwellentests wird dann zu
+   einem Ausschlag ueber die halbe Bildhoehe, also Messrauschen, gezeichnet
+   wie Fortschritt. Wo die Werte eine natuerliche Groessenordnung haben
+   (Prozentaenderung gegen den ersten Test), gehoert diese Grenze gesetzt. */
+function spanne(werte, mindest){
   let min = Math.min(...werte), max = Math.max(...werte);
   if(!(max > min)){ min = min - 1; max = max + 1; }
+  if(mindest && max - min < mindest){
+    const mitte = (min + max) / 2;
+    min = mitte - mindest / 2;
+    max = mitte + mindest / 2;
+  }
   const luft = (max - min) * 0.12;
   return { min: min - luft, max: max + luft };
 }
 
-export function Verlaufsgraph({ reihen, nachkomma, einheit }){
+export function Verlaufsgraph({ reihen, nachkomma, einheit, mindestSpanne }){
   const [gewaehlt, setGewaehlt] = useState(null);
   const echte = (reihen || []).filter(r => r && r.punkte && r.punkte.length);
   if(!echte.length) return null;
@@ -40,7 +52,7 @@ export function Verlaufsgraph({ reihen, nachkomma, einheit }){
   const alle = [].concat(...echte.map(r => r.punkte));
   const ts = alle.map(p => p.t);
   const tVon = Math.min(...ts), tBis = Math.max(...ts);
-  const y = spanne(alle.map(p => p.v));
+  const y = spanne(alle.map(p => p.v), mindestSpanne);
   const nk = nachkomma == null ? 2 : nachkomma;
 
   const px = t => (tBis > tVon ? L + (t - tVon) / (tBis - tVon) * (B - L - R) : (B - R + L) / 2);

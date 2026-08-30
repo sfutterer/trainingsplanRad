@@ -63,10 +63,23 @@
    bekommt genau den Platz zwischen Titel- und Navigationsleiste; wird es eng,
    gibt das Bild nach - es ist der einzige Teil, der Groesse verliert, ohne
    unlesbar zu werden, und ein Tipp darauf oeffnet es ohnehin gross. */
+/* Der Abzug ist die Summe dessen, was ausser dem Block auf dem Bildschirm
+   steht. Frueher stand er als fertig ausgerechnete Zahl da - 152 hier, 266 in
+   training.css, 322 fuer den Fall mit Laufstreifen - und wer eine Leistenhoehe
+   aenderte, musste alle drei nachrechnen, ohne dass irgendwo stand, woraus sie
+   sich zusammensetzen. Jetzt addieren die Nutzer der Klasse ihre eigenen
+   Leisten dazu, und es ist ablesbar, was drinsteckt.
+
+   Die zweite Fassung von .uebungsblock in training.css ist damit weg: sie
+   ueberschrieb hier eine max-height und haengte an der Importreihenfolge der
+   beiden CSS-Dateien. */
 .uebungsblock{
+  /* App-Bar 64 + Navigationsleiste 80 + Luft 8 */
+  --block-leisten: 152px;
   display: flex;
   flex-direction: column;
-  max-height: calc(100dvh - 152px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  max-height: calc(100dvh - var(--block-leisten)
+                   - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
 /* Kleiner als im Intervall-Timer, und auf kurzen Bildschirmen gibt der Ring
    frueher nach: dort steht unter ihm noch das Uebungsbild, das sonst auf

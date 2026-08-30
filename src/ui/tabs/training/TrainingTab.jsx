@@ -37,7 +37,10 @@ import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
          repShort } from '../../../domain/core.js';
 import { isoDayLocal, weekNumberFor } from '../../../domain/week.js';
 import { ExerciseDialog } from '../../components/ExerciseDialog.jsx';
-import { Baustein, Buehne, Uebungsliste } from './Baustein.jsx';
+import { Segmented } from '../../components/Segmented.jsx';
+import { Zahlenfeld } from '../../components/Feld.jsx';
+import { Baustein, Uebungsliste } from './Baustein.jsx';
+import { Buehne } from '../../components/Buehne.jsx';
 import { Beinblock } from './Beinblock.jsx';
 import { Beweglichkeit } from './Beweglichkeit.jsx';
 import { Koordination } from './Koordination.jsx';
@@ -59,12 +62,15 @@ export function TrainingTab(){
   const dow = today.value.getDay();
   const s = settings.value;
 
-  const [cfg, setCfg] = useState(() => ({
-    workSec: coreWorkSeconds(p, w),
-    restSec: coreRestSeconds(p, w),
-    roundRestSec: p.circuit.roundRestSeconds,
-    rounds: coreRoundsForDay(p, w, dow)
-  }));
+  function vorgabe(){
+    return {
+      workSec: coreWorkSeconds(p, w),
+      restSec: coreRestSeconds(p, w),
+      roundRestSec: p.circuit.roundRestSeconds,
+      rounds: coreRoundsForDay(p, w, dow)
+    };
+  }
+  const [cfg, setCfg] = useState(vorgabe);
   const [, tickState] = useState(0);
   const [dialogEx, setDialogEx] = useState(null);
   const [segment, setSegment] = useState('core');
@@ -158,7 +164,27 @@ export function TrainingTab(){
       persist();
     }));
     return () => { ab.forEach(f => f()); timer.reset(); meldeTimer('zirkel', false); };
+    /* timer steht bewusst nicht in der Liste: er lebt in einem useRef und ist
+       fuer die Lebensdauer der Komponente derselbe. In der Liste wuerde der
+       Linter zufrieden sein, ohne dass sich etwas aendert - nur laesst sich
+       dann nicht mehr lesen, dass die Anmeldung an der Stimme haengt und an
+       sonst nichts. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice]);
+
+  /* Die Vorgaben haengen an Woche und Wochentag, und beide koennen sich
+     aendern, waehrend die App offen ist - eine PWA laeuft ueber Nacht weiter,
+     und genau dafuer gibt es das today-Signal. Ohne diesen Effekt behielte cfg
+     die Werte vom Einhaengen: wer die App am Samstagabend offen laesst und am
+     Sonntagmorgen den Zirkel startet, bekaeme die Rundenzahl der Vorwoche.
+
+     Nicht waehrend eine Uhr laeuft: mitten im Zirkel die Rundenzahl unter der
+     laufenden Folge auszutauschen waere schlimmer als der veraltete Wert. */
+  useEffect(() => {
+    if(timer.running) return;
+    setCfg(vorgabe());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [w, dow]);
 
   function starten(){
     primeSpeech();
@@ -238,13 +264,8 @@ export function TrainingTab(){
           und im Ring, im Umschalter waeren sie ein zweites Mal dasselbe. Wann
           welcher Baustein ansteht, sagt der Plan - die App versperrt keinen
           Tag. */}
-      <div class="segmented vier" role="tablist" aria-label="Trainingsbausteine">
-        {SEGMENTE.map(seg => (
-          <button key={seg.id} class={'segbtn' + (segment === seg.id ? ' an' : '')}
-            role="tab" aria-selected={segment === seg.id ? 'true' : 'false'}
-            onClick={() => setSegment(seg.id)}>{seg.label}</button>
-        ))}
-      </div>
+      <Segmented ziele={SEGMENTE} aktiv={segment} onWaehlen={setSegment}
+        klasse="vier" label="Trainingsbausteine" />
 
       {fremde.map(t => (
         <button key={t.id} class="laufstreifen" onClick={() => setSegment(t.segment)}>
@@ -279,18 +300,17 @@ export function TrainingTab(){
           schluss={
             <div class="card">
               <div class="row"><span>Einstellungen</span><b>Woche {w}</b></div>
-              <div class="field"><span>Belastung (Sek.)</span>
-                <input type="number" inputmode="numeric" value={cfg.workSec}
-                  onInput={e => setCfg({ ...cfg, workSec: parseInt(e.currentTarget.value, 10) || cfg.workSec })} /></div>
-              <div class="field"><span>Pause (Sek.)</span>
-                <input type="number" inputmode="numeric" value={cfg.restSec}
-                  onInput={e => setCfg({ ...cfg, restSec: parseInt(e.currentTarget.value, 10) || cfg.restSec })} /></div>
-              <div class="field"><span>Rundenpause (Sek.)</span>
-                <input type="number" inputmode="numeric" value={cfg.roundRestSec}
-                  onInput={e => setCfg({ ...cfg, roundRestSec: parseInt(e.currentTarget.value, 10) || cfg.roundRestSec })} /></div>
-              <div class="field"><span>Runden</span>
-                <input type="number" inputmode="numeric" value={cfg.rounds}
-                  onInput={e => setCfg({ ...cfg, rounds: parseInt(e.currentTarget.value, 10) || cfg.rounds })} /></div>
+              {/* Ein leeres Feld laesst den bisherigen Wert stehen: waehrend
+                  des Tippens ist es kurz leer, und eine Belastung von null
+                  Sekunden gibt es nicht. */}
+              <Zahlenfeld titel="Belastung (Sek.)" wert={cfg.workSec} min={1}
+                onWert={v => setCfg({ ...cfg, workSec: v ?? cfg.workSec })} />
+              <Zahlenfeld titel="Pause (Sek.)" wert={cfg.restSec} min={0}
+                onWert={v => setCfg({ ...cfg, restSec: v ?? cfg.restSec })} />
+              <Zahlenfeld titel="Rundenpause (Sek.)" wert={cfg.roundRestSec} min={0}
+                onWert={v => setCfg({ ...cfg, roundRestSec: v ?? cfg.roundRestSec })} />
+              <Zahlenfeld titel="Runden" wert={cfg.rounds} min={1}
+                onWert={v => setCfg({ ...cfg, rounds: v ?? cfg.rounds })} />
             </div>
           }>
 

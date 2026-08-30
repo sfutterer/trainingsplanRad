@@ -1,0 +1,19 @@
+/* Was nur der Zonen-Tab braucht.
+
+   Vorher zog er dafuer plan.css herein - das CSS eines anderen Bereichs, nur
+   weil die Zonen frueher unter den Tageskarten standen. Die generischen
+   Regeln (Listenkopf, Listenzeile, die Warnfarben von .hint) sind nach
+   app.css gewandert, wo die Klassen selbst definiert sind; hier bleibt der
+   Rest. */
+
+/* Der Punkt vor dem Zonennamen. Die Farbe setzt Zonenliste.jsx aus den
+   Theme-Tokens - hier steht nur die Form. */
+.zonerow .dot{ display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; }
+
+/* Die Legende unter dem Testverlauf. Die beiden Kaestchen tragen ihre Farbe
+   ueber eine Klasse und nicht ueber ein style-Attribut - es sind feste
+   Zuordnungen (FTP zu Z4, Gewicht zu Z1) und keine gerechneten Werte. */
+.verlaufleg{ display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.verlaufleg i{ display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+.verlaufleg i.z4{ background: var(--z4); }
+.verlaufleg i.z1{ background: var(--z1); }

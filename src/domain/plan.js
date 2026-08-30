@@ -31,8 +31,7 @@ export function createPlan(json){
 
   const hrTransition = json.heartRateZones.transitionBands.map(b => ({
     key: b.key, label: b.label,
-    min: b.min, max: b.max === null ? OPEN_TOP : b.max,
-    color: b.color
+    min: b.min, max: b.max === null ? OPEN_TOP : b.max
   }));
 
   const powerZones = {};
@@ -40,13 +39,19 @@ export function createPlan(json){
     powerZones[k] = [json.powerZones[k].minFactor, json.powerZones[k].maxFactor];
   }
 
-  /* Analyse und Anzeige brauchen dieselben Schluessel, Namen und Farben wie
-     die Baender. Frueher standen sie ein zweites Mal im Code und liefen bei
-     jeder Zonenkorrektur auseinander. */
+  /* Analyse und Anzeige brauchen dieselben Schluessel und Namen wie die
+     Baender. Frueher standen sie ein zweites Mal im Code und liefen bei jeder
+     Zonenkorrektur auseinander.
+
+     Die Farbe steht bewusst nicht mehr dabei. Sie lag als Hexwert in
+     plan.json und noch einmal als Token in theme.css - beide wurden benutzt,
+     also hatte dieselbe Zone je nach Anzeige eine andere Farbe, und die
+     Fassung aus plan.json folgte dem Dunkelmodus nicht. Welche Farbe eine
+     Zone traegt, ist Darstellung und keine Trainingsvorgabe; sie steht jetzt
+     nur noch in theme.css, nachgeschlagen in ui/zonenfarbe.js. */
   const zoneKeys  = hrTransition.map(b => b.key);
   const zoneLabel = {};
-  const zoneColor = {};
-  for(const b of hrTransition){ zoneLabel[b.key] = b.label; zoneColor[b.key] = b.color; }
+  for(const b of hrTransition) zoneLabel[b.key] = b.label;
 
   return {
     raw: json,
@@ -60,7 +65,7 @@ export function createPlan(json){
     cogganBands: json.heartRateZones.cogganBands,
     cogganFromWeek: json.heartRateZones.cogganFromWeek,
     powerZones,
-    zoneKeys, zoneLabel, zoneColor,
+    zoneKeys, zoneLabel,
 
     cadence: json.cadenceTargets,
     speed: json.speedEstimate,

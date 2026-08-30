@@ -8,33 +8,32 @@
    nicht mehr auf einen Blick lesbar ist. */
 
 import { richtungKurz } from '../../../data/wetter.js';
+import { zahl } from '../../../domain/zahlen.js';
+import { Icon } from '../../components/Icon.jsx';
 
-const WETTER_ZEICHEN = {
-  temp: 'M15 13V5a3 3 0 0 0-6 0v8a5 5 0 1 0 6 0zm-3-9c.6 0 1 .4 1 1v9.6a3 3 0 1 1-2 0V5c0-.6.4-1 1-1z',
-  feuchte: 'M12 2.7C12 2.7 6 9.4 6 14a6 6 0 0 0 12 0c0-4.6-6-11.3-6-11.3zm0 17.3a4 4 0 0 1-4-4c0-2.6 2.7-6.4 4-8.1 1.3 1.7 4 5.5 4 8.1a4 4 0 0 1-4 4z',
-  regen: 'M17.7 8.5A6 6 0 0 0 6.3 7.2 4.5 4.5 0 0 0 7 16h10.4a3.8 3.8 0 0 0 .3-7.5zM8.4 17.6l-1.2 3.1 1.4.5 1.2-3.1zm3.6 0-1.2 3.1 1.4.5 1.2-3.1zm3.6 0-1.2 3.1 1.4.5 1.2-3.1z'
-};
+/* Eine Stelle hinter dem Komma. Hiess frueher ein() und war exportiert - es
+   gab aber eine zweite Funktion desselben Namens in fazit.js, die 20 als
+   "20" statt als "20,0" schrieb. Beide rechnen jetzt mit zahl(v, 1). */
+const zahl1 = v => zahl(v, 1);
 
 /* Temperatur, Luftfeuchte, Niederschlag - ueber der Karte, weil sie den Blick
    auf die Strecke einordnen, und ohne Satz, weil drei Zahlen keinen brauchen. */
 export function WetterLeiste({ wetter }){
   if(!wetter) return null;
-  const zeichen = d => (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={d} /></svg>
-  );
   /* Drei Zeichen, drei Zahlen, kein Wort - auf einem Handy stehen sie
      nebeneinander, und jedes zusaetzliche Wort bricht die Zeile. Was die Werte
-     bedeuten, steht in der Auswertung darunter. */
+     bedeuten, steht in der Auswertung darunter; das title-Attribut nennt es
+     denen, die den Zeiger daraufhalten. */
   return (
     <div class="wetterleiste">
       <div class="wetterpost" title="Temperatur">
-        {zeichen(WETTER_ZEICHEN.temp)}<b>{Math.round(wetter.temp)} °C</b>
+        <Icon name="temperatur" /><b>{Math.round(wetter.temp)} °C</b>
       </div>
       <div class="wetterpost" title="Luftfeuchte">
-        {zeichen(WETTER_ZEICHEN.feuchte)}<b>{Math.round(wetter.feuchte)} %</b>
+        <Icon name="feuchte" /><b>{Math.round(wetter.feuchte)} %</b>
       </div>
       <div class="wetterpost" title="Niederschlag">
-        {zeichen(WETTER_ZEICHEN.regen)}<b>{wetter.regen.toFixed(1).replace('.', ',')} mm</b>
+        <Icon name="regen" /><b>{zahl1(wetter.regen)} mm</b>
       </div>
     </div>
   );
@@ -63,15 +62,10 @@ export function Fazit({ fazit, kompakt }){
   );
 }
 
-export function ein(v){ return (Math.round(v * 10) / 10).toFixed(1).replace('.', ','); }
-
-/* Der ganze Wetterblock ist hier aufgegangen: Wetter allein sagt wenig, Wind
-   allein auch. Was zaehlt, ist die Kombination aus Strecke und Bedingungen -
-   und die steht jetzt in einer Auswertung statt in vier Kacheln. */
 /* Ruhepuls, HRV und Schlaf am Fahrtag - dieselbe Rolle wie die Wetterleiste
    ueber der Karte: drei Zahlen, die den Rest einordnen. Ohne sie liest sich
    eine harte Fahrt nach zwei kurzen Naechten wie mangelnde Disziplin. */
-export function VerfassungsLeiste({ verfassung }){
+function VerfassungsLeiste({ verfassung }){
   if(!verfassung) return null;
   const v = verfassung;
   const posten = [];
@@ -84,13 +78,13 @@ export function VerfassungsLeiste({ verfassung }){
                   t: v.hrvAvg ? 'Schnitt ' + Math.round(v.hrvAvg) : null });
   }
   if(v.sleepSecs > 0){
-    posten.push({ k:'Schlaf', w: ein(v.sleepSecs / 3600) + ' h', warn: v.kurzeNaechte > 0,
+    posten.push({ k:'Schlaf', w: zahl1(v.sleepSecs / 3600) + ' h', warn: v.kurzeNaechte > 0,
                   t: v.kurzeNaechte === 2 ? 'zweite kurze Nacht' : null });
   }
   if(!posten.length) return null;
   return (
     <>
-      <div class="row" style="margin-top:14px"><span>Verfassung am Fahrtag</span>
+      <div class="row"><span>Verfassung am Fahrtag</span>
         <b>{v.rot ? 'Gate rot' : 'Gate grün'}</b></div>
       <div class="anwerte">
         {posten.map(p => (
@@ -112,9 +106,9 @@ export function Auswertung({ bilanz, wetter, fazit, row, verfassung }){
         <b>{wetter ? 'Strecke und Wetter' : 'Strecke'}</b></div>
 
       <div class="anwerte">
-        <div class="anwert"><b>{ein(bilanz.km)} km</b><span>gewertete Strecke</span></div>
+        <div class="anwert"><b>{zahl1(bilanz.km)} km</b><span>gewertete Strecke</span></div>
         <div class="anwert"><b>{Math.round(bilanz.hoch)} hm</b>
-          <span>{ein(bilanz.hmProKm)} hm/km · max {ein(bilanz.steilster)} %</span></div>
+          <span>{zahl1(bilanz.hmProKm)} hm/km · max {zahl1(bilanz.steilster)} %</span></div>
         {windGewertet && (
           <div class="anwert"><b>{bilanz.gegenProzent} %</b>
             <span>gegen den Wind · ⌀ {Math.round(bilanz.gegenSchnitt)} km/h</span></div>
@@ -126,7 +120,7 @@ export function Auswertung({ bilanz, wetter, fazit, row, verfassung }){
 
       {windGewertet && (
         <>
-          <div class="row" style="margin-top:14px"><span>Wind zur Fahrtrichtung</span>
+          <div class="row"><span>Wind zur Fahrtrichtung</span>
             <b>{bilanz.gegenProzent} % gegen</b></div>
           <div class="zbar">
             <span style={'width:' + bilanz.gegenProzent + '%;background:var(--z5)'}></span>
@@ -135,7 +129,7 @@ export function Auswertung({ bilanz, wetter, fazit, row, verfassung }){
           </div>
           <div class="zleg">
             Gegen {bilanz.gegenProzent} % · quer {bilanz.querProzent} % ·
-            Rücken {bilanz.rueckProzent} % · {ein(bilanz.windMeter / 1000)} km gewertet
+            Rücken {bilanz.rueckProzent} % · {zahl1(bilanz.windMeter / 1000)} km gewertet
             {wetter ? ' · Wind aus ' + richtungKurz(wetter.richtung) + ' mit ' +
               Math.round(wetter.wind) + ' km/h, Böen ' + Math.round(wetter.boe) : ''}
           </div>

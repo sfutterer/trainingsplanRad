@@ -1,0 +1,15 @@
+# Friert den Ist-Zustand ein: zwei Leerzeichen, UTF-8, kein Leerraum am
+# Zeilenende, Zeilenumbruch am Dateiende. Das Projekt hielt das ohnehin
+# durchgehend ein - hier steht es nur zum ersten Mal irgendwo.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false

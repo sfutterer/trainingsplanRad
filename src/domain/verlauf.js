@@ -25,7 +25,9 @@
    Parameter herein, damit sich jede Aussage mit einer synthetischen Reihe
    nachpruefen laesst. */
 
-import { anIsRide } from './analysis.js';
+import { isRide } from './analysis.js';
+import { tagNr, kurzTag } from './week.js';
+import { median, zahl } from './zahlen.js';
 
 /* Schwellen und Fenster stehen hier und nicht in plan.json: das ist
    Auswertungspolitik der App, kein Trainingsplan. */
@@ -47,38 +49,15 @@ export const VERLAUF = {
   rumpf: { flachAbsolut: 0.1 }
 };
 
-/* ---------- Kalender und Zahlen ---------- */
+/* ---------- Kalender ---------- */
 
-/* Auf dem ISO-String rechnen, nicht auf Date: die Eintraege kommen als
-   "JJJJ-MM-TT", und ein lokales Date daraus zu bauen verschiebt bei
-   Sommerzeitwechseln den Tag. Dieselbe Entscheidung wie beim Wellnessteil. */
-export function tagNr(iso){
-  const t = String(iso || '').slice(0, 10).split('-').map(Number);
-  if(t.length !== 3 || t.some(v => !Number.isFinite(v))) return null;
-  return Math.round(Date.UTC(t[0], t[1] - 1, t[2]) / 86400000);
-}
-
+/* Die Wochennummer relativ zum Planbeginn, gerechnet auf ISO-Tagen. Die
+   uebrigen Tageshelfer stehen in week.js, die Zahlenformatierung in
+   zahlen.js - beide standen frueher hier und zugleich in analysis.js. */
 export function wochenNummer(iso, startIso){
   const a = tagNr(iso), b = tagNr(startIso);
   if(a === null || b === null) return null;
   return Math.floor((a - b) / 7) + 1;
-}
-
-export function kurzTag(iso){
-  const s = String(iso || '').slice(0, 10);
-  return s.length === 10 ? s.slice(8, 10) + '.' + s.slice(5, 7) + '.' : s;
-}
-
-export function zahl(v, nk){
-  const n = nk == null ? 2 : nk;
-  if(!Number.isFinite(v)) return '–';
-  return (Math.round(v * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n).replace('.', ',');
-}
-
-function median(v){
-  const s = v.slice().sort((a, b) => a - b);
-  const m = s.length >> 1;
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
 function sauber(punkte){
@@ -237,7 +216,7 @@ export function effizienzSerie(acts, th, opts){
   const minP = o.minPunkte || VERLAUF.minPunkte;
   const fenster = effizienzFenster(th);
 
-  const fahrten = (acts || []).filter(a => a && anIsRide(a.type));
+  const fahrten = (acts || []).filter(a => a && isRide(a.type));
   const verworfen = { kurz: 0, ohnePuls: 0, ausserhalb: 0, ohneWert: 0 };
   const roh = [];
 
@@ -329,7 +308,7 @@ export function effizienzSerie(acts, th, opts){
 export function entkopplungSerie(acts, opts){
   const o = opts || {};
   const minSec = o.minSec || VERLAUF.entkopplung.minSec;
-  const lang = (acts || []).filter(a => a && anIsRide(a.type) &&
+  const lang = (acts || []).filter(a => a && isRide(a.type) &&
     (a.moving_time || a.elapsed_time || 0) >= minSec);
 
   const punkte = [];
@@ -431,7 +410,7 @@ export function testSerie(testLog, interimLog){
 
 /* ---------- 4. Wochenumfang Soll gegen Ist ---------- */
 
-/* Die Wochenzeilen kommen aus anWeekTotals, damit Soll und Ist genau so
+/* Die Wochenzeilen kommen aus weekTotals, damit Soll und Ist genau so
    gerechnet sind wie in der Wochenkarte darunter. Eine zweite Rechnung waere
    der sichere Weg zu zwei Zahlen fuer dieselbe Woche. */
 export function umfangSerie(wochen){
@@ -505,7 +484,7 @@ export function zonenSerie(acts, wochen, startIso){
   for(const w of zeilen) je[w.week] = { woche: w.week, z2Sec: 0, hartSec: 0, quelle: null };
 
   for(const a of (acts || [])){
-    if(!a || !anIsRide(a.type)) continue;
+    if(!a || !isRide(a.type)) continue;
     const z = zonenAusAktivitaet(a);
     if(!z) continue;
     const w = wochenNummer(String(a.start_date_local || '').slice(0, 10), startIso);

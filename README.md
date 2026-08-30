@@ -52,6 +52,20 @@ falsche.
 `TRAININGSPLAN.md` ist die fachliche Spezifikation. Bei Änderungen am Plan muss
 sie mitgezogen werden.
 
+## Schreibweisen im Code
+
+**Kommentare in ASCII-Umschrift** (`waere`, `laeuft`, `Uebung`), **Nutzertexte
+mit echten Umlauten**. Das ist keine Nostalgie: die Bezeichner des Projekts
+sind selbst transliteriert – `Uebungsliste`, `Koerperablauf`, `blaettern`,
+`zuruecksetzen` –, und Kommentare erwähnen sie ständig. Mit Umlauten im
+Fließtext wäre jede Nennung eines Bezeichners ein Sonderfall, und
+`testBloecke` stünde neben „testBlöcke". Die Trennung hat außerdem den
+Nebeneffekt, dass man Nutzertext im Diff sofort erkennt.
+
+`npm run lint` prüft ESLint-Regeln, die Fehler finden, keine Formatierung –
+dafür sorgt `.editorconfig`. `npm run check` läuft Linter, Tests und Build in
+der Reihenfolge, in der auch die GitHub-Action sie ausführt.
+
 ## Daten sichern
 
 Trainingsprotokolle, Testhistorie und Erhebungen liegen nur im `localStorage`

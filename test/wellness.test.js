@@ -9,9 +9,9 @@
 
 import { describe, it, expect } from 'vitest';
 import { WELL, wellnessAvg, wellnessGate, wellnessSerie, gewichtTrend,
-         abnehmHinweis, wellnessMassnahmen, verfassungAus, tagPlus } from '../src/domain/analysis.js';
+         abnehmHinweis, wellnessMassnahmen, verfassungAus } from '../src/domain/wellness.js';
+import { tagPlus } from '../src/domain/week.js';
 
-/* Ruhige Grundlinie: Ruhepuls 50, HRV 60, 7 h Schlaf, 80 kg. */
 function tage(n, ab){
   const out = [];
   for(let i = 0; i < n; i++){

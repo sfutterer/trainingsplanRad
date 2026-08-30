@@ -29,7 +29,8 @@ import { createTimer } from '../../../domain/timer/engine.js';
 import { buildLegRestSequence } from '../../../domain/timer/sequences.js';
 import { legDose, legRounds, legRepText, legRepMin, legDoneRounds, legAborts } from '../../../domain/core.js';
 import { isoDayLocal } from '../../../domain/week.js';
-import { Baustein, Buehne } from './Baustein.jsx';
+import { Baustein } from './Baustein.jsx';
+import { Buehne } from '../../components/Buehne.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
 export function Beinblock({ eintrag, onOpen }){
@@ -104,6 +105,12 @@ export function Beinblock({ eintrag, onOpen }){
       meldeTimer('beinblock', true, { label:'Beinblock', segment:'leg', sek: secondsLeft });
     }));
     return () => { ab.forEach(f => f()); };
+    /* timer steht bewusst nicht in der Liste: er lebt in einem useRef und ist
+       fuer die Lebensdauer der Komponente derselbe. In der Liste wuerde der
+       Linter zufrieden sein, ohne dass sich etwas aendert - nur laesst sich
+       dann nicht mehr lesen, dass die Anmeldung an der Stimme haengt und an
+       sonst nichts. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice]);
 
   /* Jede Zelle beginnt mit dem Wiederholungsziel im Feld - schon
@@ -114,8 +121,15 @@ export function Beinblock({ eintrag, onOpen }){
     const vorhanden = eintrag && eintrag.exercises[exIndex]
       ? eintrag.exercises[exIndex].reps[runde - 1] : null;
     setWert(vorhanden > 0 ? vorhanden : legRepMin(aktuelle, dose));
+    /* Nur die Zelle: das Feld soll beim Wechsel der Zelle neu gesetzt werden
+       und sonst nie. Stuende eintrag mit in der Liste, ueberschriebe jedes
+       Speichern ins Protokoll die Zahl, die der Nutzer gerade tippt - genau
+       waehrend er sie tippt. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zelle]);
 
+  /* Nur beim Aushaengen: die Uhr anhalten und abmelden. */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => () => { timer.reset(); meldeTimer('beinblock', false); }, []);
 
   function beenden(){

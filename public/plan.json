@@ -2,17 +2,22 @@
   "schemaVersion": 1,
   "planName": "Trainingsplan Radfahren – Fassung 2",
 
-  "dokumentation": {
+  "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
     "bearbeiten": "Zahlen und Texte hier aendern und die Datei speichern. Den Service Worker erzeugt vite-plugin-pwa beim Bauen; er nimmt plan.json selbsttaetig in den Precache. Eine Fassungsnummer von Hand gibt es nicht mehr.",
-    "weeks": "Eine Zeile je Trainingswoche. Alles, was zu einer Woche gehoert, steht beisammen - anders als in parallelen Reihen kann sich hier nichts gegeneinander verschieben. Die Reihenfolge muss bei 1 beginnen und darf keine Luecke haben.",
+    "weeks": "Ein Objekt je Trainingswoche. Alles, was zu einer Woche gehoert, steht beisammen - anders als in parallelen Reihen kann sich hier nichts gegeneinander verschieben. Die Reihenfolge muss bei 1 beginnen und darf keine Luecke haben.",
     "nachDemPlanende": "Nach der letzten Woche gilt winterBlock. Die Wochenwerte bleiben auf der letzten Planwoche stehen, Donnerstag und Samstag kommen aus winterBlock.",
     "erholungswochen": "recoveryEveryNthWeek beschreibt den Rhythmus (4 = 3:1). Reduzierte Umfaenge stehen trotzdem ausgeschrieben in weeks - der Rhythmus steuert nur Beschriftung und Beinblock-Dosierung.",
     "zonen": "heartRateZones.transitionBands gelten bis heartRateZones.cogganFromWeek bzw. solange keine LTHR eingetragen ist. Danach rechnet die App die Baender aus der LTHR nach Coggan. Die Baender muessen lueckenlos aneinander anschliessen: max der einen Zone ist min der naechsten. max null heisst offen nach oben.",
     "powerZones": "Bewusst nicht lueckenlos - Coggan ist in vollen Prozentschritten definiert (z1 bis 55 %, z2 ab 56 %). Geprueft wird nur, dass die Zonen aufsteigen.",
     "texts": "Freistehende Saetze aus dem Plan. Reiner Text ohne Auszeichnung - die Anzeige setzt sie als Textknoten, Markierungen wie <b> erschienen woertlich. Saetze mit eingerechneten Zahlen stehen weiterhin im Code, weil sie ohne Vorlagensprache nicht in JSON abbildbar sind.",
     "bilder": "Bild als .webp mit 1400x934 in public/assets ablegen und den Pfad hier eintragen. Der Precache von vite-plugin-pwa greift alle .webp selbsttaetig ab, eine eigene Liste gibt es nicht. Fehlt eine Datei, zeigt die Anzeige eine Platzhalterkachel statt eines kaputten Bildes.",
-    "beweglichkeit": "mobilityFlow und coordination stehen bewusst neben dem Radplan, nicht darin. Sie haengen an keiner Woche und an keiner Phase, weil sie radunabhaengig sind und bei Zeitnot ersatzlos entfallen. Deshalb keine Dosierung je Phase wie beim legBlock, sondern ein fester Dosierungstext je Uebung."
+    "beweglichkeit": "mobilityFlow und coordination stehen bewusst neben dem Radplan, nicht darin. Sie haengen an keiner Woche und an keiner Phase, weil sie radunabhaengig sind und bei Zeitnot ersatzlos entfallen. Deshalb keine Dosierung je Phase wie beim legBlock, sondern ein fester Dosierungstext je Uebung.",
+    "sprache": "Die Schluessel sind englisch, alle Werte und dieser Block sind deutsch. Absicht: die Schluessel bleiben maschinennah und stimmen mit den Feldnamen im Code ueberein, alles Erklaerende bleibt in der Sprache der App. Dieser Block hiess bis zum 29.08.2026 dokumentation und war damit der einzige deutsche Schluessel unter zwanzig englischen.",
+    "farben": "Die Zonenfarben standen bis zum 29.08.2026 hier als Hexwerte und gleichzeitig als Tokens in src/ui/theme.css - beide wurden benutzt, also hatte dieselbe Zone je nach Anzeige eine andere Farbe, und die Fassung aus dieser Datei folgte dem Dunkelmodus nicht. Welche Farbe eine Zone traegt, ist Darstellung und keine Trainingsvorgabe; sie steht deshalb nur noch in theme.css.",
+    "wiederholungenInWeeks": "Das thursday-Objekt steht in den Wochen 1-3, 5-7 und 13-15 jeweils woertlich gleich da. Das ist Absicht und kein Copy-Paste-Rest: jede Woche bleibt fuer sich lesbar, und nichts kann sich gegeneinander verschieben. Eine Vorlagensektion mit Verweisen waere kuerzer, verlangte aber beim Lesen jedes Mal einen zweiten Blick an eine andere Stelle - bei sechzehn Wochen der schlechtere Tausch.",
+    "unbekannteSchluessel": "Die Pruefung meldet Schluessel der obersten Ebene, die sie nicht kennt. Ein Tippfehler in einem optionalen Feld wurde vorher stillschweigend verworfen, und die App rechnete mit dem Standardwert weiter - das widerspricht dem Grundsatz, lieber gar keine Zahl zu zeigen als eine falsche.",
+    "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach."
   },
 
   "recoveryEveryNthWeek": 4,
@@ -149,20 +154,20 @@
   "heartRateZones": {
     "cogganFromWeek": 5,
     "transitionBands": [
-      {"key": "unter", "label": "<Z1", "min": 0,   "max": 100,  "color": "#3a4553"},
-      {"key": "z1",    "label": "Z1",  "min": 100, "max": 128,  "color": "#7d8bff"},
-      {"key": "z2",    "label": "Z2",  "min": 128, "max": 142,  "color": "#2dd4a7"},
-      {"key": "z3",    "label": "Z3",  "min": 142, "max": 155,  "color": "#ffb14e"},
-      {"key": "z4",    "label": "Z4",  "min": 155, "max": 168,  "color": "#ff8f6b"},
-      {"key": "z5",    "label": "Z5",  "min": 168, "max": null, "color": "#ff6b6b"}
+      {"key": "unter", "label": "<Z1", "min": 0,   "max": 100},
+      {"key": "z1",    "label": "Z1",  "min": 100, "max": 128},
+      {"key": "z2",    "label": "Z2",  "min": 128, "max": 142},
+      {"key": "z3",    "label": "Z3",  "min": 142, "max": 155},
+      {"key": "z4",    "label": "Z4",  "min": 155, "max": 168},
+      {"key": "z5",    "label": "Z5",  "min": 168, "max": null}
     ],
     "cogganBands": [
-      {"key": "unter", "label": "<Z1", "minFactor": 0,    "maxFactor": 0.55, "color": "#3a4553"},
-      {"key": "z1",    "label": "Z1",  "minFactor": 0.55, "maxFactor": 0.68, "color": "#7d8bff"},
-      {"key": "z2",    "label": "Z2",  "minFactor": 0.68, "maxFactor": 0.83, "color": "#2dd4a7"},
-      {"key": "z3",    "label": "Z3",  "minFactor": 0.83, "maxFactor": 0.94, "color": "#ffb14e"},
-      {"key": "z4",    "label": "Z4",  "minFactor": 0.94, "maxFactor": 1.05, "color": "#ff8f6b"},
-      {"key": "z5",    "label": "Z5",  "minFactor": 1.05, "maxFactor": null, "color": "#ff6b6b"}
+      {"key": "unter", "label": "<Z1", "minFactor": 0,    "maxFactor": 0.55},
+      {"key": "z1",    "label": "Z1",  "minFactor": 0.55, "maxFactor": 0.68},
+      {"key": "z2",    "label": "Z2",  "minFactor": 0.68, "maxFactor": 0.83},
+      {"key": "z3",    "label": "Z3",  "minFactor": 0.83, "maxFactor": 0.94},
+      {"key": "z4",    "label": "Z4",  "minFactor": 0.94, "maxFactor": 1.05},
+      {"key": "z5",    "label": "Z5",  "minFactor": 1.05, "maxFactor": null}
     ]
   },
 

@@ -13,7 +13,7 @@
 
 export const PLAN_SCHEMA_VERSION = 1;
 
-export const PV_ZONE_KEYS = ['unter','z1','z2','z3','z4','z5'];
+const PV_ZONE_KEYS = ['unter','z1','z2','z3','z4','z5'];
 
 function pvNum(err, wert, feld, opt){
   opt = opt || {};
@@ -57,8 +57,8 @@ function pvObj(err, wert, feld){
   return true;
 }
 
-/* Pulsbänder müssen lückenlos aufsteigen: die Obergrenze der einen Zone ist die
-   Untergrenze der nächsten. Sonst fällt ein Messwert in kein Band und
+/* Pulsbaender muessen lueckenlos aufsteigen: die Obergrenze der einen Zone ist die
+   Untergrenze der naechsten. Sonst faellt ein Messwert in kein Band und
    verschwindet stillschweigend aus der Zonenauswertung. */
 function pvBands(err, bands, feld, minKey, maxKey){
   if(!pvArr(err, bands, feld, 2)) return;
@@ -68,7 +68,6 @@ function pvBands(err, bands, feld, minKey, maxKey){
     if(!pvObj(err, b, f)) return;
     pvStr(err, b.key, f + '.key');
     pvStr(err, b.label, f + '.label');
-    pvStr(err, b.color, f + '.color');
     const lo = b[minKey], hi = b[maxKey];
     if(!pvNum(err, lo, f + '.' + minKey, {min:0})) return;
     const offen = hi === null;
@@ -122,10 +121,10 @@ function pvBlocks(err, b, feld){
   pvNum(err, b.restMinutes, feld + '.restMinutes', {min:0});
 }
 
-/* Beweglichkeit und Koordination: gleiche Übungsgestalt wie im Kraftteil, nur
-   ohne Dosierung je Phase - die Dosierung steht als Text an der Übung, weil
-   diese Blöcke an keiner Trainingswoche hängen. Die Schlüssel müssen trotzdem
-   eindeutig sein, sonst überschreiben sich zwei Übungen in jeder Liste, die
+/* Beweglichkeit und Koordination: gleiche Uebungsgestalt wie im Kraftteil, nur
+   ohne Dosierung je Phase - die Dosierung steht als Text an der Uebung, weil
+   diese Bloecke an keiner Trainingswoche haengen. Die Schluessel muessen trotzdem
+   eindeutig sein, sonst ueberschreiben sich zwei Uebungen in jeder Liste, die
    nach key sucht. */
 function pvBodyBlock(err, b, feld){
   if(!pvObj(err, b, feld)) return;
@@ -151,8 +150,8 @@ function pvBodyBlock(err, b, feld){
   });
 }
 
-/* Pflichttexte. Ein fehlender Textbaustein würde sonst als "undefined" in einer
-   Tageskarte landen - unauffällig genug, um lange übersehen zu werden. */
+/* Pflichttexte. Ein fehlender Textbaustein wuerde sonst als "undefined" in einer
+   Tageskarte landen - unauffaellig genug, um lange uebersehen zu werden. */
 const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMinimum',
   'wednesdayEasyDefault','wednesdayEasyPhase3','wednesdayNoRide','thursdayTest',
   'thursdayBaseDay','thursdayNoTimer','thursdayIntervalTail','saturdayRecovery','saturdayPureZ2',
@@ -161,6 +160,18 @@ const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMin
   'legProgression','legWednesdayNote','coreAbortRule','zoneNoteTransition',
   'zoneNoteCoggan','thresholdTestSummary','intervalRollingStart','intervalRecoveryWeek',
   'elevationShort','cadencePyramid','mobilityScope'];
+
+/* Die Schluessel der obersten Ebene, die es geben darf.
+
+   documentation steht mit in der Liste: die App liest den Block nicht, aber er
+   gehoert in die Datei, und ohne diesen Eintrag waere er ein Verstoss. */
+const PV_TOP_KEYS = [
+  'schemaVersion', 'planName', 'documentation',
+  'recoveryEveryNthWeek', 'phaseNames', 'weeks', 'winterBlock',
+  'heartRateZones', 'powerZones', 'cadenceTargets', 'speedEstimate',
+  'saturdayRide', 'fridayOptional', 'intervalTimer', 'thresholdTest',
+  'coreCircuit', 'legBlock', 'mobilityFlow', 'coordination', 'texts'
+];
 
 export function planValidate(p){
   const err = [];
@@ -172,18 +183,35 @@ export function planValidate(p){
     return err;
   }
 
+  /* Ein Schluessel zu viel ist fast immer ein Tippfehler in einem, den es
+     geben sollte. Vorher fiel er stillschweigend durch: "saturdayBlock" statt
+     "saturdayBlocks" wurde verworfen, und die App rechnete mit dem
+     Standardwert weiter - genau das, was der Grundsatz "lieber gar keine Zahl
+     als eine falsche" ausschliessen soll.
+
+     Gemeldet wird nur die oberste Ebene. Tiefer wuerde die Pruefung zu einem
+     zweiten Schema neben diesem hier, und dort faengt die Pflichtfeldpruefung
+     einen Tippfehler ohnehin: wer "minutes" falsch schreibt, dem fehlt
+     "minutes". */
+  for(const k of Object.keys(p)){
+    if(PV_TOP_KEYS.indexOf(k) < 0){
+      err.push('„' + k + '" kennt diese Fassung der App nicht – Tippfehler? ' +
+               'Erlaubt sind: ' + PV_TOP_KEYS.join(', ') + '.');
+    }
+  }
+
   pvNum(err, p.recoveryEveryNthWeek, 'recoveryEveryNthWeek', {min:2, int:true});
   pvObj(err, p.phaseNames, 'phaseNames');
 
-  /* Zonen zuerst: die Wochen verweisen mit ihren Zonenschlüsseln darauf. */
+  /* Zonen zuerst: die Wochen verweisen mit ihren Zonenschluesseln darauf. */
   if(pvObj(err, p.heartRateZones, 'heartRateZones')){
     pvNum(err, p.heartRateZones.cogganFromWeek, 'heartRateZones.cogganFromWeek', {min:1, int:true});
     pvBands(err, p.heartRateZones.transitionBands, 'heartRateZones.transitionBands', 'min', 'max');
     pvBands(err, p.heartRateZones.cogganBands, 'heartRateZones.cogganBands', 'minFactor', 'maxFactor');
   }
 
-  /* Leistungszonen sind nach Coggan bewusst nicht lückenlos (Z1 bis 55 %,
-     Z2 ab 56 %). Geprüft wird deshalb nur, dass sie aufsteigen. */
+  /* Leistungszonen sind nach Coggan bewusst nicht lueckenlos (Z1 bis 55 %,
+     Z2 ab 56 %). Geprueft wird deshalb nur, dass sie aufsteigen. */
   if(pvObj(err, p.powerZones, 'powerZones')){
     let voriges = -1;
     ['z1','z2','z3','z4','z5'].forEach(k => {
@@ -204,9 +232,9 @@ export function planValidate(p){
 
   const zonen = PV_ZONE_KEYS.slice();
 
-  /* Wochen: fortlaufend ab 1, ohne Lücke, jede mit allen Pflichtfeldern.
+  /* Wochen: fortlaufend ab 1, ohne Luecke, jede mit allen Pflichtfeldern.
      Weil alles zu einer Woche in einem Objekt steht, kann sich nichts
-     gegeneinander verschieben - der frühere Fehlerfall ungleich langer
+     gegeneinander verschieben - der fruehere Fehlerfall ungleich langer
      Reihen ist damit strukturell ausgeschlossen. */
   if(pvArr(err, p.weeks, 'weeks', 1)){
     p.weeks.forEach((w, i) => {
@@ -274,7 +302,7 @@ export function planValidate(p){
   }
 
   /* Der Schwellentest ist eine feste Schrittfolge. "z12" ist der Einfahrbereich
-     Z1-Z2 und deshalb hier zusätzlich erlaubt. */
+     Z1-Z2 und deshalb hier zusaetzlich erlaubt. */
   if(pvObj(err, p.thresholdTest, 'thresholdTest') && pvArr(err, p.thresholdTest.steps, 'thresholdTest.steps', 1)){
     p.thresholdTest.steps.forEach((s, i) => {
       const f = 'thresholdTest.steps[' + i + ']';
@@ -341,7 +369,7 @@ export function planValidate(p){
         keys.push(ex.key);
       });
     }
-    /* Für jede Phase muss zu jeder Übung eine Spanne stehen, sonst zeigt der
+    /* Fuer jede Phase muss zu jeder Uebung eine Spanne stehen, sonst zeigt der
        Beinblock in genau einer Phase kein Wiederholungsziel. */
     if(pvObj(err, p.legBlock.doseByPhase, 'legBlock.doseByPhase') && p.phaseNames){
       Object.keys(p.phaseNames).forEach(phase => {

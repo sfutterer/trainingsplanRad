@@ -9,23 +9,12 @@
 let wakeLock = null;
 let wollen = true;
 let videoEl = null;
-const wakeListeners = [];
-
-export function onWakeChange(fn){ wakeListeners.push(fn); return () => {
-  const i = wakeListeners.indexOf(fn); if(i >= 0) wakeListeners.splice(i, 1);
-}; }
-
-function meldeWake(active, note){
-  for(const fn of wakeListeners){ try { fn({ active, note }); } catch(e){} }
-}
 
 export function setKeepAwake(v){
   wollen = !!v;
   if(!wollen) releaseWakeLock();
   else ensureWakeLock();
 }
-
-export function wantsKeepAwake(){ return wollen; }
 
 /* Video-Notnagel fuer Browser ohne Wake Lock API. Ein stumm geloopter Clip
    haelt den Bildschirm wach - haesslich, aber es funktioniert. */
@@ -38,26 +27,22 @@ export async function ensureWakeLock(){
     try {
       if(wakeLock) return true;
       wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release', () => { wakeLock = null; meldeWake(false, 'freigegeben'); });
-      meldeWake(true, 'Wake Lock');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
       return true;
     } catch(e){ /* faellt auf das Video zurueck */ }
   }
   if(videoEl){
     try {
       await videoEl.play();
-      meldeWake(true, 'Video-Notnagel');
       return true;
     } catch(e){ /* braucht eine Nutzergeste */ }
   }
-  meldeWake(false, 'nicht verfügbar');
   return false;
 }
 
-export function releaseWakeLock(){
+function releaseWakeLock(){
   if(wakeLock){ try { wakeLock.release(); } catch(e){} wakeLock = null; }
   if(videoEl){ try { videoEl.pause(); } catch(e){} }
-  meldeWake(false, null);
 }
 
 if(typeof document !== 'undefined'){
@@ -156,13 +141,6 @@ export function vibrate(pattern){
   try { navigator.vibrate && navigator.vibrate(pattern); } catch(e){}
 }
 
-/* ---- Anzeigemodus ---- */
-export function isStandalone(){
-  return window.matchMedia('(display-mode: standalone)').matches ||
-         window.matchMedia('(display-mode: minimal-ui)').matches ||
-         window.navigator.standalone === true;
-}
-
 /* ---- Dauerhafter Speicher ----
    Bittet den Browser, localStorage nicht bei Platzmangel zu raeumen. Kein
    Ersatz fuer die Sicherung, aber billig zu haben. */
@@ -174,6 +152,30 @@ export async function requestPersistentStorage(){
     }
   } catch(e){}
   return false;
+}
+
+/* ---- Datei auswaehlen ----
+
+   Lag in EinstellungenTab, gehoert aber hierher: ein <input type="file"> zu
+   bauen und mit dem FileReader auszulesen ist Browserfaehigkeit und kein
+   Bereichswissen - das Gegenstueck downloadJson steht schon hier.
+
+   Der Rueckruf bekommt Text und Dateiname; wer abbricht, loest gar nichts aus.
+   Das Element wird bewusst nicht in das Dokument gehaengt: der Klick
+   funktioniert auch so, und ein zurueckgelassenes Feld sammelte sich bei
+   jedem Aufruf an. */
+export function waehleDatei(onText, akzeptiert){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = akzeptiert || 'application/json,.json';
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.onload = () => onText(String(r.result), f.name);
+    r.readAsText(f);
+  };
+  inp.click();
 }
 
 /* ---- Datei herunterladen ---- */

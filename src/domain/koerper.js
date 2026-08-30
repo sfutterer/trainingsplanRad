@@ -27,7 +27,7 @@ export function zeitDosis(dosage){
   if(!m) return null;
   const saetze = m[1] ? parseInt(m[1], 10) : 1;
   /* Bei einer Spanne zaehlt der Timer das obere Ende: daran haengt die
-     Freischaltregel ("Einbeinstand ... über 30 s sauber je Seite"). Frueher
+     Freischaltregel ("Einbeinstand ... ueber 30 s sauber je Seite"). Frueher
      abbrechen darf man jederzeit, laenger halten kann eine abgelaufene Uhr
      nicht. */
   const sekunden = parseInt(m[3] || m[2], 10);

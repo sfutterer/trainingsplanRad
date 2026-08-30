@@ -7,20 +7,17 @@
 
    thresholds ist immer {ftp, lthr, hrmax} mit null fuer "noch nicht gemessen". */
 
-import { weekIndex } from './week.js';
-
 export const NO_THRESHOLDS = { ftp: null, lthr: null, hrmax: null };
 
-export function hasLthr(th){ return !!(th && th.lthr > 0); }
-export function hasFtp(th){  return !!(th && th.ftp  > 0); }
+function hasLthr(th){ return !!(th && th.lthr > 0); }
+function hasFtp(th){  return !!(th && th.ftp  > 0); }
 
-export function cogganHrBands(plan, lthr){
+function cogganHrBands(plan, lthr){
   const r = f => Math.round(lthr * f);
   return plan.cogganBands.map(b => ({
     key: b.key, label: b.label,
     min: r(b.minFactor),
-    max: b.maxFactor === null ? 999 : r(b.maxFactor),
-    color: b.color
+    max: b.maxFactor === null ? 999 : r(b.maxFactor)
   }));
 }
 
@@ -86,7 +83,7 @@ export function showsDistance(plan, week){
   return week <= plan.speed.showUntilWeek;
 }
 
-export function estimateSpeed(plan, week){
+function estimateSpeed(plan, week){
   return Math.min(plan.speed.baseKmh + plan.speed.perWeekKmh * (week - 1), plan.speed.maxKmh);
 }
 

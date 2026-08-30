@@ -21,8 +21,8 @@ import { useEffect, useState } from 'preact/hooks';
 import { plan, apiKey, today } from '../../../state/store.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { fetchWellness } from '../../../data/icu.js';
-import { wellnessSerie, wellnessMassnahmen } from '../../../domain/analysis.js';
-import { gotoTab } from '../../../App.jsx';
+import { wellnessSerie, wellnessMassnahmen } from '../../../domain/wellness.js';
+import { gotoTab } from '../../../state/navigation.js';
 
 /* Ein Abruf fuer die ganze Woche.
 
@@ -150,12 +150,12 @@ function Abschnitte({ liste, geordnet, klasse }){
 
 /* Die wichtigste Kennzahl fuer die zugeklappte Zeile. Die erste ist es immer:
    day.js setzt sie bewusst an den Anfang - Dauer, sonst Umfang. */
-export function ersteKennzahl(info){
+function ersteKennzahl(info){
   const k = info.kennzahlen && info.kennzahlen[0];
   return k ? k.wert : '';
 }
 
-export function tagUndMonat(d){
+function tagUndMonat(d){
   return d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
 }
 

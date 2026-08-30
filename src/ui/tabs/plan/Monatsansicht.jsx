@@ -25,6 +25,7 @@ import {
   monthLabel, weekdayColumns, WEEKDAY_NAMES
 } from '../../../domain/week.js';
 import { Tagesinhalt, Tageskopf } from './Tag.jsx';
+import { KalenderNavi } from './KalenderNavi.jsx';
 
 /* getDay()-Wert der ersten Spalte. Siehe Begruendung im Dateikopf. */
 const ERSTE_SPALTE = 1;
@@ -62,20 +63,13 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
   return (
     <>
       <div class="card kalender">
-        <div class="kalnavi">
-          <div class={'kalnavi-heute' + (gleicherMonat(monat, heute) ? ' leer' : '')}>
-            <button class="btn tonal heute-sprung" type="button"
-              onClick={() => setzeAnker(heute)}>Heute</button>
-          </div>
-          <button class="iconbtn" type="button" aria-label="Voriger Monat"
-            onClick={() => blaettern(-1)}><span aria-hidden="true">‹</span></button>
-          <div class="kalnavi-titel"><b>{monthLabel(monat)}</b></div>
-          <button class="iconbtn" type="button" aria-label="Nächster Monat"
-            onClick={() => blaettern(1)}><span aria-hidden="true">›</span></button>
-          <div class="kalnavi-heute spiegel" aria-hidden="true">
-            <button class="btn tonal heute-sprung" type="button" tabIndex={-1}>Heute</button>
-          </div>
-        </div>
+        <KalenderNavi
+          titel={monthLabel(monat)}
+          zurueckLabel="Voriger Monat" vorLabel="Nächster Monat"
+          onZurueck={() => blaettern(-1)}
+          onVor={() => blaettern(1)}
+          onHeute={() => setzeAnker(heute)}
+          heuteVersteckt={gleicherMonat(monat, heute)} />
 
         <div class="kalkopf" aria-hidden="true">
           {koepfe.map(k => <span key={k}>{k}</span>)}

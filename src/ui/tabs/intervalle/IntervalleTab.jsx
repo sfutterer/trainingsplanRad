@@ -1,12 +1,41 @@
+/* Der Intervall-Timer: der einzige Timer, der auf dem Rad bedient wird.
+
+   Drei Betriebsarten, die der Plan vorgibt und die man hier nicht waehlt:
+   Intervalle mit einstellbaren Zeiten, der Schwellentest mit festem Ablauf,
+   und in Phase 3 gar keiner - dort ist der Donnerstag ein Grundlagentag, und
+   ein Timer haette nichts zu zaehlen. Der Testablauf laesst sich bewusst nicht
+   verstellen: ein Test, der sich anpassen laesst, ist kein Vergleichsmassstab
+   mehr.
+
+   Die Ansagen pruefen auf Unterschreiten und nicht auf Gleichheit. Die
+   Restzeit wird aus der Uhr gerechnet und kann springen; bei einem Vergleich
+   auf Gleichheit fiele eine Ansage dann ersatzlos aus - und zwar genau die,
+   auf die man gewartet hat. Die Flags in flags.current halten jede Ansage
+   einmalig, sie werden bei jedem Schrittwechsel zurueckgesetzt.
+
+   Die Tastenreihe kommt aus Buehne.jsx und nicht mehr aus dieser Datei. Sie
+   war bis zum 29.08.2026 die einzige Stelle, an der die Regel "links Zurueck,
+   Mitte Haupthandlung, rechts Weiter" gebrochen war: links stand "Reset".
+   Ausgerechnet hier, wo man die Tasten mit Handschuhen und ohne Hinsehen
+   trifft - und das Zuruecksetzen mitten in einem Intervall ist das Letzte, was
+   man dabei will. Es steht jetzt als Beenden unter dem Block, wie in den
+   anderen vier Timern.
+
+   Der Bereichstitel steht in der AppBar. Diese Datei hatte ihn zusaetzlich als
+   <h1> und war damit die einzige mit zwei Ueberschriften im Dokument; sichtbar
+   war das nicht, weil eine CSS-Regel den zweiten versteckte. */
+
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, thresholds, week, settings } from '../../../state/store.js';
 import { meldeTimer } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
 import { buildIntervalSequence, buildTestSequence, intervalDefaults,
          totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
-import { hrBands, bandRange, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
+import { hrBands, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
 import { isRecoveryWeek } from '../../../domain/week.js';
-import { ProgressRing } from '../../components/ProgressRing.jsx';
+import { Buehne } from '../../components/Buehne.jsx';
+import { Zonenliste } from '../../components/Zonenliste.jsx';
+import { Zahlenfeld } from '../../components/Feld.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 import '../../components/timer.css';
 
@@ -24,10 +53,11 @@ export function IntervalleTab(){
   const s = settings.value;
   const vorgabe = intervalDefaults(p, w);
 
-  const [cfg, setCfg] = useState(() => vorgabe.mode === 'intervals'
+  const ausVorgabe = () => (vorgabe.mode === 'intervals'
     ? { warmMin: vorgabe.warmMin, workMin: vorgabe.workMin, restMin: vorgabe.restMin,
         coolMin: vorgabe.coolMin, reps: vorgabe.reps, zoneKey: vorgabe.zoneKey }
     : null);
+  const [cfg, setCfg] = useState(ausVorgabe);
   const [, tickState] = useState(0);
   const timerRef = useRef(null);
   const flags = useRef({ half:false, minute:false, zehn:false });
@@ -99,7 +129,23 @@ export function IntervalleTab(){
       }
     }));
     return () => { ab.forEach(f => f()); timer.reset(); meldeTimer('intervalle', false); };
+    /* timer steht bewusst nicht in der Liste: er lebt in einem useRef und ist
+       fuer die Lebensdauer der Komponente derselbe. In der Liste wuerde der
+       Linter zufrieden sein, ohne dass sich etwas aendert - nur laesst sich
+       dann nicht mehr lesen, dass die Anmeldung an der Stimme haengt und an
+       sonst nichts. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice]);
+
+  /* Wie im Trainings-Tab: die Vorgabe haengt an der Woche, und die kann
+     wechseln, waehrend die App offen ist. Nicht waehrend eine Uhr laeuft -
+     mitten in einer Einheit die Wiederholungszahl zu tauschen waere schlimmer
+     als der veraltete Wert. */
+  useEffect(() => {
+    if(timer.running) return;
+    setCfg(ausVorgabe());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [w]);
 
   function starten(){
     primeSpeech(); ensureWakeLock();
@@ -112,6 +158,10 @@ export function IntervalleTab(){
   }
   function zuruecksetzen(){ cancelSpeech(); timer.reset(); meldeTimer('intervalle', false); tickState(x => x + 1); }
   function weiter(){ timer.skip(); meldeTimer('intervalle', timer.running); tickState(x => x + 1); }
+  /* Zurueck haelt an und blaettert stumm - wie im Rumpfzirkel. Wer im
+     Ausrollen merkt, dass er ein Intervall uebersprungen hat, kommt so
+     zurueck, ohne die ganze Einheit zu verlieren. */
+  function zurueck(){ cancelSpeech(); timer.back(); meldeTimer('intervalle', false); tickState(x => x + 1); }
 
   const vorschau = timer.sequence.length ? timer.sequence : sequenz();
   const step = timer.step;
@@ -133,18 +183,16 @@ export function IntervalleTab(){
 
   return (
     <>
-      <h1 class="title">Intervalle</h1>
-
       <div class="card">
         {testmodus ? (
           <>
             <div class="row"><span>Woche {w}</span><b>Schwellentest</b></div>
-            <p class="hint" style="margin-top:6px">{p.texts.thresholdTestSummary}</p>
+            <p class="hint">{p.texts.thresholdTestSummary}</p>
           </>
         ) : nurZ2 ? (
           <>
             <div class="row"><span>Woche {w}</span><b>Grundlagentag statt Intervallen</b></div>
-            <p class="hint" style="margin-top:6px">
+            <p class="hint">
               {vorgabe.plan.minutes} min {zoneText(p, th, 'z2', w)} am Stück. {p.texts.thursdayNoTimer}
             </p>
           </>
@@ -157,31 +205,32 @@ export function IntervalleTab(){
             </b></div>
             {vorgabe.plan.power && <div class="row"><span>Leistung</span><b>{vorgabe.plan.power}</b></div>}
             {kadenz && <div class="row"><span>Trittfrequenz</span><b>{kadenz}</b></div>}
-            <p class="hint" style="margin-top:6px">
+            <p class="hint">
               {p.texts.intervalRollingStart}
               {isRecoveryWeek(p, w) ? ' ' + p.texts.intervalRecoveryWeek : ''}
             </p>
           </>
         )}
-        <div class="row" style="margin-top:10px"><span>Gesamtdauer</span><b>{dauer(totalSeconds(vorschau))}</b></div>
+        <div class="row"><span>Gesamtdauer</span><b>{dauer(totalSeconds(vorschau))}</b></div>
       </div>
 
-      <ProgressRing
-        fraction={timer.fraction()}
-        color={farbe}
-        phase={phase}
-        time={step ? (step.type === 'done' ? '0:00' : klok(sec)) : klok(vorschau[1] ? vorschau[1].duration : 0)}
-        exercise={step ? step.label : 'Tippen zum Starten'}
-        meta={step && step.type !== 'done' ? 'noch ' + dauer(remainingAfter(timer.sequence, timer.index) + sec) : ''}
-        zone={step ? step.zone : (vorschau[1] && vorschau[1].zone)}
-        onTap={starten}
-      />
-
-      <div class="controls">
-        <button class="btn secondary" onClick={zuruecksetzen}>Reset</button>
-        <button class="btn gross" onClick={starten}>{timer.running ? 'Pause' : (step && step.type !== 'done' ? 'Weiter' : 'Start')}</button>
-        <button class="btn secondary" onClick={weiter}>Weiter</button>
-      </div>
+      <Buehne
+        ring={{
+          fraction: timer.fraction(),
+          color: farbe,
+          phase,
+          time: step ? (step.type === 'done' ? '0:00' : klok(sec)) : klok(vorschau[1] ? vorschau[1].duration : 0),
+          exercise: step ? step.label : 'Tippen zum Starten',
+          meta: step && step.type !== 'done'
+            ? 'noch ' + dauer(remainingAfter(timer.sequence, timer.index) + sec) : '',
+          zone: step ? step.zone : (vorschau[1] && vorschau[1].zone)
+        }}
+        zurueck={{ onClick: zurueck, disabled: !step || timer.index <= 0 }}
+        haupt={{ label: timer.running ? 'Pause'
+                        : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
+                 onClick: starten }}
+        weiter={{ onClick: weiter, disabled: !step || step.type === 'done' }}
+        ende={step ? { label: 'Einheit beenden', onClick: zuruecksetzen } : null} />
 
       <div class="card">
         <div class="seglist">
@@ -202,21 +251,19 @@ export function IntervalleTab(){
       {!testmodus && !nurZ2 && (
         <div class="card">
           <div class="row"><span>Einstellungen</span><b>anpassbar</b></div>
-          <div class="field"><span>Einfahren (Min.)</span>
-            <input type="number" inputmode="numeric" value={cfg.warmMin}
-              onInput={e => setCfg({ ...cfg, warmMin: parseFloat(e.currentTarget.value) || 0 })} /></div>
-          <div class="field"><span>Intervall (Min.)</span>
-            <input type="number" inputmode="decimal" step="0.5" value={cfg.workMin}
-              onInput={e => setCfg({ ...cfg, workMin: parseFloat(e.currentTarget.value) || cfg.workMin })} /></div>
-          <div class="field"><span>Erholung (Min.)</span>
-            <input type="number" inputmode="decimal" step="0.5" value={cfg.restMin}
-              onInput={e => setCfg({ ...cfg, restMin: parseFloat(e.currentTarget.value) || cfg.restMin })} /></div>
-          <div class="field"><span>Wiederholungen</span>
-            <input type="number" inputmode="numeric" value={cfg.reps}
-              onInput={e => setCfg({ ...cfg, reps: parseInt(e.currentTarget.value, 10) || cfg.reps })} /></div>
-          <div class="field"><span>Ausrollen (Min.)</span>
-            <input type="number" inputmode="numeric" value={cfg.coolMin}
-              onInput={e => setCfg({ ...cfg, coolMin: parseFloat(e.currentTarget.value) || 0 })} /></div>
+          {/* Einfahren und Ausrollen duerfen auf null: wer schon warm ist,
+              faehrt sofort los. Intervall, Erholung und Wiederholungen nicht -
+              ein Intervall ueber null Minuten ist kein Intervall. */}
+          <Zahlenfeld titel="Einfahren (Min.)" wert={cfg.warmMin} min={0} dezimal
+            onWert={v => setCfg({ ...cfg, warmMin: v ?? 0 })} />
+          <Zahlenfeld titel="Intervall (Min.)" wert={cfg.workMin} min={0.5} schritt="0.5" dezimal
+            onWert={v => setCfg({ ...cfg, workMin: v ?? cfg.workMin })} />
+          <Zahlenfeld titel="Erholung (Min.)" wert={cfg.restMin} min={0.5} schritt="0.5" dezimal
+            onWert={v => setCfg({ ...cfg, restMin: v ?? cfg.restMin })} />
+          <Zahlenfeld titel="Wiederholungen" wert={cfg.reps} min={1}
+            onWert={v => setCfg({ ...cfg, reps: v ?? cfg.reps })} />
+          <Zahlenfeld titel="Ausrollen (Min.)" wert={cfg.coolMin} min={0} dezimal
+            onWert={v => setCfg({ ...cfg, coolMin: v ?? 0 })} />
         </div>
       )}
       {testmodus && <p class="hint">Der Testablauf steht fest und lässt sich nicht verstellen – ein Test, der sich anpassen lässt, ist kein Vergleichsmaßstab mehr.</p>}
@@ -224,10 +271,9 @@ export function IntervalleTab(){
       <div class="card">
         <div class="row"><span>Pulszonen Woche {w}</span>
           <b>{usesCoggan(p, th, w) ? 'Coggan aus LTHR' : 'Übergangsbänder'}</b></div>
-        {hrBands(p, th, w).filter(b => b.key !== 'unter').map(b => (
-          <div class="row" key={b.key}><span><i class="dot" style={'background:' + b.color}></i>{b.label}</span>
-            <b>{bandRange(b)}</b></div>
-        ))}
+        {/* Ohne Wattbereich: die Vorgabe fuer heute steht schon in der
+            Kopfkarte, hier geht es nur um die Baender. */}
+        <Zonenliste bands={hrBands(p, th, w)} plan={p} thresholds={th} />
       </div>
     </>
   );

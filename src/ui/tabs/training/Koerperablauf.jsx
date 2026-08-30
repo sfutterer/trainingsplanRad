@@ -31,7 +31,8 @@ import { meldeTimer } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
 import { buildHoldSequence } from '../../../domain/timer/sequences.js';
 import { zeitDosis } from '../../../domain/koerper.js';
-import { Buehne, Uebungsliste } from './Baustein.jsx';
+import { Uebungsliste } from './Baustein.jsx';
+import { Buehne } from '../../components/Buehne.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
 /* Satz und Seite in einer Zeile - beides nur, wenn es mehr als eines gibt.
@@ -103,17 +104,33 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
       meldeTimer(timerId, true, { label, segment, sek: secondsLeft });
     }));
     return () => { ab.forEach(f => f()); };
+    /* timer, label und segment stehen bewusst nicht in der Liste: timer lebt
+       in einem useRef und ist fuer die Lebensdauer der Komponente derselbe,
+       label und segment kommen als feste Zeichenketten vom Aufrufer. In der
+       Liste waere der Linter zufrieden, ohne dass sich etwas aendert - nur
+       laesst sich dann nicht mehr lesen, dass die Anmeldung an der Stimme
+       haengt und am Namen des Timers. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice, timerId]);
 
   /* Jede Uebung bringt ihre eigene Folge mit. Beim Wechsel wird die alte
      verworfen - eine halb gelaufene Uebung setzt nicht heimlich fort, wenn man
-     spaeter zurueckblaettert. */
+     spaeter zurueckblaettert.
+
+     Der Schluessel der laufenden Uebung steht als eigene Variable in der Liste
+     und nicht als Ausdruck darin: ein zusammengesetzter Ausdruck laesst sich
+     nicht mehr statisch pruefen, und beim Lesen sieht man nicht auf einen
+     Blick, worauf der Effekt reagiert. */
+  const laufendeUebung = laufend ? aktuelle.key : null;
   useEffect(() => {
     timer.reset(laufend && zeit ? buildHoldSequence(aktuelle) : []);
     meldeTimer(timerId, false);
     tickState(x => x + 1);
-  }, [schritt, laufend && aktuelle.key]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schritt, laufendeUebung]);
 
+  /* Nur beim Aushaengen: die Uhr anhalten und abmelden. */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => () => { timer.reset(); meldeTimer(timerId, false); }, [timerId]);
 
   function starten(){
@@ -128,8 +145,8 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
     tickState(x => x + 1);
   }
 
-  /* Blaettern hält immer auch die Ansage an: sonst spricht die App noch über
-     die Übung, die man gerade verlassen hat. */
+  /* Blaettern haelt immer auch die Ansage an: sonst spricht die App noch ueber
+     die Uebung, die man gerade verlassen hat. */
   function blaettern(ziel){
     cancelSpeech();
     setSchritt(ziel);

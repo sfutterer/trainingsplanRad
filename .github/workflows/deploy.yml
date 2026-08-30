@@ -29,6 +29,9 @@ jobs:
       # Sonst bricht der Build irgendwann von selbst, ohne dass sich etwas
       # am Projekt geaendert haette.
       - run: npm ci
+      # Erst der Linter, dann die Tests, dann der Build - in dieser Reihenfolge,
+      # weil der Linter in Sekunden meldet, was der Build erst am Ende faende.
+      - run: npm run lint
       - run: npm test
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3

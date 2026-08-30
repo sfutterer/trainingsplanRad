@@ -44,12 +44,12 @@ export const KLASSE_TEXT = {
    85 kg Systemgewicht, CdA 0,35 m², Luftdichte 1,2 kg/m³. */
 const MASSE = 85, G = 9.81, RHO = 1.2, CDA = 0.35, TEMPO_ANNAHME = 20;
 
-export function wattBerg(a){
+function wattBerg(a){
   const v = (a.tempoKmh || TEMPO_ANNAHME) / 3.6;
   return MASSE * G * v * ((a.steigung || 0) / 100);
 }
 
-export function wattWind(a){
+function wattWind(a){
   const v = (a.tempoKmh || TEMPO_ANNAHME) / 3.6, w = (a.gegenKmh || 0) / 3.6;
   return 0.5 * RHO * CDA * ((v + w) * (v + w) - v * v) * v;
 }
@@ -144,7 +144,7 @@ function macheAbschnitt(von, bis, meter, ll, o){
   return a;
 }
 
-export function gesamtMeter(punkte){
+function gesamtMeter(punkte){
   let m = 0;
   for(let i = 1; i < punkte.length; i++) m += abstand(punkte[i - 1].ll, punkte[i].ll);
   return m;

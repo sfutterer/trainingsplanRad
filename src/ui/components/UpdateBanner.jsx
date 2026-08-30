@@ -20,7 +20,7 @@ export function UpdateBanner(){
 
   return (
     <div class="banner" role="status">
-      <span style="flex:1">Eine neue Fassung der App liegt bereit.</span>
+      <span>Eine neue Fassung der App liegt bereit.</span>
       <button class="btn" onClick={() => location.reload()}>Neu laden</button>
       <button class="btn secondary" onClick={() => setOffen(false)}>Später</button>
     </div>

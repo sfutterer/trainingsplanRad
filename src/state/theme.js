@@ -39,7 +39,7 @@ function setzeStatusleiste(wahl){
   }
 }
 
-export function applyTheme(wahl){
+function applyTheme(wahl){
   const w = THEMES.some(t => t.id === wahl) ? wahl : 'system';
   if(w === 'system') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', w);

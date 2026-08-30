@@ -19,12 +19,13 @@
    Fallback. */
 
 import { useEffect, useState } from 'preact/hooks';
+import { Icon } from '../../components/Icon.jsx';
 
 export function Uebungsbild({ src, name, klasse = '', onClick }){
   const [fehlt, setFehlt] = useState(false);
 
-  /* Beim geführten Ablauf wechselt nur die Quelle, die Komponente bleibt
-     stehen. Ohne diesen Rücksetzer bliebe der Platzhalter der einen Übung für
+  /* Beim gefuehrten Ablauf wechselt nur die Quelle, die Komponente bleibt
+     stehen. Ohne diesen Ruecksetzer bliebe der Platzhalter der einen Uebung fuer
      alle folgenden stehen. */
   useEffect(() => { setFehlt(false); }, [src]);
 
@@ -34,9 +35,7 @@ export function Uebungsbild({ src, name, klasse = '', onClick }){
     return (
       <div class={klassen + ' exbild-leer'} onClick={onClick}
         role={onClick ? 'button' : 'img'} aria-label={'Bild fehlt noch: ' + name}>
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zm-2 0H5v14h14V5zM7 17l3.5-4.5 2.5 3 3.5-4.5L19 17H7z" />
-        </svg>
+        <Icon name="bild" />
         <span>{name}</span>
         <small>Bild folgt</small>
       </div>

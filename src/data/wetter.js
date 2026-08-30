@@ -67,7 +67,7 @@ function isoStunde(d){
   return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + 'T' + z(d.getHours());
 }
 
-export const HIMMELSRICHTUNG = ['N','NNO','NO','ONO','O','OSO','SO','SSO','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+const HIMMELSRICHTUNG = ['N','NNO','NO','ONO','O','OSO','SO','SSO','S','SSW','SW','WSW','W','WNW','NW','NNW'];
 export function richtungKurz(grad){
   return HIMMELSRICHTUNG[Math.round(((grad % 360) / 22.5)) % 16];
 }

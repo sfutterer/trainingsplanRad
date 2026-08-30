@@ -9,13 +9,18 @@ import { useState } from 'preact/hooks';
 import { plan, thresholds, startDate, week, testLog, interimLog, apiKey,
          setThresholds, addTestEntry, addInterimEntry } from '../../../state/store.js';
 import { fetchWellness, putWellness } from '../../../data/icu.js';
-import { isoDayLocal, toMidnight, weekNumberFor } from '../../../domain/week.js';
-import { hrBands, bandRange, wattText, usesCoggan, zoneBand } from '../../../domain/zones.js';
-import '../plan/plan.css';
+import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag } from '../../../domain/week.js';
+import { hrBands, usesCoggan, zoneBand } from '../../../domain/zones.js';
+import { zahl } from '../../../domain/zahlen.js';
+import { bestaetige } from '../../../state/dialog.js';
+import { Zonenliste } from '../../components/Zonenliste.jsx';
+import { Verlaufsgraph } from '../../components/Verlaufsgraph.jsx';
+import { Zahlenfeld, Textfeld } from '../../components/Feld.jsx';
+import './zonen.css';
 
 function ZonenKarte(){
   const p = plan.value, th = thresholds.value, w = week.value;
-  const bands = hrBands(p, th, w).filter(b => b.key !== 'unter');
+  const bands = hrBands(p, th, w);
   const coggan = usesCoggan(p, th, w);
   return (
     <div class="card">
@@ -23,12 +28,7 @@ function ZonenKarte(){
         {coggan ? 'Coggan, % LTHR (' + th.lthr + ' bpm)' + (th.ftp > 0 ? ' · Watt aus FTP ' + th.ftp + ' W' : '')
                 : 'Übergangsbänder, Arbeitsannahme'}
       </b></div>
-      {bands.map(b => (
-        <div class="row zonerow" key={b.key}>
-          <span><i class="dot" style={'background:' + b.color}></i>{b.label}</span>
-          <b>{bandRange(b)}{wattText(p, th, b.key) ? ' · ' + wattText(p, th, b.key) : ''}</b>
-        </div>
-      ))}
+      <Zonenliste bands={bands} plan={p} thresholds={th} mitWatt />
       <p class="hint">{coggan ? p.texts.zoneNoteCoggan : p.texts.zoneNoteTransition}</p>
     </div>
   );
@@ -46,64 +46,60 @@ function ZonenKarte(){
    Beide auf einer gemeinsamen Prozentachse, nicht jede auf ihren eigenen
    Bereich normiert. Eigene Bereiche waren der erste Entwurf und machten aus
    einem Watt Unterschied zwischen zwei Tests einen Ausschlag ueber die halbe
-   Bildhoehe - Messrauschen, gezeichnet wie Fortschritt. Auf einer gemeinsamen
-   Achse bleibt flach, was flach ist, und die beiden Linien werden ueberhaupt
-   erst vergleichbar. */
+   Bildhoehe - Messrauschen, gezeichnet wie Fortschritt.
+
+   Gezeichnet wird jetzt mit Verlaufsgraph und nicht mehr mit einem eigenen
+   SVG. Die Begruendung oben rechtfertigt eine andere Aufbereitung der Daten -
+   eben die Umrechnung auf Prozent gegen den ersten Test - und nicht eine
+   zweite Zeichenroutine: die alte Fassung brachte eigene Skalierung, eigene
+   Legende und eigene Trefferflaechen mit, also drei Dinge, die es schon gab,
+   nur kleiner und ohne antippbare Punkte. Die Mindestspanne, die das Rauschen
+   klein haelt, ist als Eigenschaft dorthin gewandert. */
 const VERLAUF_MIN_SPANNE = 4;   // Prozent, damit Rauschen nicht das Bild fuellt
 
-function Verlauf({ eintraege }){
-  const punkte = eintraege.slice().sort((a, b) => (a.day < b.day ? -1 : 1));
-
-  const reihe = feld => {
-    const roh = punkte.map(e => (e[feld] > 0 ? e[feld] : null));
-    const echte = roh.filter(x => x !== null);
-    if(echte.length < 2) return null;
-    const erster = echte[0];
-    const werte = [];
-    roh.forEach((x, i) => {
-      if(x === null) return;
-      werte.push({ i, pz: (x - erster) / erster * 100 });
-    });
-    return { werte, erster, letzter: echte[echte.length - 1] };
+/* Aus einer Testreihe die Prozentaenderung gegen den ersten Wert. Der absolute
+   Wert bleibt als Zusatz am Punkt haengen - beim Antippen steht dort "215 W"
+   und nicht nur "+3,9 %". */
+function prozentReihe(eintraege, feld, einheit, nk){
+  const echte = eintraege.filter(e => e[feld] > 0);
+  if(echte.length < 2) return null;
+  const erster = echte[0][feld];
+  return {
+    erster, letzter: echte[echte.length - 1][feld],
+    punkte: echte.map(e => ({
+      t: tagNr(e.day),
+      v: (e[feld] - erster) / erster * 100,
+      marke: kurzTag(e.day),
+      zusatz: zahl(e[feld], nk) + ' ' + einheit
+    }))
   };
+}
 
-  const ftp = reihe('ftp'), kg = reihe('weight');
+function delta(reihe, einheit, nk){
+  const d = reihe.letzter - reihe.erster;
+  const vz = d >= 0 ? '+' : '−';
+  return vz + zahl(Math.abs(d), nk) + ' ' + einheit +
+         ' (' + vz + zahl(Math.abs(d / reihe.erster * 100), 1) + ' %)';
+}
+
+function Verlauf({ eintraege }){
+  const sortiert = eintraege.slice().sort((a, b) => (a.day < b.day ? -1 : 1));
+  const ftp = prozentReihe(sortiert, 'ftp', 'W', 0);
+  const kg = prozentReihe(sortiert, 'weight', 'kg', 1);
   if(!ftp && !kg) return null;
 
-  const alle = [].concat(ftp ? ftp.werte : [], kg ? kg.werte : []).map(w => Math.abs(w.pz));
-  const spanne = Math.max(VERLAUF_MIN_SPANNE, ...alle);
-  const x = i => (punkte.length > 1 ? i / (punkte.length - 1) * 96 + 2 : 50);
-  const y = pz => 19 - pz / spanne * 15;
-
-  const zeichne = (l, farbe) => l && (
-    <>
-      <polyline points={l.werte.map(w => x(w.i) + ',' + y(w.pz)).join(' ')}
-        fill="none" stroke={farbe} stroke-width="1.5" vector-effect="non-scaling-stroke" />
-      {l.werte.map((w, k) => <circle key={k} cx={x(w.i)} cy={y(w.pz)} r="1.6" fill={farbe} />)}
-    </>
-  );
-
-  const delta = (l, einheit, s) => {
-    if(!l) return null;
-    const d = l.letzter - l.erster;
-    const z = (Math.round(Math.abs(d) * (s || 1)) / (s || 1)).toString().replace('.', ',');
-    const pz = Math.round(Math.abs(d / l.erster * 100) * 10) / 10;
-    return (d >= 0 ? '+' : '−') + z + ' ' + einheit +
-           ' (' + (d >= 0 ? '+' : '−') + String(pz).replace('.', ',') + ' %)';
-  };
+  const reihen = [];
+  if(ftp) reihen.push({ name: 'FTP', farbe: 'var(--z4)', punkte: ftp.punkte });
+  if(kg)  reihen.push({ name: 'Gewicht', farbe: 'var(--z1)', punkte: kg.punkte });
 
   return (
     <>
       <div class="listhead">Verlauf</div>
-      <svg class="verlauf" viewBox="0 0 100 38" aria-hidden="true">
-        <line x1="0" y1="19" x2="100" y2="19" stroke="var(--outline)"
-          stroke-width="1" stroke-dasharray="2 2" vector-effect="non-scaling-stroke" />
-        {zeichne(kg, 'var(--z1)')}
-        {zeichne(ftp, 'var(--z4)')}
-      </svg>
+      <Verlaufsgraph reihen={reihen} einheit="%" nachkomma={1}
+        mindestSpanne={VERLAUF_MIN_SPANNE} />
       <div class="verlaufleg">
-        {ftp && <span><i style="background:var(--z4)"></i>FTP {delta(ftp, 'W')}</span>}
-        {kg && <span><i style="background:var(--z1)"></i>Gewicht {delta(kg, 'kg', 10)}</span>}
+        {ftp && <span><i class="z4"></i>FTP {delta(ftp, 'W', 0)}</span>}
+        {kg && <span><i class="z1"></i>Gewicht {delta(kg, 'kg', 1)}</span>}
       </div>
       <p class="hint">
         Änderung gegenüber dem ersten Test, beide Linien auf derselben Achse. Bewusst
@@ -115,13 +111,51 @@ function Verlauf({ eintraege }){
   );
 }
 
+/* Das Testformular klappt an der Stelle der Tastenreihe auf.
+
+   Vorher fragten vier prompt() nacheinander nach den Werten. Das liess sich
+   nicht korrigieren und nicht abbrechen, ohne alles zu verlieren: wer beim
+   dritten Fenster merkte, dass er die 20-min-Watt falsch abgelesen hatte,
+   fing von vorn an. Ein Formular zeigt alle vier Felder gleichzeitig, laesst
+   sie in beliebiger Reihenfolge ausfuellen und hat einen Abbrechen-Knopf.
+
+   Die gerechnete FTP steht schon in der Kopfzeile, waehrend man tippt - so
+   sieht man vor dem Speichern, welche Zahl daraus wird. */
+function TestFormular({ tagIso, vorschlag, onSpeichern, onAbbrechen }){
+  const [w20, setW20] = useState(null);
+  const [w5, setW5] = useState(null);
+  const [kg, setKg] = useState(vorschlag);
+  const [bed, setBed] = useState('');
+
+  return (
+    <>
+      <div class="row"><span>Test vom {dayFromIso(tagIso).toLocaleDateString('de-DE')}</span>
+        <b>{w20 > 0 ? 'FTP ' + Math.round(w20 * 0.95) + ' W' : 'Ø-Watt eintragen'}</b></div>
+      <Zahlenfeld titel="Ø-Watt der 20 min" wert={w20} min={1} onWert={setW20} />
+      <Zahlenfeld titel="Ø-Watt der 5 min" wert={w5} min={1} onWert={setW5} />
+      <Zahlenfeld titel="Gewicht (kg)" wert={kg} min={1} dezimal schritt="0.1" onWert={setKg} />
+      <Textfeld titel="Bedingungen" wert={bed} onWert={setBed}
+        platzhalter="Temperatur, Wind, Strecke, Rad" />
+      <div class="buttons">
+        <button class="btn" onClick={() => onSpeichern({ w20, w5, kg, bed: bed.trim() })}>Speichern</button>
+        <button class="btn secondary" onClick={onAbbrechen}>Abbrechen</button>
+      </div>
+      <p class="hint">
+        Nur die 20-min-Watt werden gebraucht; alles andere ist freiwillig.
+        {vorschlag != null && kg === vorschlag
+          ? ' Das Gewicht ist aus der Wellness von intervals.icu übernommen.' : ''}
+      </p>
+    </>
+  );
+}
+
 function SchwellenKarte(){
   const th = thresholds.value;
-  const [f, setF] = useState({ ftp: th.ftp || '', lthr: th.lthr || '', hrmax: th.hrmax || '' });
+  const [f, setF] = useState({ ftp: th.ftp, lthr: th.lthr, hrmax: th.hrmax });
   const [meldung, setMeldung] = useState(null);
+  const [test, setTest] = useState(null);
 
-  const num = v => { const n = parseInt(v, 10); return isFinite(n) && n > 0 ? n : null; };
-  const geaendert = num(f.ftp) !== th.ftp || num(f.lthr) !== th.lthr || num(f.hrmax) !== th.hrmax;
+  const geaendert = f.ftp !== th.ftp || f.lthr !== th.lthr || f.hrmax !== th.hrmax;
 
   /* Das Gewicht steht meist schon in der Wellness - dann muss es niemand
      abtippen und die beiden Quellen koennen nicht auseinanderlaufen. */
@@ -135,43 +169,55 @@ function SchwellenKarte(){
     } catch(e){ return null; }
   }
 
-  async function alsTest(){
-    const heute = toMidnight(new Date());
-    const tagIso = isoDayLocal(heute);
-    const w20 = parseInt(prompt('Ø-Watt der 20 min?') || '', 10);
-    const w5  = parseInt(prompt('Ø-Watt der 5 min? (optional)') || '', 10);
-    const vor = await gewichtVorschlag(tagIso);
-    const kg  = parseFloat(String(prompt(
-      'Gewicht am Testtag in kg? (optional)' + (vor ? '\nAus intervals.icu übernommen:' : ''),
-      vor ? String(vor) : '') || '').replace(',', '.'));
-    const bed = prompt('Bedingungen? Temperatur, Wind, Strecke, Rad, Reifendruck (optional)') || '';
-    let ftp = num(f.ftp);
-    if(isFinite(w20) && w20 > 0 && !ftp){
+  async function testOeffnen(){
+    const tagIso = isoDayLocal(toMidnight(new Date()));
+    setTest({ tagIso, vorschlag: null, bereit: false });
+    const vorschlag = await gewichtVorschlag(tagIso);
+    /* Nur uebernehmen, wenn das Formular noch fuer denselben Tag offen ist -
+       sonst schriebe eine spaete Antwort in ein Formular, das der Nutzer
+       inzwischen geschlossen hat. */
+    setTest(t => (t && t.tagIso === tagIso ? { tagIso, vorschlag, bereit: true } : t));
+  }
+
+  async function testSpeichern({ w20, w5, kg, bed }){
+    const { tagIso, vorschlag } = test;
+    setTest(null);
+
+    /* Ohne eingetragene FTP die aus dem Test gerechnete uebernehmen - eine
+       bereits gesetzte wird nicht ungefragt ueberschrieben. */
+    let ftp = f.ftp;
+    if(w20 > 0 && !ftp){
       ftp = Math.round(w20 * 0.95);
       setF({ ...f, ftp });
-      await setThresholds({ ftp, lthr: num(f.lthr), hrmax: num(f.hrmax) });
+      await setThresholds({ ftp, lthr: f.lthr, hrmax: f.hrmax });
     }
-    const gewicht = isFinite(kg) && kg > 0 ? kg : null;
     await addTestEntry({
       day: tagIso,
-      week: weekNumberFor(heute, startDate.value),
-      w20: isFinite(w20) && w20 > 0 ? w20 : null,
-      w5:  isFinite(w5)  && w5  > 0 ? w5  : null,
-      ftp, lthr: num(f.lthr),
-      weight: gewicht,
+      week: weekNumberFor(dayFromIso(tagIso), startDate.value),
+      w20: w20 > 0 ? w20 : null,
+      w5:  w5  > 0 ? w5  : null,
+      ftp, lthr: f.lthr,
+      weight: kg > 0 ? kg : null,
       conditions: bed
     });
+    setMeldung({ art:'ok', text:'Test gespeichert.' });
 
     /* Der einzige Schreibvorgang der App, deshalb mit Rueckfrage - und nur,
        wenn der Wert nicht ohnehin von dort kam. */
-    if(gewicht && apiKey.value && gewicht !== vor){
-      if(confirm('Gewicht ' + gewicht + ' kg für ' + tagIso + ' auch in die Wellness von intervals.icu schreiben?')){
-        try {
-          await putWellness(apiKey.value, tagIso, { weight: gewicht });
-          setMeldung({ art:'ok', text:'Gewicht nach intervals.icu geschrieben.' });
-        } catch(e){
-          setMeldung({ art:'fehler', text:'Nicht geschrieben: ' + e.message + ' Der Test ist trotzdem gespeichert.' });
-        }
+    if(kg > 0 && apiKey.value && kg !== vorschlag){
+      const ja = await bestaetige({
+        titel: 'Gewicht nach intervals.icu schreiben?',
+        text: kg + ' kg für den ' + dayFromIso(tagIso).toLocaleDateString('de-DE') + '. '
+            + 'Das ist der einzige Wert, den diese App jemals dorthin schreibt – '
+            + 'alles andere wird nur gelesen.',
+        jaLabel: 'Schreiben'
+      });
+      if(!ja) return;
+      try {
+        await putWellness(apiKey.value, tagIso, { weight: kg });
+        setMeldung({ art:'ok', text:'Gewicht nach intervals.icu geschrieben.' });
+      } catch(e){
+        setMeldung({ art:'fehler', text:'Nicht geschrieben: ' + e.message + ' Der Test ist trotzdem gespeichert.' });
       }
     }
   }
@@ -181,23 +227,29 @@ function SchwellenKarte(){
   return (
     <div class="card">
       <div class="row"><span>Schwellenwerte</span><b>{th.lthr > 0 ? 'aus Test übernommen' : 'noch kein Test'}</b></div>
-      <div class="field"><span>FTP (W)</span>
-        <input type="number" inputmode="numeric" value={f.ftp} onInput={e => setF({ ...f, ftp: e.currentTarget.value })} /></div>
-      <div class="field"><span>LTHR (bpm)</span>
-        <input type="number" inputmode="numeric" value={f.lthr} onInput={e => setF({ ...f, lthr: e.currentTarget.value })} /></div>
-      <div class="field"><span>HFmax (bpm)</span>
-        <input type="number" inputmode="numeric" value={f.hrmax} onInput={e => setF({ ...f, hrmax: e.currentTarget.value })} /></div>
-      <div class="buttons" style="margin-top:12px">
-        <button class="btn" disabled={!geaendert}
-          onClick={() => setThresholds({ ftp: num(f.ftp), lthr: num(f.lthr), hrmax: num(f.hrmax) })}>Übernehmen</button>
-        <button class="btn secondary" onClick={alsTest}>Als Test speichern</button>
-      </div>
+      <Zahlenfeld titel="FTP (W)" wert={f.ftp} min={1} onWert={v => setF({ ...f, ftp: v })} />
+      <Zahlenfeld titel="LTHR (bpm)" wert={f.lthr} min={1} onWert={v => setF({ ...f, lthr: v })} />
+      <Zahlenfeld titel="HFmax (bpm)" wert={f.hrmax} min={1} onWert={v => setF({ ...f, hrmax: v })} />
+
+      {test
+        ? (test.bereit
+            ? <TestFormular tagIso={test.tagIso} vorschlag={test.vorschlag}
+                onSpeichern={testSpeichern} onAbbrechen={() => setTest(null)} />
+            : <p class="hint">Gewicht wird aus der Wellness geholt …</p>)
+        : (
+          <div class="buttons">
+            <button class="btn" disabled={!geaendert}
+              onClick={() => setThresholds({ ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax })}>Übernehmen</button>
+            <button class="btn secondary" onClick={testOeffnen}>Als Test speichern</button>
+          </div>
+        )}
+
       <p class="hint">
         FTP = Ø-Watt der 20 min × 0,95, LTHR = Ø-Puls der 20 min. Dieselben Werte gehören in
         intervals.icu unter Settings → Ride, Power Zones und HR Zones auf Coggan, Load Priority
         auf Power, FTP von automatisch auf manuell.
       </p>
-      {meldung && <div class={'meldung ' + meldung.art} style="margin-top:10px"><b>{meldung.text}</b></div>}
+      {meldung && <div class={'meldung ' + meldung.art}><b>{meldung.text}</b></div>}
       {testLog.value.length > 1 && <Verlauf eintraege={testLog.value} />}
       {hist.length > 0 && <>
         <div class="listhead">Testhistorie</div>
@@ -214,39 +266,41 @@ function SchwellenKarte(){
 
 function ErhebungsKarte(){
   const p = plan.value, th = thresholds.value, w = week.value;
-  const [f, setF] = useState({ talk: '', rpe: '', note: '' });
+  const [f, setF] = useState({ talk: null, rpe: null, note: '' });
   const log = interimLog.value;
 
   const werte = log.map(e => e.talkHr).filter(v => v > 0);
   const schnitt = werte.length ? Math.round(werte.reduce((a, b) => a + b, 0) / werte.length) : null;
   const z2 = zoneBand(p, th, 'z2', w);
+  const leer = !(f.talk > 0) && !(f.rpe > 0) && !f.note.trim();
 
   async function eintragen(){
-    const talk = parseInt(f.talk, 10), rpe = parseInt(f.rpe, 10);
-    if(!(talk > 0) && !(rpe > 0) && !f.note.trim()) return;
+    if(leer) return;
     const heute = toMidnight(new Date());
     await addInterimEntry({
       day: isoDayLocal(heute),
       week: weekNumberFor(heute, startDate.value),
-      talkHr: talk > 0 ? talk : null,
-      rpe: rpe > 0 ? Math.min(rpe, 10) : null,
+      talkHr: f.talk > 0 ? f.talk : null,
+      rpe: f.rpe > 0 ? f.rpe : null,
       note: f.note.trim()
     });
-    setF({ talk: '', rpe: '', note: '' });
+    setF({ talk: null, rpe: null, note: '' });
   }
 
   return (
     <div class="card">
       <div class="row"><span>Erhebung je Einheit</span>
         <b>{log.length ? log.length + (log.length === 1 ? ' Eintrag' : ' Einträge') : 'noch nichts erfasst'}</b></div>
-      <div class="field"><span>Sprechtest-Puls (bpm)</span>
-        <input type="number" inputmode="numeric" value={f.talk} onInput={e => setF({ ...f, talk: e.currentTarget.value })} /></div>
-      <div class="field"><span>RPE 1–10</span>
-        <input type="number" inputmode="numeric" value={f.rpe} onInput={e => setF({ ...f, rpe: e.currentTarget.value })} /></div>
-      <div class="field"><span>Notiz</span>
-        <input type="text" placeholder="Wind, Knie, Strecke" value={f.note}
-          onInput={e => setF({ ...f, note: e.currentTarget.value })} /></div>
-      <button class="btn block" style="margin-top:12px" onClick={eintragen}>Eintragen</button>
+      {/* Die Obergrenze 10 steht jetzt am Feld statt hinter der Eingabe: ein
+          Wert, den die App stillschweigend auf 10 zurechtstutzte, sah wie ein
+          angenommener 12er aus. */}
+      <Zahlenfeld titel="Sprechtest-Puls (bpm)" wert={f.talk} min={1}
+        onWert={v => setF({ ...f, talk: v })} />
+      <Zahlenfeld titel="RPE 1–10" wert={f.rpe} min={1} max={10}
+        onWert={v => setF({ ...f, rpe: v })} />
+      <Textfeld titel="Notiz" wert={f.note} platzhalter="Wind, Knie, Strecke"
+        onWert={v => setF({ ...f, note: v })} />
+      <button class="btn block" disabled={leer} onClick={eintragen}>Eintragen</button>
       <p class="hint">
         Sprechtest: nach Atmung fahren. Sobald ganze Sätze anstrengend werden, Puls ablesen und
         hier notieren – nicht umgekehrt. RPE nach jeder Einheit; das ist der Vergleichsmaßstab für

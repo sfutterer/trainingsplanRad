@@ -10,27 +10,15 @@ import { plan, planJson, planSource, settings, setSettings, apiKey, setApiKey,
          mapKey, setMapKey, startDate, setStartDate, store, applyPlanOverride,
          resetPlanToDefault, coreLog, testLog, interimLog, PLAN_START_DEFAULT } from '../../../state/store.js';
 import { THEMES } from '../../../state/theme.js';
-import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
+import { isoDayLocal, toMidnight, dayFromIso, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { exportAll, importAll, exportFilename, benenne } from '../../../data/exportImport.js';
-import { downloadJson, requestPersistentStorage } from '../../../platform/index.js';
+import { downloadJson, waehleDatei, requestPersistentStorage } from '../../../platform/index.js';
+import { bestaetige } from '../../../state/dialog.js';
 import { probeCapabilities, probeWellness } from '../../../data/icu.js';
 import { KARTENSTILE, KARTENSTIL_DEFAULT, kartenstil } from '../../../state/kartenstile.js';
 import { PLAN_SCHEMA_VERSION } from '../../../data/planSource.js';
 import { Gruppe, Zeile, Schalter } from '../../components/SettingsList.jsx';
-
-function datei(onText){
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'application/json,.json';
-  inp.onchange = () => {
-    const f = inp.files && inp.files[0];
-    if(!f) return;
-    const r = new FileReader();
-    r.onload = () => onText(String(r.result), f.name);
-    r.readAsText(f);
-  };
-  inp.click();
-}
+import { Segmented } from '../../components/Segmented.jsx';
 
 /* Ein Schluesselfeld klappt unter seiner Zeile auf. Kein eigener Bildschirm:
    man traegt ihn genau einmal ein. */
@@ -85,6 +73,7 @@ const HILFE_KARTE = (
 
 export function EinstellungenTab(){
   const [meldung, setMeldung] = useState(null);
+  const [datumOffen, setDatumOffen] = useState(false);
   const s = settings.value;
   const eigen = planSource.value === 'override';
   const sd = startDate.value;
@@ -92,7 +81,7 @@ export function EinstellungenTab(){
 
   /* --- Plan --- */
   function planImportieren(){
-    datei(async (text, name) => {
+    waehleDatei(async (text, name) => {
       let json;
       try { json = JSON.parse(text); }
       catch(e){ return setMeldung({ art:'fehler', titel:'Die Datei ist kein gültiges JSON.', zeilen:[String(e.message)] }); }
@@ -112,11 +101,17 @@ export function EinstellungenTab(){
     setMeldung({ art:'ok', titel:'Sicherung heruntergeladen.', zeilen:[] });
   }
   function zurueckspielen(){
-    datei(async (text, name) => {
+    waehleDatei(async (text, name) => {
       let json;
       try { json = JSON.parse(text); }
       catch(e){ return setMeldung({ art:'fehler', titel:'Die Datei ist kein gültiges JSON.', zeilen:[] }); }
-      if(!confirm('Sicherung einspielen? Alle jetzigen Daten auf diesem Gerät werden überschrieben.')) return;
+      const ja = await bestaetige({
+        titel: 'Sicherung einspielen?',
+        text: 'Alle jetzigen Daten auf diesem Gerät werden überschrieben – Trainingsprotokolle, '
+            + 'Testhistorie, Erhebungen, Zugänge und der Plan. Was in der Datei fehlt, wird gelöscht.',
+        jaLabel: 'Einspielen', gefahr: true
+      });
+      if(!ja) return;
       try {
         const r = await importAll(store.store, json);
         const zeilen = [];
@@ -129,7 +124,13 @@ export function EinstellungenTab(){
   }
 
   async function appZuruecksetzen(){
-    if(!confirm('Zwischenspeicher der App leeren und neu laden? Deine Trainingsdaten bleiben erhalten.')) return;
+    const ja = await bestaetige({
+      titel: 'Zwischenspeicher leeren?',
+      text: 'Die App lädt danach neu. Deine Trainingsdaten bleiben erhalten – geleert wird nur, '
+          + 'was der Browser zwischengespeichert hat.',
+      jaLabel: 'Leeren und neu laden'
+    });
+    if(!ja) return;
     try {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r => r.unregister()));
@@ -142,7 +143,7 @@ export function EinstellungenTab(){
   return (
     <>
       {meldung && (
-        <div class={'meldung ' + meldung.art} style="margin:8px 16px 16px">
+        <div class={'meldung frei ' + meldung.art}>
           <b>{meldung.titel}</b>
           {meldung.zeilen.length > 0 && <ul>{meldung.zeilen.map((z, i) => <li key={i}>{z}</li>)}</ul>}
         </div>
@@ -162,12 +163,8 @@ export function EinstellungenTab(){
         {/* Unter der Zeile statt daneben: drei Beschriftungen passen neben
             einem Titel nicht auf einen Handybildschirm. */}
         <div class="szeile-eingabe">
-          <div class="segmented" style="flex:1;margin:0">
-            {THEMES.map(t => (
-              <button key={t.id} class={'segbtn' + ((s.theme || 'system') === t.id ? ' an' : '')}
-                onClick={() => setSettings({ theme: t.id })}>{t.label}</button>
-            ))}
-          </div>
+          <Segmented ziele={THEMES} aktiv={s.theme || 'system'} rolle="radio"
+            label="Erscheinungsbild" onWaehlen={id => setSettings({ theme: id })} />
         </div>
         <Zeile titel="Kartenstil"
           wert={mapKey.value
@@ -184,13 +181,10 @@ export function EinstellungenTab(){
             </>
           } />
         <div class="szeile-eingabe">
-          <div class="segmented" style="flex:1;margin:0">
-            {KARTENSTILE.map(k => (
-              <button key={k.id} class={'segbtn' + ((s.mapStyle || KARTENSTIL_DEFAULT) === k.id ? ' an' : '')}
-                disabled={!mapKey.value}
-                onClick={() => setSettings({ mapStyle: k.id })}>{k.label}</button>
-            ))}
-          </div>
+          <Segmented rolle="radio" label="Kartenstil"
+            ziele={KARTENSTILE.map(k => ({ ...k, disabled: !mapKey.value }))}
+            aktiv={s.mapStyle || KARTENSTIL_DEFAULT}
+            onWaehlen={id => setSettings({ mapStyle: id })} />
         </div>
       </Gruppe>
 
@@ -205,14 +199,25 @@ export function EinstellungenTab(){
                  durchgehend die Dauer der Vorwoche, und man sieht es nirgends.</p>
             </>
           }
-          onClick={() => {
-            const v = prompt('Startdatum (JJJJ-MM-TT)', isoDayLocal(sd));
-            if(v && /^\d{4}-\d{2}-\d{2}$/.test(v)) setStartDate(new Date(v));
-          }} />
+          onClick={() => setDatumOffen(o => !o)} />
+        {/* Ein Datumsfeld statt prompt(): der Systemdialog liess sich nur
+            abtippen, pruefte nichts, und ein Tippfehler fiel still durch die
+            Regex. Der Kalender des Geraets kann kein ungueltiges Datum
+            liefern - die Pruefung entfaellt damit ersatzlos. */}
+        {datumOffen && (
+          <div class="szeile-eingabe">
+            <input type="date" value={isoDayLocal(sd)} aria-label="Beginn der ersten Trainingswoche"
+              onChange={e => {
+                const v = e.currentTarget.value;
+                if(v) setStartDate(dayFromIso(v));
+              }} />
+            <button class="btn secondary" onClick={() => setDatumOffen(false)}>Fertig</button>
+          </div>
+        )}
         {!sdPasst && (
           <div class="szeile-eingabe">
-            <button class="btn block" onClick={() => setStartDate(new Date(PLAN_START_DEFAULT))}>
-              Auf {new Date(PLAN_START_DEFAULT).toLocaleDateString('de-DE')} setzen (Samstag)
+            <button class="btn block" onClick={() => setStartDate(dayFromIso(PLAN_START_DEFAULT))}>
+              Auf {dayFromIso(PLAN_START_DEFAULT).toLocaleDateString('de-DE')} setzen (Samstag)
             </button>
           </div>
         )}
@@ -242,7 +247,12 @@ export function EinstellungenTab(){
         <Zeile titel="Plan importieren" wert="eigene plan.json einspielen" onClick={planImportieren} />
         {eigen && <Zeile titel="Auf Default zurücksetzen" wert="eigenen Plan verwerfen"
           onClick={async () => {
-            if(!confirm('Eigenen Plan verwerfen und wieder den Default aus dem Repo verwenden?')) return;
+            const ja = await bestaetige({
+              titel: 'Eigenen Plan verwerfen?',
+              text: 'Danach gilt wieder der Plan aus dem Repo. Deine Trainingsdaten bleiben erhalten.',
+              jaLabel: 'Verwerfen', gefahr: true
+            });
+            if(!ja) return;
             await resetPlanToDefault();
             setMeldung({ art:'ok', titel:'Wieder auf dem Default aus dem Repo.', zeilen:[] });
           }} />}
@@ -280,54 +290,75 @@ export function EinstellungenTab(){
   );
 }
 
-/* Dieselbe Frage fuer die Wellness: welche Felder befuellt die verknuepfte Uhr
-   tatsaechlich? Ruhepuls, HRV und Schlaf entscheiden ueber das Gate, Gewicht
-   ueber den Abnehmhinweis - fehlt eins davon, bleibt die Ampel stumm, und ohne
-   diese Zeile sieht man nicht, woran es liegt. Braucht keine Aktivitaets-ID. */
-function WellnessZeile(){
+/* Beide Diagnosezeilen haben dasselbe Geruest: eine Zeile, die aufklappt, ein
+   Knopf, der eine Abfrage startet, und darunter das Ergebnis. Sie standen
+   zweimal ausgeschrieben da und unterschieden sich in genau zwei Dingen -
+   welche Abfrage laeuft und wie ihr Ergebnis aussieht. Also zwei
+   Steckplaetze und kein zweites Geruest.
+
+   Der Ladezustand gehoert dazu: ohne ihn druecken Ungeduldige zweimal, und
+   Overpass wie intervals.icu antworten dann zweimal auf dieselbe Frage. */
+function PruefZeile({ titel, wert, hilfe, knopf, bereit = true, pruefe, zeige, kinder }){
   const [offen, setOffen] = useState(false);
   const [erg, setErg] = useState(null);
   const [laeuft, setLaeuft] = useState(false);
   const key = apiKey.value;
 
-  async function pruefen(){
+  async function starten(){
     setLaeuft(true); setErg(null);
-    const bis = toMidnight(new Date());
-    const von = new Date(bis); von.setDate(von.getDate() - 20);
-    try { setErg(await probeWellness(key, isoDayLocal(von), isoDayLocal(bis))); }
+    try { setErg(await pruefe()); }
     finally { setLaeuft(false); }
   }
 
   return (
     <>
-      <Zeile titel="Wellness-Felder prüfen"
-        wert={key ? 'was deine Uhr an Ruhepuls, HRV, Schlaf und Gewicht liefert' : 'erst den intervals.icu-Schlüssel eintragen'}
-        disabled={!key}
-        onClick={() => { setOffen(o => !o); }} />
+      <Zeile titel={titel}
+        wert={key ? wert : 'erst den intervals.icu-Schlüssel eintragen'}
+        hilfe={hilfe} disabled={!key}
+        onClick={() => setOffen(o => !o)} />
       {offen && (
         <>
+          {kinder}
           <div class="szeile-eingabe">
-            <button class="btn block" disabled={laeuft} onClick={pruefen}>
-              {laeuft ? 'Prüft …' : 'Letzte 21 Tage prüfen'}
+            <button class="btn block" disabled={laeuft || !bereit} onClick={starten}>
+              {laeuft ? 'Prüft …' : knopf}
             </button>
           </div>
-          {erg && (
-            <div class="shilfe">
-              <p><b>{erg.tage} Tage mit Datensatz</b>{erg.neueste ? ', neuester ' + erg.neueste : ''}</p>
-              <ul>
-                {erg.felder.length === 0
-                  ? <li>kein Feld befüllt – dann bleibt das Wellness-Gate stumm</li>
-                  : erg.felder.map((f, i) => <li key={i}>{f}</li>)}
-              </ul>
-              <p>Für die Ampel zählen <b>restingHR</b>, <b>hrv</b> und <b>sleepSecs</b>,
-                 für den Gewichtstrend <b>weight</b>. Alles andere liefert intervals.icu
-                 nur mit, es wird nicht ausgewertet.</p>
-              {erg.error && <p>{erg.error}</p>}
-            </div>
-          )}
+          {erg && <div class="shilfe">{zeige(erg)}</div>}
         </>
       )}
     </>
+  );
+}
+
+/* Welche Felder befuellt die verknuepfte Uhr tatsaechlich? Ruhepuls, HRV und
+   Schlaf entscheiden ueber das Gate, Gewicht ueber den Abnehmhinweis - fehlt
+   eins davon, bleibt die Ampel stumm, und ohne diese Zeile sieht man nicht,
+   woran es liegt. Braucht keine Aktivitaets-ID. */
+function WellnessZeile(){
+  const bis = toMidnight(new Date());
+  const von = new Date(bis); von.setDate(von.getDate() - 20);
+
+  return (
+    <PruefZeile
+      titel="Wellness-Felder prüfen"
+      wert="was deine Uhr an Ruhepuls, HRV, Schlaf und Gewicht liefert"
+      knopf="Letzte 21 Tage prüfen"
+      pruefe={() => probeWellness(apiKey.value, isoDayLocal(von), isoDayLocal(bis))}
+      zeige={erg => (
+        <>
+          <p><b>{erg.tage} Tage mit Datensatz</b>{erg.neueste ? ', neuester ' + erg.neueste : ''}</p>
+          <ul>
+            {erg.felder.length === 0
+              ? <li>kein Feld befüllt – dann bleibt das Wellness-Gate stumm</li>
+              : erg.felder.map((f, i) => <li key={i}>{f}</li>)}
+          </ul>
+          <p>Für die Ampel zählen <b>restingHR</b>, <b>hrv</b> und <b>sleepSecs</b>,
+             für den Gewichtstrend <b>weight</b>. Alles andere liefert intervals.icu
+             nur mit, es wird nicht ausgewertet.</p>
+          {erg.error && <p>{erg.error}</p>}
+        </>
+      )} />
   );
 }
 
@@ -335,57 +366,42 @@ function WellnessZeile(){
    latlng-Stream ueber die API durch, und stehen Wetterfelder an der Aktivitaet?
    Beides entscheidet, ob Karte und Windauswertung ohne Abo funktionieren. */
 function DiagnoseZeile(){
-  const [offen, setOffen] = useState(false);
   const [id, setId] = useState('');
-  const [erg, setErg] = useState(null);
-  const [laeuft, setLaeuft] = useState(false);
-  const key = apiKey.value;
-
-  async function pruefen(){
-    setLaeuft(true); setErg(null);
-    try { setErg(await probeCapabilities(key, id.trim())); }
-    finally { setLaeuft(false); }
-  }
 
   return (
-    <>
-      <Zeile titel="Verfügbare Daten prüfen"
-        wert={key ? 'welche Streams und Wetterfelder dein Konto liefert' : 'erst den intervals.icu-Schlüssel eintragen'}
-        disabled={!key}
-        onClick={() => setOffen(o => !o)} />
-      {offen && (
+    <PruefZeile
+      titel="Verfügbare Daten prüfen"
+      wert="welche Streams und Wetterfelder dein Konto liefert"
+      knopf="Prüfen"
+      bereit={!!id.trim()}
+      pruefe={() => probeCapabilities(apiKey.value, id.trim())}
+      kinder={
+        <div class="szeile-eingabe">
+          <input type="text" placeholder="Aktivitäts-ID, z. B. i12345678" value={id}
+            aria-label="Aktivitäts-ID" onInput={e => setId(e.currentTarget.value)} />
+        </div>
+      }
+      zeige={erg => (
         <>
-          <div class="szeile-eingabe">
-            <input type="text" placeholder="Aktivitäts-ID, z. B. i12345678" value={id}
-              onInput={e => setId(e.currentTarget.value)} />
-            <button class="btn" disabled={!id.trim() || laeuft} onClick={pruefen}>
-              {laeuft ? 'Prüft …' : 'Prüfen'}
-            </button>
-          </div>
-          {erg && (
-            <div class="shilfe">
-              <p><b>Streams</b></p>
-              <ul>
-                {Object.keys(erg.streams).length === 0
-                  ? <li>keiner zurückgekommen</li>
-                  : Object.entries(erg.streams).map(([k, n]) => <li key={k}>{k}: {n} Messwerte</li>)}
-              </ul>
-              <p><b>Spur</b></p>
-              <ul>
-                <li>{erg.spur == null ? 'nicht geprüft' : erg.spur + ' auswertbare Punkte'}</li>
-                {erg.spurForm && <li>{erg.spurForm}</li>}
-              </ul>
-              <p><b>Wetterfelder an der Aktivität</b></p>
-              <ul>
-                {erg.weatherFields.length === 0
-                  ? <li>keine – vermutlich Supporter-Funktion oder nicht befüllt</li>
-                  : erg.weatherFields.map((f, i) => <li key={i}>{f}</li>)}
-              </ul>
-              {erg.error && <p>{erg.error}</p>}
-            </div>
-          )}
+          <p><b>Streams</b></p>
+          <ul>
+            {Object.keys(erg.streams).length === 0
+              ? <li>keiner zurückgekommen</li>
+              : Object.entries(erg.streams).map(([k, n]) => <li key={k}>{k}: {n} Messwerte</li>)}
+          </ul>
+          <p><b>Spur</b></p>
+          <ul>
+            <li>{erg.spur == null ? 'nicht geprüft' : erg.spur + ' auswertbare Punkte'}</li>
+            {erg.spurForm && <li>{erg.spurForm}</li>}
+          </ul>
+          <p><b>Wetterfelder an der Aktivität</b></p>
+          <ul>
+            {erg.weatherFields.length === 0
+              ? <li>keine – vermutlich Supporter-Funktion oder nicht befüllt</li>
+              : erg.weatherFields.map((f, i) => <li key={i}>{f}</li>)}
+          </ul>
+          {erg.error && <p>{erg.error}</p>}
         </>
-      )}
-    </>
+      )} />
   );
 }

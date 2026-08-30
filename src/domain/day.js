@@ -126,7 +126,7 @@ function testBloecke(plan, th, week){
   return out;
 }
 
-/* "Zügig 1 / 3" heisst in der zusammengezogenen Zeile nur noch "Zügig" - der
+/* "Zuegig 1 / 3" heisst in der zusammengezogenen Zeile nur noch "Zuegig" - der
    Zaehler steht dann schon im Faktor davor. */
 function ohneZaehler(label){
   return String(label).replace(/\s*\d+\s*\/\s*\d+\s*$/, '').trim();
@@ -181,6 +181,260 @@ function zusatzBloecke(plan, date, startDate){
   return out;
 }
 
+/* ---- Ein Tag je Funktion ----
+
+   buildDayInfo war 255 Zeilen: ein switch ueber sieben Wochentage, jeder mit
+   eigener Verzweigung nach Testwoche, Erholungswoche und Winterblock. Die
+   Bausteinfunktionen darueber (rideKennzahlen, circuitBlock, testBloecke)
+   zeigten schon, wohin die Reise geht - der Rest ist ihn jetzt gegangen.
+
+   Alle sieben bekommen denselben Zusammenhang c und liefern dasselbe zurueck:
+   ein info-Objekt mit type, title, detail und den drei Listen. Was danach fuer
+   alle gilt - Woche, Phase, Sollwerte, Zusatzbloecke - fuellt buildDayInfo
+   auf, damit kein Tag es vergessen kann. */
+
+/* Montag ist die Invariante des Plans: er bleibt frei. */
+function montag(c){
+  return {
+    type:'rest', title:'Ruhetag', detail:c.T.mondayRest,
+    kennzahlen: [{ label:'Umfang', wert:'frei' }],
+    bloecke: [],
+    hinweise: [c.T.mondayRest]
+  };
+}
+
+/* Dienstag: verlaengerter Arbeitsweg, gesteuert ueber die Zeit. */
+function dienstag(c){
+  const { plan, th, week, T, z2 } = c;
+  const dur = c.w.tuesdayMinutes;
+  return {
+    type:'ride', title:'Rad – Grundlagenausdauer (Z2)',
+    detail:`${dur} min${distanceSuffix(plan, dur, week)} · ${z2()}. ${T.tuesdayCommute}`,
+    kennzahlen: rideKennzahlen(plan, th, week, dur, 'z2'),
+    bloecke: [
+      { label:'Grundlagenfahrt', wert:`${dur} min · ${z2()}`, hinweis:T.tuesdayCommute }
+    ]
+  };
+}
+
+/* Mittwoch: verkuerzter Zirkel, dazu in den meisten Wochen eine kurze Fahrt.
+
+   Das Wellness-Gate steht schon hier, wie im Trainingsplan vorgesehen: wer
+   erst Donnerstag frueh schaut, kann den Tag nur noch absagen. Die Art des
+   Donnerstags haengt dran, weil sie entscheidet, was ein rotes Gate ueberhaupt
+   bedeutet - ein Test wird verschoben, ein Intervalltag heruntergestuft, ein
+   Z2-Tag gekuerzt. */
+function mittwoch(c){
+  const { plan, th, week, phase, exCount, T, z2 } = c;
+  const dur = c.w.wednesdayMinutes;
+  const rounds = plan.circuit.wednesdayRounds;
+  const rumpf = `Abends Rumpf-Zirkel verkürzt: ${rounds} Runden à ${exCount} Übungen ` +
+    `(${coreWorkSeconds(plan, week)} s Belastung / ${coreRestSeconds(plan, week)} s Pause), ` +
+    `ca. ${coreMinutes(plan, week, rounds)} min. Kein Beinblock.`;
+  const zirkel = circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (verkürzt)',
+    'Abends. Kein Beinblock.');
+
+  let info;
+  if(dur > 0){
+    const lockerer = phase === 3 ? T.wednesdayEasyPhase3 : T.wednesdayEasyDefault;
+    info = { type:'ride', title:'Rad – kurzes Z2 (Arbeitsweg) + Rumpf',
+      detail:`Mindestens ${dur} min direkte Strecke${distanceSuffix(plan, dur, week)} · ${z2()}. ` +
+             `${T.wednesdayMinimum} ${lockerer} ${rumpf}`,
+      showTimerBtn:true };
+    info.kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
+    /* Die Dauer ist eine Untergrenze, keine Vorgabe - das muss schon in der
+       Kennzahl stehen und nicht erst im Hinweis darunter. */
+    info.kennzahlen[0] = { label:'Dauer', wert:`mindestens ${dur} min` };
+    info.bloecke = [
+      { label:'Fahrt (Arbeitsweg)', wert:`mindestens ${dur} min direkte Strecke · ${z2()}`,
+        hinweis:`${T.wednesdayMinimum} ${lockerer}` },
+      zirkel
+    ];
+  } else {
+    info = { type:'core', title:'Rumpf/Oberkörper-Stabilität',
+      detail:`${T.wednesdayNoRide} ${rumpf}`, showTimerBtn:true };
+    info.kennzahlen = [
+      { label:'Dauer',  wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min' },
+      { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
+      { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
+    ];
+    info.bloecke = [zirkel];
+    info.hinweise = [T.wednesdayNoRide];
+  }
+  info.wellness = { rolle:'vorschau', donnerstag: thursdayPlan(plan, week).kind };
+  return info;
+}
+
+/* Donnerstag ist der Qualitaetstag - und je nach Woche ein Schwellentest, ein
+   dritter Grundlagentag oder Intervalle. */
+function donnerstag(c){
+  const { plan, th, week, T, z2 } = c;
+  const t = thursdayPlan(plan, week);
+  let info;
+
+  if(t.kind === 'test'){
+    info = { type:'interval', title:t.title, detail:T.thursdayTest, showIntervalBtn:true };
+    info.kennzahlen = [
+      { label:'Dauer',      wert: t.minutes + ' min' },
+      { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
+      { label:'Zielzone',   wert: targetText(plan, th, t.zone, week) }
+    ];
+    info.bloecke = testBloecke(plan, th, week);
+    info.hinweise = [T.thursdayTest];
+  } else if(t.kind === 'z2'){
+    info = { type:'ride', title:t.title,
+      detail:`${t.minutes} min${distanceSuffix(plan, t.minutes, week)} · ${z2()}. ${T.thursdayBaseDay}` };
+    info.kennzahlen = rideKennzahlen(plan, th, week, t.minutes, 'z2');
+    info.bloecke = [
+      { label:'Grundlagenfahrt', wert:`${t.minutes} min · ${z2()}`, hinweis:T.thursdayBaseDay }
+    ];
+  } else {
+    const zt = withCadence(plan, targetText(plan, th, t.zone, week), t.zone, week);
+    const pw = t.power ? ` (${t.power})` : '';
+    info = { type:'interval', title:t.title,
+      detail:`Nach ${plan.interval.warmupMinutes} min Einfahren (${zoneSpan(plan, th, 'z1', 'z2', week)}): ` +
+             `${t.reps}× ${t.workMin} min ${zt}${pw}, je ${t.restMin} min locker (${zoneText(plan, th, 'z1', week)}) dazwischen. ` +
+             `Danach ${plan.interval.cooldownMinutes} min Ausrollen. Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
+             T.thursdayIntervalTail,
+      showIntervalBtn:true };
+    info.kennzahlen = [
+      { label:'Dauer',           wert: t.minutes + ' min' },
+      { label:'Wiederholungen',  wert:`${t.reps} × ${t.workMin} min` },
+      { label:'Zielzone',        wert: targetText(plan, th, t.zone, week) }
+    ];
+    if(t.power) info.kennzahlen.push({ label:'Leistung', wert: t.power });
+    const cad = cadenceText(plan, t.zone, week);
+    if(cad) info.kennzahlen.push({ label:'Trittfrequenz', wert: cad });
+    info.bloecke = [
+      { label:'Einfahren',
+        wert:`${plan.interval.warmupMinutes} min · ${zoneSpan(plan, th, 'z1', 'z2', week)}` },
+      { label:`${t.reps}× ${t.workMin} min Belastung`, wert:`${zt}${pw}`,
+        hinweis:`Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
+                T.thursdayIntervalTail },
+      { label:'Pause',
+        wert:`je ${t.restMin} min locker · ${zoneText(plan, th, 'z1', week)}`,
+        hinweis:'Zwischen den Wiederholungen.' },
+      { label:'Ausrollen', wert:`${plan.interval.cooldownMinutes} min` }
+    ];
+  }
+  info.wellness = { rolle:'entscheidung', donnerstag: t.kind };
+  return info;
+}
+
+/* Freitag ist frei oder locker - eine Entscheidung, keine Vorgabe. */
+function freitag(c){
+  const { plan, th, week } = c;
+  const fo = plan.fridayOptional;
+  return {
+    type:'restopt', title:'Ruhetag oder lockere Fahrt',
+    detail:`Optional ${fo.minMinutes}–${fo.maxMinutes} min ${zoneText(plan, th, fo.zone, week)}, sonst frei.`,
+    kennzahlen: [
+      { label:'Umfang',   wert:`optional ${fo.minMinutes}–${fo.maxMinutes} min` },
+      { label:'Zielzone', wert: targetText(plan, th, fo.zone, week) }
+    ],
+    bloecke: [
+      { label:'Lockere Fahrt (optional)',
+        wert:`${fo.minMinutes}–${fo.maxMinutes} min · ${zoneText(plan, th, fo.zone, week)}`,
+        hinweis:'Sonst frei.' }
+    ]
+  };
+}
+
+/* Samstag ist die lange Ausfahrt und der Beginn der Trainingswoche. */
+function samstag(c){
+  const { plan, th, week, recovery, T, z2 } = c;
+  const dur = c.w.saturdayMinutes;
+  const bl = saturdayBlocks(plan, week);
+  const sr = plan.saturdayRide;
+  const bz = bl
+    ? (wattText(plan, th, 'z3')
+        ? `${zoneText(plan, th, 'z3', week)} · 80–88 % FTP`
+        : zoneText(plan, th, 'z3', week))
+    : null;
+
+  let extra;
+  if(recovery){
+    extra = `${T.saturdayRecovery} (${zoneSpan(plan, th, 'z1', 'z2', week)}).`;
+  } else if(bl){
+    extra = `Dazu ${bl.reps}× ${bl.minutes} min ${bz} in der zweiten Hälfte der Fahrt, ` +
+            `mit ${bl.restMinutes} min lockerem Rollen dazwischen.`;
+  } else {
+    extra = T.saturdayPureZ2;
+  }
+
+  const info = { type:'long', title:'Lange Ausfahrt',
+    detail:`${dur} min${distanceSuffix(plan, dur, week)} · Basis ${z2()}. ` +
+           `${sr.warmupMinutes} min Einfahren, ${sr.cooldownMinutes} min Ausrollen. ${extra}` };
+
+  info.kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
+  if(bl){
+    info.kennzahlen.push({ label:'Blöcke',
+      wert:`${bl.reps} × ${bl.minutes} min ${zoneText(plan, th, 'z3', week)}` });
+  }
+
+  const lang = [{ label:'Einfahren', wert:`${sr.warmupMinutes} min` }];
+  if(recovery){
+    lang.push({ label:'Basis', wert:`${dur} min · ${zoneSpan(plan, th, 'z1', 'z2', week)}`,
+                hinweis:`${T.saturdayRecovery}.` });
+  } else {
+    lang.push({ label:'Basis', wert:`${dur} min · ${z2()}`,
+                hinweis: bl ? undefined : T.saturdayPureZ2 });
+    if(bl){
+      lang.push({ label:`${bl.reps}× ${bl.minutes} min Block`, wert: bz,
+        hinweis:`In der zweiten Hälfte der Fahrt, ${bl.restMinutes} min lockeres Rollen dazwischen.` });
+    }
+  }
+  lang.push({ label:'Ausrollen', wert:`${sr.cooldownMinutes} min` });
+  info.bloecke = lang;
+
+  /* Die Hoehenmeter stehen als Kennzahl neben Dauer und Zielzone, nicht als
+     Absatz darunter. Als Fliesstext waren es vier bis fuenf Zeilen auf der
+     ohnehin laengsten Karte des Plans - die Vorgabe ist aber ein einziger
+     Wert, den man vor dem Losfahren abliest. Die Begruendung steht im
+     Dokument, nicht auf der Karte.
+
+     Der Umschaltpunkt ist cogganFromWeek und nicht zufaellig derselbe wie beim
+     Zonenmodell: beide haengen am Schwellentest. Bis dahin soll der Datensatz
+     flach bleiben, danach wird ueber Watt gesteuert. */
+  const vorTest = week < plan.cogganFromWeek;
+  info.kennzahlen.push({ label:'Höhenmeter', wert: vorTest ? 'flach' : '50–100 hm' });
+  if(!vorTest) info.hinweise = [T.elevationShort];
+  return info;
+}
+
+/* Sonntag: voller Zirkel, direkt danach der Beinblock. */
+function sonntag(c){
+  const { plan, th, week, exCount, T } = c;
+  const dur = c.w.sundayOptionalMinutes;
+  const rounds = coreRounds(plan, week);
+  return {
+    type:'sun', title:'Rumpf-Zirkel (voll) + Beinblock',
+    detail:`Rumpf-Zirkel: ${rounds} Runden à ${exCount} Übungen ` +
+           `(${coreWorkSeconds(plan, week)} s Belastung / ${coreRestSeconds(plan, week)} s Pause), ` +
+           `ca. ${coreMinutes(plan, week, rounds)} min. Direkt im Anschluss der Beinblock: ` +
+           `${legRounds(plan, week)} Runden ${plan.legs.shortList} – ${T.legNoTimer}, ${plan.legs.durationHint}. ` +
+           `${T.sundayLegOrder} ` +
+           `Optional davor ${dur} min ${zoneText(plan, th, 'z1', week)} – ${T.sundayRideFirst}.`,
+    showTimerBtn:true, showLegBlock:true,
+    kennzahlen: [
+      { label:'Dauer',     wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min Zirkel' },
+      { label:'Zirkel',    wert:`${rounds} Runden à ${exCount} Übungen` },
+      { label:'Beinblock', wert:`${legRounds(plan, week)} Runden` },
+      { label:'Takt',      wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
+    ],
+    bloecke: [
+      circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (voll)', T.sundayLegOrder),
+      { label:'Beinblock', wert:`${legRounds(plan, week)} Runden ${plan.legs.shortList}`,
+        hinweis:`${T.legNoTimer}, ${plan.legs.durationHint}.` },
+      { label:'Rad (optional)', wert:`${dur} min · ${zoneText(plan, th, 'z1', week)}`,
+        hinweis:`Davor – ${T.sundayRideFirst}.` }
+    ]
+  };
+}
+
+/* getDay() zaehlt ab Sonntag. */
+const TAGE = [sonntag, montag, dienstag, mittwoch, donnerstag, freitag, samstag];
+
 export function buildDayInfo(plan, th, date, startDate){
   /* Vor dem Planbeginn klemmt weekNumberFor auf Woche 1 und liefert damit
      einen vollstaendigen Trainingstag fuer ein Datum, an dem der Plan noch
@@ -191,242 +445,30 @@ export function buildDayInfo(plan, th, date, startDate){
      und von der Anzeige neutral dargestellt. */
   const vorStart = weekNumberFor(date, startDate) < 1;
   const week = Math.max(weekNumberFor(date, startDate), 1);
-  const idx = weekIndex(plan, week);
-  const w = plan.weeks[idx];
-  const phase = phaseOf(plan, week);
-  const recovery = isRecoveryWeek(plan, week);
-  const winter = isWinterBlock(plan, week);
-  const T = plan.texts;
-  const exCount = plan.circuit.exercises.length;
-  const dow = date.getDay();
 
-  const z2 = () => withCadence(plan, targetText(plan, th, 'z2', week), 'z2', week);
+  const c = {
+    plan, th, week,
+    w: plan.weeks[weekIndex(plan, week)],
+    phase: phaseOf(plan, week),
+    recovery: isRecoveryWeek(plan, week),
+    winter: isWinterBlock(plan, week),
+    exCount: plan.circuit.exercises.length,
+    T: plan.texts,
+    z2: () => withCadence(plan, targetText(plan, th, 'z2', week), 'z2', week)
+  };
 
-  let info;
-  switch(dow){
-    case 1:
-      info = { type:'rest', title:'Ruhetag', detail:T.mondayRest };
-      info.kennzahlen = [{ label:'Umfang', wert:'frei' }];
-      info.bloecke = [];
-      info.hinweise = [T.mondayRest];
-      break;
-
-    case 2: {
-      const dur = w.tuesdayMinutes;
-      info = { type:'ride', title:'Rad – Grundlagenausdauer (Z2)',
-        detail:`${dur} min${distanceSuffix(plan, dur, week)} · ${z2()}. ${T.tuesdayCommute}` };
-      info.kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
-      info.bloecke = [
-        { label:'Grundlagenfahrt', wert:`${dur} min · ${z2()}`, hinweis:T.tuesdayCommute }
-      ];
-      break;
-    }
-
-    case 3: {
-      const dur = w.wednesdayMinutes;
-      const rounds = plan.circuit.wednesdayRounds;
-      const rumpf = `Abends Rumpf-Zirkel verkürzt: ${rounds} Runden à ${exCount} Übungen ` +
-        `(${coreWorkSeconds(plan, week)} s Belastung / ${coreRestSeconds(plan, week)} s Pause), ` +
-        `ca. ${coreMinutes(plan, week, rounds)} min. Kein Beinblock.`;
-      const zirkel = circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (verkürzt)',
-        'Abends. Kein Beinblock.');
-      if(dur > 0){
-        const lockerer = phase === 3 ? T.wednesdayEasyPhase3 : T.wednesdayEasyDefault;
-        info = { type:'ride', title:'Rad – kurzes Z2 (Arbeitsweg) + Rumpf',
-          detail:`Mindestens ${dur} min direkte Strecke${distanceSuffix(plan, dur, week)} · ${z2()}. ` +
-                 `${T.wednesdayMinimum} ${lockerer} ${rumpf}`,
-          showTimerBtn:true };
-        info.kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
-        /* Die Dauer ist eine Untergrenze, keine Vorgabe - das muss schon in der
-           Kennzahl stehen und nicht erst im Hinweis darunter. */
-        info.kennzahlen[0] = { label:'Dauer', wert:`mindestens ${dur} min` };
-        info.bloecke = [
-          { label:'Fahrt (Arbeitsweg)', wert:`mindestens ${dur} min direkte Strecke · ${z2()}`,
-            hinweis:`${T.wednesdayMinimum} ${lockerer}` },
-          zirkel
-        ];
-      } else {
-        info = { type:'core', title:'Rumpf/Oberkörper-Stabilität',
-          detail:`${T.wednesdayNoRide} ${rumpf}`, showTimerBtn:true };
-        info.kennzahlen = [
-          { label:'Dauer',  wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min' },
-          { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
-          { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
-        ];
-        info.bloecke = [zirkel];
-        info.hinweise = [T.wednesdayNoRide];
-      }
-      /* Das Wellness-Gate schon am Mittwoch, wie im Trainingsplan vorgesehen:
-         wer erst Donnerstag frueh schaut, kann den Tag nur noch absagen. Die
-         Art des Donnerstags haengt dran, weil sie entscheidet, was ein rotes
-         Gate ueberhaupt bedeutet - ein Test wird verschoben, ein Intervalltag
-         heruntergestuft, ein Z2-Tag gekuerzt. */
-      info.wellness = { rolle:'vorschau', donnerstag: thursdayPlan(plan, week).kind };
-      break;
-    }
-
-    case 4: {
-      const t = thursdayPlan(plan, week);
-      if(t.kind === 'test'){
-        info = { type:'interval', title:t.title, detail:T.thursdayTest, showIntervalBtn:true };
-        info.kennzahlen = [
-          { label:'Dauer',      wert: t.minutes + ' min' },
-          { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
-          { label:'Zielzone',   wert: targetText(plan, th, t.zone, week) }
-        ];
-        info.bloecke = testBloecke(plan, th, week);
-        info.hinweise = [T.thursdayTest];
-      } else if(t.kind === 'z2'){
-        info = { type:'ride', title:t.title,
-          detail:`${t.minutes} min${distanceSuffix(plan, t.minutes, week)} · ${z2()}. ${T.thursdayBaseDay}` };
-        info.kennzahlen = rideKennzahlen(plan, th, week, t.minutes, 'z2');
-        info.bloecke = [
-          { label:'Grundlagenfahrt', wert:`${t.minutes} min · ${z2()}`, hinweis:T.thursdayBaseDay }
-        ];
-      } else {
-        const zt = withCadence(plan, targetText(plan, th, t.zone, week), t.zone, week);
-        const pw = t.power ? ` (${t.power})` : '';
-        info = { type:'interval', title:t.title,
-          detail:`Nach ${plan.interval.warmupMinutes} min Einfahren (${zoneSpan(plan, th, 'z1', 'z2', week)}): ` +
-                 `${t.reps}× ${t.workMin} min ${zt}${pw}, je ${t.restMin} min locker (${zoneText(plan, th, 'z1', week)}) dazwischen. ` +
-                 `Danach ${plan.interval.cooldownMinutes} min Ausrollen. Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
-                 T.thursdayIntervalTail,
-          showIntervalBtn:true };
-        info.kennzahlen = [
-          { label:'Dauer',           wert: t.minutes + ' min' },
-          { label:'Wiederholungen',  wert:`${t.reps} × ${t.workMin} min` },
-          { label:'Zielzone',        wert: targetText(plan, th, t.zone, week) }
-        ];
-        if(t.power) info.kennzahlen.push({ label:'Leistung', wert: t.power });
-        const cad = cadenceText(plan, t.zone, week);
-        if(cad) info.kennzahlen.push({ label:'Trittfrequenz', wert: cad });
-        info.bloecke = [
-          { label:'Einfahren',
-            wert:`${plan.interval.warmupMinutes} min · ${zoneSpan(plan, th, 'z1', 'z2', week)}` },
-          { label:`${t.reps}× ${t.workMin} min Belastung`, wert:`${zt}${pw}`,
-            hinweis:`Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
-                    T.thursdayIntervalTail },
-          { label:'Pause',
-            wert:`je ${t.restMin} min locker · ${zoneText(plan, th, 'z1', week)}`,
-            hinweis:'Zwischen den Wiederholungen.' },
-          { label:'Ausrollen', wert:`${plan.interval.cooldownMinutes} min` }
-        ];
-      }
-      info.wellness = { rolle:'entscheidung', donnerstag: t.kind };
-      break;
-    }
-
-    case 5: {
-      const fo = plan.fridayOptional;
-      info = { type:'restopt', title:'Ruhetag oder lockere Fahrt',
-        detail:`Optional ${fo.minMinutes}–${fo.maxMinutes} min ${zoneText(plan, th, fo.zone, week)}, sonst frei.` };
-      info.kennzahlen = [
-        { label:'Umfang',   wert:`optional ${fo.minMinutes}–${fo.maxMinutes} min` },
-        { label:'Zielzone', wert: targetText(plan, th, fo.zone, week) }
-      ];
-      info.bloecke = [
-        { label:'Lockere Fahrt (optional)',
-          wert:`${fo.minMinutes}–${fo.maxMinutes} min · ${zoneText(plan, th, fo.zone, week)}`,
-          hinweis:'Sonst frei.' }
-      ];
-      break;
-    }
-
-    case 6: {
-      const dur = w.saturdayMinutes;
-      const bl = saturdayBlocks(plan, week);
-      const sr = plan.saturdayRide;
-      const bz = bl
-        ? (wattText(plan, th, 'z3')
-            ? `${zoneText(plan, th, 'z3', week)} · 80–88 % FTP`
-            : zoneText(plan, th, 'z3', week))
-        : null;
-      let extra;
-      if(recovery){
-        extra = `${T.saturdayRecovery} (${zoneSpan(plan, th, 'z1', 'z2', week)}).`;
-      } else if(bl){
-        extra = `Dazu ${bl.reps}× ${bl.minutes} min ${bz} in der zweiten Hälfte der Fahrt, ` +
-                `mit ${bl.restMinutes} min lockerem Rollen dazwischen.`;
-      } else {
-        extra = T.saturdayPureZ2;
-      }
-      info = { type:'long', title:'Lange Ausfahrt',
-        detail:`${dur} min${distanceSuffix(plan, dur, week)} · Basis ${z2()}. ` +
-               `${sr.warmupMinutes} min Einfahren, ${sr.cooldownMinutes} min Ausrollen. ${extra}` };
-
-      info.kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
-      if(bl){
-        info.kennzahlen.push({ label:'Blöcke',
-          wert:`${bl.reps} × ${bl.minutes} min ${zoneText(plan, th, 'z3', week)}` });
-      }
-      const lang = [{ label:'Einfahren', wert:`${sr.warmupMinutes} min` }];
-      if(recovery){
-        lang.push({ label:'Basis', wert:`${dur} min · ${zoneSpan(plan, th, 'z1', 'z2', week)}`,
-                    hinweis:`${T.saturdayRecovery}.` });
-      } else {
-        lang.push({ label:'Basis', wert:`${dur} min · ${z2()}`,
-                    hinweis: bl ? undefined : T.saturdayPureZ2 });
-        if(bl){
-          lang.push({ label:`${bl.reps}× ${bl.minutes} min Block`, wert: bz,
-            hinweis:`In der zweiten Hälfte der Fahrt, ${bl.restMinutes} min lockeres Rollen dazwischen.` });
-        }
-      }
-      lang.push({ label:'Ausrollen', wert:`${sr.cooldownMinutes} min` });
-      info.bloecke = lang;
-
-      /* Die Hoehenmeter stehen als Kennzahl neben Dauer und Zielzone, nicht
-         als Absatz darunter. Als Fliesstext waren es vier bis fuenf Zeilen auf
-         der ohnehin laengsten Karte des Plans - die Vorgabe ist aber ein
-         einziger Wert, den man vor dem Losfahren abliest. Die Begruendung
-         steht im Dokument, nicht auf der Karte.
-
-         Der Umschaltpunkt ist cogganFromWeek und nicht zufaellig derselbe wie
-         beim Zonenmodell: beide haengen am Schwellentest. Bis dahin soll der
-         Datensatz flach bleiben, danach wird ueber Watt gesteuert. */
-      const vorTest = week < plan.cogganFromWeek;
-      info.kennzahlen.push({ label:'Höhenmeter', wert: vorTest ? 'flach' : '50–100 hm' });
-      if(!vorTest) info.hinweise = [T.elevationShort];
-      break;
-    }
-
-    case 0: {
-      const dur = w.sundayOptionalMinutes;
-      const rounds = coreRounds(plan, week);
-      info = { type:'sun', title:'Rumpf-Zirkel (voll) + Beinblock',
-        detail:`Rumpf-Zirkel: ${rounds} Runden à ${exCount} Übungen ` +
-               `(${coreWorkSeconds(plan, week)} s Belastung / ${coreRestSeconds(plan, week)} s Pause), ` +
-               `ca. ${coreMinutes(plan, week, rounds)} min. Direkt im Anschluss der Beinblock: ` +
-               `${legRounds(plan, week)} Runden ${plan.legs.shortList} – ${T.legNoTimer}, ${plan.legs.durationHint}. ` +
-               `${T.sundayLegOrder} ` +
-               `Optional davor ${dur} min ${zoneText(plan, th, 'z1', week)} – ${T.sundayRideFirst}.`,
-        showTimerBtn:true, showLegBlock:true };
-      info.kennzahlen = [
-        { label:'Dauer',     wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min Zirkel' },
-        { label:'Zirkel',    wert:`${rounds} Runden à ${exCount} Übungen` },
-        { label:'Beinblock', wert:`${legRounds(plan, week)} Runden` },
-        { label:'Takt',      wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
-      ];
-      info.bloecke = [
-        circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (voll)', T.sundayLegOrder),
-        { label:'Beinblock', wert:`${legRounds(plan, week)} Runden ${plan.legs.shortList}`,
-          hinweis:`${T.legNoTimer}, ${plan.legs.durationHint}.` },
-        { label:'Rad (optional)', wert:`${dur} min · ${zoneText(plan, th, 'z1', week)}`,
-          hinweis:`Davor – ${T.sundayRideFirst}.` }
-      ];
-      break;
-    }
-  }
+  const info = TAGE[date.getDay()](c);
 
   info.week = week;
   info.vorStart = vorStart;
-  info.phase = phase;
-  info.recovery = recovery;
-  info.winter = winter;
+  info.phase = c.phase;
+  info.recovery = c.recovery;
+  info.winter = c.winter;
   info.target = buildDayTarget(plan, date, week);
 
-  /* Nach dem Schalter aufgefuellt, damit die Anzeige nie auf undefined
-     stoesst - und damit ein spaeter ergaenzter Tagestyp nicht stillschweigend
-     ohne Struktur durchlaeuft. */
+  /* Hier aufgefuellt und nicht in den sieben Funktionen, damit die Anzeige nie
+     auf undefined stoesst - und damit ein spaeter ergaenzter Tagestyp nicht
+     stillschweigend ohne Struktur durchlaeuft. */
   info.kennzahlen = info.kennzahlen ?? [];
   info.bloecke = info.bloecke ?? [];
   info.hinweise = info.hinweise ?? [];
@@ -434,9 +476,10 @@ export function buildDayInfo(plan, th, date, startDate){
   return info;
 }
 
+
 /* Maschinenlesbare Sollwerte je Tag. Dauer in Minuten, Distanz in km, zone als
    Schluessel aus den Pulsbaendern. */
-export function buildDayTarget(plan, date, week){
+function buildDayTarget(plan, date, week){
   const idx = weekIndex(plan, week);
   const w = plan.weeks[idx];
   const recovery = isRecoveryWeek(plan, week);
@@ -496,8 +539,4 @@ export function buildDayTarget(plan, date, week){
                optionalRideMinutes:w.sundayOptionalMinutes, optionalZone:'z1' };
   }
   return { sport:'rest' };
-}
-
-export function formatDate(d){
-  return d.toLocaleDateString('de-DE', { weekday:'long', day:'2-digit', month:'2-digit' });
 }

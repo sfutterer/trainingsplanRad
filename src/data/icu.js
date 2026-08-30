@@ -147,7 +147,7 @@ export async function probeCapabilities(key, activityId){
 
    Die Rohfassung behaelt die Luecken als null. Nur so passen Hoehe und Zeit
    noch zum Punkt - die kommen als eigene Stroeme, Index fuer Index. */
-export function latlngRoh(streams){
+function latlngRoh(streams){
   const list = Array.isArray(streams) ? streams : [];
   const hol = t => list.find(s => s && s.type === t);
 

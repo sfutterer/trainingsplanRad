@@ -187,12 +187,17 @@
 }
 .bausteinkopf b{ color: var(--on-surface); font-weight: 600; text-align: right; }
 
-/* Der Uebungsblock beginnt jetzt unter der Segmentleiste und der Kopfzeile,
-   nicht mehr direkt unter dem Titel. Die Rechnung aus timer.css kennt nur
-   Titel- und Navigationsleiste und liesse den Block 100 px zu hoch werden -
-   die Tastenreihe landete unter der Navigation. */
+/* Der Uebungsblock beginnt hier unter der Segmentleiste und der Kopfzeile,
+   nicht direkt unter dem Titel. Die Rechnung in timer.css kennt nur App-Bar
+   und Navigationsleiste und liesse den Block gut 100 px zu hoch werden - die
+   Tastenreihe landete unter der Navigation.
+
+   Statt die ganze max-height noch einmal hinzuschreiben, wird nur der Abzug
+   erhoeht: die Rechnung selbst steht weiterhin an einer Stelle, und hier ist
+   ablesbar, welche Leisten dazukommen. */
 .uebungsblock{
-  max-height: calc(100dvh - 266px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  /* + Segmentleiste 62 + Bausteinkopf 52 */
+  --block-leisten: 266px;
 }
 
 /* Der Status steht unter der Buehne und damit vor der Uebungsliste - dieselbe
@@ -208,7 +213,8 @@
    abnehmen, sonst rutscht genau dann die Tastenreihe unter die
    Navigationsleiste, wenn zwei Bausteine gleichzeitig laufen. */
 .laufstreifen ~ div .uebungsblock{
-  max-height: calc(100dvh - 322px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  /* + Ruecksprungstreifen 56 */
+  --block-leisten: 322px;
 }
 
 /* Das Bild gibt als Erstes nach, wenn der Platz eng wird - aber nicht bis auf

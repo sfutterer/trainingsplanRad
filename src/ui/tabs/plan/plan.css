@@ -211,15 +211,4 @@ button.dayzeile:active{ background: var(--surface-2); }
 .daynote ul{ margin:6px 0 0; padding-left:18px; }
 .daynote li{ margin-top:4px; }
 
-.verlauf{ display:block; width:100%; height:auto; margin:6px 0 2px; overflow:visible; }
-.verlaufleg{ display:flex; gap:14px; font-size:12px; color:var(--muted); margin-top:2px; }
-.verlaufleg i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; }
-.zonerow .dot{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:8px; }
-.hint.warn{ color: var(--dev); }
-.hint.good{ color: var(--ok); }
 
-.listhead{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
-  margin:14px 0 6px; }
-.listrow{ display:flex; justify-content:space-between; gap:12px; font-size:12.5px;
-  color:var(--muted); padding:6px 0; border-top:1px solid var(--outline); }
-.listrow span:last-child{ text-align:right; }

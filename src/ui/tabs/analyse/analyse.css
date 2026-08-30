@@ -28,6 +28,14 @@
 .chip b{ display:block; font-size:17px; color:var(--on-surface); margin-bottom:2px; }
 
 /* ---- Trainingsliste ---- */
+/* Der Umschalter steht ganz oben, ueber der ersten Karte - also ohne den
+   oberen Abstand, den er sonst zur Karte darueber haelt. */
+.segmented.oben{ margin: 0 0 14px; }
+
+/* Die Aufzeichnungsliste traegt ihre Abstaende in den Zeilen selbst, damit die
+   Trennlinien bis an den Kartenrand laufen. */
+.card.liste{ padding: 4px 0; }
+
 .trliste{ display: flex; flex-direction: column; }
 .treintrag{
   display: flex; align-items: center; gap: 12px;

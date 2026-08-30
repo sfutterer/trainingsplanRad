@@ -31,7 +31,14 @@ import { isoDayLocal, toMidnight, dayFromIso, addDays, phaseName,
 import { usesCoggan } from '../../../domain/zones.js';
 import { useWellness, Tagesinhalt, Tageskopf } from './Tag.jsx';
 import { Monatsansicht } from './Monatsansicht.jsx';
+import { Segmented } from '../../components/Segmented.jsx';
+import { KalenderNavi } from './KalenderNavi.jsx';
 import './plan.css';
+
+const ANSICHTEN = [
+  { id: 'woche', label: 'Woche' },
+  { id: 'monat', label: 'Monat' }
+];
 
 function naechsterTest(p, heute, start){
   for(const w of testWeeks(p)){
@@ -116,20 +123,13 @@ function Wochenansicht({ anker, setzeAnker, serie }){
   return (
     <>
       <div class="card kalnavi-karte">
-        <div class="kalnavi">
-          <div class={'kalnavi-heute' + (inDieserWoche ? ' leer' : '')}>
-            <button class="btn tonal heute-sprung" type="button"
-              onClick={() => setzeAnker(heute)}>Heute</button>
-          </div>
-          <button class="iconbtn" type="button" aria-label="Vorige Woche"
-            onClick={() => setzeAnker(addDays(tage[0], -7))}><span aria-hidden="true">‹</span></button>
-          <div class="kalnavi-titel"><b>Woche {nummer}</b><span>{spanne}</span></div>
-          <button class="iconbtn" type="button" aria-label="Nächste Woche"
-            onClick={() => setzeAnker(addDays(tage[0], 7))}><span aria-hidden="true">›</span></button>
-          <div class="kalnavi-heute spiegel" aria-hidden="true">
-            <button class="btn tonal heute-sprung" type="button" tabIndex={-1}>Heute</button>
-          </div>
-        </div>
+        <KalenderNavi
+          titel={'Woche ' + nummer} unter={spanne}
+          zurueckLabel="Vorige Woche" vorLabel="Nächste Woche"
+          onZurueck={() => setzeAnker(addDays(tage[0], -7))}
+          onVor={() => setzeAnker(addDays(tage[0], 7))}
+          onHeute={() => setzeAnker(heute)}
+          heuteVersteckt={inDieserWoche} />
       </div>
 
       {tage.map(d => {
@@ -155,14 +155,8 @@ export function PlanTab(){
     <>
       <StatusKarte />
 
-      <div class="segmented ansichtwahl" role="group" aria-label="Ansicht">
-        <button class={'segbtn' + (ansicht === 'woche' ? ' an' : '')} type="button"
-          aria-pressed={ansicht === 'woche' ? 'true' : 'false'}
-          onClick={() => setAnsicht('woche')}>Woche</button>
-        <button class={'segbtn' + (ansicht === 'monat' ? ' an' : '')} type="button"
-          aria-pressed={ansicht === 'monat' ? 'true' : 'false'}
-          onClick={() => setAnsicht('monat')}>Monat</button>
-      </div>
+      <Segmented ziele={ANSICHTEN} aktiv={ansicht} onWaehlen={setAnsicht}
+        klasse="ansichtwahl" label="Ansicht" />
 
       {ansicht === 'woche'
         ? <Wochenansicht anker={anker} setzeAnker={setzeAnker} serie={serie} />

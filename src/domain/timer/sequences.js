@@ -1,14 +1,14 @@
 /* Ablaeufe aller Timer. Reine Datenerzeugung - was daraus wird, entscheidet
    die Engine. */
 
-import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, repTarget } from '../core.js';
+import { repTarget } from '../core.js';
 import { zeitDosis } from '../koerper.js';
 import { thursdayPlan } from '../day.js';
 import { zoneText, zoneSpan, wattText } from '../zones.js';
 
 /* Ein Zonenetikett fuer die Anzeige im Timer. z12 ist die Spanne beim
    Einfahren und hat kein eigenes Band. */
-export function timerZone(plan, th, key, week){
+function timerZone(plan, th, key, week){
   if(key === 'z12') return { label: zoneSpan(plan, th, 'z1', 'z2', week), cls: 'z2', key: 'z12' };
   const w = wattText(plan, th, key);
   return { label: zoneText(plan, th, key, week) + (w ? ' · ' + w : ''), cls: key, key };

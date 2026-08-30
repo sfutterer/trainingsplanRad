@@ -74,7 +74,7 @@ export function Koordination({ onOpen }){
       schluss={
         <div class="card">
           <div class="row"><span>Freischaltregel</span><b>zwei Stufen</b></div>
-          <p class="hint" style="margin-top:2px">
+          <p class="hint">
             Keine Wochenprogression: erst weiterrücken, wenn die aktuelle Stufe sauber gelingt.
           </p>
           <ol class="stufen">

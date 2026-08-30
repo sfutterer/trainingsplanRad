@@ -8,10 +8,12 @@
    Grund, warum eine Hitzeausfahrt die Aussage ueber acht Wochen nicht kippt. */
 
 import { describe, it, expect } from 'vitest';
-import { VERLAUF, theilSen, trendAus, zweiPunktVergleich, tagNr, wochenNummer,
-         kurzTag, zahl, effizienzFenster, effizienzSerie, entkopplungSerie,
+import { VERLAUF, theilSen, trendAus, zweiPunktVergleich, wochenNummer,
+         effizienzFenster, effizienzSerie, entkopplungSerie,
          testSerie, umfangSerie, zonenAusAktivitaet, zonenSerie, rumpfSerie,
          verlaufBericht } from '../src/domain/verlauf.js';
+import { tagNr, kurzTag, tagPlus } from '../src/domain/week.js';
+import { zahl } from '../src/domain/zahlen.js';
 
 const AB = '2026-08-15';
 
@@ -33,9 +35,6 @@ function fahrt(tag, extra){
   }, extra || {});
 }
 
-function tagPlus(iso, d){
-  return new Date((tagNr(iso) + d) * 86400000).toISOString().slice(0, 10);
-}
 
 const TH = { ftp: 200, lthr: 160, hrmax: 185 };
 

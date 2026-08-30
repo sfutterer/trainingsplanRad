@@ -107,12 +107,46 @@
 .row:last-child{ margin-bottom: 0; }
 .row b{ color: var(--on-surface); font-weight: 600; text-align: right; }
 
-h1.title{ display: none; }
-
 .hint{
   font-size: 13px; color: var(--muted); line-height: 1.5;
   margin: 10px 0 0;
 }
+
+/* Abstaende aus der Nachbarschaft statt aus style-Attributen im JSX.
+
+   Vorher standen an zwei Dutzend Stellen style="margin-top:12px" - dieselbe
+   Zahl, an fuenf JSX-Dateien verteilt, und jede Layoutaenderung musste sie
+   alle finden. Welchen Abstand ein Element braucht, haengt aber nicht davon
+   ab, wer es hinschreibt, sondern davon, was darueber steht. Genau das laesst
+   sich hier ausdruecken. */
+/* Warn- und Gutfarbe eines Hinweises. Lagen in plan.css, obwohl .hint hier
+   definiert ist - der Zonen-Tab musste deshalb das CSS des Plan-Tabs
+   hereinziehen, nur um zwei Modifier zu bekommen. Modifier gehoeren zu ihrer
+   Klasse. */
+.hint.warn{ color: var(--dev); }
+.hint.good{ color: var(--ok); }
+
+/* Listenkopf und Listenzeile: dieselbe Form in Plan, Zonen und Analyse.
+   Standen aus demselben Grund in plan.css. */
+.listhead{
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin: 14px 0 6px;
+}
+.listrow{
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: 12.5px; color: var(--muted);
+  padding: 6px 0; border-top: 1px solid var(--outline);
+}
+.listrow span:last-child{ text-align: right; }
+
+.row + .hint{ margin-top: 6px; }
+.hint + .row{ margin-top: 10px; }
+.anwerte + .row{ margin-top: 14px; }
+.card > .btn.block{ margin-top: 12px; }
+.card > .buttons{ margin-top: 12px; }
+.sheet > .btn.block{ margin-top: 14px; }
+.sheet .buttons{ margin-top: 16px; }
+.banner > span{ flex: 1; }
 
 /* Touch-Ziele: 48 dp. In der alten Fassung erreichte kein einziges Element
    das - der Link zur Uebungsanleitung war 16 px hoch. */
@@ -130,6 +164,10 @@ h1.title{ display: none; }
 }
 .btn.secondary{ background: var(--surface-3); color: var(--on-surface); }
 .btn.tonal{ background: var(--primary-container); color: var(--on-primary-container); }
+/* Nur fuer Rueckfragen, deren Ja etwas ueberschreibt oder loescht. Der einzige
+   Ort in der App, an dem eine Taste eine Warnfarbe traegt - waere sie
+   haeufiger, hiesse sie nichts mehr. */
+.btn.gefahr{ background: var(--miss); color: #fff; }
 .btn:disabled{ opacity: .45; cursor: default; }
 .btn.block{ width: 100%; }
 
@@ -139,6 +177,10 @@ h1.title{ display: none; }
   border-bottom: 1px solid var(--outline);
 }
 .field:last-child{ border-bottom: 0; }
+/* label statt span: die Beschriftung haengt jetzt ueber for/id am Feld. Ein
+   Tipp darauf setzt den Fokus hinein - die Trefferflaeche ist damit die ganze
+   Zeile statt nur des Eingabekastens. */
+.field > label{ font-size: 15px; cursor: pointer; }
 .field > span{ font-size: 15px; }
 .field input[type=number], .field input[type=text], .field input[type=password], .field input[type=date], .field select{
   min-height: 48px; width: 118px; flex: none;
@@ -267,8 +309,15 @@ code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
 .iconbtn:active{ background: var(--surface-3); }
 
 /* ---- Navigation Drawer ---- */
-.drawer-wrap{ position: fixed; inset: 0; z-index: 70; pointer-events: none; }
-.drawer-wrap.offen{ pointer-events: auto; }
+/* visibility zusaetzlich zu inert: Browser ohne inert-Unterstuetzung nehmen
+   den geschlossenen Drawer sonst weder aus dem Fokus noch aus dem Vorlesebaum.
+   Die Verzoegerung laesst ihn beim Schliessen noch herausfahren - ohne sie
+   verschwaende er auf der Stelle. */
+.drawer-wrap{
+  position: fixed; inset: 0; z-index: 70; pointer-events: none;
+  visibility: hidden; transition: visibility 0s linear .2s;
+}
+.drawer-wrap.offen{ pointer-events: auto; visibility: visible; transition: visibility 0s; }
 .drawer-schleier{
   position: absolute; inset: 0; background: rgba(0,0,0,.45);
   opacity: 0; transition: opacity .2s ease;
@@ -382,5 +431,10 @@ code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
   border-radius: var(--radius-s); color: var(--on-surface);
   padding: 0 12px; font-size: 15px;
 }
-.segmented.klein{ margin: 0; flex: none; border-radius: 18px; }
-.segmented.klein .segbtn{ min-height: 36px; padding: 0 10px; font-size: 12.5px; }
+/* Der Umschalter unter einer Einstellungszeile fuellt sie ganz aus - drei
+   Beschriftungen neben einem Titel passen auf einem Handy nicht. */
+.szeile-eingabe .segmented{ flex: 1; margin: 0; }
+
+/* Die Meldung der Einstellungen steht nicht in einer Karte, sondern frei ueber
+   der Liste - sie braucht deshalb den seitlichen Einzug selbst. */
+.meldung.frei{ margin: 8px 16px 16px; }

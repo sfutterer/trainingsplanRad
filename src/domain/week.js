@@ -43,7 +43,7 @@ export function weekIndex(plan, week){
   return Math.min(Math.max(week, 1), plan.weekCount) - 1;
 }
 
-export function planWeek(plan, week){
+function planWeek(plan, week){
   return plan.weeks[weekIndex(plan, week)];
 }
 
@@ -114,6 +114,37 @@ export function dayOffset(date, from){
 export function dayFromIso(iso){
   const [j, m, t] = String(iso).split('-').map(Number);
   return new Date(j, m - 1, t);
+}
+
+/* ---- Rechnen auf dem ISO-String ----
+
+   Die Eintraege aus intervals.icu und aus dem eigenen Protokoll tragen ihren
+   Tag als "2026-08-15". Daraus jedes Mal ein Date zu bauen, nur um zwei Tage
+   voneinander abzuziehen, geht ueber die Zeitzone und die Sommerzeit - und
+   genau dort entstehen die Fehler um einen Tag. Die Tagesnummer rechnet in
+   UTC und ist damit von beidem unabhaengig.
+
+   Stand dreimal da: als tagNummer in analysis.js, als tagNr in verlauf.js -
+   zeichengleiche Rumpfe unter verschiedenen Namen - und ein drittes Mal als
+   lokale Hilfsfunktion im Test. Hier ist die Stelle dafuer: der Kalender. */
+
+export function tagNr(iso){
+  const t = String(iso || '').slice(0, 10).split('-').map(Number);
+  if(t.length !== 3 || t.some(v => !Number.isFinite(v))) return null;
+  return Math.round(Date.UTC(t[0], t[1] - 1, t[2]) / 86400000);
+}
+
+export function tagPlus(iso, delta){
+  const n = tagNr(iso);
+  if(n === null) return null;
+  return new Date((n + delta) * 86400000).toISOString().slice(0, 10);
+}
+
+/* "15.08." - fuer die Achsenbeschriftung, wo das Jahr keinen Platz hat und
+   auch nichts entscheidet. */
+export function kurzTag(iso){
+  const s = String(iso || '').slice(0, 10);
+  return s.length === 10 ? s.slice(8, 10) + '.' + s.slice(5, 7) + '.' : s;
 }
 
 /* Der erste Tag der Trainingswoche, in der ein Datum liegt.
