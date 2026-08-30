@@ -29,6 +29,27 @@
    Zuruecknahme des Gewichts an einem Tag ohne Vorgabe. */
 .type-rest .daytitle, .type-restopt .daytitle{ color: var(--muted); font-weight: 600; }
 
+/* ---- Aufklappbare Statuskarte ----
+
+   Dieselbe Bauform wie die Tageskarte: die Karte gibt ihre Innenabstaende an
+   Klappzeile und Inhalt weiter, damit die Trefferflaeche des Knopfes von
+   Kante zu Kante reicht. Zugeklappt bleibt genau eine Zeile stehen - die
+   Wochennummer ist das Einzige daran, was sich taeglich lesen laesst. */
+
+.card.klappkarte{ padding: 0; overflow: hidden; }
+.klappzeile{
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  position: relative;
+  width: 100%; min-height: 56px;
+  padding: 16px 44px 16px 18px;
+  border: 0; background: none; text-align: left;
+  font: inherit; font-size: 14px; color: var(--on-surface-var);
+  cursor: pointer;
+}
+.klappzeile b{ color: var(--on-surface); font-weight: 600; text-align: right; }
+.klappzeile:active{ background: var(--surface-2); }
+.klappinhalt{ padding: 0 18px 16px; animation: aufklappen .18s ease-out; }
+
 /* ---- Kopfzeile eines Tages ---- */
 
 .dayzeile{
@@ -76,7 +97,7 @@ button.dayzeile:active{ background: var(--surface-2); }
    trotzdem ausdruecklich, damit sie beim Herausloesen der Datei nicht
    verlorengeht. */
 @media (prefers-reduced-motion: reduce){
-  .dayinhalt{ animation: none; }
+  .dayinhalt, .klappinhalt{ animation: none; }
   .chevron{ transition: none; }
 }
 

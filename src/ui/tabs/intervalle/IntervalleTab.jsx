@@ -23,7 +23,21 @@
 
    Der Bereichstitel steht in der AppBar. Diese Datei hatte ihn zusaetzlich als
    <h1> und war damit die einzige mit zwei Ueberschriften im Dokument; sichtbar
-   war das nicht, weil eine CSS-Regel den zweiten versteckte. */
+   war das nicht, weil eine CSS-Regel den zweiten versteckte.
+
+   Der Aufbau kommt aus Baustein.jsx, wie in den vier Trainingsbausteinen:
+   Kopf, Buehne, Status, Inhalt, Hinweise, Schluss. Vorher stand hier eine
+   Karte mit bis zu fuenf Zeilen und einem Hinweisabsatz ueber dem Ring -
+   ueber 200 px, die auf einem 375er Geraet dem Ring und der Tastenreihe
+   fehlten. Der Kopf traegt jetzt Name und Gesamtdauer, alles Weitere steht
+   unter der Buehne: waehrend der Einheit schaut man auf die Uhr, die Vorgabe
+   liest man einmal vorher.
+
+   In Phase 3 gibt es keine Buehne. Der Donnerstag ist dort ein
+   Grundlagentag - eine Uhr haette nichts zu zaehlen, und die Folge, die sie
+   zaehlen sollte, gab es auch nie: der Aufbau der Vorschau lief in diesen
+   Wochen in einen Fehler, weil ohne Intervalle auch keine Einstellungen
+   dastehen, aus denen sich eine Folge bauen liesse. */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, thresholds, week, settings } from '../../../state/store.js';
@@ -34,6 +48,10 @@ import { buildIntervalSequence, buildTestSequence, intervalDefaults,
 import { hrBands, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
 import { isRecoveryWeek } from '../../../domain/week.js';
 import { Buehne } from '../../components/Buehne.jsx';
+/* Dasselbe Geruest wie in den vier Trainingsbausteinen - aus demselben Grund,
+   aus dem die Buehne dort ausgezogen ist: eine Form, die nur einer der fuenf
+   Timer kennt, halten die anderen vier nicht ein. */
+import { Baustein } from '../training/Baustein.jsx';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
 import { Zahlenfeld } from '../../components/Feld.jsx';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
@@ -69,6 +87,7 @@ export function IntervalleTab(){
   const nurZ2 = vorgabe.mode === 'z2';
 
   function sequenz(){
+    if(nurZ2) return [];
     return testmodus ? buildTestSequence(p, th, w) : buildIntervalSequence(p, th, w, cfg);
   }
 
@@ -180,101 +199,111 @@ export function IntervalleTab(){
     : step.type === 'warm' ? 'var(--work)' : 'var(--prep)';
 
   const kadenz = cfg ? cadenceText(p, cfg.zoneKey, w) : null;
+  const watt = cfg ? wattText(p, th, cfg.zoneKey) : null;
+
+  /* Kopf, Status und Hinweise der drei Betriebsarten an einer Stelle - im
+     Baugeruest darunter unterscheiden sie sich nur noch darin, ob es eine
+     Buehne und Einstellungen gibt. */
+  const titel = testmodus ? 'Schwellentest'
+    : nurZ2 ? 'Grundlagentag'
+    : vorgabe.plan.title.replace('Rad – ', '');
+
+  const kopfmeta = nurZ2 ? vorgabe.plan.minutes + ' min' : dauer(totalSeconds(vorschau));
+
+  const status = testmodus ? 'Woche ' + w + ' · Schwellentest statt Intervallen'
+    : nurZ2 ? 'Woche ' + w + ' · ' + vorgabe.plan.minutes + ' min ' + zoneText(p, th, 'z2', w) + ' am Stück'
+    : 'Woche ' + w + ' · ' + cfg.reps + '× ' + cfg.workMin + ' min ' + zoneText(p, th, cfg.zoneKey, w);
+
+  const hinweise = testmodus ? [p.texts.thresholdTestSummary]
+    : nurZ2 ? [p.texts.thursdayNoTimer]
+    : [p.texts.intervalRollingStart + (isRecoveryWeek(p, w) ? ' ' + p.texts.intervalRecoveryWeek : '')];
 
   return (
-    <>
-      <div class="card">
-        {testmodus ? (
-          <>
-            <div class="row"><span>Woche {w}</span><b>Schwellentest</b></div>
-            <p class="hint">{p.texts.thresholdTestSummary}</p>
-          </>
-        ) : nurZ2 ? (
-          <>
-            <div class="row"><span>Woche {w}</span><b>Grundlagentag statt Intervallen</b></div>
-            <p class="hint">
-              {vorgabe.plan.minutes} min {zoneText(p, th, 'z2', w)} am Stück. {p.texts.thursdayNoTimer}
-            </p>
-          </>
-        ) : (
-          <>
-            <div class="row"><span>Woche {w}</span><b>{vorgabe.plan.title.replace('Rad – ', '')}</b></div>
-            <div class="row"><span>Vorgabe</span><b>
-              {cfg.reps}× {cfg.workMin} min {zoneText(p, th, cfg.zoneKey, w)}
-              {wattText(p, th, cfg.zoneKey) ? ' · ' + wattText(p, th, cfg.zoneKey) : ''}
-            </b></div>
-            {vorgabe.plan.power && <div class="row"><span>Leistung</span><b>{vorgabe.plan.power}</b></div>}
-            {kadenz && <div class="row"><span>Trittfrequenz</span><b>{kadenz}</b></div>}
-            <p class="hint">
-              {p.texts.intervalRollingStart}
-              {isRecoveryWeek(p, w) ? ' ' + p.texts.intervalRecoveryWeek : ''}
-            </p>
-          </>
-        )}
-        <div class="row"><span>Gesamtdauer</span><b>{dauer(totalSeconds(vorschau))}</b></div>
-      </div>
+    <Baustein
+      titel={titel}
+      meta={kopfmeta}
+      status={<p class="tagchip">{status}</p>}
+      buehne={nurZ2 ? null : (
+        <Buehne
+          ring={{
+            fraction: timer.fraction(),
+            color: farbe,
+            phase,
+            time: step ? (step.type === 'done' ? '0:00' : klok(sec)) : klok(vorschau[1] ? vorschau[1].duration : 0),
+            exercise: step ? step.label : 'Tippen zum Starten',
+            meta: step && step.type !== 'done'
+              ? 'noch ' + dauer(remainingAfter(timer.sequence, timer.index) + sec) : '',
+            zone: step ? step.zone : (vorschau[1] && vorschau[1].zone)
+          }}
+          zurueck={{ onClick: zurueck, disabled: !step || timer.index <= 0 }}
+          haupt={{ label: timer.running ? 'Pause'
+                          : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
+                   onClick: starten }}
+          weiter={{ onClick: weiter, disabled: !step || step.type === 'done' }}
+          ende={step ? { label: 'Einheit beenden', onClick: zuruecksetzen } : null} />
+      )}
+      hinweise={hinweise}
+      schluss={
+        testmodus
+          ? <p class="hint">Der Testablauf steht fest und lässt sich nicht verstellen – ein Test, der sich anpassen lässt, ist kein Vergleichsmaßstab mehr.</p>
+          : nurZ2 ? null : (
+          <div class="card">
+            <div class="row"><span>Einstellungen</span><b>anpassbar</b></div>
+            {/* Einfahren und Ausrollen duerfen auf null: wer schon warm ist,
+                faehrt sofort los. Intervall, Erholung und Wiederholungen nicht -
+                ein Intervall ueber null Minuten ist kein Intervall. */}
+            <Zahlenfeld titel="Einfahren (Min.)" wert={cfg.warmMin} min={0} dezimal
+              onWert={v => setCfg({ ...cfg, warmMin: v ?? 0 })} />
+            <Zahlenfeld titel="Intervall (Min.)" wert={cfg.workMin} min={0.5} schritt="0.5" dezimal
+              onWert={v => setCfg({ ...cfg, workMin: v ?? cfg.workMin })} />
+            <Zahlenfeld titel="Erholung (Min.)" wert={cfg.restMin} min={0.5} schritt="0.5" dezimal
+              onWert={v => setCfg({ ...cfg, restMin: v ?? cfg.restMin })} />
+            <Zahlenfeld titel="Wiederholungen" wert={cfg.reps} min={1}
+              onWert={v => setCfg({ ...cfg, reps: v ?? cfg.reps })} />
+            <Zahlenfeld titel="Ausrollen (Min.)" wert={cfg.coolMin} min={0} dezimal
+              onWert={v => setCfg({ ...cfg, coolMin: v ?? 0 })} />
+          </div>
+        )
+      }>
 
-      <Buehne
-        ring={{
-          fraction: timer.fraction(),
-          color: farbe,
-          phase,
-          time: step ? (step.type === 'done' ? '0:00' : klok(sec)) : klok(vorschau[1] ? vorschau[1].duration : 0),
-          exercise: step ? step.label : 'Tippen zum Starten',
-          meta: step && step.type !== 'done'
-            ? 'noch ' + dauer(remainingAfter(timer.sequence, timer.index) + sec) : '',
-          zone: step ? step.zone : (vorschau[1] && vorschau[1].zone)
-        }}
-        zurueck={{ onClick: zurueck, disabled: !step || timer.index <= 0 }}
-        haupt={{ label: timer.running ? 'Pause'
-                        : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
-                 onClick: starten }}
-        weiter={{ onClick: weiter, disabled: !step || step.type === 'done' }}
-        ende={step ? { label: 'Einheit beenden', onClick: zuruecksetzen } : null} />
-
-      <div class="card">
-        <div class="seglist">
-          {vorschau.map((s2, i) => {
-            if(s2.type === 'done' || s2.type === 'prep') return null;
-            const farbe2 = s2.type === 'work' ? (s2.zone && s2.zone.key === 'z5' ? 'var(--hard)' : 'var(--rest)')
-                         : s2.type === 'warm' ? 'var(--work)' : 'var(--prep)';
-            return (
-              <div class={'seg' + (i === timer.index ? ' aktiv' : (timer.index > i ? ' fertig' : ''))} key={i}>
-                <span><i class="dot" style={'background:' + farbe2}></i>{s2.label}</span>
-                <span class="dur">{klok(s2.duration)} · {(s2.zone && s2.zone.label ? s2.zone.label.split(' · ')[0] : '')}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {!testmodus && !nurZ2 && (
+      {/* Vorgabe und Ablauf in einer Karte: beides beantwortet dieselbe Frage,
+          und getrennt stuenden zwei Kartenraender zwischen der Zahl und der
+          Folge, die sie erzeugt. */}
+      {!nurZ2 && (
         <div class="card">
-          <div class="row"><span>Einstellungen</span><b>anpassbar</b></div>
-          {/* Einfahren und Ausrollen duerfen auf null: wer schon warm ist,
-              faehrt sofort los. Intervall, Erholung und Wiederholungen nicht -
-              ein Intervall ueber null Minuten ist kein Intervall. */}
-          <Zahlenfeld titel="Einfahren (Min.)" wert={cfg.warmMin} min={0} dezimal
-            onWert={v => setCfg({ ...cfg, warmMin: v ?? 0 })} />
-          <Zahlenfeld titel="Intervall (Min.)" wert={cfg.workMin} min={0.5} schritt="0.5" dezimal
-            onWert={v => setCfg({ ...cfg, workMin: v ?? cfg.workMin })} />
-          <Zahlenfeld titel="Erholung (Min.)" wert={cfg.restMin} min={0.5} schritt="0.5" dezimal
-            onWert={v => setCfg({ ...cfg, restMin: v ?? cfg.restMin })} />
-          <Zahlenfeld titel="Wiederholungen" wert={cfg.reps} min={1}
-            onWert={v => setCfg({ ...cfg, reps: v ?? cfg.reps })} />
-          <Zahlenfeld titel="Ausrollen (Min.)" wert={cfg.coolMin} min={0} dezimal
-            onWert={v => setCfg({ ...cfg, coolMin: v ?? 0 })} />
+          {cfg && (
+            <>
+              <div class="row"><span>Vorgabe</span><b>
+                {cfg.reps}× {cfg.workMin} min {zoneText(p, th, cfg.zoneKey, w)}
+                {watt ? ' · ' + watt : ''}
+              </b></div>
+              {vorgabe.plan.power && <div class="row"><span>Leistung</span><b>{vorgabe.plan.power}</b></div>}
+              {kadenz && <div class="row"><span>Trittfrequenz</span><b>{kadenz}</b></div>}
+            </>
+          )}
+          <div class="seglist">
+            {vorschau.map((s2, i) => {
+              if(s2.type === 'done' || s2.type === 'prep') return null;
+              const farbe2 = s2.type === 'work' ? (s2.zone && s2.zone.key === 'z5' ? 'var(--hard)' : 'var(--rest)')
+                           : s2.type === 'warm' ? 'var(--work)' : 'var(--prep)';
+              return (
+                <div class={'seg' + (i === timer.index ? ' aktiv' : (timer.index > i ? ' fertig' : ''))} key={i}>
+                  <span><i class="dot" style={'background:' + farbe2}></i>{s2.label}</span>
+                  <span class="dur">{klok(s2.duration)} · {(s2.zone && s2.zone.label ? s2.zone.label.split(' · ')[0] : '')}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
-      {testmodus && <p class="hint">Der Testablauf steht fest und lässt sich nicht verstellen – ein Test, der sich anpassen lässt, ist kein Vergleichsmaßstab mehr.</p>}
 
       <div class="card">
         <div class="row"><span>Pulszonen Woche {w}</span>
           <b>{usesCoggan(p, th, w) ? 'Coggan aus LTHR' : 'Übergangsbänder'}</b></div>
-        {/* Ohne Wattbereich: die Vorgabe fuer heute steht schon in der
-            Kopfkarte, hier geht es nur um die Baender. */}
+        {/* Ohne Wattbereich: die Vorgabe fuer heute steht schon ueber der
+            Ablaufliste, hier geht es nur um die Baender. */}
         <Zonenliste bands={hrBands(p, th, w)} plan={p} thresholds={th} />
       </div>
-    </>
+    </Baustein>
   );
 }

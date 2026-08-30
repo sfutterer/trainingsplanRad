@@ -129,18 +129,6 @@
   font-size: 13.5px; line-height: 1.5;
 }
 
-/* Der eine Status im Kopf jedes Bausteins: heute dran oder nicht, wie viele
-   Runden stehen, welcher Tag es ist. Gruen faerbt nur, was erledigt oder
-   dran ist, sonst bleibt die Kachel neutral: ein roter Ruhetag waere eine
-   Wertung, die der Plan nicht vorsieht. */
-.tagchip{
-  margin: 10px 0 0; padding: 10px 14px;
-  background: var(--surface-2); color: var(--on-surface-var);
-  border-radius: var(--radius-s);
-  font-size: 13.5px; font-weight: 600; line-height: 1.4;
-}
-.tagchip.an{ background: var(--ok-bg); color: var(--ok); }
-
 /* Zwei Stufen, nicht zwei Saetze: die Nummer traegt die Aussage, dass die
    zweite erst nach der ersten kommt. */
 .stufen{ list-style: none; margin: 12px 0 0; padding: 0; }
@@ -174,45 +162,35 @@
    nachgeben darf nur das Bild darunter. */
 .uebungsblock .dosisbuehne{ flex: none; }
 
-/* ---- Kopfzeile eines Bausteins ----
-
-   Eine Zeile, keine Karte. Als Karte mit dem Status darin nahm der Kopf ueber
-   100 px direkt ueber der Buehne - genug, um die Tastenreihe hinter die
-   Navigationsleiste zu schieben. Name und Dauer reichen an dieser Stelle; der
-   Status steht unter der Buehne, wo er niemandem den Ring wegnimmt. */
-.bausteinkopf{
-  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
-  padding: 0 4px 10px;
-  font-size: 14px; color: var(--on-surface-var);
-}
-.bausteinkopf b{ color: var(--on-surface); font-weight: 600; text-align: right; }
-
-/* Der Uebungsblock beginnt hier unter der Segmentleiste und der Kopfzeile,
-   nicht direkt unter dem Titel. Die Rechnung in timer.css kennt nur App-Bar
-   und Navigationsleiste und liesse den Block gut 100 px zu hoch werden - die
+/* Der Uebungsblock beginnt hier unter der Segmentleiste, nicht direkt unter
+   der Kopfzeile. Die Rechnung in timer.css kennt App-Bar, Navigationsleiste
+   und Bausteinkopf und liesse den Block gut 60 px zu hoch werden - die
    Tastenreihe landete unter der Navigation.
 
    Statt die ganze max-height noch einmal hinzuschreiben, wird nur der Abzug
    erhoeht: die Rechnung selbst steht weiterhin an einer Stelle, und hier ist
-   ablesbar, welche Leisten dazukommen. */
-.uebungsblock{
-  /* + Segmentleiste 62 + Bausteinkopf 52 */
+   ablesbar, welche Leisten dazukommen.
+
+   Am Kopf statt an .uebungsblock allein: die Regel galt sonst auch fuer den
+   Intervall-Timer, der keine Segmentleiste hat und dem sie deshalb 62 px
+   Ringhoehe abnahm, ohne dass dort etwas stand. */
+.segmented.vier ~ div .uebungsblock{
+  /* + Segmentleiste 62 */
   --block-leisten: 266px;
 }
 
-/* Der Status steht unter der Buehne und damit vor der Uebungsliste - dieselbe
-   Stelle in allen vier Bausteinen. Der obere Abstand faellt weg, weil ueber
-   ihm schon die Tastenreihe ihren eigenen hat. */
-.uebungsblock + .tagchip,
+/* Der Merksatz steht wie der Status unter der Buehne. Der obere Abstand
+   faellt weg, weil ueber ihm schon die Tastenreihe ihren eigenen hat. */
 .uebungsblock + .merksatz,
-.ablaufende + .tagchip,
 .ablaufende + .merksatz{ margin-top: 0; margin-bottom: 12px; }
 
 /* Laeuft eine Uhr in einem anderen Baustein, schiebt sich ihr
    Ruecksprungstreifen ueber die Buehne. Er muss dem Block seine eigene Hoehe
    abnehmen, sonst rutscht genau dann die Tastenreihe unter die
-   Navigationsleiste, wenn zwei Bausteine gleichzeitig laufen. */
-.laufstreifen ~ div .uebungsblock{
+   Navigationsleiste, wenn zwei Bausteine gleichzeitig laufen. Die
+   Segmentleiste steht in der Auswahl mit drin, damit die Regel die
+   allgemeinere von oben ueberwiegt. */
+.segmented.vier ~ .laufstreifen ~ div .uebungsblock{
   /* + Ruecksprungstreifen 56 */
   --block-leisten: 322px;
 }

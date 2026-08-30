@@ -81,6 +81,20 @@
   max-height: calc(100dvh - var(--block-leisten)
                    - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
+/* Ueber jeder Buehne steht die Kopfzeile ihres Bausteins - im Trainings-Tab
+   wie im Intervall-Timer. Sie zaehlt zum Abzug, sonst schoebe der Block die
+   Tastenreihe unter die Navigationsleiste. */
+.bausteinkopf ~ .uebungsblock{
+  /* + Bausteinkopf 52 */
+  --block-leisten: 204px;
+}
+
+/* Der Status steht unter der Buehne und damit vor dem Inhalt - dieselbe
+   Stelle in allen Bausteinen. Der obere Abstand faellt weg, weil ueber ihm
+   schon die Tastenreihe ihren eigenen hat. */
+.uebungsblock + .tagchip,
+.ablaufende + .tagchip{ margin-top: 0; margin-bottom: 12px; }
+
 /* Kleiner als im Intervall-Timer, und auf kurzen Bildschirmen gibt der Ring
    frueher nach: dort steht unter ihm noch das Uebungsbild, das sonst auf
    Briefmarkengroesse zusammenfaellt. */
@@ -94,6 +108,11 @@
   min-height: 0; flex: 0 1 auto; object-fit: contain;
 }
 .illu .cap{ font-size: 12.5px; color: var(--muted); margin-top: 6px; flex: none; }
+
+/* Stehen ueber der Ablaufliste noch Vorgabezeilen, braucht sie Luft nach
+   oben - wie jeder Abstand in dieser App aus der Nachbarschaft und nicht aus
+   einem style-Attribut. */
+.row + .seglist{ margin-top: 12px; }
 
 .seglist .seg{
   display: flex; justify-content: space-between; gap: 10px;

@@ -17,6 +17,12 @@
    war das Zuklappen des einen beim Oeffnen des anderen genau die Bewegung, die
    man nicht wollte.
 
+   Die Statuskarte ganz oben ist zugeklappt voreingestellt und zeigt dann nur
+   noch, in welcher Woche man steht. Phase, Zonenherkunft und Startdatum
+   aendern sich innerhalb einer Woche nicht - man liest sie einmal und danach
+   nie wieder, und bis dahin schoben sie zusammen mit den Hinweisen die erste
+   Tageskarte fast aus dem Bild. Sie stehen weiter da, aber einen Tipp weit.
+
    Der heutige Tag bekommt keinen Klappknopf, sondern eine feste Kopfzeile. Ein
    Knopf, der nichts tut, oder ein deaktivierter Knopf ueber einem sichtbaren
    Inhalt waere ein Bedienelement ohne Bedienung; die uebrigen Tage sind
@@ -56,6 +62,7 @@ function naechsterTest(p, heute, start){
 function StatusKarte(){
   const p = plan.value, w = week.value, start = startDate.value, th = thresholds.value;
   const winter = isWinterBlock(p, w);
+  const [offen, setOffen] = useState(false);
 
   const hinweise = [];
   if(winter) hinweise.push(p.winterBlock.note);
@@ -68,17 +75,26 @@ function StatusKarte(){
   }
 
   return (
-    <div class="card">
-      <div class="row"><span>Trainingswoche</span><b>Woche {w}{winter ? '' : ' / ' + p.weekCount}</b></div>
-      <div class="row"><span>Phase</span><b>
-        {winter ? p.winterBlock.name : 'Phase ' + p.weeks[Math.min(w, p.weekCount) - 1].phase + ' · ' + phaseName(p, w)}
-        {isRecoveryWeek(p, w) && !winter ? ' · Erholungswoche' : ''}
-      </b></div>
-      <div class="row"><span>Pulszonen</span><b>
-        {usesCoggan(p, th, w) ? 'Coggan aus LTHR ' + th.lthr + ' bpm' : 'Übergangsbänder (bis zum Test)'}
-      </b></div>
-      <div class="row"><span>Beginn Woche 1</span><b>{start.toLocaleDateString('de-DE')}</b></div>
-      {hinweise.map((h, i) => <p class="hint" key={i}>{h}</p>)}
+    <div class="card klappkarte">
+      <button class="klappzeile" type="button" aria-expanded={offen ? 'true' : 'false'}
+        onClick={() => setOffen(o => !o)}>
+        <span>Trainingswoche</span>
+        <b>Woche {w}{winter ? '' : ' von ' + p.weekCount}</b>
+        <span class={'chevron' + (offen ? ' auf' : '')} aria-hidden="true" />
+      </button>
+      {offen && (
+        <div class="klappinhalt">
+          <div class="row"><span>Phase</span><b>
+            {winter ? p.winterBlock.name : 'Phase ' + p.weeks[Math.min(w, p.weekCount) - 1].phase + ' · ' + phaseName(p, w)}
+            {isRecoveryWeek(p, w) && !winter ? ' · Erholungswoche' : ''}
+          </b></div>
+          <div class="row"><span>Pulszonen</span><b>
+            {usesCoggan(p, th, w) ? 'Coggan aus LTHR ' + th.lthr + ' bpm' : 'Übergangsbänder (bis zum Test)'}
+          </b></div>
+          <div class="row"><span>Beginn Woche 1</span><b>{start.toLocaleDateString('de-DE')}</b></div>
+          {hinweise.map((h, i) => <p class="hint" key={i}>{h}</p>)}
+        </div>
+      )}
     </div>
   );
 }

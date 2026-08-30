@@ -112,6 +112,36 @@
   margin: 10px 0 0;
 }
 
+/* ---- Kopfzeile und Status eines Bausteins ----
+
+   Lagen in training.css, obwohl der Intervall-Timer seit dem Umbau derselben
+   Form folgt - er haette sonst das CSS des Trainings-Tabs hereinziehen
+   muessen, nur um zwei Klassen zu bekommen. Dieselbe Rechnung wie bei .hint
+   und .listhead weiter unten.
+
+   Der Kopf ist eine Zeile und keine Karte: er steht ueber der Buehne, und
+   jeder Pixel, den er nimmt, fehlt dem Ring und dem Uebungsbild. Als Karte mit
+   dem Status darin nahm er ueber 100 px und schob die Tastenreihe hinter die
+   Navigationsleiste. */
+.bausteinkopf{
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 0 4px 10px;
+  font-size: 14px; color: var(--on-surface-var);
+}
+.bausteinkopf b{ color: var(--on-surface); font-weight: 600; text-align: right; }
+
+/* Der eine Status unter der Buehne: heute dran oder nicht, wie viele Runden
+   stehen, welcher Tag es ist. Gruen faerbt nur, was erledigt oder dran ist,
+   sonst bleibt die Kachel neutral: ein roter Ruhetag waere eine Wertung, die
+   der Plan nicht vorsieht. */
+.tagchip{
+  margin: 10px 0 0; padding: 10px 14px;
+  background: var(--surface-2); color: var(--on-surface-var);
+  border-radius: var(--radius-s);
+  font-size: 13.5px; font-weight: 600; line-height: 1.4;
+}
+.tagchip.an{ background: var(--ok-bg); color: var(--ok); }
+
 /* Abstaende aus der Nachbarschaft statt aus style-Attributen im JSX.
 
    Vorher standen an zwei Dutzend Stellen style="margin-top:12px" - dieselbe
