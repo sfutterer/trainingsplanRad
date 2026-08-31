@@ -12,16 +12,37 @@ import { vibrate } from '../../platform/index.js';
 import { Icon } from './Icon.jsx';
 import { Avatar } from './Avatar.jsx';
 
-export function AppBar({ titel, onMenu, onGlocke, glockeAktiv, onProfil, profil, erhoben }){
+/* Die Zahl an der Glocke.
+
+   Ueber neun wird nicht weitergezaehlt: die genaue Menge aendert nichts an dem,
+   was man tut - man tippt drauf -, und eine zweistellige Zahl sprengt den
+   Kreis. Die Beschriftung nennt sie trotzdem vollstaendig, dort kostet sie
+   keinen Platz. */
+function Meldungszahl({ anzahl }){
+  if(!anzahl) return null;
+  return <span class="glockenzahl" aria-hidden="true">{anzahl > 9 ? '9+' : anzahl}</span>;
+}
+
+function glockenLabel(anzahl){
+  if(!anzahl) return 'Was heute ansteht';
+  return anzahl === 1 ? 'Eine neue Meldung' : anzahl + ' neue Meldungen';
+}
+
+export function AppBar({ titel, onMenu, onGlocke, glockeAktiv, meldungen, onProfil, profil, erhoben }){
   return (
     <header class={'appbar' + (erhoben ? ' erhoben' : '')}>
       <button class="iconbtn" aria-label="Menü öffnen" onClick={() => { vibrate(8); onMenu(); }}>
         <Icon name="menue" />
       </button>
       <h1 class="appbar-titel">{titel}</h1>
-      <button class={'iconbtn' + (glockeAktiv ? ' an' : '')} aria-label="Was heute ansteht"
+      {/* Die Zahl liegt im Knopf und nicht daneben: sie gehoert zu ihm, und ein
+          eigenes Element neben der Taste haette entweder die Trefferflaeche
+          zerteilt oder die Leiste breiter gemacht. */}
+      <button class={'iconbtn glocke' + (glockeAktiv ? ' an' : '') + (meldungen ? ' meldet' : '')}
+        aria-label={glockenLabel(meldungen)}
         onClick={() => { vibrate(8); onGlocke(); }}>
         <Icon name="glocke" />
+        <Meldungszahl anzahl={meldungen} />
       </button>
       {/* Der Name gehoert in die Beschriftung und nicht nur ins Bild: fuer eine
           Sprachausgabe ist ein Kreis mit einem Foto sonst nichts weiter als

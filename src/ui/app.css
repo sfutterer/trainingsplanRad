@@ -338,6 +338,26 @@ code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
 }
 .iconbtn svg{ width: 24px; height: 24px; }
 .iconbtn.an{ color: var(--primary); }
+/* Die Zahl sitzt in der oberen rechten Ecke des Knopfes und ragt damit ueber
+   den Kreis hinaus, den overflow:hidden sonst beschneidet. Der Ausschnitt ist
+   fuer die Wischflaeche da; auf der Glocke wird er zurueckgenommen, ihr
+   Hintergrund bleibt ohnehin durch border-radius im Kreis. */
+.iconbtn.glocke{ overflow: visible; }
+.glockenzahl{
+  position: absolute; top: 6px; right: 5px;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  box-sizing: border-box; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--miss); color: var(--surface);
+  font-size: 10px; font-weight: 700; line-height: 1; letter-spacing: 0;
+  /* Der Ring in der Leistenfarbe trennt die Zahl vom Buegel der Glocke -
+     ohne ihn verschmelzen beide zu einem Fleck. */
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.appbar.erhoben .glockenzahl{ box-shadow: 0 0 0 2px var(--surface-2); }
+/* Die Glocke selbst faerben, solange etwas anliegt: die Zahl allein ist auf
+   einem Handy in der Hand ein Punkt von zwei Millimetern. */
+.iconbtn.glocke.meldet{ color: var(--on-surface); }
 .iconbtn:active{ background: var(--surface-3); }
 
 /* ---- Profilbild ---- */
@@ -454,6 +474,29 @@ code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
   margin-top: 12px; padding: 10px 12px; border-radius: var(--radius-s);
   background: var(--surface-2); font-size: 13px; color: var(--muted); line-height: 1.45;
 }
+
+/* ---- Meldungen hinter der Glocke ---- */
+/* Nicht .meldung: die Klasse gehoert seit Fassung 1 den Hinweisboxen in der
+   Analyse und traegt dort andere Abstaende. */
+.nachrichten{ display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+.nachricht{
+  padding: 10px 12px; border-radius: var(--radius-s);
+  border-left: 3px solid var(--outline-2); background: var(--surface-2);
+}
+.nachricht.warn{ border-left-color: var(--miss); background: var(--miss-bg); }
+.nachricht-kopf{
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.nachricht-art{ font-weight: 700; }
+.nachricht-titel{ margin: 2px 0 4px; font-size: 15.5px; }
+.nachricht-text{
+  margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--on-surface-var);
+}
+ul.nachricht-text{ padding-left: 18px; }
+ul.nachricht-text li{ margin-top: 3px; }
+.nachrichten .hint{ margin: 2px 0 0; }
 
 /* ---- Einstellungen im Listenstil ---- */
 .sgruppe{ margin: 4px 0 22px; }

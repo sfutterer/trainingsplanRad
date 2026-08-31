@@ -69,7 +69,8 @@ export const EINTRAEGE = {
   [KEYS.thresholds]:   { name: 'Schwellenwerte',                 pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
   [KEYS.settings]:     { name: 'Einstellungen',                  pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
   [KEYS.planOverride]: { name: 'eigener Plan',                   pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
-  [KEYS.untergrund]:   { name: 'Untergrund-Zwischenspeicher',    pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') }
+  [KEYS.untergrund]:   { name: 'Untergrund-Zwischenspeicher',    pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
+  [KEYS.gelesen]:      { name: 'Gelesene Meldungen',              pruef: r => alsJson(r, istListe,  'ist keine Liste') }
 };
 
 export function benenne(key){

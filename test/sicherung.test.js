@@ -21,7 +21,8 @@ function vollerBestand(){
     [KEYS.interimLog]:   JSON.stringify([{ day:'2026-08-19', week:1, talkHr:138, rpe:4, note:'' }]),
     [KEYS.planOverride]: JSON.stringify({ schemaVersion:2, weeks:[] }),
     [KEYS.settings]:     JSON.stringify({ voice:false, keepAwake:true, showIllu:true, theme:'dark', mapStyle:'cycle' }),
-    [KEYS.untergrund]:   JSON.stringify({ i123: { asphalt:0.9 } })
+    [KEYS.untergrund]:   JSON.stringify({ i123: { asphalt:0.9 } }),
+    [KEYS.gelesen]:      JSON.stringify(['training:2026-08-20', 'gate:2026-08-19'])
   };
 }
 

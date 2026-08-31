@@ -144,7 +144,15 @@ Profilliste des Geräts und die Anmeldung selbst stehen nicht in der Datei.
 
 Unten die vier Bereiche, die während des Trainings gebraucht werden: **Plan**,
 **Kraft**, **Intervalle**, **Analyse**. Oben links das Menü mit allen Bereichen,
-oben rechts die Glocke mit dem Tagesüberblick und daneben das Profilbild.
+oben rechts die Glocke und daneben das Profilbild.
+
+Die **Glocke** meldet drei Dinge: einmal am Tag, was heute ansteht; ein rotes
+Wellness-Gate; und einen Tag der vergangenen Woche, an dem die Vorgabe
+ausgefallen oder zu kurz gekommen ist. Liegt etwas an, steht eine Zahl an der
+Glocke. Beim Antippen werden die Meldungen gezeigt und beim Schließen gelöscht –
+gemerkt wird nur, welche Meldung weg ist, nicht ihr Text. Liegt nichts an, zeigt
+die Glocke wie bisher den Tagesüberblick. Das Gate und die verpassten Tage
+brauchen den intervals.icu-Schlüssel; ohne ihn bleibt die Tagesmeldung.
 
 Nur über das Menü erreichbar, weil man sie selten braucht:
 

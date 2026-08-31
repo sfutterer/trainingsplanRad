@@ -15,7 +15,8 @@ import { AppBar } from './ui/components/AppBar.jsx';
 import { NavDrawer } from './ui/components/NavDrawer.jsx';
 import { HeuteOverlay } from './ui/components/HeuteOverlay.jsx';
 import { ProfilSheet } from './ui/components/ProfilSheet.jsx';
-import { ready, planError, plan, discardOwnPlanAndReload } from './state/store.js';
+import { ready, planError, plan, apiKey, today, discardOwnPlanAndReload } from './state/store.js';
+import { meldungsZahl, ladeMeldungen } from './state/meldungen.js';
 import { profil } from './state/auth.js';
 import { tab, gotoTab, tabId, BEREICHE, HAUPTZIELE } from './state/navigation.js';
 import { PlanTab } from './ui/tabs/plan/PlanTab.jsx';
@@ -119,6 +120,28 @@ export function App(){
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
+  /* Die Meldungen der Glocke.
+
+     Erst wenn der Plan steht - ohne ihn gibt es keine Tagesvorgabe, gegen die
+     sich etwas melden liesse. Danach bei jedem Tageswechsel neu: eine PWA
+     laeuft ueber Nacht weiter, und die Meldung von gestern ist am naechsten
+     Morgen die falsche. Und beim Wechsel des Schluessels, weil erst mit ihm
+     Wellness und Aufzeichnungen dazukommen.
+
+     Fehler bleiben still: die Glocke zeigt dann weniger an, die App laeuft
+     weiter. Ein Fehlerbanner fuer eine ausgefallene Nebenaussage waere lauter
+     als der Verlust. */
+  useEffect(() => {
+    if(!ready.value || !plan.value) return;
+    ladeMeldungen().catch(() => {});
+    /* Die drei Signalwerte sind Absicht und keine ueberfluessigen
+       Abhaengigkeiten: der Linter kennt Signals nicht und haelt jeden Zugriff
+       ausserhalb der Komponente fuer unveraenderlich. Genau diese drei fallen
+       hier aber um - der Plan wird fertig, ein Schluessel kommt dazu, der Tag
+       wechselt -, und jedes Mal ist die Meldungsliste eine andere. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready.value, apiKey.value, today.value]);
+
   useEffect(() => {
     const c = document.querySelector('.content');
     if(!c) return;
@@ -168,6 +191,7 @@ export function App(){
         onMenu={() => { setDrawer(true); history.pushState({ tab: tab.value, overlay:'drawer' }, '', '#' + tab.value); }}
         onGlocke={() => { setGlocke(true); history.pushState({ tab: tab.value, overlay:'glocke' }, '', '#' + tab.value); }}
         glockeAktiv={glocke}
+        meldungen={meldungsZahl.value}
         profil={profil.value}
         onProfil={() => { setProfilOffen(true); history.pushState({ tab: tab.value, overlay:'profil' }, '', '#' + tab.value); }}
       />

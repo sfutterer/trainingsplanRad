@@ -19,7 +19,8 @@ export const KEYS = {
   interimLog: 'interim-log',
   planOverride: 'plan-override',
   settings:   'app-settings',
-  untergrund: 'untergrund-cache'
+  untergrund: 'untergrund-cache',
+  gelesen:    'meldungen-gelesen'
 };
 
 export const CORE_LOG_MAX = 80;
@@ -28,6 +29,15 @@ export const CORE_LOG_MAX = 80;
    die einzige Kopie der Protokolle - der Zwischenspeicher darf ihn nicht
    auffressen. */
 export const UNTERGRUND_MAX = 40;
+
+/* Gelesene Meldungen: gespeichert wird nur die Kennung, nicht der Text. Eine
+   Meldung entsteht jedes Mal neu aus Plan, Wellness und Aufzeichnungen - der
+   Speicher muss sich nur merken, welche davon schon weg ist.
+
+   Sechzig Kennungen decken gut zwei Monate ab. Eine geloeschte Meldung von
+   davor vermisst niemand mehr, und der Platz in localStorage gehoert den
+   Protokollen. */
+export const GELESEN_MAX = 60;
 
 export function localStorageAdapter(){
   return {
@@ -122,6 +132,12 @@ export function createRepos(store){
 
     async settings(){ return json(KEYS.settings, {}); },
     async setSettings(s){ return store.set(KEYS.settings, JSON.stringify(s)); },
+
+    async gelesen(){
+      const v = await json(KEYS.gelesen, []);
+      return Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
+    },
+    async setGelesen(list){ return store.set(KEYS.gelesen, JSON.stringify(list.slice(-GELESEN_MAX))); },
 
     async untergrund(){
       const v = await json(KEYS.untergrund, {});

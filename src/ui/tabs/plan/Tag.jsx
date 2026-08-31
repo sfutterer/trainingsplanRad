@@ -17,40 +17,28 @@
    oben als Eigenschaft herein, damit nicht jede sichtbare Tageskarte ihre
    eigene Anfrage stellt. */
 
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect } from 'preact/hooks';
 import { plan, apiKey, today } from '../../../state/store.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
-import { fetchWellness } from '../../../data/icu.js';
-import { wellnessSerie, wellnessMassnahmen } from '../../../domain/wellness.js';
+import { wellnessMassnahmen } from '../../../domain/wellness.js';
+import { wellness, ladeWellness } from '../../../state/wellness.js';
 import { gotoTab } from '../../../state/navigation.js';
 
-/* Ein Abruf fuer die ganze Woche.
+/* Ein Abruf fuer die ganze Woche - und seit der Glocke einer fuer die ganze App.
 
    Die Ampel steht auf zwei Karten (Mittwoch und Donnerstag), gerechnet wird sie
-   aber nur einmal - fuer heute. Zwei Komponenten mit je eigenem useEffect
-   haetten zwei Abfragen fuer dieselbe Antwort ausgeloest.
-
-   Drei Wochen statt einer: das Gate nimmt sich daraus die letzten sieben Tage,
-   der Gewichtstrend braucht mehr Punkte, um eine Gerade zu tragen. */
-const WELLNESS_TAGE = 21;
-
+   aber nur einmal, fuer heute. Der Abruf selbst liegt in state/wellness.js:
+   dort holt ihn auch die Glocke ab, und zwei Stellen mit je eigenem useEffect
+   haetten zwei Abfragen fuer dieselbe Antwort ausgeloest. */
 export function useWellness(){
-  const [serie, setSerie] = useState(null);
   const key = apiKey.value;
   const heuteIso = isoDayLocal(toMidnight(today.value));
 
-  useEffect(() => {
-    if(!key) return undefined;
-    let abgebrochen = false;
-    const bis = toMidnight(new Date(heuteIso));
-    const von = new Date(bis); von.setDate(von.getDate() - (WELLNESS_TAGE - 1));
-    fetchWellness(key, isoDayLocal(von), heuteIso)
-      .then(d => { if(!abgebrochen) setSerie(wellnessSerie(d, heuteIso)); })
-      .catch(() => {});
-    return () => { abgebrochen = true; };
-  }, [key, heuteIso]);
+  /* Anstossen genuegt: laeuft der Abruf fuer diesen Schluessel und diesen Tag
+     schon, gibt ladeWellness die laufende Zusage zurueck. */
+  useEffect(() => { ladeWellness(); }, [key, heuteIso]);
 
-  return serie;
+  return wellness.value;
 }
 
 function Werteleiste({ gate }){
