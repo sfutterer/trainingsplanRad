@@ -1,7 +1,9 @@
 /* Die Meldungen hinter der Glocke: sammeln, merken, loeschen.
 
    Die Regeln stehen in domain/meldungen.js, hier steht nur, woher die Daten
-   kommen und was mit einer gelesenen Meldung geschieht.
+   kommen und was mit einer verworfenen Meldung geschieht. Verworfen wird sie
+   von Hand - weggewischt oder ueber "Alle verwerfen"; das blosse Ansehen
+   loescht nichts.
 
    Geloescht wird ueber die Kennung, nicht ueber die Meldung selbst. Der Grund
    steht in domain/meldungen.js: die Liste entsteht bei jedem Start neu aus
@@ -74,8 +76,8 @@ export async function ladeMeldungen(){
   meldungen.value = offeneMeldungen(alle, alt);
 }
 
-/* Gelesen heisst weg - erst aus der Anzeige, dann aus dem Speicher. */
-export async function meldungenGelesen(ids){
+/* Verworfen heisst weg - erst aus der Anzeige, dann aus dem Speicher. */
+export async function meldungenVerwerfen(ids){
   const neu = (ids || []).filter(Boolean);
   if(!neu.length) return;
 

@@ -478,10 +478,18 @@ code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
 /* ---- Meldungen hinter der Glocke ---- */
 /* Nicht .meldung: die Klasse gehoert seit Fassung 1 den Hinweisboxen in der
    Analyse und traegt dort andere Abstaende. */
-.nachrichten{ display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+/* overflow-x: clip, weil die Karte beim Wegwischen ueber den linken Rand
+   hinausfaehrt. Ohne das bekaeme das Sheet dafuer eine Querleiste. */
+.nachrichten{
+  display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px;
+  overflow-x: clip;
+}
 .nachricht{
   padding: 10px 12px; border-radius: var(--radius-s);
   border-left: 3px solid var(--outline-2); background: var(--surface-2);
+  /* Senkrecht scrollt der Browser, quer wischt die Karte - ohne diese Zeile
+     wuerde der Zug nach links unterwegs an die Seite weitergereicht. */
+  touch-action: pan-y;
 }
 .nachricht.warn{ border-left-color: var(--miss); background: var(--miss-bg); }
 .nachricht-kopf{

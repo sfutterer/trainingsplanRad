@@ -239,9 +239,7 @@ export function App(){
         onClose={() => setDrawer(false)}
         onSelect={id => { setDrawer(false); gotoTab(id, true); }} />
 
-      {glocke && <HeuteOverlay
-        onClose={() => setGlocke(false)}
-        onZumPlan={() => { setGlocke(false); gotoTab('plan', true); }} />}
+      {glocke && <HeuteOverlay onClose={() => setGlocke(false)} />}
 
       {profilOffen && <ProfilSheet onClose={() => setProfilOffen(false)} />}
     </div>
