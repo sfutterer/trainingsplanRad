@@ -14,8 +14,17 @@
    oder in einem Bedienelement, das seine eigene Beschriftung hat. Wo es
    allein steht, bekommt es mit `titel` eine.
 
-   Bewusst keine Icon-Bibliothek: gebraucht werden fuenfundzwanzig Pfade, und
-   das kleinste taugliche Paket waere groesser als alle Zeichen zusammen. */
+   Bewusst keine Icon-Bibliothek: gebraucht werden fuenfundzwanzig Zeichen, und
+   das kleinste taugliche Paket waere groesser als alle zusammen. */
+
+/* Das Rad, einmal gezeichnet: es steht allein fuer die Grundlagenfahrt und
+   verkleinert unter dem Kennzeichen der drei uebrigen Fahrten.
+
+   Die Verkleinerung raeumt die obere linke Ecke frei, ohne dass das Rad aus
+   dem Raster faellt: 0,81 von 24 sind 19,4, um 4,6 nach rechts unten
+   geschoben liegt es wieder an der rechten unteren Kante. */
+const RAD = 'M15.5 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM5 12a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zm5.8-10 2.4-2.4.8.8a5.9 5.9 0 0 0 3.9 1.6V8.8a4.3 4.3 0 0 1-2.8-1.2l-1.9-1.9a1.9 1.9 0 0 0-2.7 0L7.7 8.2a1.9 1.9 0 0 0 0 2.7L10.5 14v5H12v-6.2l-1.2-2.3zM19 12a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z';
+const RAD_KLEIN = 'translate(4.6 4.6) scale(0.81)';
 
 const ICONS = {
   /* Bereiche - dieselben in der unteren Leiste und im Drawer. */
@@ -39,24 +48,45 @@ const ICONS = {
   person: 'M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-3.34 0-10 1.67-10 5v3h20v-3c0-3.33-6.66-5-10-5z',
 
   /* Analyse */
-  rad: 'M15.5 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM5 12a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zm5.8-10 2.4-2.4.8.8a5.9 5.9 0 0 0 3.9 1.6V8.8a4.3 4.3 0 0 1-2.8-1.2l-1.9-1.9a1.9 1.9 0 0 0-2.7 0L7.7 8.2a1.9 1.9 0 0 0 0 2.7L10.5 14v5H12v-6.2l-1.2-2.3zM19 12a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z',
   temperatur: 'M15 13V5a3 3 0 0 0-6 0v8a5 5 0 1 0 6 0zm-3-9c.6 0 1 .4 1 1v9.6a3 3 0 1 1-2 0V5c0-.6.4-1 1-1z',
   feuchte: 'M12 2.7C12 2.7 6 9.4 6 14a6 6 0 0 0 12 0c0-4.6-6-11.3-6-11.3zm0 17.3a4 4 0 0 1-4-4c0-2.6 2.7-6.4 4-8.1 1.3 1.7 4 5.5 4 8.1a4 4 0 0 1-4 4z',
   regen: 'M17.7 8.5A6 6 0 0 0 6.3 7.2 4.5 4.5 0 0 0 7 16h10.4a3.8 3.8 0 0 0 .3-7.5zM8.4 17.6l-1.2 3.1 1.4.5 1.2-3.1zm3.6 0-1.2 3.1 1.4.5 1.2-3.1zm3.6 0-1.2 3.1 1.4.5 1.2-3.1z',
 
   /* Die Einheitsarten - je Art ein eigenes Zeichen, siehe Einheitssymbol.jsx.
-     Fuer die Grundlagenfahrt steht 'rad' schon darueber, fuer Rumpf und Kraft
-     'training'; ein zweites Rad neben dem ersten waere dieselbe Aussage in
-     einer zweiten Zeichnung. */
 
-  /* Intervalle: hohe und niedrige Balken im Wechsel, Belastung und Pause.
-     Bewusst nicht die Stoppuhr aus der unteren Leiste - die steht dort fuer
-     den Bereich Intervalle, also fuer ein Werkzeug, nicht fuer eine Einheit. */
-  bloecke: 'M3 14h3v6H3zM8 4h3v16H8zM13 14h3v6h-3zM18 4h3v16h-3z',
-  /* Schwellentest: Ring und Scheibe - der Tag, an dem gemessen wird. */
-  ziel: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0-12a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',
-  /* Lange Ausfahrt */
-  berg: 'M2 20h20L14.5 6l-4.5 7-2.5-3.5L2 20z',
+     Drei davon sind Radfahrten und tragen deshalb dasselbe Rad wie die
+     Grundlagenfahrt. Die erste Fassung hatte fuer sie nur das Kennzeichen
+     gezeichnet - Balken fuer die Intervalle, Berge fuer die lange Ausfahrt,
+     Ring fuer den Test -, und damit sah man den Einheiten nicht mehr an, dass
+     ueberhaupt gefahren wird. Das Rad ist die Gemeinsamkeit; unterschieden
+     wird durch ein Kennzeichen in der freien oberen linken Ecke.
+
+     Das Rad steht dafuer als eigene Konstante und wird verkleinert eingesetzt,
+     statt drei Mal abgeschrieben zu werden: eine Aenderung an der Zeichnung
+     erreicht sonst nur eine der vier Fahrten. Der Platz oben links ist im Rad
+     ohnehin leer - Rahmen und Sattel steigen nach rechts -, das Kennzeichen
+     ueberdeckt also nichts.
+
+     Fuer Rumpf und Kraft steht 'training' weiter oben; Ruhetag, lockerer Tag
+     und Fremdes stehen darunter und sind keine Fahrten. */
+  rad: RAD,
+  /* Intervalle: hohe und niedrige Balken, Belastung und Pause. Bewusst nicht
+     die Stoppuhr aus der unteren Leiste - die steht dort fuer den Bereich
+     Intervalle, also fuer ein Werkzeug, nicht fuer eine Einheit. */
+  radIntervalle: [
+    { d:'M0.4 5.6h2.4v4.8H0.4zM4 0.8h2.4v9.6H4zM7.6 5.6H10v4.8H7.6z' },
+    { d: RAD, transform: RAD_KLEIN }
+  ],
+  /* Lange Ausfahrt: zwei Gipfel - die Runde, fuer die man den Tag braucht. */
+  radLang: [
+    { d:'M0 10.4h10.4L7 3.4 4.7 7.1 3.2 5.1 0 10.4z' },
+    { d: RAD, transform: RAD_KLEIN }
+  ],
+  /* Schwellentest: Ring und Scheibe - die Fahrt, an der gemessen wird. */
+  radTest: [
+    { d:'M5.2 0.2a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-4.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z' },
+    { d: RAD, transform: RAD_KLEIN }
+  ],
   /* Ruhetag */
   mond: 'M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z',
   /* Frei oder locker: halb Ruhetag, halb Fahrt. */
@@ -68,14 +98,19 @@ const ICONS = {
   bild: 'M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zm-2 0H5v14h14V5zM7 17l3.5-4.5 2.5 3 3.5-4.5L19 17H7z'
 };
 
+/* Ein Zeichen ist entweder eine Bahn oder eine Liste aus Bahnen mit
+   Verschiebung. Die Liste gibt es erst, seit drei Zeichen dasselbe Rad tragen -
+   fuer die uebrigen zweiundzwanzig bleibt die Zeichenkette, damit nicht jedes
+   Zeichen die Form des einen Sonderfalls annehmen muss. */
 export function Icon({ name, titel, klasse }){
   const d = ICONS[name];
   if(!d) return null;
+  const bahnen = Array.isArray(d) ? d : [{ d }];
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" class={klasse}
       role={titel ? 'img' : undefined} aria-label={titel}
       aria-hidden={titel ? undefined : 'true'}>
-      <path d={d} />
+      {bahnen.map((b, i) => <path key={i} d={b.d} transform={b.transform} />)}
     </svg>
   );
 }

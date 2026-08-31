@@ -5,6 +5,10 @@
    Anders herum waere die Liste eine zweite Sprache fuer dieselbe Sache - und
    die Frage "war das die Einheit, die dastand?" muesste man uebersetzen.
 
+   Jede Radeinheit zeigt ein Rad - die Art steht als Kennzeichen daneben, nicht
+   an seiner Stelle. Wer die Liste ueberfliegt, soll zuerst sehen, DASS
+   gefahren wurde, und erst dann was.
+
    Die Farben kommen aus der Zonenrampe, wo die Art eine Zone meint: Grundlage
    gruen wie Z2, die lange Ausfahrt in der Farbe der Bloecke, Intervalle rot
    wie Z5, Rumpf blau wie Z1. Der Schwellentest liegt zwischen Intervall und
@@ -17,15 +21,21 @@
 import { Icon } from './Icon.jsx';
 import './einheit.css';
 
+/* Was gefahren wird, traegt ein Rad - immer dasselbe, mit einem Kennzeichen
+   fuer die Art. Vier Fahrten stehen im Plan: die Grundlagenfahrt ohne
+   Kennzeichen, dazu Intervalle, lange Ausfahrt und Schwellentest.
+
+   Der lockere Freitag bekommt keines: er ist "Ruhetag ODER lockere Fahrt" -
+   ein Rad wuerde eine Fahrt behaupten, die der Plan gerade offen laesst. */
 export const EINHEITSARTEN = {
-  z2:         { icon:'rad',      label:'Grundlagenausdauer' },
-  lang:       { icon:'berg',     label:'Lange Ausfahrt' },
-  intervalle: { icon:'bloecke',  label:'Intervalle' },
-  test:       { icon:'ziel',     label:'Schwellentest' },
-  rumpf:      { icon:'training', label:'Rumpf und Kraft' },
-  locker:     { icon:'halbmond', label:'Frei oder locker' },
-  ruhe:       { icon:'mond',     label:'Ruhetag' },
-  sonstige:   { icon:'blitz',    label:'Sonstige Einheit' }
+  z2:         { icon:'rad',           label:'Grundlagenausdauer' },
+  lang:       { icon:'radLang',       label:'Lange Ausfahrt' },
+  intervalle: { icon:'radIntervalle', label:'Intervalle' },
+  test:       { icon:'radTest',       label:'Schwellentest' },
+  rumpf:      { icon:'training',      label:'Rumpf und Kraft' },
+  locker:     { icon:'halbmond',      label:'Frei oder locker' },
+  ruhe:       { icon:'mond',          label:'Ruhetag' },
+  sonstige:   { icon:'blitz',         label:'Sonstige Einheit' }
 };
 
 export function einheitsLabel(art){
