@@ -19,6 +19,7 @@ import { ready, planError, plan, apiKey, today, discardOwnPlanAndReload } from '
 import { meldungsZahl, ladeMeldungen } from './state/meldungen.js';
 import { profil } from './state/auth.js';
 import { tab, gotoTab, tabId, BEREICHE, HAUPTZIELE } from './state/navigation.js';
+import { overlayOffen, overlayZurueck } from './state/overlays.js';
 import { PlanTab } from './ui/tabs/plan/PlanTab.jsx';
 import { TrainingTab } from './ui/tabs/training/TrainingTab.jsx';
 import { IntervalleTab } from './ui/tabs/intervalle/IntervalleTab.jsx';
@@ -85,21 +86,44 @@ const KOMPONENTEN = {
   about:         AboutTab
 };
 
+/* Die beiden Bereiche mit Uhr bleiben montiert, sobald sie einmal offen waren.
+
+   Alles andere haengt aus und wird beim naechsten Besuch neu gebaut - das ist
+   fuer Plan, Analyse, Zonen und Einstellungen genau richtig, sie lesen ihren
+   Zustand ohnehin aus den Signalen. Die Timer nicht: sie leben in einem Ref
+   der Komponente, und mit ihnen haengen Rundenzahl, Protokolleintrag,
+   gewaehltes Segment und die halbe Zelle des Beinblocks am selben Baum.
+
+   Ein Blick auf den Plan mitten im Zirkel warf bisher alles davon weg. Es
+   liess sich nicht einmal bemerken: die Uhr war beim Zurueckkommen einfach
+   wieder auf "Start", und der angefangene Satz stand nur noch halb im
+   Protokoll. Genau dieselbe Begruendung, aus der schon die vier Bausteine
+   innerhalb des Trainings-Tabs nur versteckt und nicht ausgehaengt werden -
+   sie gilt eine Ebene hoeher weiter.
+
+   Deshalb versteckt statt ausgehaengt, und deshalb erst ab dem ersten Besuch:
+   wer nur den Plan aufschlaegt, zeichnet die beiden nie. */
+const MIT_UHR = ['training', 'intervalle'];
+
 export function App(){
   const [drawer, setDrawer] = useState(false);
   const [glocke, setGlocke] = useState(false);
   const [profilOffen, setProfilOffen] = useState(false);
   const [erhoben, setErhoben] = useState(false);
 
-  /* Echte Refs, keine frisch gebauten Objekte: der popstate-Handler wird
-     einmal registriert und saehe sonst dauerhaft die Werte des ersten
-     Durchlaufs. */
-  const drawerRef = useRef(false);
-  const glockeRef = useRef(false);
-  const profilRef = useRef(false);
-  drawerRef.current = drawer;
-  glockeRef.current = glocke;
-  profilRef.current = profilOffen;
+  /* Welche Bereiche schon offen waren. Ein Ref und kein Zustand: der Eintrag
+     entsteht waehrend derselben Zeichnung, in der der Bereich zum ersten Mal
+     gebraucht wird - ueber setState waere es ein zweiter Durchlauf fuer eine
+     Liste, die niemand ausser dieser Zeile liest. */
+  const montiert = useRef({});
+
+  /* Der Drawer ist kein Sheet und meldet sich deshalb hier selbst an. Die drei
+     Sheets - Glocke, Profil, Rueckfrage - tun das in Sheet.jsx, und der
+     Uebungsdialog tief im Trainings-Tab damit ebenso. */
+  useEffect(() => {
+    if(!drawer) return undefined;
+    return overlayOffen(() => setDrawer(false));
+  }, [drawer]);
 
   useEffect(() => {
     /* Ein unbekannter Anker landet auf dem Plan statt in einem Zustand, den
@@ -109,11 +133,11 @@ export function App(){
     history.replaceState({ tab: tab.value }, '', '#' + tab.value);
 
     const onPop = e => {
-      /* Offene Overlays fangen die Geste ab. Sonst springt man aus einem
-         Dialog gleich zwei Ebenen zurueck. */
-      if(drawerRef.current){ setDrawer(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
-      if(glockeRef.current){ setGlocke(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
-      if(profilRef.current){ setProfilOffen(false); history.pushState({ tab: tab.value }, '', '#' + tab.value); return; }
+      /* Offene Overlays fangen die Geste ab - das oberste zuerst. Sonst
+         springt man aus einem Dialog gleich zwei Ebenen zurueck, und im
+         Trainings-Tab hiess das bisher: raus aus der Anleitung, raus aus dem
+         Bereich, und die laufende Uebung hinterher. */
+      if(overlayZurueck()) return;
       gotoTab((e.state && e.state.tab) || 'plan', false);
     };
     window.addEventListener('popstate', onPop);
@@ -183,20 +207,34 @@ export function App(){
   const Aktiv = KOMPONENTEN[aktuell];
   const imUntermenue = HAUPTZIELE.includes(aktuell);
 
+  /* Ab dem ersten Besuch bleibt ein Bereich mit Uhr stehen. Die Zeile steht
+     bewusst vor der Zeichnung: der Bereich soll in derselben Zeichnung
+     erscheinen, in der er gebraucht wird, und nicht erst eine spaeter. */
+  if(MIT_UHR.includes(aktuell)) montiert.current[aktuell] = true;
+  const dauernd = MIT_UHR.filter(id => montiert.current[id]);
+
   return (
     <div class="shell">
       <AppBar
         erhoben={erhoben}
         titel={BEREICHE[aktuell]}
-        onMenu={() => { setDrawer(true); history.pushState({ tab: tab.value, overlay:'drawer' }, '', '#' + tab.value); }}
-        onGlocke={() => { setGlocke(true); history.pushState({ tab: tab.value, overlay:'glocke' }, '', '#' + tab.value); }}
+        onMenu={() => setDrawer(true)}
+        onGlocke={() => setGlocke(true)}
         glockeAktiv={glocke}
         meldungen={meldungsZahl.value}
         profil={profil.value}
-        onProfil={() => { setProfilOffen(true); history.pushState({ tab: tab.value, overlay:'profil' }, '', '#' + tab.value); }}
+        onProfil={() => setProfilOffen(true)}
       />
       <main class={'content' + (imUntermenue ? '' : ' ohne-leiste')}>
-        <div class="page"><Aktiv /></div>
+        <div class="page">
+          {/* Die Bereiche mit Uhr stehen dauerhaft im Baum und werden nur
+              versteckt; alle uebrigen kommen und gehen wie bisher. */}
+          {dauernd.map(id => {
+            const Bereich = KOMPONENTEN[id];
+            return <div key={id} hidden={id !== aktuell}><Bereich /></div>;
+          })}
+          {MIT_UHR.includes(aktuell) ? null : <Aktiv />}
+        </div>
       </main>
 
       <UpdateBanner />

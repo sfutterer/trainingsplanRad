@@ -124,9 +124,11 @@
 .seglist .dot{ display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:8px; }
 .seglist .dur{ color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
+/* Der Schleier haengt an einer eigenen Variablen, weil er beim Wegwischen
+   mitgeht: Sheet.jsx schreibt sie waehrend des Zuges Bild fuer Bild fort. */
 .dialog{
   position: fixed; inset: 0; z-index: 60;
-  background: rgba(0,0,0,.55);
+  background: rgba(0,0,0,var(--schleier, .55));
   display: flex; align-items: flex-end; justify-content: center;
   padding: 0;
 }
@@ -135,9 +137,23 @@
   max-height: 92dvh; overflow-y: auto;
   border-radius: 24px 24px 0 0;
   padding: 8px 20px calc(24px + env(safe-area-inset-bottom));
+  /* Der Zug nach unten darf nicht als Scrollen der Seite dahinter enden -
+     weder als Weiterreichen an das Dokument noch als Aktualisieren-Geste. */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
+/* Der Strich sieht aus wie ein Griff und ist jetzt auch einer. Die
+   Trefferflaeche misst mehr als die vier Pixel, die man sieht, und nimmt die
+   Geste ganz an sich - hier wird nie gescrollt, immer gezogen. Der negative
+   Rand oben holt sich die Polsterung des Sheets dazu: die Zone misst damit
+   32 px, ohne dass sich am Bild etwas aendert. */
+.dialog .griff{
+  display: block; margin: -8px 0 0; padding: 14px 0;
+  touch-action: none; cursor: grab;
+}
+.dialog .griff:active{ cursor: grabbing; }
 .dialog .grip{ width: 34px; height: 4px; border-radius: 2px; background: var(--outline-2);
-  margin: 6px auto 14px; }
+  margin: 0 auto; }
 .dialog h3{ margin: 8px 0 6px; font-size: 20px; }
 .dialog .dose{ background: var(--ok-bg); border-radius: var(--radius-s); padding: 10px 12px;
   font-size: 14px; margin-bottom: 12px; }

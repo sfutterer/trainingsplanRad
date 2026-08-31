@@ -147,7 +147,7 @@ export function IntervalleTab(){
         f.minute = true; speak('Noch eine Minute.', s.voice);
       }
     }));
-    return () => { ab.forEach(f => f()); timer.reset(); meldeTimer('intervalle', false); };
+    return () => { ab.forEach(f => f()); };
     /* timer steht bewusst nicht in der Liste: er lebt in einem useRef und ist
        fuer die Lebensdauer der Komponente derselbe. In der Liste wuerde der
        Linter zufrieden sein, ohne dass sich etwas aendert - nur laesst sich
@@ -155,6 +155,12 @@ export function IntervalleTab(){
        sonst nichts. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice]);
+
+  /* Anhalten und abmelden nur beim Aushaengen. Im Aufraeumteil darueber
+     beendete jeder Wechsel der Stimme die laufende Einheit - mitten auf dem
+     Rad, ohne dass ein Knopf dafuer gedrueckt worden waere. */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => () => { timer.reset(); meldeTimer('intervalle', false); }, []);
 
   /* Wie im Trainings-Tab: die Vorgabe haengt an der Woche, und die kann
      wechseln, waehrend die App offen ist. Nicht waehrend eine Uhr laeuft -

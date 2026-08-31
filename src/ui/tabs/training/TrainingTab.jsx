@@ -163,7 +163,7 @@ export function TrainingTab(){
                                     heldSec: gehalten, sollSec: step.duration });
       persist();
     }));
-    return () => { ab.forEach(f => f()); timer.reset(); meldeTimer('zirkel', false); };
+    return () => { ab.forEach(f => f()); };
     /* timer steht bewusst nicht in der Liste: er lebt in einem useRef und ist
        fuer die Lebensdauer der Komponente derselbe. In der Liste wuerde der
        Linter zufrieden sein, ohne dass sich etwas aendert - nur laesst sich
@@ -171,6 +171,14 @@ export function TrainingTab(){
        sonst nichts. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice]);
+
+  /* Anhalten und abmelden nur beim Aushaengen - so wie es die drei anderen
+     Bausteine schon halten. Stuende es im Aufraeumteil darueber, beendete
+     jeder Wechsel der Stimme den laufenden Zirkel: die Abhaengigkeit dort ist
+     s.voice, und die Einstellung dazu liegt in einem Bereich, der offen
+     bleiben kann, waehrend die Uhr laeuft. */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => () => { timer.reset(); meldeTimer('zirkel', false); }, []);
 
   /* Die Vorgaben haengen an Woche und Wochentag, und beide koennen sich
      aendern, waehrend die App offen ist - eine PWA laeuft ueber Nacht weiter,
