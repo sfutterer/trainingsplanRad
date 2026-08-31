@@ -70,8 +70,13 @@ const CLIENT_ID = '156267411976-vb9l52s08mr8av7iht283ivmslcr79m6.apps.googleuser
    Adresse betreibt, braucht eine eigene ID - die obige funktioniert bei ihm
    nicht, weil Google die Herkunft prueft. Leer gesetzt zaehlt als "nicht
    gesetzt", sonst schaltete eine unbelegte Variable in der Action die
-   Anmeldung ab. */
-export function clientIdAusBuild(){
+   Anmeldung ab.
+
+   Der Build ist der einzige Weg, sie zu aendern. Ein Feld dafuer stand einmal
+   in den Einstellungen; es ist weg, weil es eine Einstellung war, die jeder
+   Nutzer sah und nur der eine Mensch brauchte, der die App selbst betreibt -
+   und der baut sie ohnehin. */
+export function clientId(){
   try {
     const v = import.meta.env && import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if(typeof v === 'string' && v.trim()) return v.trim();

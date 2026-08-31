@@ -19,9 +19,7 @@ import { KARTENSTILE, KARTENSTIL_DEFAULT, kartenstil } from '../../../state/kart
 import { PLAN_SCHEMA_VERSION } from '../../../data/planSource.js';
 import { Gruppe, Zeile, Schalter } from '../../components/SettingsList.jsx';
 import { Segmented } from '../../components/Segmented.jsx';
-import { profil, profile, clientId, setzeClientId, entferneProfil,
-         neuStarten } from '../../../state/auth.js';
-import { clientIdAusBuild } from '../../../data/google.js';
+import { profil, profile, entferneProfil, neuStarten } from '../../../state/auth.js';
 
 /* Ein Schluesselfeld klappt unter seiner Zeile auf. Kein eigener Bildschirm:
    man traegt ihn genau einmal ein. */
@@ -61,32 +59,6 @@ const HILFE_KONTO = (
   </>
 );
 
-const HILFE_CLIENT_ID = (
-  <>
-    <p>Die App bringt eine mit – hier steht nur, wer stattdessen eine eigene einsetzen will.
-       Nötig ist das, wenn du die App unter einer anderen Adresse betreibst: Google prüft die
-       Herkunft der Seite, und die mitgelieferte ID gilt nur für die veröffentlichte Fassung.</p>
-    <p>Sie ist kein Geheimnis – sie steht in jedem Aufruf, den der Browser an Google schickt,
-       und im Quelltext jeder Seite mit „Anmelden mit Google“.</p>
-    <ol>
-      <li>In der <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer">Google Cloud Console</a> ein Projekt anlegen.</li>
-      <li>Unter <b>Google Auth Platform → Übersicht</b> App-Name, Support-Mail und
-          <b> External</b> als Zielgruppe eintragen.</li>
-      <li>Unter <b>Zielgruppe</b> auf <b>Testing</b> stehen bleiben und sich selbst als
-          Testnutzer eintragen. Das erspart Domain-Nachweis, Homepage und
-          Datenschutzerklärung.</li>
-      <li>Unter <b>Clients → Client erstellen</b>, Typ <b>Webanwendung</b>.</li>
-      <li>Bei <b>Authorized JavaScript origins</b> die Herkunft eintragen – nur Schema und
-          Host, <b>ohne Pfad</b>. Zum Entwickeln zusätzlich <code>http://localhost:5173</code>
-          und <code>http://localhost</code>.</li>
-      <li>Die erzeugte <b>Client ID</b> hier einsetzen. Sie endet auf
-          <code>.apps.googleusercontent.com</code>.</li>
-    </ol>
-    <p>Das <b>Client secret</b> aus derselben Datei wird nicht gebraucht und gehört nirgendwo
-       hinein – diese App holt nur ID-Tokens.</p>
-  </>
-);
-
 const HILFE_ICU = (
   <>
     <p>Ohne diesen Schlüssel kann die App keine Aktivitäten laden – die Analyse bleibt leer.</p>
@@ -117,15 +89,16 @@ const HILFE_KARTE = (
 /* Das Konto in den Einstellungen: was oben rechts nicht hingehoert.
 
    Im Sheet hinter dem Profilbild steht, was man im Betrieb braucht - anmelden,
-   wechseln, abmelden. Hier stehen die beiden Dinge, die man genau einmal tut
-   und die dort nur im Weg waeren: die Client-ID eintragen und ein Profil samt
-   seinen Daten wieder loswerden. */
+   wechseln, abmelden. Hier steht das eine, was man selten und bewusst tut und
+   was dort nur im Weg waere: ein Profil samt seinen Daten wieder loswerden.
+
+   Eine Zeile fuer die Client-ID stand hier auch einmal. Sie ist weg, seit die
+   ID im Quelltext steht: eine Einstellung, die jeder Nutzer sieht, aber nur
+   der eine Mensch braucht, der die App unter einer anderen Adresse betreibt,
+   ist an dieser Stelle falsch - der baut sie ohnehin selbst und hat dafuer
+   VITE_GOOGLE_CLIENT_ID. */
 function KontoGruppe({ melde }){
-  const [idOffen, setIdOffen] = useState(false);
-  const [text, setText] = useState('');
   const ich = profil.value;
-  const id = clientId.value;
-  const ausBuild = clientIdAusBuild();
 
   async function entfernen(p){
     const ja = await bestaetige({
@@ -149,32 +122,6 @@ function KontoGruppe({ melde }){
       <Zeile titel="Angemeldet"
         wert={ich ? (ich.name + ' · ' + ich.email) : 'nein – Daten dieses Browsers'}
         hilfe={HILFE_KONTO} />
-      <Zeile titel="Google-Client-ID"
-        wert={id
-          ? (id.slice(0, 14) + '…' + (id === ausBuild ? ' · mitgeliefert' : ' · hier eingetragen'))
-          : 'nicht hinterlegt – Anmeldung nicht möglich'}
-        hilfe={HILFE_CLIENT_ID}
-        onClick={() => { setText(id === ausBuild ? '' : id); setIdOffen(o => !o); }} />
-      {idOffen && (
-        <div class="szeile-eingabe">
-          <input type="text" value={text} autocomplete="off" autocapitalize="off" spellcheck={false}
-            aria-label="Google-Client-ID"
-            placeholder="…apps.googleusercontent.com"
-            onInput={e => setText(e.currentTarget.value)} />
-          <button class="btn" onClick={async () => {
-            await setzeClientId(text);
-            setIdOffen(false);
-            melde({ art:'ok', titel:'Client-ID gesichert.', zeilen:[] });
-          }}>Sichern</button>
-          {id && id !== ausBuild && (
-            <button class="btn secondary" onClick={async () => {
-              await setzeClientId('');
-              setText(''); setIdOffen(false);
-              melde({ art:'ok', titel:'Wieder die mitgelieferte Client-ID.', zeilen:[] });
-            }}>Löschen</button>
-          )}
-        </div>
-      )}
       {profile.value.map(p => (
         <Zeile key={p.id} titel={'Profil entfernen: ' + (p.name || p.email)}
           wert={(ich && ich.id === p.id ? 'das gerade offene Profil · ' : '') + 'löscht seine Daten auf diesem Gerät'}

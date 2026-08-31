@@ -25,9 +25,9 @@
 import { KEYS } from './storage.js';
 
 /* Schluessel, die keinem Profil gehoeren, sondern dem Geraet: wer angemeldet
-   ist, welche Profile es hier gibt, wer den Altbestand bekommen hat, und die
-   Client-ID. Sie stehen unpraefigiert neben den Daten des lokalen Profils -
-   deshalb muss keys() sie kennen, um sie herauszufiltern.
+   ist, welche Profile es hier gibt, und wer den Altbestand bekommen hat. Sie
+   stehen unpraefigiert neben den Daten des lokalen Profils - deshalb muss
+   keys() sie kennen, um sie herauszufiltern.
 
    Sie gehoeren aus demselben Grund nicht in die Sicherung: die ist der Bestand
    EINES Profils, und ein eingespieltes "auth-aktiv" wuerde auf einem anderen
@@ -35,8 +35,7 @@ import { KEYS } from './storage.js';
 export const GERAET = {
   profile:    'auth-profile',
   aktiv:      'auth-aktiv',
-  altbestand: 'auth-altbestand',
-  clientId:   'google-client-id'
+  altbestand: 'auth-altbestand'
 };
 
 export const PROFIL_PRAEFIX = 'profil:';

@@ -17,9 +17,9 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { Sheet } from './Sheet.jsx';
 import { Avatar } from './Avatar.jsx';
-import { profil, profile, clientId, meldeAn, meldeAb, wechsleZu, neuStarten,
+import { profil, profile, meldeAn, meldeAb, wechsleZu, neuStarten,
          AnmeldeError } from '../../state/auth.js';
-import { zeichneKnopf } from '../../data/google.js';
+import { zeichneKnopf, clientId } from '../../data/google.js';
 import { benenne } from '../../data/exportImport.js';
 import { vibrate } from '../../platform/index.js';
 
@@ -59,7 +59,7 @@ export function ProfilSheet({ onClose }){
   const [anmeldenOffen, setAnmeldenOffen] = useState(false);
 
   const ich = profil.value;
-  const id = clientId.value;
+  const id = clientId();
   const andere = profile.value.filter(p => !ich || p.id !== ich.id);
 
   function zeigeFehler(e){
@@ -138,14 +138,13 @@ export function ProfilSheet({ onClose }){
         </p>
       )}
 
-      {(!ich || anmeldenOffen) && (
-        id
-          ? <GoogleKnopf id={id} onCredential={annehmen} onFehler={zeigeFehler} />
-          : <div class="meldung fehler">
-              <b>Es ist keine Google-Client-ID hinterlegt.</b>
-              <ul><li>Einstellungen → Konto → „Google-Client-ID“. Dort steht auch, woher man sie bekommt.</li></ul>
-            </div>
-      )}
+      {/* Kein Zweig fuer "keine Client-ID hinterlegt": die ID steht im
+          Quelltext und ist immer da. Der Zweig gab es, solange sie erst
+          eingetragen werden musste - er verwies auf eine Zeile in den
+          Einstellungen, die es nicht mehr gibt, und war ohnehin nicht mehr
+          erreichbar. */}
+      {(!ich || anmeldenOffen) &&
+        <GoogleKnopf id={id} onCredential={annehmen} onFehler={zeigeFehler} />}
 
       {ich && !anmeldenOffen && (
         <button class="btn secondary block" onClick={() => { vibrate(8); setAnmeldenOffen(true); }}>

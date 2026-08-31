@@ -121,9 +121,13 @@ betreibt – dann bei
 [Google Auth Platform → Clients](https://console.cloud.google.com/auth/clients)
 einen Client vom Typ *Webanwendung* anlegen, unter *Authorized JavaScript
 origins* die eigene Herkunft eintragen (nur Schema und Host, **ohne Pfad**) und
-die ID entweder in der App unter **Einstellungen → Konto** einsetzen oder als
-`VITE_GOOGLE_CLIENT_ID` in den Build geben (lokal `.env`, siehe
-`.env.example`). Beides überschreibt die mitgelieferte.
+die ID als `VITE_GOOGLE_CLIENT_ID` in den Build geben – lokal über `.env`
+(siehe `.env.example`), im Deploy über die Repository-Variable
+`GOOGLE_CLIENT_ID`. Das überschreibt die mitgelieferte.
+
+Der Build ist der einzige Weg dorthin. Ein Feld in den Einstellungen gab es
+kurzzeitig; es ist weg, weil es eine Einstellung war, die jeder Nutzer sah und
+nur der eine Mensch brauchte, der die App ohnehin selbst baut.
 
 ## Daten sichern
 

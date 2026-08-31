@@ -24,8 +24,8 @@ import { signal, computed } from '@preact/signals';
 import { localStorageAdapter } from '../data/storage.js';
 import { profilAdapter, ladeProfile, merkeProfil, vergissProfil, aktivesProfilId,
          setzeAktivesProfil, uebertrageAltbestand, praefixFuer, profilId,
-         GERAET, LOKAL } from '../data/profile.js';
-import { leseIdToken, clientIdAusBuild, vergissAutoAuswahl, AnmeldeError } from '../data/google.js';
+         LOKAL } from '../data/profile.js';
+import { leseIdToken, clientId, vergissAutoAuswahl, AnmeldeError } from '../data/google.js';
 
 /* Der Basisspeicher haelt, was dem Geraet gehoert: die Profilliste, das aktive
    Profil, die Client-ID. Er ist nie praefigiert - sonst laege die Frage, wer
@@ -38,9 +38,8 @@ export const profilSpeicher = profilAdapter(basis);
 
 /* null heisst: lokales Profil, niemand angemeldet. Kein Sonderobjekt dafuer -
    die Abwesenheit eines Profils ist genau das, was hier gemeint ist. */
-export const profil   = signal(null);
-export const profile  = signal([]);
-export const clientId = signal('');
+export const profil  = signal(null);
+export const profile = signal([]);
 
 export const angemeldet = computed(() => profil.value != null);
 
@@ -69,14 +68,6 @@ export async function initAuth(){
   profilSpeicher.setzePraefix(praefixFuer(aktiv ? aktiv.id : LOKAL));
   profile.value = liste;
   profil.value = aktiv;
-  clientId.value = (await basis.get(GERAET.clientId)) || clientIdAusBuild();
-}
-
-export async function setzeClientId(wert){
-  const w = (wert || '').trim();
-  if(w) await basis.set(GERAET.clientId, w);
-  else await basis.remove(GERAET.clientId);
-  clientId.value = w || clientIdAusBuild();
 }
 
 /* Der Rueckruf des Google-Knopfes. Wirft AnmeldeError, wenn das Token nichts
@@ -85,7 +76,7 @@ export async function setzeClientId(wert){
    Gibt zurueck, was aus dem Altbestand uebernommen wurde: das Sheet meldet es,
    denn es ist das Einzige an diesem Vorgang, das der Nutzer nicht erwartet. */
 export async function meldeAn(credential){
-  const konto = leseIdToken(credential, clientId.value, Date.now());
+  const konto = leseIdToken(credential, clientId(), Date.now());
   const p = {
     id:      profilId(konto.sub),
     name:    konto.name,
