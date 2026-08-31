@@ -4,11 +4,16 @@
    Leiste traegt die vier Ziele des Trainings, hier steht der Rest: Zonen und
    Werte, Einstellungen.
 
-   Schliesst ueber die Zurueck-Geste, den Klick daneben und die Auswahl. */
+   Schliesst ueber die Zurueck-Geste, Escape, den Klick daneben und die
+   Auswahl. Die ersten drei liegen in useOverlay.js - sie sind dieselben wie
+   beim Bottom Sheet, und Escape stand hier bis dahin ein zweites Mal. Die
+   Fokusfalle kam damit dazu: wer den Drawer mit der Tastatur oeffnete, lief
+   mit Tab bisher hinter ihm durch die Seite. */
 
-import { useEffect } from 'preact/hooks';
+import { useRef } from 'preact/hooks';
 import { vibrate } from '../../platform/index.js';
 import { BEREICHE, HAUPTZIELE } from '../../state/navigation.js';
+import { useOverlay } from './useOverlay.js';
 import { Icon } from './Icon.jsx';
 
 /* Die erste Gruppe traegt keine Ueberschrift mehr: sie hiess "Training", und
@@ -26,12 +31,8 @@ const GRUPPEN = [
 ];
 
 export function NavDrawer({ offen, aktiv, onSelect, onClose }){
-  useEffect(() => {
-    if(!offen) return;
-    const aufTaste = e => { if(e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', aufTaste);
-    return () => document.removeEventListener('keydown', aufTaste);
-  }, [offen, onClose]);
+  const box = useRef(null);
+  const schliessen = useOverlay(offen, onClose, box);
 
   /* inert statt nur aria-hidden: der geschlossene Drawer steht weiterhin im
      Baum, damit er beim Oeffnen hineinfahren kann. Weder aria-hidden noch das
@@ -41,8 +42,8 @@ export function NavDrawer({ offen, aktiv, onSelect, onClose }){
      Attribut muss dabei ganz fehlen und darf nicht auf "false" stehen. */
   return (
     <div class={'drawer-wrap' + (offen ? ' offen' : '')} inert={offen ? undefined : true}>
-      <div class="drawer-schleier" onClick={onClose}></div>
-      <nav class="drawer" aria-label="Alle Bereiche">
+      <div class="drawer-schleier" onClick={() => schliessen.current()}></div>
+      <nav class="drawer" aria-label="Alle Bereiche" tabIndex={-1} ref={box}>
         <div class="drawer-kopf">
           <div class="drawer-app">Trainingsplan</div>
           <div class="drawer-sub">Radfahren</div>

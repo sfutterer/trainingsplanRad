@@ -19,7 +19,7 @@ import { ready, planError, plan, apiKey, today, discardOwnPlanAndReload } from '
 import { meldungsZahl, ladeMeldungen } from './state/meldungen.js';
 import { profil } from './state/auth.js';
 import { tab, gotoTab, tabId, BEREICHE, HAUPTZIELE } from './state/navigation.js';
-import { overlayOffen, overlayZurueck } from './state/overlays.js';
+import { overlayZurueck } from './state/overlays.js';
 import { PlanTab } from './ui/tabs/plan/PlanTab.jsx';
 import { TrainingTab } from './ui/tabs/training/TrainingTab.jsx';
 import { IntervalleTab } from './ui/tabs/intervalle/IntervalleTab.jsx';
@@ -116,14 +116,6 @@ export function App(){
      gebraucht wird - ueber setState waere es ein zweiter Durchlauf fuer eine
      Liste, die niemand ausser dieser Zeile liest. */
   const montiert = useRef({});
-
-  /* Der Drawer ist kein Sheet und meldet sich deshalb hier selbst an. Die drei
-     Sheets - Glocke, Profil, Rueckfrage - tun das in Sheet.jsx, und der
-     Uebungsdialog tief im Trainings-Tab damit ebenso. */
-  useEffect(() => {
-    if(!drawer) return undefined;
-    return overlayOffen(() => setDrawer(false));
-  }, [drawer]);
 
   useEffect(() => {
     /* Ein unbekannter Anker landet auf dem Plan statt in einem Zustand, den

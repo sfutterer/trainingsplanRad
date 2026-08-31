@@ -1,46 +1,31 @@
-/* Bottom Sheet mit Fokusverwaltung, Wischgeste und Zurueck-Geste.
-
-   Auf Android das uebliche Muster fuer Detailinhalte, und die Greifzone liegt
-   unten. Drei Stellen zeigen eines: die Uebungsanleitung, der Tagesueberblick
-   hinter der Glocke und die Rueckfragen.
+/* Bottom Sheet - auf Android das uebliche Muster fuer Detailinhalte, und die
+   Greifzone liegt unten. Vier Stellen zeigen eines: die Uebungsanleitung, der
+   Tagesueberblick hinter der Glocke, das Profil und die Rueckfragen.
 
    Bisher hatte jede ihre eigene Fassung, und keine kuemmerte sich um den
    Fokus. Das war die Luecke, die ExerciseDialog selbst benannt hat: Escape
    schloss zwar, aber der Fokus blieb beim Oeffnen auf dem Knopf dahinter, Tab
    lief aus dem Sheet in die Seite darunter, und beim Schliessen landete er am
-   Seitenanfang statt dort, wo man hergekommen war. Wer mit Tastatur oder
-   Screenreader bedient, verlor damit jedes Mal die Stelle.
+   Seitenanfang statt dort, wo man hergekommen war.
 
-   Drei Dinge macht diese Datei deshalb, und sie gehoeren zusammen:
+   Escape, Fokusfalle, Fokusrueckgabe und die Zurueck-Geste liegen inzwischen
+   in useOverlay.js - das Sheet teilt sie sich mit dem Navigation Drawer, denn
+   sie sind keine Eigenheit dieser Bauart. Hier bleibt, was nur das Sheet hat:
+   der Klick daneben und die Wischgeste.
 
-     1  Beim Oeffnen faehrt der Fokus in das Sheet - auf das erste
-        fokussierbare Element, sonst auf das Sheet selbst.
-     2  Tab und Shift+Tab laufen im Kreis: hinter dem letzten Element kommt
-        wieder das erste. Der Rest der Seite ist waehrenddessen inert.
-     3  Beim Schliessen geht der Fokus dorthin zurueck, wo er herkam.
+   Der Strich oben ist naemlich kein Zierstueck, er verspricht eine Geste.
+   Bisher hielt er das Versprechen nicht: das Sheet liess sich nicht
+   wegwischen, und der Knopf am Ende der Anleitung steht bei langem Inhalt
+   unter dem Falz - praktisch war es nicht zu schliessen. Jetzt zieht es mit
+   dem Finger mit, der Schleier dahinter hellt dabei auf, und losgelassen
+   entscheidet Weg oder Tempo: kurz gezogen faehrt es zurueck, weit oder
+   schnell gezogen faehrt es hinaus.
 
-   Dazu kommen die beiden Gesten, mit denen ein Sheet tatsaechlich zugeht - der
-   Knopf am Ende der Anleitung steht bei langem Inhalt unter dem Falz und war
-   praktisch nicht zu finden:
-
-     Der Strich oben ist kein Zierstueck, er verspricht eine Geste. Bisher
-     hielt er das Versprechen nicht: das Sheet liess sich nicht wegwischen.
-     Jetzt zieht es mit dem Finger mit, der Schleier dahinter hellt dabei auf,
-     und losgelassen entscheidet Weg oder Tempo - kurz gezogen faehrt es
-     zurueck, weit oder schnell gezogen faehrt es hinaus.
-
-     Die Zurueck-Geste schliesst das Sheet, statt in einen anderen Bereich zu
-     springen. Dafuer meldet es sich in state/overlays.js an; der Rahmen fragt
-     dort nach, bevor er navigiert.
-
-   Escape und der Klick daneben schliessen wie bisher. */
+   Der Drawer bekommt die Geste bewusst nicht: er traegt keinen Griff und
+   verspricht damit auch nichts. */
 
 import { useEffect, useRef } from 'preact/hooks';
-import { overlayOffen } from '../../state/overlays.js';
-
-const FOKUSSIERBAR =
-  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), ' +
-  'textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
+import { useOverlay } from './useOverlay.js';
 
 /* Ab hier ist die Bewegung ein Zug und kein Tipper. Kleiner waere jeder
    Wackler beim Antippen schon ein halbes Wegwischen. */
@@ -62,61 +47,15 @@ const ruhig = () =>
 
 export function Sheet({ onClose, label, labelledBy, children }){
   const box = useRef(null);
-  const herkunft = useRef(null);
   const zug = useRef(null);
   const ausfahrt = useRef(null);
 
-  /* onClose kommt an den meisten Stellen als frisch gebaute Pfeilfunktion und
-     ist damit bei jeder Neuzeichnung eine andere. Stuende es in einer
-     Abhaengigkeitsliste, liefen Fokus und Anmeldung waehrend eines laufenden
-     Timers viermal je Sekunde neu an - der Fokus spraenge dabei staendig
-     zurueck an den Anfang des Sheets. Ueber ein Ref bleibt der Aufruf aktuell,
-     ohne die Effekte anzufassen. */
-  const schliessen = useRef(onClose);
-  schliessen.current = onClose;
+  const schliessen = useOverlay(true, onClose, box);
 
-  useEffect(() => {
-    herkunft.current = document.activeElement;
-
-    const el = box.current;
-    if(el){
-      const erstes = el.querySelector(FOKUSSIERBAR);
-      (erstes || el).focus({ preventScroll: true });
-    }
-
-    function aufTaste(e){
-      if(e.key === 'Escape'){ schliessen.current(); return; }
-      if(e.key !== 'Tab' || !box.current) return;
-      const ziele = [...box.current.querySelectorAll(FOKUSSIERBAR)];
-      if(!ziele.length){ e.preventDefault(); return; }
-      const erstes = ziele[0], letztes = ziele[ziele.length - 1];
-      /* Der Fokus kann auch ausserhalb stehen - etwa direkt nach dem Oeffnen,
-         wenn das Sheet selbst ihn traegt. Dann faengt Tab ihn hier ein. */
-      if(!box.current.contains(document.activeElement)){
-        e.preventDefault(); (e.shiftKey ? letztes : erstes).focus();
-      } else if(e.shiftKey && document.activeElement === erstes){
-        e.preventDefault(); letztes.focus();
-      } else if(!e.shiftKey && document.activeElement === letztes){
-        e.preventDefault(); erstes.focus();
-      }
-    }
-
-    document.addEventListener('keydown', aufTaste);
-    return () => {
-      document.removeEventListener('keydown', aufTaste);
-      if(ausfahrt.current) clearTimeout(ausfahrt.current);
-      /* Nur zurueckgeben, wenn der Fokus noch im Sheet steht: hat der Nutzer
-         inzwischen woanders hingeklickt, waere ein Sprung zurueck ein Ruck,
-         den niemand ausgeloest hat. */
-      const ziel = herkunft.current;
-      if(ziel && ziel.isConnected && typeof ziel.focus === 'function'){
-        ziel.focus({ preventScroll: true });
-      }
-    };
-  }, []);
-
-  /* Solange dieses Sheet offen ist, gehoert die Zurueck-Geste ihm. */
-  useEffect(() => overlayOffen(() => schliessen.current()), []);
+  /* Die Ausfahrt laeuft ueber eine Zeitschaltung, und die muss weg, wenn das
+     Sheet auf anderem Weg verschwindet - sonst schliesst sie hinterher ein
+     Sheet, das es nicht mehr gibt. */
+  useEffect(() => () => { if(ausfahrt.current) clearTimeout(ausfahrt.current); }, []);
 
   /* Das Sheet verschieben und den Schleier dazu aufhellen. Beides von Hand am
      Knoten und nicht ueber den Zustand: waehrend eines Zuges kaeme sonst je

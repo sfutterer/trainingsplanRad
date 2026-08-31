@@ -11,6 +11,11 @@
    die laufende Uebung mit. Genau das ist der Fall, fuer den es diese Datei
    gibt: wer ein Overlay oeffnet, meldet es hier an, egal wo er sitzt.
 
+   Angemeldet wird ueber ui/components/useOverlay.js, und nur dort - Sheet und
+   Drawer haengen beide daran. Die beiden Funktionen hier sind trotzdem
+   allgemein gehalten: sie kennen weder Preact noch die beiden Bauarten,
+   sondern nur eine Funktion, die schliesst.
+
    Ein Stapel und keine Liste von Flaggen: Overlays koennen uebereinander
    liegen (aus dem Profil heraus eine Rueckfrage), und dann schliesst Zurueck
    das oberste und nicht irgendeines.
