@@ -14,8 +14,8 @@
    oder in einem Bedienelement, das seine eigene Beschriftung hat. Wo es
    allein steht, bekommt es mit `titel` eine.
 
-   Bewusst keine Icon-Bibliothek: gebraucht werden achtzehn Pfade, und das
-   kleinste taugliche Paket waere groesser als alle Zeichen zusammen. */
+   Bewusst keine Icon-Bibliothek: gebraucht werden fuenfundzwanzig Pfade, und
+   das kleinste taugliche Paket waere groesser als alle Zeichen zusammen. */
 
 const ICONS = {
   /* Bereiche - dieselben in der unteren Leiste und im Drawer. */
@@ -43,6 +43,26 @@ const ICONS = {
   temperatur: 'M15 13V5a3 3 0 0 0-6 0v8a5 5 0 1 0 6 0zm-3-9c.6 0 1 .4 1 1v9.6a3 3 0 1 1-2 0V5c0-.6.4-1 1-1z',
   feuchte: 'M12 2.7C12 2.7 6 9.4 6 14a6 6 0 0 0 12 0c0-4.6-6-11.3-6-11.3zm0 17.3a4 4 0 0 1-4-4c0-2.6 2.7-6.4 4-8.1 1.3 1.7 4 5.5 4 8.1a4 4 0 0 1-4 4z',
   regen: 'M17.7 8.5A6 6 0 0 0 6.3 7.2 4.5 4.5 0 0 0 7 16h10.4a3.8 3.8 0 0 0 .3-7.5zM8.4 17.6l-1.2 3.1 1.4.5 1.2-3.1zm3.6 0-1.2 3.1 1.4.5 1.2-3.1zm3.6 0-1.2 3.1 1.4.5 1.2-3.1z',
+
+  /* Die Einheitsarten - je Art ein eigenes Zeichen, siehe Einheitssymbol.jsx.
+     Fuer die Grundlagenfahrt steht 'rad' schon darueber, fuer Rumpf und Kraft
+     'training'; ein zweites Rad neben dem ersten waere dieselbe Aussage in
+     einer zweiten Zeichnung. */
+
+  /* Intervalle: hohe und niedrige Balken im Wechsel, Belastung und Pause.
+     Bewusst nicht die Stoppuhr aus der unteren Leiste - die steht dort fuer
+     den Bereich Intervalle, also fuer ein Werkzeug, nicht fuer eine Einheit. */
+  bloecke: 'M3 14h3v6H3zM8 4h3v16H8zM13 14h3v6h-3zM18 4h3v16h-3z',
+  /* Schwellentest: Ring und Scheibe - der Tag, an dem gemessen wird. */
+  ziel: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0-12a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',
+  /* Lange Ausfahrt */
+  berg: 'M2 20h20L14.5 6l-4.5 7-2.5-3.5L2 20z',
+  /* Ruhetag */
+  mond: 'M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z',
+  /* Frei oder locker: halb Ruhetag, halb Fahrt. */
+  halbmond: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0-15a7 7 0 0 1 0 14z',
+  /* Alles, was der Plan nicht kennt - ein Lauf, eine Schwimmeinheit. */
+  blitz: 'M13 2 4 14h6l-1 8 9-12h-6l1-8z',
 
   /* Platzhalter, wenn ein Uebungsbild fehlt */
   bild: 'M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zm-2 0H5v14h14V5zM7 17l3.5-4.5 2.5 3 3.5-4.5L19 17H7z'

@@ -46,16 +46,31 @@
 }
 .treintrag:last-child{ border-bottom: 0; }
 .treintrag:active{ background: var(--surface-2); }
-.trsymbol{
-  width: 42px; height: 42px; flex: none; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--surface-3); color: var(--on-surface-var);
+/* Das Feld traegt die Farbe der Einheitsart als getoenten Grund, das Zeichen
+   darin die volle Farbe. Welche Farbe zu welcher Art gehoert, steht in
+   components/einheit.css und faerbt hier ueber currentColor auch den Grund -
+   sonst stuende dieselbe Tabelle ein zweites Mal in dieser Datei. Die
+   neutrale Fuellung darueber bleibt als Rueckfall stehen, falls color-mix
+   nicht ausgewertet wird.
+
+   Die frueheren Zustandsklassen ok/dev/miss standen hier seit dem Umbau der
+   Liste ohne Verwendung: die Bewertung eines Tages steht in der Auswertung,
+   nicht am Zeichen der Einheit. */
+.esym.trsym{
+  width: 42px; height: 42px; border-radius: 12px;
+  background: var(--surface-3);
+  background: color-mix(in srgb, currentColor 12%, var(--surface-3));
 }
-.trsymbol svg{ width: 22px; height: 22px; }
-.trsymbol.ok{ background: var(--ok-bg); color: var(--ok); }
-.trsymbol.dev{ background: var(--dev-bg); color: var(--dev); }
-.trsymbol.miss{ background: var(--miss-bg); color: var(--miss); }
-.trtext{ flex: 1; min-width: 0; }
+.esym.trsym svg{ width: 22px; height: 22px; }
+
+/* Name und Eckwerte untereinander, nicht hintereinander.
+
+   Beide standen als <span> in einem Block und liefen deshalb in derselben
+   Zeile weiter - "Samstagsrunde150 min · 62,0 km". Zwei Regeln daneben
+   zeigten, dass das nie so gemeint war: das Abschneiden mit Auslassungspunkten
+   am Namen und der Abstand nach oben an den Eckwerten wirken beide nur auf
+   einem eigenen Kasten. Eine Spalte macht aus beidem wieder eine Zeile. */
+.trtext{ flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .trname{ font-size: 15.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .trmeta{ font-size: 13px; color: var(--muted); margin-top: 2px; }
 .trpfeil{ color: var(--muted); flex: none; }

@@ -51,6 +51,15 @@
   --z4:      #94552b;
   --z5:      #a2454c;
 
+  /* Die Einheitsarten. Wo die Art eine Zone meint, ist es deren Farbe - siehe
+     components/einheit.css, dort steht die Zuordnung. Eigene Toene brauchen
+     nur die beiden Arten ohne Zone: der lockere Tag und alles, was der Plan
+     nicht kennt. Beide liegen ausserhalb der Rampe Gruen bis Rot, damit sie
+     nicht wie eine Belastungsstufe aussehen. */
+  --art-locker:   #2f7d8a;
+  --art-sonstige: #6b4fa0;
+  --art-ruhe:     var(--muted);
+
   /* Die Spur auf der Karte. Bewusst ausserhalb der Themes und ausserhalb der
      gedaempften Palette: die Kacheln kommen von aussen, bleiben in beiden
      Themes hell und sind selbst schon voller Linien. In --primary ging die
@@ -127,6 +136,9 @@
     --z4:      #d2946a;
     --z5:      #ce7a80;
 
+    --art-locker:   #79bfcb;
+    --art-sonstige: #b09ae0;
+
     --ok:    #6fb394;
     --dev:   #c9b063;
     --miss:  #d47f85;
@@ -170,6 +182,9 @@
     --z3:      #c9b063;
     --z4:      #d2946a;
     --z5:      #ce7a80;
+
+    --art-locker:   #79bfcb;
+    --art-sonstige: #b09ae0;
 
     --ok:    #6fb394;
     --dev:   #c9b063;

@@ -23,6 +23,7 @@ import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js'
 import { wellnessMassnahmen } from '../../../domain/wellness.js';
 import { wellness, ladeWellness } from '../../../state/wellness.js';
 import { gotoTab } from '../../../state/navigation.js';
+import { Einheitssymbol } from '../../components/Einheitssymbol.jsx';
 
 /* Ein Abruf fuer die ganze Woche - und seit der Glocke einer fuer die ganze App.
 
@@ -179,7 +180,13 @@ export function Tageskopf({ datum, info, istHeute, mitKurz }){
         </span>
       </span>
       <span class="dayzeile-unten">
-        <span class="daytitle">{info.vorStart ? 'Vor Planbeginn' : info.title}</span>
+        {/* Das Zeichen der Einheitsart steht vor dem Titel, nicht statt seiner:
+            es beantwortet die Frage aus zwei Metern, der Titel die genaue.
+            Vor Planbeginn bleibt es weg - dort gibt es keine Einheit. */}
+        <span class="daysymtitel">
+          {!info.vorStart && <Einheitssymbol art={info.art} klasse="daysym" />}
+          <span class="daytitle">{info.vorStart ? 'Vor Planbeginn' : info.title}</span>
+        </span>
         {mitKurz && !info.vorStart && <span class="tagkurz">{ersteKennzahl(info)}</span>}
       </span>
     </>

@@ -1,0 +1,25 @@
+/* Die Farben der Einheitsarten.
+
+   An einer Stelle und nicht je Ansicht: das Zeichen steht in der Analyseliste,
+   in der Wochenansicht und im Monatsraster, und drei Dateien mit derselben
+   Zuordnung waeren drei Gelegenheiten, sie auseinanderlaufen zu lassen.
+
+   Nur Rollen aus theme.css - die Zonenfarben wechseln mit dem Theme, feste
+   Farbwerte wuerden im dunklen Theme leuchten. */
+
+/* Voreingestellte Groesse, von jeder Ansicht ueberschreibbar: die Liste zeigt
+   das Zeichen gross im Feld, das Monatsraster klein unter der Zahl. */
+.esym{
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 20px; height: 20px;
+}
+.esym svg{ width: 100%; height: 100%; display: block; }
+
+.esym.art-z2{ color: var(--z2); }
+.esym.art-lang{ color: var(--z3); }
+.esym.art-intervalle{ color: var(--z5); }
+.esym.art-test{ color: var(--z4); }
+.esym.art-rumpf{ color: var(--z1); }
+.esym.art-locker{ color: var(--art-locker); }
+.esym.art-ruhe{ color: var(--art-ruhe); }
+.esym.art-sonstige{ color: var(--art-sonstige); }

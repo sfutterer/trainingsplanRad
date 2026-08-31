@@ -379,7 +379,11 @@ function donnerstag(c){
   let info;
 
   if(t.kind === 'test'){
-    info = { type:'interval', title:t.title, detail:T.thursdayTest, showIntervalBtn:true };
+    /* Der Schwellentest ist im Typ ein Intervalltag - die Ansicht behandelt
+       ihn seit dem Kalenderumbau ueberall so. Als Einheit ist er aber keiner:
+       er misst, statt zu belasten, und traegt deshalb ein eigenes Zeichen. */
+    info = { type:'interval', art:'test', title:t.title, detail:T.thursdayTest,
+             showIntervalBtn:true };
     info.kennzahlen = [
       { label:'Dauer',      wert: t.minutes + ' min' },
       { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
@@ -548,6 +552,28 @@ function sonntag(c){
   };
 }
 
+/* Vom Tagestyp zur Einheitsart.
+
+   Der Typ beschreibt, was die Ansicht mit dem Tag macht - 'ride' bekommt eine
+   Fahrtkarte, 'rest' eine gedaempfte Ueberschrift. Die Art beschreibt, was
+   trainiert wird, und das ist nicht dasselbe: Dienstag, Mittwoch und der
+   Grundlagen-Donnerstag sind alle 'ride', aber ein Tag mit Intervallen ist es
+   ebenso wenig wie der Schwellentest, der als 'interval' gefuehrt wird. Nur wo
+   der Typ die Art nicht traegt, setzt der Tag sie selbst (siehe donnerstag).
+
+   Sonntag traegt den vollen Zirkel und den Beinblock, Mittwoch den verkuerzten
+   - beides ist Rumpf und Kraft, und zwei Zeichen dafuer wuerden einen
+   Unterschied behaupten, den der Plan an dieser Stelle nicht macht. */
+const ART_JE_TYP = {
+  rest:     'ruhe',
+  restopt:  'locker',
+  ride:     'z2',
+  long:     'lang',
+  interval: 'intervalle',
+  core:     'rumpf',
+  sun:      'rumpf'
+};
+
 /* getDay() zaehlt ab Sonntag. */
 const TAGE = [sonntag, montag, dienstag, mittwoch, donnerstag, freitag, samstag];
 
@@ -585,6 +611,7 @@ export function buildDayInfo(plan, th, date, startDate){
   /* Hier aufgefuellt und nicht in den sieben Funktionen, damit die Anzeige nie
      auf undefined stoesst - und damit ein spaeter ergaenzter Tagestyp nicht
      stillschweigend ohne Struktur durchlaeuft. */
+  info.art = info.art ?? ART_JE_TYP[info.type] ?? 'sonstige';
   info.kennzahlen = info.kennzahlen ?? [];
   info.bloecke = info.bloecke ?? [];
   info.hinweise = info.hinweise ?? [];

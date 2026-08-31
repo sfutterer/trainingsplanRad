@@ -26,6 +26,7 @@ import {
 } from '../../../domain/week.js';
 import { Tagesinhalt, Tageskopf } from './Tag.jsx';
 import { KalenderNavi } from './KalenderNavi.jsx';
+import { Einheitssymbol } from '../../components/Einheitssymbol.jsx';
 
 /* getDay()-Wert der ersten Spalte. Siehe Begruendung im Dateikopf. */
 const ERSTE_SPALTE = 1;
@@ -84,8 +85,14 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
             if(iso === heuteIso) klassen.push('istheute');
             if((((dayOffset(d, start) % 7) + 7) % 7) === 0) klassen.push('wochenstart');
             /* Vor dem Planbeginn traegt der Tag keine Trainingsart, also auch
-               keinen Farbpunkt - sonst behauptet das Raster eine Einheit fuer
-               einen Zeitraum, in dem der Plan noch nicht lief. */
+               kein Zeichen - sonst behauptet das Raster eine Einheit fuer
+               einen Zeitraum, in dem der Plan noch nicht lief.
+
+               Aus dem Farbstrich unter der Zahl ist das Zeichen der Einheitsart
+               geworden. Die Farbe allein trug die Aussage nur fuer den, der sie
+               gelernt hatte - und fuer niemanden, der Rot und Gruen nicht
+               unterscheidet. Die Art steht ohnehin schon im aria-label des
+               Knopfes; das Zeichen sagt sie jetzt auch dem Auge. */
             return (
               <button class={klassen.join(' ')} type="button" key={iso}
                 aria-pressed={iso === ankerIso ? 'true' : 'false'}
@@ -93,7 +100,7 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
                 onClick={() => setzeAnker(d)}>
                 <span class="kalzahl">{d.getDate()}</span>
                 {!tinfo.vorStart &&
-                  <span class={'kalpunkt type-' + tinfo.type} aria-hidden="true" />}
+                  <Einheitssymbol art={tinfo.art} klasse="kalsym" />}
               </button>
             );
           })}

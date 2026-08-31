@@ -29,6 +29,22 @@
    Zuruecknahme des Gewichts an einem Tag ohne Vorgabe. */
 .type-rest .daytitle, .type-restopt .daytitle{ color: var(--muted); font-weight: 600; }
 
+/* Das Zeichen der Einheitsart vor dem Titel.
+
+   Das ist nicht die zurueckgenommene Typfarbe von oben: die faerbte den Titel
+   selbst und sagte damit dieselbe Sache zweimal in derselben Zeile. Das
+   Zeichen sagt etwas anderes als der Titel - es ist aus zwei Metern lesbar,
+   und beim Blaettern durch die Woche erkennt man an ihm die Einheit, bevor man
+   den Titel gelesen hat. Die Farbe ist dieselbe wie in der Analyseliste und im
+   Monatsraster, die Zuordnung steht in components/einheit.css.
+
+   Ausrichtung an der ersten Zeile und nicht an der Mitte: auf einem schmalen
+   Geraet bricht ein Titel wie "Rumpf-Zirkel (voll) + Beinblock" auf zwei oder
+   drei Zeilen um, und ein mittig gesetztes Zeichen stuende dann neben der
+   zweiten. */
+.daysymtitel{ display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
+.esym.daysym{ width: 22px; height: 22px; margin-top: 1px; }
+
 /* ---- Aufklappbare Statuskarte ----
 
    Dieselbe Bauform wie die Tageskarte: die Karte gibt ihre Innenabstaende an
@@ -224,12 +240,12 @@ button.dayzeile:active{ background: var(--surface-2); }
 }
 .kaltag.istheute .kalzahl{ background: var(--primary); color: var(--on-primary); font-weight: 700; }
 
-.kalpunkt{ width: 16px; height: 3px; border-radius: 2px; background: var(--outline-2); }
-.kalpunkt.type-ride{ background: var(--z2); }
-.kalpunkt.type-long{ background: var(--z3); }
-.kalpunkt.type-interval{ background: var(--z5); }
-.kalpunkt.type-core, .kalpunkt.type-sun{ background: var(--z1); }
-.kalpunkt.type-rest, .kalpunkt.type-restopt{ background: transparent; }
+/* Unter der Zahl stand ein Farbstrich, jetzt steht dort das Zeichen der
+   Einheitsart. 14 px, damit die Zelle ueber 48 px hoch bleibt und die Zahl
+   das Groessere von beidem bleibt - im Raster wird zuerst ein Datum gesucht
+   und erst dann gelesen, was an dem Tag ansteht. */
+.esym.kalsym{ width: 14px; height: 14px; }
+.kaltag.fremd .esym{ opacity: .7; }
 
 /* ---- Hinweiskaesten am Tag ---- */
 

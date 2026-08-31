@@ -19,10 +19,10 @@ import { plan, thresholds, startDate, apiKey, coreLog, testLog, interimLog,
 import { fetchActivities } from '../../../data/icu.js';
 import { streckenFazit } from '../../../domain/fazit.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
-import { compareDay, weekTotals, buildReport, fmtMin, pct,
-         isRide } from '../../../domain/analysis.js';
+import { compareDay, weekTotals, buildReport, fmtMin, pct } from '../../../domain/analysis.js';
 import { T } from '../../../domain/texte.js';
 import { verlaufBericht } from '../../../domain/verlauf.js';
+import { artDerAktivitaet } from '../../../domain/einheiten.js';
 import { useFahrtauswertung } from './useFahrtauswertung.js';
 import { zahl } from '../../../domain/zahlen.js';
 import { IndikatorKarte, TrendZeile, Verlaufsgraph } from '../../components/Verlaufsgraph.jsx';
@@ -30,6 +30,7 @@ import { RouteMap, StreckenLegende } from '../../components/RouteMap.jsx';
 import { Segmented } from '../../components/Segmented.jsx';
 import { zonenFarbe } from '../../components/Zonenliste.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { Einheitssymbol, einheitsLabel } from '../../components/Einheitssymbol.jsx';
 import { Auswahlfeld } from '../../components/Feld.jsx';
 import { Auswertung, Fazit, WetterLeiste } from './Auswertung.jsx';
 import { gotoTab } from '../../../state/navigation.js';
@@ -98,18 +99,22 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
               <div key={tag}>
                 <div class="trtag">{WEEKDAY_NAMES[d.getDay()]}, {d.toLocaleDateString('de-DE')}</div>
                 {gruppen[tag].map(a => {
-                  const rad = isRide(a.type);
+                  /* Bis hierher gab es zwei Zeichen: Rad und nicht Rad. Die
+                     Grundlagenfahrt, der Intervalltag und die lange Ausfahrt
+                     sahen damit gleich aus - drei Einheiten, die der Plan
+                     auseinanderhaelt. Eingeordnet wird in domain/einheiten.js,
+                     benannt wird die Art in der Zeile darunter: ohne den Namen
+                     waere die Farbe eine Behauptung, die man erst lernen muss. */
+                  const art = artDerAktivitaet(a);
                   const min = Math.round((a.moving_time || a.elapsed_time || 0) / 60);
                   const km = a.distance ? (a.distance / 1000).toFixed(1) + ' km' : null;
                   return (
                     <button class="treintrag" key={a.id} onClick={() => onWaehlen(a)}>
-                      <span class="trsymbol">
-                        <Icon name={rad ? "rad" : "training"} />
-                      </span>
+                      <Einheitssymbol art={art} klasse="trsym" />
                       <span class="trtext">
                         <span class="trname">{a.name || a.type}</span>
                         <span class="trmeta">
-                          {min} min{km ? ' · ' + km : ''}{a.average_heartrate ? ' · ⌀ ' + a.average_heartrate + ' bpm' : ''}
+                          {einheitsLabel(art)} · {min} min{km ? ' · ' + km : ''}{a.average_heartrate ? ' · ⌀ ' + a.average_heartrate + ' bpm' : ''}
                         </span>
                       </span>
                       <span class="trpfeil">
