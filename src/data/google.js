@@ -45,20 +45,38 @@ export class AnmeldeError extends Error {
   }
 }
 
-/* Die Client-ID ist oeffentlich - sie steht in jedem Aufruf, den der Browser
-   an Google schickt, und ist kein Geheimnis. Sie beim Bauen mitzugeben ist
-   deshalb unbedenklich.
+/* Die Client-ID dieses Projekts, offen im Quelltext.
 
-   Zusaetzlich laesst sie sich in den Einstellungen eintragen. Das ist nicht
-   Bequemlichkeit: wer die App aus dem Repo selbst baut, braucht eine eigene
-   Client-ID, weil Google die Herkunft der Seite prueft und die des Originals
-   bei ihm gar nicht funktionieren wuerde. Ohne das Feld muesste er den Build
-   anfassen, um sich ueberhaupt anmelden zu koennen. */
+   Das sieht nach einem Fehler aus und ist keiner: eine Client-ID ist dafuer
+   gebaut, oeffentlich zu sein. Sie steht bei jeder Seite mit "Sign in with
+   Google" im Quelltext, und hier landet sie ohnehin im ausgelieferten Bundle -
+   die App liegt auf GitHub Pages, das gebaute JavaScript ist lesbar. Sie aus
+   dem Repo herauszuhalten haette also nichts geschuetzt, sondern nur den
+   Eindruck erweckt, hier waere etwas zu schuetzen.
+
+   Was sie schuetzt, sind die "Authorized JavaScript origins" in der Google
+   Cloud Console: die ID funktioniert ausschliesslich von den dort
+   eingetragenen Herkuenften. Wer sie kopiert und auf seine eigene Seite setzt,
+   bekommt origin_mismatch.
+
+   Was hier NICHT stehen darf, ist das Client secret, das Google in derselben
+   JSON-Datei mitliefert (GOCSPX-...). Diese App braucht es nicht - sie holt
+   nur ID-Tokens, und der Code-Austausch, fuer den das Secret da waere, kommt
+   nie vor. In einem oeffentlichen Repo waere es der eine Fund, der wirklich
+   weh taete. Es gehoert geloescht, nicht eingecheckt. */
+const CLIENT_ID = '156267411976-vb9l52s08mr8av7iht283ivmslcr79m6.apps.googleusercontent.com';
+
+/* Ueberschreibbar beim Bauen, fuer Forks: wer die App unter einer anderen
+   Adresse betreibt, braucht eine eigene ID - die obige funktioniert bei ihm
+   nicht, weil Google die Herkunft prueft. Leer gesetzt zaehlt als "nicht
+   gesetzt", sonst schaltete eine unbelegte Variable in der Action die
+   Anmeldung ab. */
 export function clientIdAusBuild(){
   try {
     const v = import.meta.env && import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    return typeof v === 'string' ? v.trim() : '';
-  } catch(e){ return ''; }
+    if(typeof v === 'string' && v.trim()) return v.trim();
+  } catch(e){}
+  return CLIENT_ID;
 }
 
 let laden = null;

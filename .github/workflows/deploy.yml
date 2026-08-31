@@ -33,11 +33,10 @@ jobs:
       # weil der Linter in Sekunden meldet, was der Build erst am Ende faende.
       - run: npm run lint
       - run: npm test
-      # Die Google-Client-ID als Repository-Variable, nicht als Secret: sie ist
-      # keines - sie steht in jedem Aufruf, den der Browser an Google schickt,
-      # und landet ohnehin im ausgelieferten Bundle. Ist sie nicht gesetzt,
-      # baut alles unveraendert durch; die Anmeldung braucht die ID dann aus
-      # dem Feld unter Einstellungen -> Konto.
+      # Die Client-ID des Projekts steht im Quelltext; hier steht nur der Weg,
+      # eine abweichende mitzugeben - fuer einen Fork unter anderer Adresse.
+      # Ist die Variable nicht gesetzt, gilt die aus src/data/google.js.
+      # Als Variable und nicht als Secret, weil sie keines ist.
       - run: npm run build
         env:
           VITE_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}

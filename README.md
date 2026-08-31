@@ -94,25 +94,36 @@ wandert vollständig in das **erste Profil, das sich anmeldet**, und wird dort
 angezeigt. Das passiert genau einmal; ein zweites Konto fängt leer an. Ein
 Merker im Speicher hält fest, wer ihn bekommen hat.
 
-### Client-ID einrichten
+### Client-ID
 
-Ohne Google-Client-ID ist der Anmeldeknopf wirkungslos. Sie ist kein Geheimnis –
-sie steht in jedem Aufruf, den der Browser an Google schickt.
+Die Client-ID steht offen in `src/data/google.js`. Das ist Absicht: eine
+Client-ID ist dafür gebaut, öffentlich zu sein, und sie landet ohnehin im
+ausgelieferten Bundle – die App liegt auf GitHub Pages, das gebaute JavaScript
+ist lesbar. Geschützt wird sie nicht durch Geheimhaltung, sondern durch die
+**Authorized JavaScript origins** in der Google Cloud Console: sie funktioniert
+nur von den dort eingetragenen Herkünften, sonst `origin_mismatch`.
 
-1. In der [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-   ein Projekt anlegen, den OAuth consent screen ausfüllen.
-2. **Credentials → Create credentials → OAuth client ID**, Typ *Web application*.
-3. Bei **Authorized JavaScript origins** die Herkunft eintragen:
-   `https://sfutterer.github.io` für die veröffentlichte App, zum Entwickeln
-   zusätzlich `http://localhost:5173`.
-4. Die Client ID entweder in der App unter **Einstellungen → Konto** eintragen
-   oder als `VITE_GOOGLE_CLIENT_ID` in den Build geben – lokal über eine
-   `.env`-Datei (siehe `.env.example`), im Deploy über die Repository-Variable
-   `GOOGLE_CLIENT_ID` unter Settings → Secrets and variables → Actions →
-   Variables. Das Feld in der App überschreibt den Wert aus dem Build.
+Das **Client secret**, das Google in derselben JSON-Datei mitliefert
+(`GOCSPX-…`), gehört **nicht** ins Repo und wird auch nicht gebraucht – die App
+holt nur ID-Tokens, der Code-Austausch kommt nie vor.
 
-Ist keine hinterlegt, sagt das Profil-Sheet das und verweist auf die Zeile in
-den Einstellungen.
+Der Client steht auf **Testing** mit einer Testnutzer-Liste. Das erspart
+Domain-Nachweis, Homepage und Datenschutzerklärung, die Google für externe Apps
+im Production-Status verlangt. Wer sich anmelden können soll, muss in
+[Google Auth Platform → Zielgruppe](https://console.cloud.google.com/auth/audience)
+als Testnutzer eingetragen sein (bis 100). Die erteilte Zustimmung läuft nach
+sieben Tagen ab; da die App nach der ersten Anmeldung nie wieder
+authentifiziert, merkt man davon nur etwas, wenn man sich nach längerer Pause
+erneut anmeldet.
+
+**Eine eigene ID** braucht nur, wer die App unter einer anderen Adresse
+betreibt – dann bei
+[Google Auth Platform → Clients](https://console.cloud.google.com/auth/clients)
+einen Client vom Typ *Webanwendung* anlegen, unter *Authorized JavaScript
+origins* die eigene Herkunft eintragen (nur Schema und Host, **ohne Pfad**) und
+die ID entweder in der App unter **Einstellungen → Konto** einsetzen oder als
+`VITE_GOOGLE_CLIENT_ID` in den Build geben (lokal `.env`, siehe
+`.env.example`). Beides überschreibt die mitgelieferte.
 
 ## Daten sichern
 

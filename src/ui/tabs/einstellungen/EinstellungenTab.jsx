@@ -63,20 +63,27 @@ const HILFE_KONTO = (
 
 const HILFE_CLIENT_ID = (
   <>
-    <p>Ohne sie geht die Anmeldung nicht. Sie ist kein Geheimnis – sie steht in jedem
-       Aufruf, den der Browser an Google schickt.</p>
+    <p>Die App bringt eine mit – hier steht nur, wer stattdessen eine eigene einsetzen will.
+       Nötig ist das, wenn du die App unter einer anderen Adresse betreibst: Google prüft die
+       Herkunft der Seite, und die mitgelieferte ID gilt nur für die veröffentlichte Fassung.</p>
+    <p>Sie ist kein Geheimnis – sie steht in jedem Aufruf, den der Browser an Google schickt,
+       und im Quelltext jeder Seite mit „Anmelden mit Google“.</p>
     <ol>
-      <li>In der <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer">Google Cloud Console</a> ein Projekt anlegen.</li>
-      <li>Unter <b>APIs &amp; Services → OAuth consent screen</b> die Zustimmungsseite ausfüllen.</li>
-      <li><b>Credentials → Create credentials → OAuth client ID</b>, Typ <b>Web application</b>.</li>
-      <li>Bei <b>Authorized JavaScript origins</b> die Herkunft der Seite eintragen –
-          für die veröffentlichte App <code>https://sfutterer.github.io</code>, zum
-          Entwickeln zusätzlich <code>http://localhost:5173</code>.</li>
+      <li>In der <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer">Google Cloud Console</a> ein Projekt anlegen.</li>
+      <li>Unter <b>Google Auth Platform → Übersicht</b> App-Name, Support-Mail und
+          <b> External</b> als Zielgruppe eintragen.</li>
+      <li>Unter <b>Zielgruppe</b> auf <b>Testing</b> stehen bleiben und sich selbst als
+          Testnutzer eintragen. Das erspart Domain-Nachweis, Homepage und
+          Datenschutzerklärung.</li>
+      <li>Unter <b>Clients → Client erstellen</b>, Typ <b>Webanwendung</b>.</li>
+      <li>Bei <b>Authorized JavaScript origins</b> die Herkunft eintragen – nur Schema und
+          Host, <b>ohne Pfad</b>. Zum Entwickeln zusätzlich <code>http://localhost:5173</code>
+          und <code>http://localhost</code>.</li>
       <li>Die erzeugte <b>Client ID</b> hier einsetzen. Sie endet auf
           <code>.apps.googleusercontent.com</code>.</li>
     </ol>
-    <p>Wer die App selbst baut, kann sie stattdessen als <code>VITE_GOOGLE_CLIENT_ID</code>
-       in den Build geben. Das Feld hier überschreibt sie.</p>
+    <p>Das <b>Client secret</b> aus derselben Datei wird nicht gebraucht und gehört nirgendwo
+       hinein – diese App holt nur ID-Tokens.</p>
   </>
 );
 
@@ -144,7 +151,7 @@ function KontoGruppe({ melde }){
         hilfe={HILFE_KONTO} />
       <Zeile titel="Google-Client-ID"
         wert={id
-          ? (id.slice(0, 14) + '…' + (ausBuild && id === ausBuild ? ' · aus dem Build' : ' · hier eingetragen'))
+          ? (id.slice(0, 14) + '…' + (id === ausBuild ? ' · mitgeliefert' : ' · hier eingetragen'))
           : 'nicht hinterlegt – Anmeldung nicht möglich'}
         hilfe={HILFE_CLIENT_ID}
         onClick={() => { setText(id === ausBuild ? '' : id); setIdOffen(o => !o); }} />
@@ -163,7 +170,7 @@ function KontoGruppe({ melde }){
             <button class="btn secondary" onClick={async () => {
               await setzeClientId('');
               setText(''); setIdOffen(false);
-              melde({ art:'ok', titel: ausBuild ? 'Wieder die ID aus dem Build.' : 'Client-ID gelöscht.', zeilen:[] });
+              melde({ art:'ok', titel:'Wieder die mitgelieferte Client-ID.', zeilen:[] });
             }}>Löschen</button>
           )}
         </div>
