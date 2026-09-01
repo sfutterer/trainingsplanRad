@@ -137,6 +137,20 @@ function Abschnitte({ liste, geordnet, klasse }){
   return geordnet ? <ol class={klasse}>{inhalt}</ol> : <ul class={klasse}>{inhalt}</ul>;
 }
 
+/* Was der Testanlauf an diesem Tag ersetzt.
+
+   Ein Tausch, den man nicht sieht, ist von einem Fehler nicht zu
+   unterscheiden: wer am Donnerstag 2 x 6 min liest, wo bis gestern 5 x 5 min
+   stand, soll nicht raten muessen, ob die App sich vertan hat. */
+function Ersatzhinweis({ ersetzt }){
+  if(!ersetzt) return null;
+  return (
+    <div class="daynote gelb">
+      <b>{ersetzt.grund}:</b> Diese Einheit tritt an die Stelle von „{ersetzt.titel}“.
+    </div>
+  );
+}
+
 /* Die Go/No-Go-Liste am Testmorgen.
 
    Eigene Liste und kein weiterer Absatz zwischen den Hinweisen: die vier
@@ -203,6 +217,7 @@ export function Tagesinhalt({ info, istHeute, serie }){
 
   return (
     <>
+      <Ersatzhinweis ersetzt={info.ersetzt} />
       <Kennzahlen liste={info.kennzahlen} />
       <Abschnitte liste={info.bloecke} geordnet klasse="ablauf" />
       <Checkliste liste={info.checkliste} />

@@ -32,7 +32,16 @@
    unten pruefen dieselben Zahlen gegen das Dokument und sind die Stelle, an
    der ein Fehler benannt wird; die Pruefsumme sagt nur, dass sich etwas
    geaendert hat. Die Wiederholungsziele des Zirkels sind unveraendert - ihre
-   Pruefsumme steht deshalb noch auf dem alten Wert. */
+   Pruefsumme steht deshalb noch auf dem alten Wert.
+
+   Neu gesetzt am 01.09.2026: der Testanlauf ersetzt die Tage, fuer die er
+   gilt, statt nur einen Satz darunter zu haengen. Betroffen sind genau
+   fuenfzehn Tage - fuenf je Testtermin, dreimal dieselben Abstaende: der
+   Donnerstag der Vorwoche, der Freitag danach, der Sonntag, der Dienstag und
+   der Mittwoch vor dem Test. Alle uebrigen 111 Tage sind Zeichen fuer Zeichen
+   dieselben geblieben; die Wochenangaben und die Wiederholungsziele haben
+   ihre Pruefsumme unveraendert behalten, weil der Anlauf an einem Datum
+   haengt und nicht an der Woche. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -43,6 +52,7 @@ import * as W from '../src/domain/week.js';
 import * as Z from '../src/domain/zones.js';
 import * as C from '../src/domain/core.js';
 import * as D from '../src/domain/day.js';
+import * as S from '../src/domain/timer/sequences.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
 const plan = createPlan(json);
@@ -169,7 +179,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '7ca89f2ce8191479', len: 47567 });
+      .toEqual({ hash: '9c3006be21fad115', len: 45676 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -192,7 +202,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + D.buildDayInfo(plan, th, date, start).detail);
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '5b140423d9bc7d4c', len: 40395 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '15c743d67f0e6b1a', len: 38895 });
   });
 });
 
@@ -384,5 +394,115 @@ describe('Testanlauf', () => {
     const vortag = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -1), start);
     expect(test.checkliste.punkte).toEqual(plan.testTaper.goNoGo);
     expect(vortag.checkliste).toBeUndefined();
+  });
+
+  /* Der Kern der Sache: ein Anlaufschritt mit eigener Einheit muss den Tag
+     ersetzen und nicht kommentieren. Vorher stand am Donnerstag der Vorwoche
+     weiter die Qualitaetseinheit, die laut Plan ausfaellt - in der Karte, im
+     Timer und im Sollwert. */
+  it('ersetzt den geplanten Tag, wo der Schritt eine eigene Einheit traegt', () => {
+    for(const s of plan.testTaper.steps){
+      const d = W.addDays(testTag, s.offsetDays);
+      const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, d, start);
+      if(!s.session){
+        expect(info.ersetzt).toBeUndefined();
+        continue;
+      }
+      expect(info.title).toBe(s.session.title);
+      expect(info.ersetzt.titel).toBeTypeOf('string');
+      expect(info.ersetzt.titel).not.toBe(info.title);
+    }
+  });
+
+  /* Der Anlauf am Donnerstag der Vorwoche: zwei mal sechs Minuten statt
+     fuenf mal fuenf, und der Sollwert gerechnet aus den Schritten. */
+  it('rechnet den Sollwert aus den Schritten der Anlaufeinheit', () => {
+    const anlaufTag = W.addDays(testTag, -7);
+    const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, anlaufTag, start);
+    const geplant = D.thursdayPlan(plan, 3);
+
+    expect(geplant.reps).toBe(5);
+    expect(info.target).toEqual({ sport:'ride', zone:'z4', minutes:43,
+                                 hardMinutes:12, reps:2, repMinutes:6 });
+    expect(info.showIntervalBtn).toBe(true);
+  });
+
+  /* Der Mittwoch davor traegt Oeffner und ausdruecklich keinen Zirkel. Ein
+     stehengebliebener Rumpf-Timer waere die Einladung, ihn doch zu machen. */
+  it('nimmt dem Mittwoch vor dem Test den Rumpf-Zirkel', () => {
+    const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -1), start);
+    expect(info.target.sport).toBe('ride');
+    expect(info.showTimerBtn).toBeFalsy();
+    expect(info.hinweise.join(' ')).toContain('Kein Rumpf-Zirkel');
+  });
+
+  /* Der Sonntag verliert den Beinblock, der Freitag die optionale Fahrt. */
+  it('streicht Beinblock und lockere Fahrt im Anlauf', () => {
+    const sonntag = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -4), start);
+    const freitag = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -6), start);
+    expect(sonntag.target.legRounds).toBe(0);
+    expect(sonntag.showLegBlock).toBeFalsy();
+    expect(freitag.target).toEqual({ sport:'rest' });
+  });
+
+  /* Das Wellness-Gate haengt am Wochentag, nicht an der Einheit - sonst
+     verloere ausgerechnet der Mittwoch vor dem Test seine Vorschau. */
+  it('behaelt das Wellness-Gate der ersetzten Tage', () => {
+    const mittwoch = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -1), start);
+    const donnerstag = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -7), start);
+    expect(mittwoch.wellness.rolle).toBe('vorschau');
+    expect(donnerstag.wellness.rolle).toBe('entscheidung');
+  });
+
+  /* Derselbe Anlauf gilt fuer die Retests - abgeleitet aus den Testwochen und
+     nicht ein zweites Mal hingeschrieben. */
+  it('gilt vor jedem Testtermin', () => {
+    for(const w of W.testWeeks(plan)){
+      const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS,
+        W.addDays(W.testDateFor(plan, w, start), -7), start);
+      expect(info.title).toBe('Rad – Anlauf im Testtempo');
+    }
+    expect(W.testWeeks(plan)).toEqual([4, 10, 16]);
+  });
+});
+
+describe('Intervalltimer im Anlauf', () => {
+  const testTag = W.testDateFor(plan, 4, start);
+
+  it('zaehlt den Anlauf und nicht die Intervalle, die ausfallen', () => {
+    const v = S.intervalDefaults(plan, 3, start);
+    expect(v.mode).toBe('steps');
+    const seq = S.buildStepSequence(plan, Z.NO_THRESHOLDS, 3, v.steps);
+    const arbeit = seq.filter(x => x.type === 'work');
+    expect(arbeit.length).toBe(2);
+    expect(arbeit[0].duration).toBe(6 * 60);
+    expect(S.totalSeconds(seq)).toBe(43 * 60 + plan.interval.prepSeconds);
+  });
+
+  /* Ohne Startdatum kennt der Aufrufer den Kalender nicht. Dann lieber die
+     geplante Einheit als eine falsch datierte Ersatzeinheit. */
+  it('bleibt ohne Startdatum bei der Wochenvorgabe', () => {
+    expect(S.intervalDefaults(plan, 3).mode).toBe('intervals');
+  });
+
+  it('laesst den Schwellentest selbst unberuehrt', () => {
+    expect(S.intervalDefaults(plan, 4, start).mode).toBe('test');
+    expect(W.isoDayLocal(testTag)).toBe('2026-09-10');
+  });
+
+  /* Am Mittwoch vor dem Test zaehlt der Timer die Oeffner. Ohne das fuehrte
+     der Knopf auf der Mittwochskarte in den Test von morgen. */
+  it('zeigt am Mittwoch vor dem Test die Oeffner und nicht den Test', () => {
+    const mittwoch = W.addDays(testTag, -1);
+    const v = S.intervalDefaults(plan, 4, start, mittwoch);
+    expect(v.mode).toBe('steps');
+    expect(v.anlauf.session.title).toBe('Rad – Öffner vor dem Test');
+    expect(v.steps.filter(x => x.type === 'work').length).toBe(3);
+  });
+
+  /* An jedem anderen Tag bleibt es beim Donnerstag der Woche. */
+  it('bleibt an gewoehnlichen Tagen beim Donnerstag der Woche', () => {
+    const montag = W.addDays(testTag, -3);
+    expect(S.intervalDefaults(plan, 4, start, montag).mode).toBe('test');
   });
 });

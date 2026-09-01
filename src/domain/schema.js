@@ -113,6 +113,67 @@ function pvThursday(err, t, feld, zonen){
   }
 }
 
+/* Eine Schrittfolge fuer den Timer: Schwellentest und Anlaufeinheiten.
+   "z12" ist der Einfahrbereich Z1-Z2 und deshalb zusaetzlich erlaubt. */
+function pvSteps(err, steps, feld, zonen){
+  if(!pvArr(err, steps, feld, 1)) return;
+  steps.forEach((s, i) => {
+    const f = feld + '[' + i + ']';
+    if(!pvObj(err, s, f)) return;
+    if(['warm','work','rest','cool'].indexOf(s.type) < 0){
+      err.push(f + '.type ist "' + s.type + '" – erlaubt sind "warm", "work", "rest" und "cool".');
+    }
+    pvStr(err, s.label, f + '.label');
+    pvStr(err, s.short, f + '.short');
+    const hatMin = typeof s.minutes === 'number';
+    const hatSek = typeof s.seconds === 'number';
+    if(hatMin === hatSek){
+      err.push(f + ' braucht genau eine Dauerangabe: entweder "minutes" oder "seconds".');
+    } else if(hatMin){
+      pvNum(err, s.minutes, f + '.minutes', {min:0});
+    } else {
+      pvNum(err, s.seconds, f + '.seconds', {min:0, int:true});
+    }
+    if(zonen.indexOf(s.zone) < 0 && s.zone !== 'z12'){
+      err.push(f + '.zone ist "' + s.zone + '" – erlaubt sind ' + zonen.join(', ') + ' und z12.');
+    }
+  });
+}
+
+/* Die Einheit, die ein Anlaufschritt an die Stelle des geplanten Tages setzt.
+
+   Optional: viele Anlauftage stehen ohnehin schon so im Plan, dort genuegt der
+   Hinweis. Wo sie steht, muss sie vollstaendig sein - eine halbe Einheit
+   verlangt vom Nutzer, sich den Rest aus dem Fliesstext zusammenzusuchen, und
+   genau das soll sie abloesen. */
+function pvSession(err, sess, feld, zonen){
+  if(sess === null || sess === undefined) return;
+  if(!pvObj(err, sess, feld)) return;
+  pvStr(err, sess.title, feld + '.title');
+  if(sess.note != null) pvStr(err, sess.note, feld + '.note');
+
+  if(sess.kind === 'steps'){
+    pvSteps(err, sess.steps, feld + '.steps', zonen);
+    if(Array.isArray(sess.steps) && !sess.steps.some(s => s && s.type === 'work')){
+      err.push(feld + '.steps enthält keinen Schritt vom Typ "work" – dann gibt es nichts zu treffen.');
+    }
+  } else if(sess.kind === 'ride'){
+    /* minutes darf fehlen: dann bleibt die Dauer des geplanten Tages stehen
+       und nur seine Ausfuehrung aendert sich. Ein Anlauf, der jede Testwoche
+       auf dieselbe Zahl festnagelt, liefe gegen die wachsenden Wochenumfaenge. */
+    if(sess.minutes != null) pvNum(err, sess.minutes, feld + '.minutes', {min:1});
+    if(zonen.indexOf(sess.zone) < 0){
+      err.push(feld + '.zone ist "' + sess.zone + '" – erlaubt sind ' + zonen.join(', ') + '.');
+    }
+  } else if(sess.kind === 'rest'){
+    /* nichts weiter */
+  } else if(sess.kind === 'core'){
+    if(sess.rounds != null) pvNum(err, sess.rounds, feld + '.rounds', {min:1, int:true});
+  } else {
+    err.push(feld + '.kind ist "' + sess.kind + '" – erlaubt sind "steps", "ride", "rest" und "core".');
+  }
+}
+
 function pvBlocks(err, b, feld){
   if(b === null || b === undefined) return;
   if(!pvObj(err, b, feld)) return;
@@ -341,30 +402,10 @@ export function planValidate(p){
     pvNum(err, p.intervalTimer.cooldownMinutes, 'intervalTimer.cooldownMinutes', {min:0});
   }
 
-  /* Der Schwellentest ist eine feste Schrittfolge. "z12" ist der Einfahrbereich
-     Z1-Z2 und deshalb hier zusaetzlich erlaubt. */
-  if(pvObj(err, p.thresholdTest, 'thresholdTest') && pvArr(err, p.thresholdTest.steps, 'thresholdTest.steps', 1)){
-    p.thresholdTest.steps.forEach((s, i) => {
-      const f = 'thresholdTest.steps[' + i + ']';
-      if(!pvObj(err, s, f)) return;
-      if(['warm','work','rest','cool'].indexOf(s.type) < 0){
-        err.push(f + '.type ist "' + s.type + '" – erlaubt sind "warm", "work", "rest" und "cool".');
-      }
-      pvStr(err, s.label, f + '.label');
-      pvStr(err, s.short, f + '.short');
-      const hatMin = typeof s.minutes === 'number';
-      const hatSek = typeof s.seconds === 'number';
-      if(hatMin === hatSek){
-        err.push(f + ' braucht genau eine Dauerangabe: entweder "minutes" oder "seconds".');
-      } else if(hatMin){
-        pvNum(err, s.minutes, f + '.minutes', {min:0});
-      } else {
-        pvNum(err, s.seconds, f + '.seconds', {min:0, int:true});
-      }
-      if(zonen.indexOf(s.zone) < 0 && s.zone !== 'z12'){
-        err.push(f + '.zone ist "' + s.zone + '" – erlaubt sind ' + zonen.join(', ') + ' und z12.');
-      }
-    });
+  /* Der Schwellentest ist eine feste Schrittfolge. Dieselbe Gestalt tragen
+     die Anlaufeinheiten weiter unten - geprueft wird beides mit pvSteps. */
+  if(pvObj(err, p.thresholdTest, 'thresholdTest')){
+    pvSteps(err, p.thresholdTest.steps, 'thresholdTest.steps', zonen);
   }
 
   /* Der Testanlauf. Die Schritte haengen als Tagesabstand am Testtermin, nicht
@@ -392,6 +433,7 @@ export function planValidate(p){
           err.push(f + '.offsetDays ' + s.offsetDays + ' kommt doppelt vor – je Tag gibt es genau eine Vorgabe.');
         }
         gesehen.push(s.offsetDays);
+        pvSession(err, s.session, f + '.session', zonen);
         if(Math.abs(s.offsetDays) > p.testTaper.leadDays + 7){
           err.push(f + '.offsetDays ist ' + s.offsetDays + ' und liegt damit weit außerhalb des Anlaufs.');
         }

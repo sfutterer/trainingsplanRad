@@ -99,13 +99,20 @@ export function testWeeks(plan){
 }
 
 /* Der Donnerstag der Trainingswoche. Die Woche beginnt am Samstag, der
-   Testtermin ist also der erste Donnerstag ab Wochenbeginn. */
-export function testDateFor(plan, week, startDate){
+   Qualitaetstag ist also der erste Donnerstag ab Wochenbeginn.
+
+   testDateFor ist derselbe Kalender unter dem Namen, unter dem ihn der Test
+   sucht: der Testtermin ist der Donnerstag seiner Woche und kein zweites
+   Datum daneben. Seit der Anlauf auch die Donnerstage ausserhalb der
+   Testwochen betrifft, wird derselbe Tag auch ohne Test gebraucht. */
+export function thursdayDateFor(plan, week, startDate){
   const d = toMidnight(startDate);
   d.setDate(d.getDate() + (week - 1) * 7);
   while(d.getDay() !== 4) d.setDate(d.getDate() + 1);
   return d;
 }
+
+export const testDateFor = thursdayDateFor;
 
 /* ---- Kalenderraster ---- */
 

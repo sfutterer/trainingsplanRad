@@ -40,10 +40,10 @@
    dastehen, aus denen sich eine Folge bauen liesse. */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { plan, thresholds, week, settings } from '../../../state/store.js';
+import { plan, thresholds, week, settings, startDate, today } from '../../../state/store.js';
 import { meldeTimer } from '../../../state/timerState.js';
 import { createTimer } from '../../../domain/timer/engine.js';
-import { buildIntervalSequence, buildTestSequence, intervalDefaults,
+import { buildIntervalSequence, buildTestSequence, buildStepSequence, intervalDefaults,
          totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
 import { isRecoveryWeek } from '../../../domain/week.js';
@@ -69,7 +69,7 @@ function dauer(sec){
 export function IntervalleTab(){
   const p = plan.value, th = thresholds.value, w = week.value;
   const s = settings.value;
-  const vorgabe = intervalDefaults(p, w);
+  const vorgabe = intervalDefaults(p, w, startDate.value, today.value);
 
   const ausVorgabe = () => (vorgabe.mode === 'intervals'
     ? { warmMin: vorgabe.warmMin, workMin: vorgabe.workMin, restMin: vorgabe.restMin,
@@ -85,9 +85,14 @@ export function IntervalleTab(){
 
   const testmodus = vorgabe.mode === 'test';
   const nurZ2 = vorgabe.mode === 'z2';
+  /* Der Anlauf zum Schwellentest laeuft wie der Test selbst als feste Folge
+     aus der Datei: er ist die Probe auf den Test, und eine Probe mit anderen
+     Zahlen probt etwas anderes. Deshalb steht auch hier keine Einstellkarte. */
+  const anlauf = vorgabe.mode === 'steps' ? vorgabe.anlauf : null;
 
   function sequenz(){
     if(nurZ2) return [];
+    if(anlauf) return buildStepSequence(p, th, w, vorgabe.steps);
     return testmodus ? buildTestSequence(p, th, w) : buildIntervalSequence(p, th, w, cfg);
   }
 
@@ -192,9 +197,12 @@ export function IntervalleTab(){
   const step = timer.step;
   const sec = timer.secondsLeft();
 
+  /* Die Beschriftung des Rings kommt aus der Zone des laufenden Schritts und
+     nur ersatzweise aus den Einstellungen: eine feste Folge hat keine. */
+  const wz = step && step.zone ? step.zone.key : (cfg ? cfg.zoneKey : null);
   const phase = !step ? 'Bereit'
-    : step.type === 'work' ? (testmodus ? 'Test' : cfg && cfg.zoneKey === 'z5' ? 'VO2max'
-        : cfg && cfg.zoneKey === 'z4' ? 'Schwelle' : 'Tempo')
+    : step.type === 'work' ? (testmodus ? 'Test' : wz === 'z5' ? 'VO2max'
+        : wz === 'z4' ? 'Schwelle' : 'Tempo')
     : step.type === 'warm' ? 'Einfahren'
     : step.type === 'rest' ? 'Erholung'
     : step.type === 'cool' ? 'Ausrollen'
@@ -211,16 +219,19 @@ export function IntervalleTab(){
      Baugeruest darunter unterscheiden sie sich nur noch darin, ob es eine
      Buehne und Einstellungen gibt. */
   const titel = testmodus ? 'Schwellentest'
+    : anlauf ? anlauf.session.title.replace('Rad – ', '')
     : nurZ2 ? 'Grundlagentag'
     : vorgabe.plan.title.replace('Rad – ', '');
 
   const kopfmeta = nurZ2 ? vorgabe.plan.minutes + ' min' : dauer(totalSeconds(vorschau));
 
   const status = testmodus ? 'Woche ' + w + ' · Schwellentest statt Intervallen'
+    : anlauf ? 'Woche ' + w + ' · Testanlauf statt der Qualitätseinheit'
     : nurZ2 ? 'Woche ' + w + ' · ' + vorgabe.plan.minutes + ' min ' + zoneText(p, th, 'z2', w) + ' am Stück'
     : 'Woche ' + w + ' · ' + cfg.reps + '× ' + cfg.workMin + ' min ' + zoneText(p, th, cfg.zoneKey, w);
 
   const hinweise = testmodus ? [p.texts.thresholdTestSummary]
+    : anlauf ? [anlauf.taper.step.text, anlauf.session.note].filter(Boolean)
     : nurZ2 ? [p.texts.thursdayNoTimer]
     : [p.texts.intervalRollingStart + (isRecoveryWeek(p, w) ? ' ' + p.texts.intervalRecoveryWeek : '')];
 
@@ -252,6 +263,8 @@ export function IntervalleTab(){
       schluss={
         testmodus
           ? <p class="hint">Der Testablauf steht fest und lässt sich nicht verstellen – ein Test, der sich anpassen lässt, ist kein Vergleichsmaßstab mehr.</p>
+          : anlauf
+          ? <p class="hint">Der Anlauf steht fest und lässt sich nicht verstellen – er ist die Probe auf den Test am {anlauf.taper.date.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' })}, und eine Probe mit anderen Zahlen probt etwas anderes.</p>
           : nurZ2 ? null : (
           <div class="card">
             <div class="row"><span>Einstellungen</span><b>anpassbar</b></div>

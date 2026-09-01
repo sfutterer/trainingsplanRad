@@ -262,13 +262,39 @@
     "leadDays": 10,
     "intro": "Der Testanlauf läuft. Er ist verbindlich: ein blind gepacter Test fällt zu niedrig aus und verzerrt die Zonen für den gesamten Folgeblock.",
     "steps": [
-      {"offsetDays": -7, "label": "7 Tage davor (Do)", "text": "Statt der Qualitätseinheit: 15 min Einfahren, 2 × 6 min im angestrebten Testtempo, 6 min Pause dazwischen, 10 min Ausrollen. Das liefert die Wattzahl, auf die im Test gezielt wird."},
-      {"offsetDays": -6, "label": "6 Tage davor (Fr)", "text": "Ruhe."},
+      {"offsetDays": -7, "label": "7 Tage davor (Do)", "text": "Statt der Qualitätseinheit: 15 min Einfahren, 2 × 6 min im angestrebten Testtempo, 6 min Pause dazwischen, 10 min Ausrollen. Das liefert die Wattzahl, auf die im Test gezielt wird.",
+       "session": {
+         "kind": "steps", "title": "Rad – Anlauf im Testtempo",
+         "steps": [
+           {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 15, "zone": "z12"},
+           {"type": "work", "label": "Testtempo 1 / 2", "short": "Testtempo 1/2", "minutes": 6, "zone": "z4", "rep": 1, "reps": 2, "note": "Im angestrebten Testtempo, nicht darüber – gesucht ist die Wattzahl für den Test, kein Ergebnis."},
+           {"type": "rest", "label": "Pause", "short": "Pause", "minutes": 6, "zone": "z1", "rep": 1, "reps": 2},
+           {"type": "work", "label": "Testtempo 2 / 2", "short": "Testtempo 2/2", "minutes": 6, "zone": "z4", "rep": 2, "reps": 2, "note": "Dieselbe Leistung wie im ersten Block. Fällt sie ab, war der erste zu hart – dann ist die Zielwattzahl die des zweiten."},
+           {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 10, "zone": "z1"}
+         ]
+       }},
+      {"offsetDays": -6, "label": "6 Tage davor (Fr)", "text": "Ruhe.",
+       "session": {"kind": "rest", "title": "Ruhetag", "note": "Die lockere Fahrt entfällt – der Freitag im Anlauf ist Ruhe und keine Entscheidung."}},
       {"offsetDays": -5, "label": "5 Tage davor (Sa)", "text": "90 min reines Z2 statt der geplanten langen Ausfahrt."},
-      {"offsetDays": -4, "label": "4 Tage davor (So)", "text": "Nur Rumpf-Zirkel, kein Beinblock."},
+      {"offsetDays": -4, "label": "4 Tage davor (So)", "text": "Nur Rumpf-Zirkel, kein Beinblock.",
+       "session": {"kind": "core", "title": "Rumpf-Zirkel (voll), kein Beinblock", "note": "Beinblock und optionale Fahrt entfallen – die Beine sollen am Testtag frisch sein."}},
       {"offsetDays": -3, "label": "3 Tage davor (Mo)", "text": "Ruhe."},
-      {"offsetDays": -2, "label": "2 Tage davor (Di)", "text": "45 min, direkte Strecke, unteres Z2 – nicht verlängern."},
-      {"offsetDays": -1, "label": "Tag davor (Mi)", "text": "30 min Z1 mit 3 × 1 min zügig / 1 min locker, kein Rumpf. Die Öffner stellen nach zwei ruhigen Tagen die Spritzigkeit her, ohne Ermüdung zu erzeugen."},
+      {"offsetDays": -2, "label": "2 Tage davor (Di)", "text": "45 min, direkte Strecke, unteres Z2 – nicht verlängern.",
+       "session": {"kind": "ride", "title": "Rad – direkte Strecke", "zone": "z2", "note": "Direkte Strecke, unteres Z2 – nicht verlängern. Der Arbeitsweg wird an diesem Dienstag nicht gedehnt."}},
+      {"offsetDays": -1, "label": "Tag davor (Mi)", "text": "30 min Z1 mit 3 × 1 min zügig / 1 min locker, kein Rumpf. Die Öffner stellen nach zwei ruhigen Tagen die Spritzigkeit her, ohne Ermüdung zu erzeugen.",
+       "session": {
+         "kind": "steps", "title": "Rad – Öffner vor dem Test", "note": "Kein Rumpf-Zirkel an diesem Mittwoch.",
+         "steps": [
+           {"type": "warm", "label": "Einrollen", "short": "Einrollen", "minutes": 12, "zone": "z1"},
+           {"type": "work", "label": "Zügig 1 / 3", "short": "Zügig 1/3", "minutes": 1, "zone": "z3", "rep": 1, "reps": 3, "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen."},
+           {"type": "rest", "label": "Locker", "short": "Locker 1/3", "minutes": 1, "zone": "z1", "rep": 1, "reps": 3},
+           {"type": "work", "label": "Zügig 2 / 3", "short": "Zügig 2/3", "minutes": 1, "zone": "z3", "rep": 2, "reps": 3, "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen."},
+           {"type": "rest", "label": "Locker", "short": "Locker 2/3", "minutes": 1, "zone": "z1", "rep": 2, "reps": 3},
+           {"type": "work", "label": "Zügig 3 / 3", "short": "Zügig 3/3", "minutes": 1, "zone": "z3", "rep": 3, "reps": 3, "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen."},
+           {"type": "rest", "label": "Locker", "short": "Locker 3/3", "minutes": 1, "zone": "z1", "rep": 3, "reps": 3},
+           {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 12, "zone": "z1"}
+         ]
+       }},
       {"offsetDays": 1, "label": "Tag danach (Fr)", "text": "Ruhe oder 30 min Z1. Der Test war eine harte Einheit."}
     ],
     "goNoGoTitel": "Go/No-Go am Testmorgen",

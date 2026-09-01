@@ -3,7 +3,7 @@
 
 import { repTarget } from '../core.js';
 import { zeitDosis } from '../koerper.js';
-import { thursdayPlan } from '../day.js';
+import { thursdayPlan, thursdayAnlauf, anlaufSchritte, schrittSekunden } from '../day.js';
 import { zoneText, zoneSpan, wattText } from '../zones.js';
 
 /* Ein Zonenetikett fuer die Anzeige im Timer. z12 ist die Spanne beim
@@ -58,17 +58,23 @@ export function buildHoldSequence(ex){
 
 /* Fester Ablauf aus plan.json. Ein Test, der sich verstellen laesst, ist kein
    Vergleichsmassstab mehr - deshalb kommen die Schritte aus der Datei und
-   nicht aus den Eingabefeldern. */
-export function buildTestSequence(plan, th, week){
+   nicht aus den Eingabefeldern. Dasselbe gilt fuer die Anlaufeinheiten: die
+   zwei mal sechs Minuten im Testtempo sind die Probe auf den Test und keine
+   Trainingsvorgabe, die man sich zurechtlegt. */
+export function buildStepSequence(plan, th, week, steps){
   const Zn = k => timerZone(plan, th, k, week);
   const seq = [{ type:'prep', label:'Bereit machen', short:'Bereit machen',
                  duration: plan.interval.prepSeconds, zone: Zn('z1') }];
-  for(const s of plan.thresholdTest.steps){
-    seq.push({ type:s.type, label:s.label, short:s.short, duration:s.minutes * 60,
+  for(const s of steps){
+    seq.push({ type:s.type, label:s.label, short:s.short, duration: schrittSekunden(s),
                zone:Zn(s.zone), rep:s.rep, reps:s.reps, note:s.note });
   }
   seq.push({ type:'done', label:'Fertig!', short:'Fertig', duration:0, zone:Zn('z1') });
   return seq;
+}
+
+export function buildTestSequence(plan, th, week){
+  return buildStepSequence(plan, th, week, plan.thresholdTest.steps);
 }
 
 export function buildIntervalSequence(plan, th, week, { warmMin, workMin, restMin, coolMin, reps, zoneKey }){
@@ -92,8 +98,25 @@ export function buildIntervalSequence(plan, th, week, { warmMin, workMin, restMi
   return seq;
 }
 
-/* Vorgaben des Donnerstags fuer den Intervalltimer. */
-export function intervalDefaults(plan, week){
+/* Vorgaben fuer den Intervalltimer.
+
+   Gefragt wird nach der Woche, geantwortet wird fuer ihren Donnerstag: der
+   Timer steht in einem eigenen Bereich und nicht an einer Tageskarte.
+
+   Der Anlauf zum Schwellentest bricht das an einer Stelle auf. Er ersetzt
+   nicht nur den Donnerstag der Vorwoche, sondern legt auch auf den Mittwoch
+   vor dem Test eine Schrittfolge - und wer an diesem Mittwoch den Timer
+   oeffnet, will die Oeffner zaehlen und nicht den Test von morgen. Deshalb
+   `heute`: traegt der heutige Tag selbst eine Anlauffolge, gilt sie.
+
+   Ohne startDate bleibt es bei der Wochenvorgabe. Ein Aufrufer, der den
+   Kalender nicht kennt, soll die geplante Einheit bekommen und keine falsch
+   datierte Ersatzeinheit. */
+export function intervalDefaults(plan, week, startDate, heute){
+  const anlauf = anlaufSchritte(plan, heute, startDate)
+              || thursdayAnlauf(plan, week, startDate);
+  if(anlauf) return { mode:'steps', anlauf, steps: anlauf.session.steps };
+
   const t = thursdayPlan(plan, week);
   if(t.kind === 'test') return { mode:'test', plan:t };
   if(t.kind === 'z2')   return { mode:'z2',   plan:t };

@@ -25,7 +25,7 @@
 
 import {
   weekNumberFor, weekIndex, phaseOf, isRecoveryWeek, isWinterBlock,
-  thursdayData, saturdayBlockData, dayOffset, testWeeks, testDateFor
+  thursdayData, saturdayBlockData, dayOffset, testWeeks, testDateFor, thursdayDateFor
 } from './week.js';
 import {
   zoneText, zoneSpan, targetText, withCadence, wattText,
@@ -152,12 +152,18 @@ function circuitBlock(plan, week, rounds, label, nachsatz){
   };
 }
 
-/* Der Schwellentest steht in plan.json als Schrittliste fuer den Timer. Fuer
-   die Anzeige werden die drei Oeffnungsintervalle wieder zu einer Zeile
+/* Dauer eines Timerschritts. Die Datei darf "minutes" oder "seconds" nennen -
+   ein Oeffner ueber 40 s laesst sich als 0,666 Minuten nicht hinschreiben. */
+export function schrittSekunden(s){
+  return typeof s.seconds === 'number' ? s.seconds : Math.round((s.minutes || 0) * 60);
+}
+
+/* Der Schwellentest steht in plan.json als Schrittliste fuer den Timer, und
+   seit dem Anlauf tun es die Einheiten, die einen geplanten Tag ersetzen,
+   ebenso. Fuer die Anzeige werden Wiederholungen wieder zu einer Zeile
    zusammengezogen - als sechs Einzelzeilen ist der Ablauf laenger als der Rest
-   des Tages und verdeckt die beiden Schritte, auf die es ankommt. */
-function testBloecke(plan, th, week){
-  const steps = plan.thresholdTest?.steps ?? [];
+   des Tages und verdeckt die Schritte, auf die es ankommt. */
+function schrittBloecke(plan, th, week, steps){
   const out = [];
   let i = 0;
   while(i < steps.length){
@@ -168,19 +174,19 @@ function testBloecke(plan, th, week){
       const arbeit = gruppe.find(g => g.type === 'work') || gruppe[0];
       const pause  = gruppe.find(g => g.type === 'rest');
       const hinweis = [
-        pause ? `${pause.minutes} min locker (${testZone(plan, th, pause.zone, week)}) dazwischen.` : null,
+        pause ? `${minutenText(schrittSekunden(pause))} locker (${testZone(plan, th, pause.zone, week)}) dazwischen.` : null,
         arbeit.note
       ].filter(Boolean).join(' ');
       out.push({
         label: `${s.reps}× ${ohneZaehler(arbeit.label)}`,
-        wert: `${arbeit.minutes} min · ${testZone(plan, th, arbeit.zone, week)}`,
+        wert: `${minutenText(schrittSekunden(arbeit))} · ${testZone(plan, th, arbeit.zone, week)}`,
         hinweis: hinweis || undefined
       });
       continue;
     }
     out.push({
       label: s.label,
-      wert: `${s.minutes} min · ${testZone(plan, th, s.zone, week)}`,
+      wert: `${minutenText(schrittSekunden(s))} · ${testZone(plan, th, s.zone, week)}`,
       hinweis: s.note || undefined
     });
     i += 1;
@@ -389,7 +395,7 @@ function donnerstag(c){
       { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
       { label:'Zielzone',   wert: targetText(plan, th, t.zone, week) }
     ];
-    info.bloecke = testBloecke(plan, th, week);
+    info.bloecke = schrittBloecke(plan, th, week, plan.thresholdTest?.steps ?? []);
     info.hinweise = [T.thursdayTest];
 
     /* Die vier Punkte werden am Testmorgen abgehakt, nicht gelesen - deshalb
@@ -552,6 +558,155 @@ function sonntag(c){
   };
 }
 
+/* ---- Der Anlauf ersetzt den Tag ----
+
+   Ein Schritt des Anlaufs kann in plan.json eine eigene Einheit tragen. Traegt
+   er keine, bleibt es beim Hinweis - die meisten Anlauftage stehen ohnehin
+   schon so im Plan: der Montag ist Ruhetag, der Samstag einer Testwoche ist
+   reines Z2. Traegt er eine, ersetzt sie den geplanten Tag vollstaendig:
+   Titel, Kennzahlen, Ablauf, Timer und Sollwert.
+
+   Vorher hing der Anlauf als Satz unter einer Karte, die weiter 5 x 5 min Z3
+   verlangte. Dreimal derselbe Fehler aus derselben Ursache: auf dem Rad wird
+   der Satz nicht gelesen, der Intervalltimer zaehlte die Einheit, die
+   ausfaellt, und die Auswertung zaehlte den tatsaechlich gefahrenen Anlauf
+   danach als verfehltes Soll.
+
+   Was ersetzt wurde, bleibt als `ersetzt` am Tag stehen. Ein Tausch, den man
+   nicht sieht, ist von einem Fehler nicht zu unterscheiden. */
+
+/* Eine Schrittfolge wie der Schwellentest: Anlauf im Testtempo, Oeffner am
+   Vortag. Die Zahlen der Karte werden aus den Schritten gerechnet und nicht
+   danebengeschrieben - sonst laufen Ablauf und Kennzahl auseinander. */
+function anlaufSteps(c, sess){
+  const { plan, th, week } = c;
+  const arbeit = sess.steps.filter(x => x.type === 'work');
+  const gesamt = sess.steps.reduce((n, x) => n + schrittSekunden(x), 0);
+  const hart = arbeit.reduce((n, x) => n + schrittSekunden(x), 0);
+  const zone = arbeit[0].zone;
+  const bloecke = schrittBloecke(plan, th, week, sess.steps);
+
+  const info = {
+    type:'interval', art:'intervalle', title: sess.title,
+    detail: bloecke.map(b => `${b.label}: ${b.wert}${b.hinweis ? '. ' + b.hinweis : '.'}`).join(' '),
+    showIntervalBtn: true,
+    kennzahlen: [
+      { label:'Dauer',     wert: Math.round(gesamt / 60) + ' min' },
+      { label:'Belastung', wert: `${arbeit.length} × ${minutenText(schrittSekunden(arbeit[0]))}` },
+      { label:'Zielzone',  wert: targetText(plan, th, zone, week) }
+    ],
+    bloecke,
+    hinweise: sess.note ? [sess.note] : [],
+    target: { sport:'ride', zone, minutes: Math.round(gesamt / 60),
+              hardMinutes: Math.round(hart / 60),
+              reps: arbeit.length, repMinutes: schrittSekunden(arbeit[0]) / 60 }
+  };
+  const cad = cadenceText(plan, zone, week);
+  if(cad) info.kennzahlen.push({ label:'Trittfrequenz', wert: cad });
+  return info;
+}
+
+/* Eine Fahrt in einer Zone, sonst nichts.
+
+   Ohne `minutes` bleibt die Dauer des geplanten Tages stehen: der Anlauf
+   aendert an diesem Dienstag die Ausfuehrung und nicht den Umfang, und eine
+   hier festgenagelte Zahl liefe gegen die wachsenden Wochenumfaenge der
+   Retests. Was am geplanten Tag sonst noch stand, bleibt stehen - der
+   Beinblock am Dienstag der spaeten Phasen wird vom Anlauf nicht abgesagt. */
+function anlaufRide(c, sess, geplant){
+  const { plan, th, week } = c;
+  const zt = geplant.target || {};
+  const min = sess.minutes ?? zt.minutes ?? zt.rideMinutes;
+  const zone = sess.zone;
+  const zText = withCadence(plan, targetText(plan, th, zone, week), zone, week);
+
+  const info = {
+    type:'ride', title: sess.title,
+    detail: `${min} min${distanceSuffix(plan, min, week)} · ${zText}. ${sess.note || ''}`.trim(),
+    kennzahlen: rideKennzahlen(plan, th, week, min, zone),
+    bloecke: [{ label:'Fahrt', wert:`${min} min · ${zText}`, hinweis: sess.note || undefined }],
+    target: { ...zt, sport:'ride', minutes: min, zone, km: estimateDistance(plan, min, week) }
+  };
+
+  if(zt.legRounds > 0){
+    const nachsatz = `${c.T.legNoTimer}, ${plan.legs.durationHint}. ${c.T.legTuesdayNote}`;
+    info.kennzahlen.push({ label:'Beinblock', wert:`${rundenText(zt.legRounds)} (abends)` });
+    info.bloecke.push({ label:'Beinblock (abends)',
+      wert:`${rundenText(zt.legRounds)} ${plan.legs.shortList}`, hinweis: nachsatz });
+    info.showLegBtn = true;
+  }
+  return info;
+}
+
+/* Ruhe heisst Ruhe. Der Freitag im Anlauf ist deshalb 'rest' und nicht
+   'restopt': die optionale Fahrt ist genau das, was hier entfaellt. */
+function anlaufRest(c, sess){
+  return {
+    type:'rest', title: sess.title,
+    detail: sess.note || 'Ruhe.',
+    kennzahlen: [{ label:'Umfang', wert:'frei' }],
+    bloecke: [],
+    hinweise: sess.note ? [sess.note] : [],
+    target: { sport:'rest' }
+  };
+}
+
+/* Zirkel ohne Beinblock. Die optionale Fahrt entfaellt mit: der Schritt heisst
+   "nur Rumpf-Zirkel", und ein optionales Angebot daneben waere ein zweites. */
+function anlaufCore(c, sess){
+  const { plan, week, exCount } = c;
+  const rounds = sess.rounds ?? coreRounds(plan, week);
+  const work = coreWorkSeconds(plan, week), rest = coreRestSeconds(plan, week);
+  const min = coreMinutes(plan, week, rounds);
+  return {
+    type:'core', title: sess.title,
+    detail: `Rumpf-Zirkel: ${rounds} Runden à ${exCount} Übungen (${work} s Belastung / ${rest} s Pause), ` +
+            `ca. ${min} min. ${sess.note || ''}`.trim(),
+    showTimerBtn: true,
+    kennzahlen: [
+      { label:'Dauer',  wert:'ca. ' + min + ' min' },
+      { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
+      { label:'Takt',   wert:`${work} s / ${rest} s` }
+    ],
+    bloecke: [circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (voll)', sess.note)],
+    target: { sport:'core', rounds, minutes: min, workSec: work, restSec: rest, legRounds: 0 }
+  };
+}
+
+const ANLAUF_ARTEN = { steps: anlaufSteps, ride: anlaufRide, rest: anlaufRest, core: anlaufCore };
+
+function anlaufEinheit(c, taper, geplant){
+  const sess = taper.step.session;
+  const bau = ANLAUF_ARTEN[sess.kind];
+  /* Eine Art, die diese Fassung nicht kennt, laesst den geplanten Tag stehen.
+     Der Hinweis darunter nennt den Anlauf weiterhin im Wortlaut - lieber der
+     geplante Tag mit einem Satz daneben als eine leere Karte. */
+  if(!bau) return geplant;
+  const info = bau(c, sess, geplant);
+  info.ersetzt = { titel: geplant.title, grund: 'Testanlauf zum ' + deDatum(taper.date) };
+  /* Das Wellness-Gate haengt am Wochentag und nicht an der Einheit: der
+     Mittwoch vor dem Test zeigt weiter die Vorschau, der Donnerstag die
+     Entscheidung. */
+  if(!info.wellness && geplant.wellness) info.wellness = geplant.wellness;
+  return info;
+}
+
+/* Die Anlauffolge eines Tages - fuer den Intervalltimer. Nur Schrittfolgen:
+   eine Ruhe- oder Zirkeleinheit hat im Intervalltimer nichts zu zaehlen. */
+export function anlaufSchritte(plan, date, startDate){
+  if(!date || !startDate) return null;
+  const t = testTaperFor(plan, date, startDate);
+  const sess = t && t.step && t.step.session;
+  return sess && sess.kind === 'steps' ? { session: sess, taper: t } : null;
+}
+
+/* Dieselbe Folge am Donnerstag einer Woche, fuer den Timer, der seine Vorgabe
+   an der Wochennummer holt und nicht an einem Datum. */
+export function thursdayAnlauf(plan, week, startDate){
+  if(!startDate) return null;
+  return anlaufSchritte(plan, thursdayDateFor(plan, week, startDate), startDate);
+}
+
 /* Vom Tagestyp zur Einheitsart.
 
    Der Typ beschreibt, was die Ansicht mit dem Tag macht - 'ride' bekommt eine
@@ -599,14 +754,22 @@ export function buildDayInfo(plan, th, date, startDate){
     z2: () => withCadence(plan, targetText(plan, th, 'z2', week), 'z2', week)
   };
 
-  const info = TAGE[date.getDay()](c);
+  const geplant = TAGE[date.getDay()](c);
+  geplant.target = buildDayTarget(plan, date, week);
+
+  /* Der Anlauf kann den geplanten Tag ersetzen, und zwar bevor die
+     gemeinsamen Felder gefuellt werden: sonst traegt die Ersatzeinheit die
+     Einheitsart und die Sollwerte des Tages, den sie abloest. */
+  const taper = vorStart ? null : testTaperFor(plan, date, startDate);
+  const info = taper && taper.step && taper.step.session
+    ? anlaufEinheit(c, taper, geplant)
+    : geplant;
 
   info.week = week;
   info.vorStart = vorStart;
   info.phase = c.phase;
   info.recovery = c.recovery;
   info.winter = c.winter;
-  info.target = buildDayTarget(plan, date, week);
 
   /* Hier aufgefuellt und nicht in den sieben Funktionen, damit die Anzeige nie
      auf undefined stoesst - und damit ein spaeter ergaenzter Tagestyp nicht
@@ -620,7 +783,6 @@ export function buildDayInfo(plan, th, date, startDate){
   /* Der Testanlauf steht an dem Tag, fuer den er gilt, und nicht als Liste in
      der Statuskarte. Eine Vorgabe fuer den kommenden Dienstag nuetzt am
      Dienstag etwas, nicht heute. */
-  const taper = vorStart ? null : testTaperFor(plan, date, startDate);
   if(taper){
     info.testTaper = taper;
     const satz = taperHinweis(plan, taper);
