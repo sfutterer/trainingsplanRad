@@ -174,19 +174,20 @@ function schrittBloecke(plan, th, week, steps){
       const arbeit = gruppe.find(g => g.type === 'work') || gruppe[0];
       const pause  = gruppe.find(g => g.type === 'rest');
       const hinweis = [
-        pause ? `${minutenText(schrittSekunden(pause))} locker (${testZone(plan, th, pause.zone, week)}) dazwischen.` : null,
+        pause ? `${minutenText(schrittSekunden(pause))} locker (${schrittZiel(plan, th, pause, week)}) dazwischen.` : null,
+        pause ? pause.note : null,
         arbeit.note
       ].filter(Boolean).join(' ');
       out.push({
         label: `${s.reps}× ${ohneZaehler(arbeit.label)}`,
-        wert: `${minutenText(schrittSekunden(arbeit))} · ${testZone(plan, th, arbeit.zone, week)}`,
+        wert: `${minutenText(schrittSekunden(arbeit))} · ${schrittZiel(plan, th, arbeit, week)}`,
         hinweis: hinweis || undefined
       });
       continue;
     }
     out.push({
       label: s.label,
-      wert: `${minutenText(schrittSekunden(s))} · ${testZone(plan, th, s.zone, week)}`,
+      wert: `${minutenText(schrittSekunden(s))} · ${schrittZiel(plan, th, s, week)}`,
       hinweis: s.note || undefined
     });
     i += 1;
@@ -205,6 +206,24 @@ function ohneZaehler(label){
 function testZone(plan, th, zone, week){
   if(zone === 'z12') return zoneSpan(plan, th, 'z1', 'z2', week);
   return zoneText(plan, th, zone, week);
+}
+
+/* Woran sich ein Schritt bemisst.
+
+   Nennt er eine Anstrengung, steht sie da und nicht das Pulsband. Beim
+   Schwellentest waere das Band zirkulaer - er erzeugt die LTHR, aus der es
+   spaeter gerechnet wird -, und die Uebergangsbaender bis dahin stehen im
+   Trainingsplan ausdruecklich als Arbeitsannahme aus einer ungeprueften
+   HFmax. Bei sechs Minuten hinkt der Puls ohnehin hinterher, bei einer
+   Minute sagt er gar nichts. Z4 traegt der Schritt weiterhin, aber als
+   Beschreibung fuer Ringfarbe und Auswertung - das Dokument fuehrt die Zone
+   als "im Plan nicht angesteuert", und angesteuert wird sie jetzt auch
+   nicht mehr.
+
+   Einfahren und Ausrollen behalten ihr Band: Z1 ist eine Obergrenze, die man
+   einhalten kann und soll. */
+function schrittZiel(plan, th, s, week){
+  return s.effort || testZone(plan, th, s.zone, week);
 }
 
 /* Beweglichkeit und Koordination haengen an keiner Woche und an keiner Phase.
@@ -390,10 +409,15 @@ function donnerstag(c){
        er misst, statt zu belasten, und traegt deshalb ein eigenes Zeichen. */
     info = { type:'interval', art:'test', title:t.title, detail:T.thursdayTest,
              showIntervalBtn:true };
+    /* Keine Zielzone auf der Karte des Tests: der Ø-Puls der 20 min ist sein
+       Ergebnis. Ein Band als Vorgabe hiesse, auf die Zahl zu zielen, die
+       gerade gemessen wird. */
+    const steuer = plan.thresholdTest && plan.thresholdTest.steering;
     info.kennzahlen = [
-      { label:'Dauer',      wert: t.minutes + ' min' },
+      { label:'Dauer',       wert: t.minutes + ' min' },
       { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
-      { label:'Zielzone',   wert: targetText(plan, th, t.zone, week) }
+      steuer ? { label:'Steuergröße', wert: steuer }
+             : { label:'Zielzone',    wert: targetText(plan, th, t.zone, week) }
     ];
     info.bloecke = schrittBloecke(plan, th, week, plan.thresholdTest?.steps ?? []);
     info.hinweise = [T.thursdayTest];
@@ -593,7 +617,9 @@ function anlaufSteps(c, sess){
     kennzahlen: [
       { label:'Dauer',     wert: Math.round(gesamt / 60) + ' min' },
       { label:'Belastung', wert: `${arbeit.length} × ${minutenText(schrittSekunden(arbeit[0]))}` },
-      { label:'Zielzone',  wert: targetText(plan, th, zone, week) }
+      sess.steering
+        ? { label:'Steuergröße', wert: sess.steering }
+        : { label:'Zielzone',    wert: targetText(plan, th, zone, week) }
     ],
     bloecke,
     hinweise: sess.note ? [sess.note] : [],
@@ -601,7 +627,7 @@ function anlaufSteps(c, sess){
               hardMinutes: Math.round(hart / 60),
               reps: arbeit.length, repMinutes: schrittSekunden(arbeit[0]) / 60 }
   };
-  const cad = cadenceText(plan, zone, week);
+  const cad = sess.steering ? null : cadenceText(plan, zone, week);
   if(cad) info.kennzahlen.push({ label:'Trittfrequenz', wert: cad });
   return info;
 }

@@ -242,18 +242,19 @@
   },
 
   "thresholdTest": {
+    "steering": "gleichmäßig maximal – Ø-Leistung, nicht Puls",
     "steps": [
       {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 8, "zone": "z12"},
-      {"type": "work", "label": "Zügig 1 / 3", "short": "Zügig 1/3", "minutes": 1, "zone": "z3", "rep": 1, "reps": 3, "note": "Öffnungsintervall, nicht all-out"},
+      {"type": "work", "label": "Zügig 1 / 3", "short": "Zügig 1/3", "minutes": 1, "zone": "z3", "rep": 1, "reps": 3, "effort": "zügig", "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
       {"type": "rest", "label": "Locker", "short": "Locker 1/3", "minutes": 1, "zone": "z1", "rep": 1, "reps": 3},
-      {"type": "work", "label": "Zügig 2 / 3", "short": "Zügig 2/3", "minutes": 1, "zone": "z3", "rep": 2, "reps": 3, "note": "Öffnungsintervall, nicht all-out"},
+      {"type": "work", "label": "Zügig 2 / 3", "short": "Zügig 2/3", "minutes": 1, "zone": "z3", "rep": 2, "reps": 3, "effort": "zügig", "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
       {"type": "rest", "label": "Locker", "short": "Locker 2/3", "minutes": 1, "zone": "z1", "rep": 2, "reps": 3},
-      {"type": "work", "label": "Zügig 3 / 3", "short": "Zügig 3/3", "minutes": 1, "zone": "z3", "rep": 3, "reps": 3, "note": "Öffnungsintervall, nicht all-out"},
+      {"type": "work", "label": "Zügig 3 / 3", "short": "Zügig 3/3", "minutes": 1, "zone": "z3", "rep": 3, "reps": 3, "effort": "zügig", "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
       {"type": "rest", "label": "Locker", "short": "Locker 3/3", "minutes": 1, "zone": "z1", "rep": 3, "reps": 3},
       {"type": "warm", "label": "Einfahren, Rest", "short": "Einfahren", "minutes": 6, "zone": "z12"},
-      {"type": "work", "label": "5 min all-out", "short": "5 min all-out", "minutes": 5, "zone": "z5", "rep": 1, "reps": 1, "note": "VO2max-Referenzleistung"},
+      {"type": "work", "label": "5 min all-out", "short": "5 min all-out", "minutes": 5, "zone": "z5", "rep": 1, "reps": 1, "effort": "all-out", "note": "VO2max-Referenzleistung. Alles geben, der Puls ist hier Ergebnis und keine Vorgabe."},
       {"type": "rest", "label": "Locker rollen", "short": "Locker rollen", "minutes": 10, "zone": "z1", "rep": 1, "reps": 1},
-      {"type": "work", "label": "20 min gleichmäßig maximal", "short": "20 min maximal", "minutes": 20, "zone": "z4", "rep": 1, "reps": 1, "note": "Ø-Watt × 0,95 = FTP · Ø-Puls = LTHR"},
+      {"type": "work", "label": "20 min gleichmäßig maximal", "short": "20 min maximal", "minutes": 20, "zone": "z4", "rep": 1, "reps": 1, "effort": "gleichmäßig maximal", "note": "Erste drei Minuten bewusst konservativer als das Ziel, danach auf die Ø-Leistung der Runde schauen und nicht auf den Momentanwert. Die letzten zwei Minuten sollen sich anfühlen wie „gerade noch“. Ø-Watt × 0,95 = FTP · Ø-Puls = LTHR."},
       {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 10, "zone": "z1"}
     ]
   },
@@ -265,11 +266,15 @@
       {"offsetDays": -7, "label": "7 Tage davor (Do)", "text": "Statt der Qualitätseinheit: 15 min Einfahren, 2 × 6 min im angestrebten Testtempo, 6 min Pause dazwischen, 10 min Ausrollen. Das liefert die Wattzahl, auf die im Test gezielt wird.",
        "session": {
          "kind": "steps", "title": "Rad – Anlauf im Testtempo",
+         "steering": "Tempo, das 20 min haltbar wäre – Sprechtest 3–5 Worte",
          "steps": [
            {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 15, "zone": "z12"},
-           {"type": "work", "label": "Testtempo 1 / 2", "short": "Testtempo 1/2", "minutes": 6, "zone": "z4", "rep": 1, "reps": 2, "note": "Im angestrebten Testtempo, nicht darüber – gesucht ist die Wattzahl für den Test, kein Ergebnis."},
-           {"type": "rest", "label": "Pause", "short": "Pause", "minutes": 6, "zone": "z1", "rep": 1, "reps": 2},
-           {"type": "work", "label": "Testtempo 2 / 2", "short": "Testtempo 2/2", "minutes": 6, "zone": "z4", "rep": 2, "reps": 2, "note": "Dieselbe Leistung wie im ersten Block. Fällt sie ab, war der erste zu hart – dann ist die Zielwattzahl die des zweiten."},
+           {"type": "work", "label": "Block 1 – Tempo suchen", "short": "Block 1", "minutes": 6, "zone": "z4", "effort": "geschätztes Testtempo",
+            "note": "Nach Anstrengung fahren, nicht nach Puls – bei sechs Minuten hinkt er hinterher und ist erst gegen Ende dort, wo er hingehört. In der letzten Minute prüfen: Puls ablesen, Sprechtest (3–5 Worte am Stück), und die Frage „könnte ich das 20 min halten?“"},
+           {"type": "rest", "label": "Pause – Entscheidung", "short": "Pause", "minutes": 6, "zone": "z1",
+            "note": "Ging Block 1 zu leicht – ganze Sätze möglich, Gefühl „könnte ewig so weiter“: +15 W für Block 2. Zu schwer – kaum drei Worte am Stück, 20 min klar nicht haltbar: −15 W. Passte es: dieselbe Leistung halten."},
+           {"type": "work", "label": "Block 2 – korrigiertes Tempo", "short": "Block 2", "minutes": 6, "zone": "z4", "effort": "korrigiertes Testtempo",
+            "note": "Mit der Leistung aus der Entscheidung. Ihr Ø-Watt ist die Zahl, auf die im Test gezielt wird – notieren. Der Puls dieses Blocks wird mitgeschrieben, nicht angesteuert; die LTHR liefert erst der Test."},
            {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 10, "zone": "z1"}
          ]
        }},
@@ -284,13 +289,14 @@
       {"offsetDays": -1, "label": "Tag davor (Mi)", "text": "30 min Z1 mit 3 × 1 min zügig / 1 min locker, kein Rumpf. Die Öffner stellen nach zwei ruhigen Tagen die Spritzigkeit her, ohne Ermüdung zu erzeugen.",
        "session": {
          "kind": "steps", "title": "Rad – Öffner vor dem Test", "note": "Kein Rumpf-Zirkel an diesem Mittwoch.",
+         "steering": "kurz und spritzig – nicht all-out",
          "steps": [
            {"type": "warm", "label": "Einrollen", "short": "Einrollen", "minutes": 12, "zone": "z1"},
-           {"type": "work", "label": "Zügig 1 / 3", "short": "Zügig 1/3", "minutes": 1, "zone": "z3", "rep": 1, "reps": 3, "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen."},
+           {"type": "work", "label": "Zügig 1 / 3", "short": "Zügig 1/3", "minutes": 1, "zone": "z3", "rep": 1, "reps": 3, "effort": "zügig", "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
            {"type": "rest", "label": "Locker", "short": "Locker 1/3", "minutes": 1, "zone": "z1", "rep": 1, "reps": 3},
-           {"type": "work", "label": "Zügig 2 / 3", "short": "Zügig 2/3", "minutes": 1, "zone": "z3", "rep": 2, "reps": 3, "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen."},
+           {"type": "work", "label": "Zügig 2 / 3", "short": "Zügig 2/3", "minutes": 1, "zone": "z3", "rep": 2, "reps": 3, "effort": "zügig", "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
            {"type": "rest", "label": "Locker", "short": "Locker 2/3", "minutes": 1, "zone": "z1", "rep": 2, "reps": 3},
-           {"type": "work", "label": "Zügig 3 / 3", "short": "Zügig 3/3", "minutes": 1, "zone": "z3", "rep": 3, "reps": 3, "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen."},
+           {"type": "work", "label": "Zügig 3 / 3", "short": "Zügig 3/3", "minutes": 1, "zone": "z3", "rep": 3, "reps": 3, "effort": "zügig", "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
            {"type": "rest", "label": "Locker", "short": "Locker 3/3", "minutes": 1, "zone": "z1", "rep": 3, "reps": 3},
            {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 12, "zone": "z1"}
          ]

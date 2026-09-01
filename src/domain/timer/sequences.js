@@ -66,8 +66,13 @@ export function buildStepSequence(plan, th, week, steps){
   const seq = [{ type:'prep', label:'Bereit machen', short:'Bereit machen',
                  duration: plan.interval.prepSeconds, zone: Zn('z1') }];
   for(const s of steps){
+    /* Nennt der Schritt eine Anstrengung, traegt sie die Beschriftung und das
+       Pulsband verschwindet - die Zone bleibt fuer die Farbe des Rings. Auf
+       dem Rad liest man genau diese eine Zeile, und dort darf keine Zahl
+       stehen, die nicht angesteuert werden soll. */
+    const zone = s.effort ? { ...Zn(s.zone), label: s.effort } : Zn(s.zone);
     seq.push({ type:s.type, label:s.label, short:s.short, duration: schrittSekunden(s),
-               zone:Zn(s.zone), rep:s.rep, reps:s.reps, note:s.note });
+               zone, rep:s.rep, reps:s.reps, note:s.note });
   }
   seq.push({ type:'done', label:'Fertig!', short:'Fertig', duration:0, zone:Zn('z1') });
   return seq;

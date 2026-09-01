@@ -41,7 +41,15 @@
    der Mittwoch vor dem Test. Alle uebrigen 111 Tage sind Zeichen fuer Zeichen
    dieselben geblieben; die Wochenangaben und die Wiederholungsziele haben
    ihre Pruefsumme unveraendert behalten, weil der Anlauf an einem Datum
-   haengt und nicht an der Woche. */
+   haengt und nicht an der Woche.
+
+   Nachgezogen am 01.09.2026: wo die Anstrengung die Steuergroesse ist, steht
+   kein Pulsband mehr. Betrifft den Anlauf, die Oeffner am Vortag und den
+   Schwellentest selbst. Der Trainingsplan fuehrt Z4 als "im Plan nicht
+   angesteuert", und beim Test waere das Band zirkulaer - er erzeugt die
+   LTHR, aus der es spaeter gerechnet wird. Die Zonenschluessel bleiben an den
+   Schritten: sie tragen die Ringfarbe des Timers und den Sollwert der
+   Auswertung, nur nicht mehr die Vorgabe auf der Karte. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -179,7 +187,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '9c3006be21fad115', len: 45676 });
+      .toEqual({ hash: '2b7a87f9aeb6b029', len: 47770 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -202,7 +210,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + D.buildDayInfo(plan, th, date, start).detail);
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '15c743d67f0e6b1a', len: 38895 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '8e8b538b18151423', len: 40989 });
   });
 });
 
@@ -427,6 +435,20 @@ describe('Testanlauf', () => {
     expect(info.showIntervalBtn).toBe(true);
   });
 
+  /* Die beiden Bloecke sind Probe und Korrektur, keine Wiederholungen. Als
+     "2x Testtempo" zusammengezogen waere der Unterschied verschwunden, auf
+     den es ankommt - und mit ihm die Entscheidung in der Pause. */
+  it('haelt Probe und Korrektur als zwei Bloecke auseinander', () => {
+    const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -7), start);
+    const labels = info.bloecke.map(b => b.label);
+    expect(labels).toEqual(['Einfahren', 'Block 1 – Tempo suchen',
+                            'Pause – Entscheidung', 'Block 2 – korrigiertes Tempo',
+                            'Ausrollen']);
+    expect(info.bloecke[2].hinweis).toContain('+15 W');
+    expect(info.bloecke[2].hinweis).toContain('−15 W');
+    expect(info.bloecke[1].hinweis).toContain('3–5 Worte');
+  });
+
   /* Der Mittwoch davor traegt Oeffner und ausdruecklich keinen Zirkel. Ein
      stehengebliebener Rumpf-Timer waere die Einladung, ihn doch zu machen. */
   it('nimmt dem Mittwoch vor dem Test den Rumpf-Zirkel', () => {
@@ -463,6 +485,60 @@ describe('Testanlauf', () => {
       expect(info.title).toBe('Rad – Anlauf im Testtempo');
     }
     expect(W.testWeeks(plan)).toEqual([4, 10, 16]);
+  });
+});
+
+/* Wo die Anstrengung steuert, darf kein Pulsband als Vorgabe dastehen.
+
+   Der Trainingsplan fuehrt Z4 als "im Plan nicht angesteuert", und beim
+   Schwellentest waere ein Band zirkulaer: der Ø-Puls der 20 min ist die LTHR,
+   aus der die Baender danach erst gerechnet werden. Bis dahin stehen sie im
+   Dokument ausdruecklich als Arbeitsannahme aus einer ungeprueften HFmax. */
+describe('Anstrengung statt Pulsband', () => {
+  const testTag = W.testDateFor(plan, 4, start);
+  const bpm = /\d+\s*(–|-)\s*\d+\s*bpm|über \d+ bpm/;
+
+  /* Der Sollwert behaelt seinen Zonenschluessel: die Auswertung muss die
+     harten Minuten weiterhin einordnen koennen. Nur angezeigt wird er nicht. */
+  function zielzeilen(info){
+    return info.bloecke.filter(b => /Block|maximal|all-out|Zügig|Testtempo/.test(b.label))
+                       .map(b => b.wert);
+  }
+
+  it('nennt auf der Anlaufkarte eine Steuergroesse und kein Band', () => {
+    const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(testTag, -7), start);
+    const kz = info.kennzahlen.find(k => k.label === 'Steuergröße');
+    expect(kz.wert).toContain('20 min haltbar');
+    expect(info.kennzahlen.some(k => k.label === 'Zielzone')).toBe(false);
+    zielzeilen(info).forEach(w => expect(w).not.toMatch(bpm));
+    expect(info.target.zone).toBe('z4');
+  });
+
+  it('nennt auf der Testkarte eine Steuergroesse und kein Band', () => {
+    const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, testTag, start);
+    expect(info.kennzahlen.some(k => k.label === 'Zielzone')).toBe(false);
+    expect(info.kennzahlen.find(k => k.label === 'Steuergröße').wert)
+      .toBe(plan.thresholdTest.steering);
+    zielzeilen(info).forEach(w => expect(w).not.toMatch(bpm));
+  });
+
+  /* Einfahren und Ausrollen behalten ihr Band: Z1 ist eine Obergrenze, die
+     man einhalten kann und soll. */
+  it('laesst Einfahren und Ausrollen bei ihrem Band', () => {
+    const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, testTag, start);
+    const rand = info.bloecke.filter(b => /Einfahren|Ausrollen|Locker rollen/.test(b.label));
+    expect(rand.length).toBeGreaterThan(0);
+    rand.forEach(b => expect(b.wert).toMatch(bpm));
+  });
+
+  /* Auf dem Rad liest man die eine Zeile unter der Uhr. Dort darf keine Zahl
+     stehen, die nicht angesteuert werden soll - die Farbe bleibt. */
+  it('zeigt die Anstrengung auch im Timer und behaelt die Ringfarbe', () => {
+    const seq = S.buildTestSequence(plan, Z.NO_THRESHOLDS, 4);
+    const zwanzig = seq.find(x => x.label === '20 min gleichmäßig maximal');
+    expect(zwanzig.zone.label).toBe('gleichmäßig maximal');
+    expect(zwanzig.zone.cls).toBe('z4');
+    seq.filter(x => x.type === 'work').forEach(x => expect(x.zone.label).not.toMatch(bpm));
   });
 });
 

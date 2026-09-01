@@ -125,6 +125,10 @@ function pvSteps(err, steps, feld, zonen){
     }
     pvStr(err, s.label, f + '.label');
     pvStr(err, s.short, f + '.short');
+    /* effort ersetzt in der Anzeige das Pulsband. Wo die Anstrengung die
+       Steuergroesse ist, waere ein bpm-Bereich als Vorgabe falsch - beim
+       Schwellentest sogar zirkulaer, denn er erzeugt die LTHR erst. */
+    if(s.effort != null) pvStr(err, s.effort, f + '.effort');
     const hatMin = typeof s.minutes === 'number';
     const hatSek = typeof s.seconds === 'number';
     if(hatMin === hatSek){
@@ -151,6 +155,7 @@ function pvSession(err, sess, feld, zonen){
   if(!pvObj(err, sess, feld)) return;
   pvStr(err, sess.title, feld + '.title');
   if(sess.note != null) pvStr(err, sess.note, feld + '.note');
+  if(sess.steering != null) pvStr(err, sess.steering, feld + '.steering');
 
   if(sess.kind === 'steps'){
     pvSteps(err, sess.steps, feld + '.steps', zonen);
@@ -405,6 +410,7 @@ export function planValidate(p){
   /* Der Schwellentest ist eine feste Schrittfolge. Dieselbe Gestalt tragen
      die Anlaufeinheiten weiter unten - geprueft wird beides mit pvSteps. */
   if(pvObj(err, p.thresholdTest, 'thresholdTest')){
+    if(p.thresholdTest.steering != null) pvStr(err, p.thresholdTest.steering, 'thresholdTest.steering');
     pvSteps(err, p.thresholdTest.steps, 'thresholdTest.steps', zonen);
   }
 
