@@ -97,13 +97,27 @@ function VerfassungsLeiste({ verfassung }){
   );
 }
 
-export function Auswertung({ bilanz, wetter, fazit, row, verfassung }){
+/* `fahrten` nennt, ueber wie viele Aufzeichnungen die Zahlen laufen.
+
+   Bei einer Fahrt sagt das nichts und steht deshalb nicht da. Bei zweien ist
+   es entscheidend: "62 km, 340 hm" ist die Summe des Tages und nicht die einer
+   Runde, und wer das nicht weiss, liest die Zahl als eine Ausfahrt. Das Wetter
+   dagegen laesst sich nicht summieren - es stammt von der laengsten Fahrt, und
+   auch das gehoert dazugesagt. */
+export function Auswertung({ bilanz, wetter, fazit, row, verfassung, fahrten }){
   if(!bilanz) return null;
   const windGewertet = bilanz.windMeter > 0;
+  const mehrere = fahrten > 1;
   return (
     <div class="card">
       <div class="row"><span>Auswertung</span>
-        <b>{wetter ? 'Strecke und Wetter' : 'Strecke'}</b></div>
+        <b>{mehrere ? fahrten + ' Fahrten zusammen' : (wetter ? 'Strecke und Wetter' : 'Strecke')}</b></div>
+      {mehrere && (
+        <p class="hint">
+          Strecke, Höhenmeter und Wind sind über alle Fahrten des Tages gerechnet. Das Wetter
+          stammt von der längsten – Bedingungen lassen sich nicht mitteln.
+        </p>
+      )}
 
       <div class="anwerte">
         <div class="anwert"><b>{zahl1(bilanz.km)} km</b><span>gewertete Strecke</span></div>

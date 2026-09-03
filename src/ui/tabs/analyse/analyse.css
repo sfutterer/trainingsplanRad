@@ -37,15 +37,45 @@
 .card.liste{ padding: 4px 0; }
 
 .trliste{ display: flex; flex-direction: column; }
-.treintrag{
-  display: flex; align-items: center; gap: 12px;
-  width: 100%; min-height: 72px; padding: 12px 14px;
+
+/* Der Knopf ist der Tag und nicht die einzelne Aufzeichnung.
+
+   Ausgewertet wird seit dem 03.09.2026 der Tag; ein Knopf je Fahrt haette
+   versprochen, eine einzelne zu oeffnen, und dann den ganzen Tag gezeigt. Die
+   Fahrten stehen im Knopf und sind zusammen seine Trefferflaeche - auf einem
+   Handy ist das die groessere und nicht die kleinere Flaeche.
+
+   Deshalb <span> statt <div> fuer die Zeilen darin: das Inhaltsmodell eines
+   Knopfes laesst nur Phrasenelemente zu. Das Layout macht display:flex. */
+.trtagknopf{
+  display: flex; flex-direction: column;
+  width: 100%; padding: 4px 0 10px;
   border: 0; background: none; border-radius: var(--radius-s);
-  text-align: left; cursor: pointer; color: inherit;
+  text-align: left; cursor: pointer; color: inherit; font: inherit;
   border-bottom: 1px solid var(--outline);
 }
-.treintrag:last-child{ border-bottom: 0; }
-.treintrag:active{ background: var(--surface-2); }
+.trtagknopf:last-child{ border-bottom: 0; }
+.trtagknopf:active{ background: var(--surface-2); }
+
+.trtagkopf{
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 10px 14px 2px;
+}
+.trtagname{
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.trtagwert{
+  margin-left: auto; flex: none;
+  font-size: 12.5px; font-weight: 600; color: var(--on-surface-var); white-space: nowrap;
+}
+
+.treintrag{
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; min-height: 60px; padding: 6px 14px;
+  color: inherit;
+}
 /* Das Feld traegt die Farbe der Einheitsart als getoenten Grund, das Zeichen
    darin die volle Farbe. Welche Farbe zu welcher Art gehoert, steht in
    components/einheit.css und faerbt hier ueber currentColor auch den Grund -
@@ -75,9 +105,18 @@
 .trmeta{ font-size: 13px; color: var(--muted); margin-top: 2px; }
 .trpfeil{ color: var(--muted); flex: none; }
 
-.trtag{
-  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--muted); padding: 14px 16px 6px;
+/* Der Kopf einer Fahrtkarte in der Tagesauswertung: Zeichen, Name, Eckwerte.
+   Dieselbe Zeile wie in der Liste, aber ohne Knopf - hier ist schon
+   aufgeschlagen, was dort angetippt wurde. */
+.fahrtkopf{ display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.esym.fahrtsym{ width: 22px; height: 22px; }
+.fahrtname{
+  font-size: 15px; font-weight: 700; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fahrtwert{
+  margin-left: auto; flex: none;
+  font-size: 12.5px; color: var(--muted); white-space: nowrap;
 }
 
 /* ---- Karte ---- */

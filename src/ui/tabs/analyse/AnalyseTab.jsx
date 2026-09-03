@@ -1,9 +1,16 @@
-/* Analyse in drei Stufen: Liste, Auswertung einer Fahrt, Verlauf ueber Wochen.
+/* Analyse in drei Stufen: Liste, Auswertung eines Tages, Verlauf ueber Wochen.
 
    Vorher rechnete ein Knopf den ganzen Zeitraum durch und lud dabei fuer jede
    Fahrt die Streams nach - bei vier Wochen ein Dutzend Abfragen fuer Zahlen,
    von denen man meist eine sehen wollte. Jetzt kostet die Liste eine Abfrage,
-   und die teure Auswertung laeuft erst, wenn man eine Fahrt antippt.
+   und die teure Auswertung laeuft erst, wenn man einen Tag antippt.
+
+   Der Tag und nicht die Fahrt ist seit dem 03.09.2026 die Einheit der
+   Auswertung. Der Plan macht seine Vorgabe je Tag; wer sie auf zwei Fahrten
+   verteilt, weil der Arbeitsweg zweimal anfaellt, bekam sie zweimal gegen
+   dasselbe Soll gerechnet - Hinweg "kuerzer", Rueckweg "kuerzer", zusammen
+   genau richtig. compareDay nahm immer schon alle Aktivitaeten eines Tages;
+   nur bekam es aus dieser Ansicht immer nur eine davon.
 
    Der Verlauf ist die dritte Stufe und bewusst kein eigener Tab: er beantwortet
    dieselbe Frage wie die Liste, nur ueber Wochen statt ueber Tage, und er lebt
@@ -19,11 +26,12 @@ import { plan, thresholds, startDate, apiKey, coreLog, testLog, interimLog,
 import { fetchActivities } from '../../../data/icu.js';
 import { streckenFazit } from '../../../domain/fazit.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
-import { compareDay, weekTotals, buildReport, fmtMin, pct } from '../../../domain/analysis.js';
+import { compareDay, weekTotals, buildReport, fmtMin, pct,
+         tagesGruppen } from '../../../domain/analysis.js';
 import { T } from '../../../domain/texte.js';
 import { verlaufBericht } from '../../../domain/verlauf.js';
 import { artDerAktivitaet } from '../../../domain/einheiten.js';
-import { useFahrtauswertung } from './useFahrtauswertung.js';
+import { useTagesauswertung } from './useTagesauswertung.js';
 import { zahl } from '../../../domain/zahlen.js';
 import { IndikatorKarte, TrendZeile, Verlaufsgraph } from '../../components/Verlaufsgraph.jsx';
 import { RouteMap, StreckenLegende } from '../../components/RouteMap.jsx';
@@ -69,13 +77,14 @@ function ZonenBalken({ z }){
 
 /* ---------- Liste ---------- */
 
+function eckwerte(acts){
+  const min = Math.round(acts.reduce((n, a) => n + (a.moving_time || a.elapsed_time || 0), 0) / 60);
+  const km = acts.reduce((n, a) => n + (a.distance || 0), 0) / 1000;
+  return min + ' min' + (km >= 0.1 ? ' · ' + km.toFixed(1) + ' km' : '');
+}
+
 function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
-  const gruppen = {};
-  for(const a of acts){
-    const tag = String(a.start_date_local).slice(0, 10);
-    (gruppen[tag] = gruppen[tag] || []).push(a);
-  }
-  const tage = Object.keys(gruppen).sort().reverse();
+  const tage = tagesGruppen(acts);
 
   return (
     <>
@@ -91,14 +100,22 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
         <div class="card"><p class="hint">Im gewählten Zeitraum liegt keine Aufzeichnung vor.</p></div>
       )}
 
+      {/* Ein Knopf je Tag und nicht je Aufzeichnung: ausgewertet wird der Tag,
+          und ein Knopf, der eine einzelne Fahrt anzutippen verspricht, dann
+          aber den ganzen Tag oeffnet, waere eine Luege ueber das Ziel. Die
+          Fahrten stehen darin und sind zusammen die Trefferflaeche. */}
       <div class="card liste">
         <div class="trliste">
-          {tage.map(tag => {
+          {tage.map(({ tag, acts: tagesActs }) => {
             const d = toMidnight(new Date(tag));
             return (
-              <div key={tag}>
-                <div class="trtag">{WEEKDAY_NAMES[d.getDay()]}, {d.toLocaleDateString('de-DE')}</div>
-                {gruppen[tag].map(a => {
+              <button class="trtagknopf" key={tag} onClick={() => onWaehlen(tag)}>
+                <span class="trtagkopf">
+                  <span class="trtagname">{WEEKDAY_NAMES[d.getDay()]}, {d.toLocaleDateString('de-DE')}</span>
+                  <span class="trtagwert">{eckwerte(tagesActs)}</span>
+                  <span class="trpfeil"><Icon name="weiter" /></span>
+                </span>
+                {tagesActs.map(a => {
                   /* Bis hierher gab es zwei Zeichen: Rad und nicht Rad. Die
                      Grundlagenfahrt, der Intervalltag und die lange Ausfahrt
                      sahen damit gleich aus - drei Einheiten, die der Plan
@@ -109,7 +126,7 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
                   const min = Math.round((a.moving_time || a.elapsed_time || 0) / 60);
                   const km = a.distance ? (a.distance / 1000).toFixed(1) + ' km' : null;
                   return (
-                    <button class="treintrag" key={a.id} onClick={() => onWaehlen(a)}>
+                    <span class="treintrag" key={a.id}>
                       <Einheitssymbol art={art} klasse="trsym" />
                       <span class="trtext">
                         <span class="trname">{a.name || a.type}</span>
@@ -117,13 +134,10 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
                           {einheitsLabel(art)} · {min} min{km ? ' · ' + km : ''}{a.average_heartrate ? ' · ⌀ ' + a.average_heartrate + ' bpm' : ''}
                         </span>
                       </span>
-                      <span class="trpfeil">
-                        <Icon name="weiter" />
-                      </span>
-                    </button>
+                    </span>
                   );
                 })}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -132,23 +146,56 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
   );
 }
 
-/* ---------- Auswertung einer Fahrt ---------- */
+/* ---------- Auswertung eines Tages ---------- */
 
-function Detail({ act, onZurueck }){
+/* Eine einzelne Fahrt innerhalb des Tages: Karte, Wetter und Streckenbilanz.
+
+   Je Fahrt eine Karte und nicht eine gemeinsame: zwei Runden in einer Karte
+   sind ein Knaeuel, und Hin- und Rueckweg desselben Arbeitswegs laegen
+   uebereinander. Die Zahlen des Tages stehen darueber, die dieser Fahrt hier. */
+function Fahrtkarte({ f, mehrere }){
+  const art = artDerAktivitaet(f.act);
+  const min = Math.round((f.act.moving_time || f.act.elapsed_time || 0) / 60);
+  return (
+    <div class="card">
+      <div class="fahrtkopf">
+        <Einheitssymbol art={art} klasse="fahrtsym" />
+        <span class="fahrtname">{f.act.name || f.act.type}</span>
+        <span class="fahrtwert">{min} min · {zahl(f.bilanz ? f.bilanz.km : 0, 1)} km</span>
+      </div>
+      {/* Die Zonen der einzelnen Fahrt nur, wenn es mehrere gibt - sonst
+          stuende derselbe Balken zweimal auf derselben Seite. */}
+      {mehrere && <ZonenBalken z={f.zonen} />}
+      <WetterLeiste wetter={f.wetter} />
+      <RouteMap latlng={f.latlng} gruppen={f.gruppen}
+        windAus={f.wetter && f.wetter.richtung} />
+      <StreckenLegende bilanz={f.bilanz} laeuft={false} />
+    </div>
+  );
+}
+
+function Tagesanalyse({ tag, acts, onZurueck }){
   const p = plan.value, th = thresholds.value, start = startDate.value;
-  /* Das Zusammentragen liegt in useFahrtauswertung.js - vier Abrufe, ihre
-     Reihenfolge und ihre Ausfallbehandlung. Hier bleibt das Zeichnen. */
-  const zustand = useFahrtauswertung(act);
+  /* Das Zusammentragen liegt in useTagesauswertung.js - die Abrufe je Fahrt,
+     ihre Reihenfolge und ihre Ausfallbehandlung. Hier bleibt das Zeichnen. */
+  const zustand = useTagesauswertung(acts);
 
-  const datum = toMidnight(new Date(act.start_date_local));
-  const zonesById = zustand.zonen ? { [act.id]: zustand.zonen } : null;
-  const logs = coreLog.value.filter(e => e && e.day === isoDayLocal(datum));
-  const row = compareDay(p, th, datum, start, [act], zonesById,
+  const datum = toMidnight(new Date(tag));
+  const logs = coreLog.value.filter(e => e && e.day === tag);
+  /* Alle Aufzeichnungen des Tages gegen die Vorgabe des Tages. Genau das war
+     der Umbau: vorher stand hier [act], und die Vorgabe wurde je Fahrt einmal
+     ganz verlangt. */
+  const row = compareDay(p, th, datum, start, acts, zustand.zonenById || null,
     logs.filter(e => e.kind !== 'leg'), logs.filter(e => e.kind === 'leg'));
+
   /* Erst wenn Strecke und Wetter da sind, ist das Fazit mehr als die halbe
      Wahrheit - vorher steht in der Kopfkarte nichts. */
   const fazit = zustand.phase === 'fertig'
     ? streckenFazit(row, zustand.bilanz, zustand.wetter, zustand.verfassung) : null;
+
+  const fahrten = zustand.fahrten || [];
+  const gesamtMin = acts.reduce((n, a) => n + (a.moving_time || a.elapsed_time || 0), 0);
+  const gesamtKm = acts.reduce((n, a) => n + (a.distance || 0), 0) / 1000;
 
   return (
     <>
@@ -156,37 +203,50 @@ function Detail({ act, onZurueck }){
         <button class="zurueck" aria-label="Zurück zur Liste" onClick={onZurueck}>
           <Icon name="zurueck" />
         </button>
-        <h2>{act.name || act.type}</h2>
+        <h2>{WEEKDAY_NAMES[datum.getDay()]}, {datum.toLocaleDateString('de-DE')}</h2>
       </div>
 
       <div class="card">
-        <div class="row"><span>{WEEKDAY_NAMES[datum.getDay()]}, {datum.toLocaleDateString('de-DE')}</span>
-          <b>Woche {row.week}</b></div>
+        <div class="row"><span>Woche {row.week}</span>
+          <b>{acts.length === 1 ? 'eine Aufzeichnung' : acts.length + ' Aufzeichnungen'}</b></div>
         <div class="row"><span>Aufgezeichnet</span>
-          <b>{fmtMin(act.moving_time || act.elapsed_time || 0)}
-            {act.distance ? ' · ' + (act.distance / 1000).toFixed(1) + ' km' : ''}
-            {act.average_heartrate ? ' · ⌀ ' + act.average_heartrate + ' bpm' : ''}</b></div>
+          <b>{fmtMin(gesamtMin)}{gesamtKm >= 0.1 ? ' · ' + gesamtKm.toFixed(1) + ' km' : ''}</b></div>
         <div class="row"><span>Geplant</span><b>{row.plan.title}</b></div>
-        <ZonenBalken z={zustand.zonen} />
+        {/* Der Balken zeigt die Zonenzeit des ganzen Tages. compareDay fuehrt
+            die Fahrten selbst zusammen und laesst dabei das unzuverlaessigste
+            Verfahren gelten - eine Aussage soll nicht besser klingen als ihre
+            schlechteste Quelle. */}
+        <ZonenBalken z={row.zones} />
         <Fazit fazit={fazit} kompakt />
       </div>
 
+      {/* Was der Tag sonst noch verlangte, steht als Liste daneben: bei zwei
+          geplanten Einheiten sagt eine Zeile "Geplant: Rad + Rumpf" nicht,
+          welche davon aufgezeichnet wurde. */}
+      {row.plan.einheiten && row.plan.einheiten.length > 1 && (
+        <div class="card">
+          <div class="row"><span>Geplant an diesem Tag</span>
+            <b>{row.plan.einheiten.length} Einheiten</b></div>
+          {row.plan.einheiten.map((e, i) => (
+            <div class="listrow" key={i}>
+              <span>{e.titel}{e.zeit ? ' · ' + e.zeit : ''}</span>
+              <span>{e.kennzahlen[0] ? e.kennzahlen[0].wert : ''}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {zustand.phase === 'laedt' && <div class="card"><p class="hint">Strecke und Wetter werden geladen …</p></div>}
 
-      {zustand.phase === 'fertig' && zustand.latlng && (
-        <div class="card">
-          <div class="row"><span>Strecke</span>
-            <b>{zahl(zustand.bilanz ? zustand.bilanz.km : 0, 1)} km</b></div>
-          <WetterLeiste wetter={zustand.wetter} />
-          <RouteMap latlng={zustand.latlng} gruppen={zustand.gruppen}
-            windAus={zustand.wetter && zustand.wetter.richtung} />
-          <StreckenLegende bilanz={zustand.bilanz} laeuft={zustand.untergrundLaeuft} />
-        </div>
+      {fahrten.map(f => <Fahrtkarte f={f} mehrere={fahrten.length > 1} key={f.act.id} />)}
+
+      {zustand.phase === 'fertig' && zustand.untergrundLaeuft && (
+        <div class="card"><p class="hint">Der Untergrund wird noch nachgeschlagen …</p></div>
       )}
 
       {zustand.phase === 'fertig' && (
         <Auswertung bilanz={zustand.bilanz} wetter={zustand.wetter} fazit={fazit} row={row}
-          verfassung={zustand.verfassung} />
+          verfassung={zustand.verfassung} fahrten={fahrten.length} />
       )}
     </>
   );
@@ -361,7 +421,11 @@ export function AnalyseTab(){
   const [acts, setActs] = useState([]);
   const [laedt, setLaedt] = useState(false);
   const [fehler, setFehler] = useState(null);
-  const [gewaehlt, setGewaehlt] = useState(null);
+  /* Der gewaehlte Tag als ISO-Datum und nicht die Aktivitaet als Objekt: beim
+     Aktualisieren kommen neue Objekte fuer dieselben Aufzeichnungen, und die
+     offene Auswertung haette sonst auf einer Fassung gestanden, die es in der
+     Liste nicht mehr gibt. */
+  const [tag, setTag] = useState(null);
   const [wochen, setWochen] = useState(null);
 
   function vonDatum(){
@@ -393,7 +457,11 @@ export function AnalyseTab(){
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if(apiKey.value) laden(); }, [range]);
 
-  if(gewaehlt) return <Detail act={gewaehlt} onZurueck={() => setGewaehlt(null)} />;
+  const tagesActs = tag
+    ? (tagesGruppen(acts).find(g => g.tag === tag) || { acts: [] }).acts : [];
+  if(tag && tagesActs.length){
+    return <Tagesanalyse tag={tag} acts={tagesActs} onZurueck={() => setTag(null)} />;
+  }
 
   const umschalter = (
     <Segmented ziele={ANSICHTEN} aktiv={ansicht} onWaehlen={setAnsicht}
@@ -448,7 +516,7 @@ export function AnalyseTab(){
     <>
       {umschalter}
       <Liste acts={acts} laedt={laedt} fehler={fehler} range={range} setRange={setRange}
-        onWaehlen={setGewaehlt} onNeuLaden={laden} />
+        onWaehlen={setTag} onNeuLaden={laden} />
 
       {wochen && wochen.length > 0 && (
         <div class="card">

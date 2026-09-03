@@ -18,7 +18,7 @@ import { toMidnight, dayFromIso } from '../src/domain/week.js';
 import * as D from '../src/domain/day.js';
 import {
   isRide, isStrength, localDay, recordingNote, fmtMin, pct, downgrade,
-  estimateRounds, compareDay, weekTotals, buildReport,
+  estimateRounds, compareDay, weekTotals, buildReport, tagesGruppen,
   DUR_TOL_SHORT
 } from '../src/domain/analysis.js';
 
@@ -167,6 +167,42 @@ describe('Radeinheit mit messbarem Soll', () => {
     const row = tag(SA, [fahrt(soll / 2), Object.assign(fahrt(soll / 2), { id: 'a2' })]);
     expect(Math.round(row.rideSec / 60)).toBe(soll);
     expect(row.status).toBe('ok');
+  });
+
+  /* Die Gegenprobe zum Umbau der Analyse: einzeln bewertet waeren beide
+     Haelften "kuerzer", zusammen sind sie genau richtig. Die Ansicht hat bis
+     zum 03.09.2026 genau diesen Fehler gemacht - sie gab compareDay immer nur
+     eine Aufzeichnung, obwohl die Funktion alle nimmt. */
+  it('haelt jede Haelfte fuer sich fuer zu kurz', () => {
+    const halb = tag(SA, [fahrt(soll / 2)]);
+    expect(halb.status).toBe('dev');
+    expect(halb.badge).toBe('kürzer');
+  });
+});
+
+/* Die Gruppierung, aus der die Analyseliste ihre Tage nimmt.
+
+   Sie steht in der Domaene und nicht in der Anzeige, weil der Tag die Einheit
+   der Bewertung ist: eine Liste, die anders einteilt als compareDay, oeffnet
+   eine Auswertung ueber etwas anderes, als sie zeigt. */
+describe('Tagesgruppen', () => {
+  const a = (id, iso) => ({ id, start_date_local: iso, type: 'Ride', moving_time: 600 });
+
+  it('fasst einen Tag zusammen und stellt den juengsten nach oben', () => {
+    const g = tagesGruppen([
+      a('a', '2026-08-19T17:40:00'),
+      a('b', '2026-08-20T07:10:00'),
+      a('c', '2026-08-19T07:05:00')
+    ]);
+    expect(g.map(x => x.tag)).toEqual(['2026-08-20', '2026-08-19']);
+    /* Innerhalb des Tages in der Reihenfolge, in der gefahren wurde - der
+       Hinweg vor dem Rueckweg. */
+    expect(g[1].acts.map(x => x.id)).toEqual(['c', 'a']);
+  });
+
+  it('laesst Aufzeichnungen ohne Datum weg, statt einen Tag zu erfinden', () => {
+    expect(tagesGruppen([{ id:'x' }, null]).length).toBe(0);
+    expect(tagesGruppen(null)).toEqual([]);
   });
 });
 

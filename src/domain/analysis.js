@@ -35,6 +35,28 @@ export function localDay(iso){
   return (iso || '').slice(0, 10);
 }
 
+/* Die Aufzeichnungen nach Tagen gruppiert - juengster Tag zuerst, innerhalb
+   des Tages in der Reihenfolge, in der gefahren wurde.
+
+   Steht hier und nicht in der Anzeige, weil der Tag die Einheit der Bewertung
+   ist: compareDay nimmt alle Aktivitaeten eines Tages zusammen, und die Liste,
+   aus der man eine Auswertung oeffnet, muss dieselbe Einteilung treffen.
+   Solange sie in der Anzeige stand, konnte sie eine andere treffen - und tat
+   es: dort wurde je Fahrt geoeffnet und je Tag bewertet. */
+export function tagesGruppen(activities){
+  const nachTag = {};
+  for(const a of activities || []){
+    const tag = localDay(a && a.start_date_local);
+    if(!tag) continue;
+    (nachTag[tag] = nachTag[tag] || []).push(a);
+  }
+  return Object.keys(nachTag).sort().reverse().map(tag => ({
+    tag,
+    acts: nachTag[tag].slice().sort((x, y) =>
+      (String(x.start_date_local) < String(y.start_date_local) ? -1 : 1))
+  }));
+}
+
 export function recordingNote(z){
   if(!z) return null;
   const takt = z._takt ? (Math.round(z._takt * 10) / 10).toString().replace('.', ',') : null;
