@@ -51,7 +51,7 @@ die Fassung aus dem Repo.
 | `src/data/` | Speicher, Profile, Google-Anmeldung, `plan.json`, intervals.icu |
 | `src/platform/` | Wake Lock, Sprachausgabe, Töne, Haptik – jede darf ausfallen |
 | `src/state/` | Signals |
-| `src/ui/` | Komponenten und die fünf Bereiche |
+| `src/ui/` | Komponenten und die acht Bereiche |
 | `test/` | Gleichheitsnachweis gegen den Stand vor dem Umbau (Tag `vor-umbau`) |
 
 `TRAININGSPLAN.md` ist die fachliche Spezifikation. Bei Änderungen am Plan muss
@@ -156,6 +156,8 @@ brauchen den intervals.icu-Schlüssel; ohne ihn bleibt die Tagesmeldung.
 
 Nur über das Menü erreichbar, weil man sie selten braucht:
 
+- **Schwellentest** – Anleitung, Anlauf als Zeitleiste, Go/No-Go zum Abhaken,
+  die Uhr für Test, Tempotest und Öffner, und die Eingabe von FTP und LTHR
 - **Zonen & Schwellenwerte** – Zonenmodell, FTP und LTHR, Sprechtest-Erhebung
 - **Einstellungen** – Zugänge, Erscheinungsbild, Planbeginn, Plan, Sicherung, Diagnose
 - **Über die App** – Version, welche Schnittstelle wofür benutzt wird, was dabei
@@ -186,16 +188,25 @@ Farbe trägt nur dort Bedeutung, wo sie gebraucht wird:
 |---|---|
 | Zonenrampe Z1–Z5 | Blau → Grün → Gelb → Orange → Rot, Farbton gespreizt, Sättigung zurückgenommen |
 | Timerphasen | warm = Belastung, kühl = Erholung – aus zwei Metern schneller lesbar als jede Beschriftung |
-| Tageskarten | nur eine schmale Kante links, die Überschriften bleiben neutral |
+| Tageskarten | keine Typfarbe; das Zeichen der Einheitsart trägt die Farbe |
 
 Alle Werte liegen als Tokens in `src/ui/theme.css`, je einmal für hell und
 dunkel. Jede Zonenfarbe erreicht mindestens 5:1 gegen ihre Fläche.
 
 ## Analyse
 
-Zuerst eine Liste der Aufzeichnungen aus dem gewählten Zeitraum – eine Abfrage.
-Die Auswertung läuft erst beim Antippen einer Fahrt: Pulszonen aus dem Stream,
-Abgleich mit dem Plan, Streckenkarte und Bedingungen.
+Zuerst eine Liste der Aufzeichnungen aus dem gewählten Zeitraum, nach Tagen
+gruppiert – eine Abfrage. Die Auswertung läuft erst beim Antippen eines Tages:
+Pulszonen aus den Streams, Abgleich mit dem Plan, je Fahrt eine Streckenkarte
+und die Bedingungen.
+
+Ausgewertet wird der **Tag** und nicht die einzelne Fahrt. Der Plan macht seine
+Vorgabe je Tag; wer sie auf zwei Fahrten verteilt, weil der Arbeitsweg zweimal
+anfällt, bekäme sie sonst zweimal ganz gegen sich gerechnet – Hinweg „kürzer“,
+Rückweg „kürzer“, zusammen genau richtig. Dauer, Distanz und Zonenzeiten laufen
+deshalb über alle Aufzeichnungen des Tages zusammen; Streckenbilanz und Wind
+ebenso. Nur das Wetter stammt von der längsten Fahrt – Bedingungen lassen sich
+nicht mitteln.
 
 Die Spur wird in Abschnitte von rund 150 m geschnitten und jeder Abschnitt
 einzeln bewertet: Gegenwindanteil aus Fahrtrichtung gegen die Windrichtung

@@ -1,11 +1,14 @@
-/* Der Intervall-Timer: der einzige Timer, der auf dem Rad bedient wird.
+/* Der Intervall-Timer: einer von zwei Timern, die auf dem Rad bedient werden.
 
-   Drei Betriebsarten, die der Plan vorgibt und die man hier nicht waehlt:
-   Intervalle mit einstellbaren Zeiten, der Schwellentest mit festem Ablauf,
-   und in Phase 3 gar keiner - dort ist der Donnerstag ein Grundlagentag, und
-   ein Timer haette nichts zu zaehlen. Der Testablauf laesst sich bewusst nicht
-   verstellen: ein Test, der sich anpassen laesst, ist kein Vergleichsmassstab
-   mehr.
+   Zwei Betriebsarten, die der Plan vorgibt und die man hier nicht waehlt:
+   Intervalle mit einstellbaren Zeiten, und in Phase 3 gar keine - dort ist der
+   Donnerstag ein Grundlagentag, und ein Timer haette nichts zu zaehlen.
+
+   Der Schwellentest war bis zum 03.09.2026 die dritte. Er ist es nicht mehr:
+   derselbe Ablauf lief hier ohne die Anleitung, ohne das Go/No-Go und ohne die
+   Stelle, an der das Ergebnis hingehoert - und er wurde als Intervalleinheit
+   behandelt, obwohl er misst statt zu belasten. An einem Testtag steht hier
+   jetzt der Weg in den Testbereich; dasselbe gilt fuer den Testanlauf.
 
    Die Uhr samt Ansagen liegt seit dem 03.09.2026 in useSchrittTimer.js: der
    Testbereich spielt dieselben Schrittfolgen ab, und zwei Fassungen derselben
@@ -41,10 +44,11 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, week, settings, startDate, today } from '../../../state/store.js';
-import { buildIntervalSequence, buildTestSequence, buildStepSequence, intervalDefaults,
+import { buildIntervalSequence, intervalDefaults,
          totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
 import { isRecoveryWeek } from '../../../domain/week.js';
+import { gotoTab } from '../../../state/navigation.js';
 import { Buehne } from '../../components/Buehne.jsx';
 /* Dasselbe Geruest wie in den vier Trainingsbausteinen - aus demselben Grund,
    aus dem die Buehne dort ausgezogen ist: eine Form, die nur einer der fuenf
@@ -77,15 +81,14 @@ export function IntervalleTab(){
 
   const testmodus = vorgabe.mode === 'test';
   const nurZ2 = vorgabe.mode === 'z2';
-  /* Der Anlauf zum Schwellentest laeuft wie der Test selbst als feste Folge
-     aus der Datei: er ist die Probe auf den Test, und eine Probe mit anderen
-     Zahlen probt etwas anderes. Deshalb steht auch hier keine Einstellkarte. */
+  /* Der Anlauf zum Schwellentest gehoert wie der Test selbst in den
+     Testbereich - siehe die Weiche weiter unten. */
   const anlauf = vorgabe.mode === 'steps' ? vorgabe.anlauf : null;
+  const zumTest = testmodus || !!anlauf;
 
   function sequenz(){
-    if(nurZ2) return [];
-    if(anlauf) return buildStepSequence(p, th, w, vorgabe.steps);
-    return testmodus ? buildTestSequence(p, th, w) : buildIntervalSequence(p, th, w, cfg);
+    if(nurZ2 || zumTest) return [];
+    return buildIntervalSequence(p, th, w, cfg);
   }
 
   const uhr = useSchrittTimer({ kennung: 'intervalle', voice: s.voice, sequenz });
@@ -109,8 +112,7 @@ export function IntervalleTab(){
      nur ersatzweise aus den Einstellungen: eine feste Folge hat keine. */
   const wz = step && step.zone ? step.zone.key : (cfg ? cfg.zoneKey : null);
   const phase = !step ? 'Bereit'
-    : step.type === 'work' ? (testmodus ? 'Test' : wz === 'z5' ? 'VO2max'
-        : wz === 'z4' ? 'Schwelle' : 'Tempo')
+    : step.type === 'work' ? (wz === 'z5' ? 'VO2max' : wz === 'z4' ? 'Schwelle' : 'Tempo')
     : step.type === 'warm' ? 'Einfahren'
     : step.type === 'rest' ? 'Erholung'
     : step.type === 'cool' ? 'Ausrollen'
@@ -123,24 +125,47 @@ export function IntervalleTab(){
   const kadenz = cfg ? cadenceText(p, cfg.zoneKey, w) : null;
   const watt = cfg ? wattText(p, th, cfg.zoneKey) : null;
 
-  /* Kopf, Status und Hinweise der drei Betriebsarten an einer Stelle - im
-     Baugeruest darunter unterscheiden sie sich nur noch darin, ob es eine
-     Buehne und Einstellungen gibt. */
-  const titel = testmodus ? 'Schwellentest'
-    : anlauf ? anlauf.session.title.replace('Rad – ', '')
-    : nurZ2 ? 'Grundlagentag'
-    : vorgabe.plan.title.replace('Rad – ', '');
+  /* Schwellentest und Testanlauf laufen im Testbereich und nicht hier.
+
+     Bis zum 03.09.2026 zaehlte dieser Timer sie mit: derselbe Ablauf, dieselben
+     Ansagen, aber ohne die Anleitung, ohne das Go/No-Go und ohne die Stelle,
+     an der das Ergebnis hingehoert. Zwei Uhren fuer denselben Test sind eine
+     zu viel - und die hier war die, die den Test als Intervalleinheit
+     behandelte, obwohl er misst statt zu belasten.
+
+     Ein Verweis und keine leere Seite: wer an einem Testtag den Intervalltimer
+     oeffnet, sucht die Uhr fuer heute und soll sie mit einem Tipp finden. */
+  if(zumTest){
+    return (
+      <div class="card">
+        <div class="row"><span>Woche {w}</span>
+          <b>{testmodus ? 'Schwellentest' : 'Testanlauf'}</b></div>
+        <p class="hint">
+          {testmodus
+            ? 'Heute steht kein Intervalltraining an, sondern der Schwellentest. Er hat einen ' +
+              'eigenen Bereich: dort stehen der Ablauf, das Go/No-Go für den Morgen und die ' +
+              'Felder für FTP und LTHR.'
+            : 'Der Testanlauf tritt an die Stelle der Qualitätseinheit. Er gehört zum Test und ' +
+              'läuft im Testbereich – dort wird auch die Zielleistung notiert, die aus ihm fällt.'}
+        </p>
+        <button class="btn block" type="button"
+          onClick={() => gotoTab('test', true)}>Zum Schwellentest</button>
+      </div>
+    );
+  }
+
+  /* Kopf, Status und Hinweise der beiden verbliebenen Betriebsarten an einer
+     Stelle - im Baugeruest darunter unterscheiden sie sich nur noch darin, ob
+     es eine Buehne und Einstellungen gibt. */
+  const titel = nurZ2 ? 'Grundlagentag' : vorgabe.plan.title.replace('Rad – ', '');
 
   const kopfmeta = nurZ2 ? vorgabe.plan.minutes + ' min' : dauer(totalSeconds(vorschau));
 
-  const status = testmodus ? 'Woche ' + w + ' · Schwellentest statt Intervallen'
-    : anlauf ? 'Woche ' + w + ' · Testanlauf statt der Qualitätseinheit'
-    : nurZ2 ? 'Woche ' + w + ' · ' + vorgabe.plan.minutes + ' min ' + zoneText(p, th, 'z2', w) + ' am Stück'
+  const status = nurZ2
+    ? 'Woche ' + w + ' · ' + vorgabe.plan.minutes + ' min ' + zoneText(p, th, 'z2', w) + ' am Stück'
     : 'Woche ' + w + ' · ' + cfg.reps + '× ' + cfg.workMin + ' min ' + zoneText(p, th, cfg.zoneKey, w);
 
-  const hinweise = testmodus ? [p.texts.thresholdTestSummary]
-    : anlauf ? [anlauf.taper.step.text, anlauf.session.note].filter(Boolean)
-    : nurZ2 ? [p.texts.thursdayNoTimer]
+  const hinweise = nurZ2 ? [p.texts.thursdayNoTimer]
     : [p.texts.intervalRollingStart + (isRecoveryWeek(p, w) ? ' ' + p.texts.intervalRecoveryWeek : '')];
 
   return (
@@ -169,11 +194,7 @@ export function IntervalleTab(){
       )}
       hinweise={hinweise}
       schluss={
-        testmodus
-          ? <p class="hint">Der Testablauf steht fest und lässt sich nicht verstellen – ein Test, der sich anpassen lässt, ist kein Vergleichsmaßstab mehr.</p>
-          : anlauf
-          ? <p class="hint">Der Anlauf steht fest und lässt sich nicht verstellen – er ist die Probe auf den Test am {anlauf.taper.date.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' })}, und eine Probe mit anderen Zahlen probt etwas anderes.</p>
-          : nurZ2 ? null : (
+        nurZ2 ? null : (
           <div class="card">
             <div class="row"><span>Einstellungen</span><b>anpassbar</b></div>
             {/* Einfahren und Ausrollen duerfen auf null: wer schon warm ist,
