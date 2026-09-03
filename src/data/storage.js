@@ -17,6 +17,7 @@ export const KEYS = {
   thresholds: 'training-thresholds',
   testLog:    'test-history',
   interimLog: 'interim-log',
+  testPrep:   'test-prep',
   planOverride: 'plan-override',
   settings:   'app-settings',
   untergrund: 'untergrund-cache',
@@ -125,6 +126,26 @@ export function createRepos(store){
       return Array.isArray(v) ? v : [];
     },
     async setInterimLog(list){ return store.set(KEYS.interimLog, JSON.stringify(list.slice(-120))); },
+
+    /* Die Vorbereitung je Testtermin, abgelegt unter dem Datum des Tests.
+
+       Darin steht vor allem die Zahl, die der Tempotest liefert: die Leistung,
+       auf die im Test gezielt wird. Der Plan verlangt sie zu notieren, und
+       sieben Tage spaeter erinnert sie niemand mehr. Ein eigener Schluessel und
+       kein Eintrag in der Testhistorie - dort stehen Ergebnisse, hier steht
+       eine Vorgabe fuer einen Test, den es noch nicht gegeben hat. */
+    async testPrep(){
+      const v = await json(KEYS.testPrep, {});
+      return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+    },
+    async setTestPrep(map){
+      /* Nur die juengsten Termine behalten: aeltere Vorgaben sind durch ihr
+         Ergebnis in der Testhistorie abgeloest. */
+      const paare = Object.entries(map || {}).sort((a, b) => (a[0] < b[0] ? -1 : 1)).slice(-8);
+      const knapp = {};
+      for(const [k, v] of paare) knapp[k] = v;
+      return store.set(KEYS.testPrep, JSON.stringify(knapp));
+    },
 
     async planOverride(){ return json(KEYS.planOverride, null); },
     async setPlanOverride(p){ return store.set(KEYS.planOverride, JSON.stringify(p)); },

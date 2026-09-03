@@ -21,6 +21,7 @@ export const BEREICHE = {
   training:      'Training',
   intervalle:    'Intervalle',
   analyse:       'Analyse',
+  test:          'Schwellentest',
   zonen:         'Zonen & Schwellenwerte',
   einstellungen: 'Einstellungen',
   about:         'Über die App'

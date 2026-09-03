@@ -7,11 +7,11 @@
    verstellen: ein Test, der sich anpassen laesst, ist kein Vergleichsmassstab
    mehr.
 
-   Die Ansagen pruefen auf Unterschreiten und nicht auf Gleichheit. Die
-   Restzeit wird aus der Uhr gerechnet und kann springen; bei einem Vergleich
-   auf Gleichheit fiele eine Ansage dann ersatzlos aus - und zwar genau die,
-   auf die man gewartet hat. Die Flags in flags.current halten jede Ansage
-   einmalig, sie werden bei jedem Schrittwechsel zurueckgesetzt.
+   Die Uhr samt Ansagen liegt seit dem 03.09.2026 in useSchrittTimer.js: der
+   Testbereich spielt dieselben Schrittfolgen ab, und zwei Fassungen derselben
+   Ansagen waeren zwei Gelegenheiten, sie auseinanderlaufen zu lassen. Hier
+   bleibt, was diesen Bereich ausmacht - die drei Betriebsarten, die
+   Einstellkarte und die Ablaufvorschau.
 
    Die Tastenreihe kommt aus Buehne.jsx und nicht mehr aus dieser Datei. Sie
    war bis zum 29.08.2026 die einzige Stelle, an der die Regel "links Zurueck,
@@ -39,10 +39,8 @@
    Wochen in einen Fehler, weil ohne Intervalle auch keine Einstellungen
    dastehen, aus denen sich eine Folge bauen liesse. */
 
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, week, settings, startDate, today } from '../../../state/store.js';
-import { meldeTimer } from '../../../state/timerState.js';
-import { createTimer } from '../../../domain/timer/engine.js';
 import { buildIntervalSequence, buildTestSequence, buildStepSequence, intervalDefaults,
          totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
@@ -54,7 +52,7 @@ import { Buehne } from '../../components/Buehne.jsx';
 import { Baustein } from '../training/Baustein.jsx';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
 import { Zahlenfeld } from '../../components/Feld.jsx';
-import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
+import { useSchrittTimer } from '../../components/useSchrittTimer.js';
 import '../../components/timer.css';
 
 function klok(sec){
@@ -76,12 +74,6 @@ export function IntervalleTab(){
         coolMin: vorgabe.coolMin, reps: vorgabe.reps, zoneKey: vorgabe.zoneKey }
     : null);
   const [cfg, setCfg] = useState(ausVorgabe);
-  const [, tickState] = useState(0);
-  const timerRef = useRef(null);
-  const flags = useRef({ half:false, minute:false, zehn:false });
-
-  if(!timerRef.current) timerRef.current = createTimer();
-  const timer = timerRef.current;
 
   const testmodus = vorgabe.mode === 'test';
   const nurZ2 = vorgabe.mode === 'z2';
@@ -96,76 +88,8 @@ export function IntervalleTab(){
     return testmodus ? buildTestSequence(p, th, w) : buildIntervalSequence(p, th, w, cfg);
   }
 
-  useEffect(() => {
-    const ab = [];
-    ab.push(timer.on('step', ({ step, index }) => {
-      flags.current = { half:false, minute:false, zehn:false };
-      tickState(x => x + 1);
-      const naechster = timer.sequence[index + 1];
-      if(step.type === 'prep'){
-        speak('Bereit machen. Gleich geht es los mit ' + (naechster ? naechster.label : 'dem Einfahren') + '.', s.voice);
-      }
-      else if(step.type === 'work'){
-        beep(880, 180); vibrate(40);
-        /* Wiederholung und Gesamtzahl mitsagen: auf dem Rad schaut man nicht
-           auf den Bildschirm, um zu wissen, die wievielte gerade laeuft. */
-        const wo = step.reps > 1 ? 'Intervall ' + step.rep + ' von ' + step.reps : step.label;
-        speak(wo + '. Los!', s.voice);
-      }
-      else if(step.type === 'rest'){
-        beep(440, 180);
-        speak('Erholung. Locker rollen in ' + (step.zone && step.zone.key ? step.zone.key.toUpperCase() : 'Zone 1') + '.', s.voice);
-      }
-      else if(step.type === 'warm'){ speak('Einfahren. Locker und gleichmäßig, Zone 1 bis 2.', s.voice); }
-      else if(step.type === 'cool'){ beep(440, 180); speak('Alle Intervalle geschafft. Jetzt locker ausrollen.', s.voice); }
-      else if(step.type === 'done'){
-        beep(880, 300); beep(1046, 300, 200); vibrate([60, 40, 60]);
-        speak('Einheit abgeschlossen. Stark gemacht!', s.voice);
-        meldeTimer('intervalle', false);
-      }
-    }));
-    ab.push(timer.on('tick', ({ step, secondsLeft, sekundenwechsel }) => {
-      tickState(x => x + 1);
-      if(sekundenwechsel && secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
-      const f = flags.current;
-      /* Auf Unterschreiten pruefen, nicht auf Gleichheit: mit einer aus der Uhr
-         gerechneten Restzeit kann der Wert springen und eine Ansage sonst
-         ersatzlos verschlucken. Die Flags halten sie einmalig. */
-      if(step.type === 'work'){
-        const half = Math.floor(step.duration / 2);
-        if(!f.half && step.duration >= 120 && secondsLeft <= half){
-          f.half = true; speak('Halbzeit. Tempo halten!', s.voice); beep(660, 150);
-        }
-        if(!f.minute && step.duration > 90 && secondsLeft <= 60){
-          f.minute = true; speak('Noch eine Minute.', s.voice);
-        }
-      }
-      if(step.type === 'rest' && !f.minute && step.duration > 90 && secondsLeft <= 30){
-        f.minute = true; speak('Noch 30 Sekunden Erholung. Bereit machen.', s.voice);
-      }
-      if(!f.zehn && (step.type === 'rest' || step.type === 'prep' || step.type === 'warm') && secondsLeft <= 10){
-        f.zehn = true;
-        const naechster = timer.sequence[timer.index + 1];
-        if(naechster && naechster.type === 'work') speak('Gleich ' + naechster.label + '.', s.voice);
-      }
-      if((step.type === 'warm' || step.type === 'cool') && !f.minute && step.duration > 120 && secondsLeft <= 60){
-        f.minute = true; speak('Noch eine Minute.', s.voice);
-      }
-    }));
-    return () => { ab.forEach(f => f()); };
-    /* timer steht bewusst nicht in der Liste: er lebt in einem useRef und ist
-       fuer die Lebensdauer der Komponente derselbe. In der Liste wuerde der
-       Linter zufrieden sein, ohne dass sich etwas aendert - nur laesst sich
-       dann nicht mehr lesen, dass die Anmeldung an der Stimme haengt und an
-       sonst nichts. */
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.voice]);
-
-  /* Anhalten und abmelden nur beim Aushaengen. Im Aufraeumteil darueber
-     beendete jeder Wechsel der Stimme die laufende Einheit - mitten auf dem
-     Rad, ohne dass ein Knopf dafuer gedrueckt worden waere. */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => () => { timer.reset(); meldeTimer('intervalle', false); }, []);
+  const uhr = useSchrittTimer({ kennung: 'intervalle', voice: s.voice, sequenz });
+  const timer = uhr.timer;
 
   /* Wie im Trainings-Tab: die Vorgabe haengt an der Woche, und die kann
      wechseln, waehrend die App offen ist. Nicht waehrend eine Uhr laeuft -
@@ -176,22 +100,6 @@ export function IntervalleTab(){
     setCfg(ausVorgabe());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [w]);
-
-  function starten(){
-    primeSpeech(); ensureWakeLock();
-    if(!timer.running && (timer.index === -1 || (timer.step && timer.step.type === 'done'))){
-      timer.load(sequenz());
-    }
-    timer.toggle();
-    meldeTimer('intervalle', timer.running);
-    tickState(x => x + 1);
-  }
-  function zuruecksetzen(){ cancelSpeech(); timer.reset(); meldeTimer('intervalle', false); tickState(x => x + 1); }
-  function weiter(){ timer.skip(); meldeTimer('intervalle', timer.running); tickState(x => x + 1); }
-  /* Zurueck haelt an und blaettert stumm - wie im Rumpfzirkel. Wer im
-     Ausrollen merkt, dass er ein Intervall uebersprungen hat, kommt so
-     zurueck, ohne die ganze Einheit zu verlieren. */
-  function zurueck(){ cancelSpeech(); timer.back(); meldeTimer('intervalle', false); tickState(x => x + 1); }
 
   const vorschau = timer.sequence.length ? timer.sequence : sequenz();
   const step = timer.step;
@@ -252,12 +160,12 @@ export function IntervalleTab(){
               ? 'noch ' + dauer(remainingAfter(timer.sequence, timer.index) + sec) : '',
             zone: step ? step.zone : (vorschau[1] && vorschau[1].zone)
           }}
-          zurueck={{ onClick: zurueck, disabled: !step || timer.index <= 0 }}
+          zurueck={{ onClick: uhr.zurueck, disabled: !step || timer.index <= 0 }}
           haupt={{ label: timer.running ? 'Pause'
                           : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
-                   onClick: starten }}
-          weiter={{ onClick: weiter, disabled: !step || step.type === 'done' }}
-          ende={step ? { label: 'Einheit beenden', onClick: zuruecksetzen } : null} />
+                   onClick: uhr.starten }}
+          weiter={{ onClick: uhr.weiter, disabled: !step || step.type === 'done' }}
+          ende={step ? { label: 'Einheit beenden', onClick: uhr.beenden } : null} />
       )}
       hinweise={hinweise}
       schluss={

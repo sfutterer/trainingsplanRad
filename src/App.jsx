@@ -27,13 +27,16 @@ import { UpdateBanner } from './ui/components/UpdateBanner.jsx';
 import { Snackbar } from './ui/components/Snackbar.jsx';
 import { Bestaetigung } from './ui/components/Bestaetigung.jsx';
 
-/* Vier Bereiche kommen nachgeladen, drei nicht.
+/* Fuenf Bereiche kommen nachgeladen, drei nicht.
 
    Die Trennung folgt der Frage, was beim Start gebraucht wird. Plan, Training
    und Intervalle sind das, wofuer man die App oeffnet, und sie muessen sofort
-   dastehen - beim Rumpfzirkel steht man schon auf der Matte. Analyse, Zonen,
-   Einstellungen und Ueber die App ruft man dagegen bewusst auf und wartet
-   dabei ohne Weiteres einen Wimpernschlag.
+   dastehen - beim Rumpfzirkel steht man schon auf der Matte. Analyse,
+   Schwellentest, Zonen, Einstellungen und Ueber die App ruft man dagegen
+   bewusst auf und wartet dabei ohne Weiteres einen Wimpernschlag. Der
+   Testbereich hat zwar eine Uhr, wird aber dreimal im ganzen Plan geoeffnet -
+   er gehoert deshalb zu den nachgeladenen und trotzdem zu denen, die montiert
+   bleiben, sobald sie einmal offen waren.
 
    Der Gewinn liegt fast ganz beim Analysebereich: er zieht verlauf.js,
    analysis.js, strecke.js, fazit.js, wellness.js und den OSM-Teil hinter sich
@@ -68,6 +71,8 @@ const AnalyseTab = nachladen(() =>
   import('./ui/tabs/analyse/AnalyseTab.jsx').then(m => m.AnalyseTab));
 const ZonenTab = nachladen(() =>
   import('./ui/tabs/zonen/ZonenTab.jsx').then(m => m.ZonenTab));
+const TestTab = nachladen(() =>
+  import('./ui/tabs/test/TestTab.jsx').then(m => m.TestTab));
 const EinstellungenTab = nachladen(() =>
   import('./ui/tabs/einstellungen/EinstellungenTab.jsx').then(m => m.EinstellungenTab));
 const AboutTab = nachladen(() =>
@@ -81,6 +86,7 @@ const KOMPONENTEN = {
   training:      TrainingTab,
   intervalle:    IntervalleTab,
   analyse:       AnalyseTab,
+  test:          TestTab,
   zonen:         ZonenTab,
   einstellungen: EinstellungenTab,
   about:         AboutTab
@@ -103,7 +109,7 @@ const KOMPONENTEN = {
 
    Deshalb versteckt statt ausgehaengt, und deshalb erst ab dem ersten Besuch:
    wer nur den Plan aufschlaegt, zeichnet die beiden nie. */
-const MIT_UHR = ['training', 'intervalle'];
+const MIT_UHR = ['training', 'intervalle', 'test'];
 
 export function App(){
   const [drawer, setDrawer] = useState(false);

@@ -26,7 +26,7 @@ import { Icon } from './Icon.jsx';
    Bereich, der unten anders hiess als im Drawer, waere niemandem aufgefallen. */
 const GRUPPEN = [
   { titel: null,    ziele: HAUPTZIELE },
-  { titel: 'Werte', ziele: ['zonen'] },
+  { titel: 'Werte', ziele: ['test', 'zonen'] },
   { titel: null,    ziele: ['einstellungen', 'about'] }
 ];
 

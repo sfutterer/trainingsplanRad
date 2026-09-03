@@ -1,0 +1,96 @@
+/* Der Testbereich.
+
+   Nur Rollen aus theme.css, keine festen Farbwerte - sonst bricht einer der
+   drei Theme-Zustaende (System, Hell, Dunkel). */
+
+/* Die Zielleistung aus dem Tempotest: die eine Zahl, die man am Testtag
+   vorher wissen muss. Deshalb gross und abgesetzt und nicht als weitere
+   Zeile unter den anderen. */
+.testziel{
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  margin-top: 10px; padding: 10px 12px;
+  border-radius: var(--radius-s);
+  background: var(--surface-2);
+  border-left: 3px solid var(--z4);
+}
+.testziel b{ font-size: 22px; font-weight: 700; }
+.testziel span{ font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+
+/* ---- Der Anlauf als Zeitleiste ----
+
+   Zehn Zeilen untereinander, jede mit Datum, Etikett und Anweisung. Der
+   heutige Tag traegt die Marke, vergangene sind gedaempft - beim Blick auf die
+   Leiste soll ohne Lesen erkennbar sein, wie weit man ist. */
+.anlaufliste{ list-style: none; margin: 10px 0 0; padding: 0; }
+.anlaufliste li{
+  padding: 8px 0 8px 12px; margin-bottom: 2px;
+  border-left: 2px solid var(--outline-2);
+}
+.anlaufliste li.weg{ opacity: .55; }
+.anlaufliste li.heute{ border-left-color: var(--primary); background: var(--surface-2);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0; }
+/* Der Testtag ist der Grund, aus dem die uebrigen dastehen - er bekommt die
+   Farbe der Schwelle und eine kraeftigere Kante. */
+.anlaufliste li.test{ border-left-width: 3px; border-left-color: var(--z4); }
+
+.anlauf-kopf{ display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.anlauf-tag{
+  flex: none; font-size: 12px; font-weight: 700; color: var(--muted);
+  font-variant-numeric: tabular-nums; min-width: 62px;
+}
+.anlauf-label{ font-size: 13.5px; font-weight: 700; }
+.anlauf-marke{
+  flex: none; padding: 1px 8px; border-radius: 10px;
+  background: var(--primary); color: var(--on-primary);
+  font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+}
+.anlauf-text{
+  display: block; margin-top: 3px;
+  font-size: 12.5px; color: var(--muted); line-height: 1.45;
+}
+
+/* ---- Go/No-Go ----
+
+   Echte Kaestchen und keine Aufzaehlung: die vier Punkte werden am Testmorgen
+   abgehakt. Ein Fliesstext mit vier Bedingungen darin laesst sich nicht
+   abhaken, und genau das war der Zustand davor. */
+.hakenliste{ display: flex; flex-direction: column; gap: 2px; margin: 8px 0 4px; }
+.haken{
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 4px; min-height: 44px;
+  font-size: 14px; line-height: 1.4; cursor: pointer;
+  border-bottom: 1px solid var(--outline);
+}
+.haken:last-child{ border-bottom: 0; }
+.haken input{ flex: none; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--primary); }
+.haken input:disabled + span{ color: var(--muted); }
+
+.row b.go{ color: var(--ok); }
+.row b.nogo{ color: var(--dev); }
+
+/* ---- Regeln und Formeln ---- */
+.regelliste{ margin: 6px 0 0; padding-left: 18px; }
+.regelliste li{ margin: 6px 0; font-size: 13.5px; line-height: 1.5; color: var(--on-surface-var); }
+.regelliste b{ color: var(--on-surface); }
+
+.formeln{ display: flex; flex-direction: column; gap: 8px; margin: 10px 0 4px; }
+.formel{
+  padding: 10px 12px; border-radius: var(--radius-s); background: var(--surface-2);
+}
+.formel b{ display: block; font-size: 14.5px; margin-bottom: 2px; }
+.formel span{ font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+
+/* ---- Ergebnis ----
+
+   Die drei gerechneten Werte stehen ueber den Feldern und aendern sich, waehrend
+   man tippt: so sieht man vor dem Speichern, welche Zahlen daraus werden. */
+.ergebnis{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 12px; }
+.ergwert{
+  background: var(--surface-2); border-radius: var(--radius-s); padding: 10px 8px;
+  text-align: center;
+}
+.ergwert b{ display: block; font-size: 17px; margin-bottom: 2px; white-space: nowrap; }
+.ergwert span{
+  font-size: 11px; color: var(--muted);
+  letter-spacing: .06em; text-transform: uppercase;
+}

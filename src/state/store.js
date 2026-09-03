@@ -31,6 +31,9 @@ export const mapKey      = signal('');   // Thunderforest, fuer OpenCycleMap
 export const coreLog     = signal([]);
 export const testLog     = signal([]);
 export const interimLog  = signal([]);
+/* Was zu einem Testtermin notiert wurde, bevor er stattfand - vor allem die
+   Zielleistung aus dem Tempotest. Schluessel ist das Datum des Tests. */
+export const testPrep    = signal({});
 export const settings    = signal({ voice:true, keepAwake:true, showIllu:true, mapStyle:'atlas' });
 export const tab         = signal('plan');
 export const ready       = signal(false);
@@ -81,6 +84,7 @@ export async function boot(){
   coreLog.value    = await store.coreLog();
   testLog.value    = await store.testLog();
   interimLog.value = await store.interimLog();
+  testPrep.value   = await store.testPrep();
   settings.value   = Object.assign({ voice:true, keepAwake:true, showIllu:true, theme:'system', mapStyle:'atlas' }, await store.settings());
   theme.value      = settings.value.theme;
 
@@ -140,6 +144,15 @@ export async function addTestEntry(entry){
 export async function addInterimEntry(entry){
   interimLog.value = interimLog.value.concat([entry]);
   await store.setInterimLog(interimLog.value);
+}
+
+/* Die Notiz zu einem Testtermin ergaenzen, nicht ersetzen: der Tempotest
+   traegt die Zielleistung ein, das Go/No-Go am Testmorgen seine Haken. */
+export async function setTestPrep(schluessel, patch){
+  if(!schluessel) return;
+  const alt = testPrep.value[schluessel] || {};
+  testPrep.value = { ...testPrep.value, [schluessel]: { ...alt, ...patch } };
+  await store.setTestPrep(testPrep.value);
 }
 
 /* --- Eigener Plan --- */
