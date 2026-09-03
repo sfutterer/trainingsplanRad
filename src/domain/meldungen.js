@@ -39,7 +39,13 @@ const VERPASST = { miss: true, dev: true };
 
    Bewusst nur Titel und die ersten Eckwerte: die Meldung soll den Blick auf
    den Plan ersetzen, wenn nichts weiter ansteht, und ihn ausloesen, wenn doch.
-   Der ganze Ablauf steht zwei Antipper entfernt auf der Tageskarte. */
+   Der ganze Ablauf steht zwei Antipper entfernt auf der Tageskarte.
+
+   Traegt der Tag mehrere Einheiten, wird jede genannt - eine Zeile je Einheit
+   statt der ersten drei Kennzahlen der ersten. Bis zum 03.09.2026 meldete die
+   Glocke am Mittwoch "Dauer: mindestens 30 min · Zielzone: … · Trittfrequenz:
+   …" und schwieg zum Zirkel am selben Abend. Wer nur die Meldung las, wusste
+   von der zweiten Einheit nichts. */
 export function trainingsMeldung(plan, th, heute, startDate){
   const tag = isoDayLocal(heute);
   const info = buildDayInfo(plan, th, heute, startDate);
@@ -47,11 +53,22 @@ export function trainingsMeldung(plan, th, heute, startDate){
      liesse - buildDayInfo klemmt dort auf Woche 1. */
   if(info.vorStart) return null;
 
-  const zeilen = info.kennzahlen.slice(0, 3).map(k => k.label + ': ' + k.wert);
+  const einheiten = info.einheiten || [];
+  const zeilen = einheiten.length > 1
+    ? einheiten.map(e => {
+        const k = e.kennzahlen[0];
+        const rechts = [e.zeit, k ? k.wert : null].filter(Boolean).join(' · ');
+        return e.titel + (rechts ? ' – ' + rechts : '');
+      })
+    : info.kennzahlen.slice(0, 3).map(k => k.label + ': ' + k.wert);
   if(!zeilen.length && info.hinweise.length) zeilen.push(info.hinweise[0]);
 
+  const titel = einheiten.length > 1
+    ? info.title + ' · ' + einheiten.length + ' Einheiten'
+    : info.title;
+
   return { id: 'training:' + tag, art: 'training', ton: 'info', tag,
-           titel: info.title, zeilen };
+           titel, zeilen };
 }
 
 /* Das rote Gate.

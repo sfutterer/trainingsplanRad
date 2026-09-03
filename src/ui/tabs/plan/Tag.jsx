@@ -13,6 +13,18 @@
    darunter als je eigene Zeile. `detail` bleibt in day.js erhalten, wird hier
    aber nicht mehr gelesen.
 
+   Seit dem 03.09.2026 ist die Tageskarte kein Block mehr, sondern so viele
+   Abschnitte, wie der Tag Einheiten hat. Der Anlass war ein uebersehener
+   Mittwoch: die Karte hiess "Rad – kurzes Z2 (Arbeitsweg) + Rumpf", und der
+   Zirkel stand als dritte von drei Ablaufzeilen unter den Kennzahlen der
+   Fahrt. Zugeklappt war von ihm nur das Wort "Rumpf" im Titel zu sehen.
+
+   Jetzt traegt jede Einheit ihren eigenen Kopf mit Zeichen, Titel und
+   Tageszeit, ihre eigenen Kennzahlen, ihren eigenen Ablauf und ihren eigenen
+   Timerknopf - und die zugeklappte Zeile zaehlt sie einzeln auf, statt eine
+   einzige Kennzahl zu zeigen. Ein Tag mit zwei Einheiten sieht damit auch
+   zugeklappt anders aus als einer mit einer.
+
    Das Wellness-Gate haengt weiter an einem einzigen Abruf: die Serie kommt von
    oben als Eigenschaft herein, damit nicht jede sichtbare Tageskarte ihre
    eigene Anfrage stellt. */
@@ -103,6 +115,10 @@ function AbnehmHinweis({ serie }){
   return <div class="daynote gelb"><b>Gewichtstrend:</b> {serie.abnehmen.text}</div>;
 }
 
+/* Ab hier ist ein Wert kein Wert mehr, sondern ein Satz - und darf umbrechen.
+   Siehe die Regel zu .kennzahl dd.lang in plan.css. */
+const LANGER_WERT = 20;
+
 /* Die Eckwerte als Schluessel-Wert-Paare. Ein <dl> und keine Tabelle: es sind
    Begriff und Wert, keine zwei Dimensionen - und ein Raster aus zwei Spalten
    faellt auf einem schmalen Geraet ohne Zutun auf eine zurueck. */
@@ -113,7 +129,7 @@ function Kennzahlen({ liste }){
       {liste.map((k, i) => (
         <div class="kennzahl" key={i}>
           <dt>{k.label}</dt>
-          <dd>{k.wert}</dd>
+          <dd class={String(k.wert).length > LANGER_WERT ? 'lang' : undefined}>{k.wert}</dd>
         </div>
       ))}
     </dl>
@@ -167,11 +183,36 @@ function Checkliste({ liste }){
   );
 }
 
-/* Die wichtigste Kennzahl fuer die zugeklappte Zeile. Die erste ist es immer:
-   day.js setzt sie bewusst an den Anfang - Dauer, sonst Umfang. */
-function ersteKennzahl(info){
-  const k = info.kennzahlen && info.kennzahlen[0];
+/* Die wichtigste Kennzahl einer Einheit. Die erste ist es immer: day.js setzt
+   sie bewusst an den Anfang - Dauer, sonst Umfang. */
+function ersteKennzahl(traeger){
+  const k = traeger && traeger.kennzahlen && traeger.kennzahlen[0];
   return k ? k.wert : '';
+}
+
+/* Die Zeichen des Tages, ohne Wiederholung.
+
+   Ein Sonntag traegt Zirkel und Beinblock, beide sind Rumpf - zwei gleiche
+   Zeichen nebeneinander behaupten einen Unterschied, den es nicht gibt. */
+export function tagesArten(info){
+  const raus = [];
+  for(const e of info.einheiten || []){
+    if(raus.indexOf(e.art) < 0) raus.push(e.art);
+  }
+  return raus.length ? raus : [info.art];
+}
+
+/* Eine Einheit in der zugeklappten Zeile: Zeichen, Titel und die eine Zahl
+   oder Tageszeit, die man daran erkennt. */
+function Einheitszeile({ e }){
+  const rechts = [e.zeit, ersteKennzahl(e)].filter(Boolean).join(' · ');
+  return (
+    <span class="tageinheit">
+      <Einheitssymbol art={e.art} klasse="tagminisym" />
+      <span class="tageinheit-titel">{e.titel}</span>
+      {rechts && <span class="tageinheit-wert">{rechts}</span>}
+    </span>
+  );
 }
 
 function tagUndMonat(d){
@@ -184,6 +225,8 @@ function tagUndMonat(d){
    in einem <button>, und dessen Inhaltsmodell laesst nur Phrasenelemente zu.
    Das Layout macht display:flex, nicht das Element. */
 export function Tageskopf({ datum, info, istHeute, mitKurz }){
+  const einheiten = info.einheiten || [];
+  const mehrere = !info.vorStart && einheiten.length > 1;
   return (
     <>
       <span class="dayzeile-oben">
@@ -196,14 +239,54 @@ export function Tageskopf({ datum, info, istHeute, mitKurz }){
       <span class="dayzeile-unten">
         {/* Das Zeichen der Einheitsart steht vor dem Titel, nicht statt seiner:
             es beantwortet die Frage aus zwei Metern, der Titel die genaue.
-            Vor Planbeginn bleibt es weg - dort gibt es keine Einheit. */}
+            Vor Planbeginn bleibt es weg - dort gibt es keine Einheit.
+
+            Traegt der Tag mehrere Arten, stehen sie alle da: ein Rad allein
+            vor "Rad – kurzes Z2 (Arbeitsweg) + Rumpf" liess den Zirkel auch
+            im Zeichen verschwinden. */}
         <span class="daysymtitel">
-          {!info.vorStart && <Einheitssymbol art={info.art} klasse="daysym" />}
+          {!info.vorStart && tagesArten(info).map(a =>
+            <Einheitssymbol art={a} klasse="daysym" key={a} />)}
           <span class="daytitle">{info.vorStart ? 'Vor Planbeginn' : info.title}</span>
         </span>
-        {mitKurz && !info.vorStart && <span class="tagkurz">{ersteKennzahl(info)}</span>}
+        {mitKurz && !mehrere && !info.vorStart &&
+          <span class="tagkurz">{ersteKennzahl(info.einheiten && info.einheiten[0])}</span>}
       </span>
+      {/* Zugeklappt und mit mehr als einer Einheit: jede bekommt ihre Zeile.
+          Eine einzelne Kennzahl rechts oben haette weiterhin nur die erste
+          Einheit gezeigt - und der uebersehene Zirkel stuende wieder nirgends. */}
+      {mitKurz && mehrere && (
+        <span class="tageinheiten">
+          {einheiten.map((e, i) => <Einheitszeile e={e} key={i} />)}
+        </span>
+      )}
     </>
+  );
+}
+
+/* Eine Einheit als eigener Abschnitt der Tageskarte.
+
+   Der Kopf steht nur da, wo der Tag mehr als eine traegt: bei einer einzigen
+   sagte er dasselbe wie die Kopfzeile der Karte darueber, zwei Zeilen weiter
+   oben und in derselben Schrift. */
+function Einheitsabschnitt({ e, mitKopf }){
+  return (
+    <div class={'einheit' + (mitKopf ? ' mitkopf' : '')}>
+      {mitKopf && (
+        <div class="einheit-kopf">
+          <Einheitssymbol art={e.art} klasse="einheitsym" />
+          <span class="einheit-titel">{e.titel}</span>
+          {e.zeit && <span class="einheit-zeit">{e.zeit}</span>}
+        </div>
+      )}
+      <Kennzahlen liste={e.kennzahlen} />
+      <Abschnitte liste={e.bloecke} geordnet klasse="ablauf" />
+      {e.hinweise.map((h, i) => <p class="hint" key={i}>{h}</p>)}
+      {/* Der Knopf haengt an seiner Einheit und nicht mehr am Tag: der
+          Rumpf-Timer steht unter dem Zirkel, nicht unter der Fahrt. */}
+      {e.timer && <button class="btn tonal tagbtn" type="button"
+        onClick={() => gotoTab(e.timer.ziel, true)}>{e.timer.label}</button>}
+    </div>
   );
 }
 
@@ -215,13 +298,21 @@ export function Tagesinhalt({ info, istHeute, serie }){
     return <p class="hint">Der Plan beginnt erst später. Für diesen Tag gibt es keine Vorgabe.</p>;
   }
 
+  const einheiten = info.einheiten || [];
+  const mehrere = einheiten.length > 1;
+
   return (
     <>
       <Ersatzhinweis ersetzt={info.ersetzt} />
-      <Kennzahlen liste={info.kennzahlen} />
-      <Abschnitte liste={info.bloecke} geordnet klasse="ablauf" />
+
+      {/* Die Zahl steht ueber den Abschnitten und nicht als Fussnote darunter:
+          sie ist das Erste, was man vom Tag wissen muss. */}
+      {mehrere && <div class="einheitenzahl">{einheiten.length} Einheiten an diesem Tag</div>}
+
+      {einheiten.map((e, i) => <Einheitsabschnitt e={e} mitKopf={mehrere} key={i} />)}
+
       <Checkliste liste={info.checkliste} />
-      {(info.hinweise || []).map((h, i) => <p class="hint" key={i}>{h}</p>)}
+      {(info.tagHinweise || []).map((h, i) => <p class="hint" key={i}>{h}</p>)}
 
       {info.zusatz && info.zusatz.length > 0 && (
         <div class="zusatz">
@@ -232,19 +323,6 @@ export function Tagesinhalt({ info, istHeute, serie }){
 
       <WellnessAmpel info={info} istHeute={istHeute} serie={serie} />
       {istHeute && <AbnehmHinweis serie={serie} />}
-
-      {/* Der Rumpf-Timer liegt im Sammelbereich Training. Vorher stand hier
-          'rumpf' - eine Kennung, die es nie gab; gotoTab verwirft Unbekanntes
-          stillschweigend, der Knopf tat also nichts. */}
-      {info.showTimerBtn && <button class="btn tonal tagbtn" type="button"
-        onClick={() => gotoTab('training', true)}>Rumpf-Timer öffnen</button>}
-      {/* Der Dienstag ab Woche 11 traegt nur den Beinblock, keinen Zirkel -
-          ein Knopf mit der Aufschrift "Rumpf-Timer" fuehrte dort in die Irre.
-          Beide landen im selben Bereich, benennen aber, was ansteht. */}
-      {info.showLegBtn && <button class="btn tonal tagbtn" type="button"
-        onClick={() => gotoTab('training', true)}>Beinblock öffnen</button>}
-      {info.showIntervalBtn && <button class="btn tonal tagbtn" type="button"
-        onClick={() => gotoTab('intervalle', true)}>Intervall-Timer öffnen</button>}
     </>
   );
 }

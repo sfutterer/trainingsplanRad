@@ -44,6 +44,57 @@
    zweiten. */
 .daysymtitel{ display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
 .esym.daysym{ width: 22px; height: 22px; margin-top: 1px; }
+/* Zwei Zeichen ruecken zusammen: sie gehoeren zum selben Tag und sollen als
+   ein Paar gelesen werden, nicht als zwei Angaben mit gleichem Abstand zum
+   Titel. */
+.daysymtitel .esym.daysym + .esym.daysym{ margin-left: -4px; }
+
+/* ---- Mehrere Einheiten an einem Tag ----
+
+   Zugeklappt zaehlt die Kopfzeile sie auf, aufgeklappt bekommt jede einen
+   eigenen Abschnitt. Beides beantwortet dieselbe Frage - "was steht heute
+   an" -, aber die zugeklappte Fassung muss sie beim Durchblaettern der Woche
+   im Vorbeigehen beantworten. */
+
+.tageinheiten{ display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+.tageinheit{
+  display: flex; align-items: baseline; gap: 7px;
+  font-size: 12.5px; color: var(--on-surface-var);
+}
+.esym.tagminisym{ width: 14px; height: 14px; align-self: center; }
+.tageinheit-titel{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tageinheit-wert{ flex: none; margin-left: auto; color: var(--muted); white-space: nowrap; }
+
+.einheitenzahl{
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+
+/* Der Abschnitt einer Einheit. Nur bei mehreren bekommt er Kopf und Rahmen -
+   bei einer einzigen waere beides eine Schachtel um den ganzen Karteninhalt. */
+.einheit.mitkopf{
+  padding: 10px 12px; margin-bottom: 10px;
+  border: 1px solid var(--outline); border-radius: var(--radius-s);
+  background: var(--surface-2);
+}
+.einheit.mitkopf:last-of-type{ margin-bottom: 0; }
+.einheit-kopf{
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.esym.einheitsym{ width: 18px; height: 18px; }
+.einheit-titel{ font-size: 15px; font-weight: 700; min-width: 0; }
+/* Die Tageszeit ist die Angabe, die den Unterschied macht: dieselbe Karte,
+   aber acht Stunden spaeter. Deshalb als Marke und nicht als Klammerzusatz
+   hinter dem Titel, wo sie mit umbricht und untergeht. */
+.einheit-zeit{
+  flex: none; margin-left: auto;
+  padding: 2px 8px; border-radius: 10px;
+  background: var(--surface-3); color: var(--on-surface-var);
+  font-size: 11.5px; font-weight: 600; white-space: nowrap;
+}
+.einheit .kennzahlen{ margin-bottom: 10px; }
+.einheit.mitkopf .ablauf li{ border-left-color: var(--outline-2); }
 
 /* ---- Aufklappbare Statuskarte ----
 
@@ -139,6 +190,16 @@ button.dayzeile:active{ background: var(--surface-2); }
   margin: 0; font-size: 14px; font-weight: 600; text-align: right;
   white-space: nowrap; margin-left: auto;
 }
+/* Ein Wert, der laenger ist als eine Zahl mit Einheit, darf umbrechen.
+
+   Das nowrap darueber schuetzt "Z2 128–142 bpm" davor, das "bpm" allein in die
+   naechste Zeile fallen zu lassen. Seit der Steuergroesse gibt es aber
+   Kennzahlen, die ein ganzer Satz sind - "Tempo, das 20 min haltbar waere –
+   Sprechtest 3–5 Worte". Die schob nowrap ueber den Kartenrand hinaus, und die
+   Karte schneidet ab: der halbe Satz war nicht mehr zu lesen. Welcher Fall
+   vorliegt, entscheidet die Laenge in Tag.jsx - eine Kennzahl mit Leerzeichen
+   und ueber zwanzig Zeichen ist keine Zahl mehr. */
+.kennzahl dd.lang{ white-space: normal; }
 
 .ablauf{ list-style: none; margin: 0; padding: 0; }
 .ablauf li{
@@ -246,6 +307,9 @@ button.dayzeile:active{ background: var(--surface-2); }
    und erst dann gelesen, was an dem Tag ansteht. */
 .esym.kalsym{ width: 14px; height: 14px; }
 .kaltag.fremd .esym{ opacity: .7; }
+/* Zwei Zeichen nebeneinander muessen in eine Spalte von rund 46 px passen -
+   dichter gesetzt als in der Wochenansicht, wo daneben noch ein Titel steht. */
+.kalarten{ display: flex; align-items: center; gap: 1px; height: 14px; }
 
 /* ---- Hinweiskaesten am Tag ---- */
 

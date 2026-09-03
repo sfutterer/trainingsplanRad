@@ -21,7 +21,23 @@
    VO2max-Serien, Schwellenbloecke ueber 10 bis 12 Minuten, Z3-Bloecke
    innerhalb der langen Ausfahrt und den Schwellentest mit zwoelf Schritten
    mit; eine Liste traegt alle davon, eine feste Form haette fuer jeden Fall
-   ein eigenes Feld gebraucht. */
+   ein eigenes Feld gebraucht.
+
+   Seit dem 03.09.2026 steht ueber diesen Listen die `einheiten` eines Tages.
+   Vier Tage der Woche tragen mehr als eine: der Dienstag ab Woche 11 die
+   Fahrt und abends den Beinblock, der Mittwoch die Fahrt und abends den
+   Zirkel, der Sonntag Zirkel, Beinblock und davor die optionale Fahrt.
+   Bis dahin standen sie als ein Satzteil im Titel ("+ Rumpf") und als eine
+   Zeile unter vier anderen im Ablauf - und wurden genau deshalb uebersehen.
+   Eine zweite Einheit am selben Tag ist aber keine Fussnote der ersten: sie
+   hat eine eigene Tageszeit, eine eigene Dauer, einen eigenen Timer und faellt
+   aus, ohne dass die erste es merkt.
+
+   `kennzahlen`, `bloecke` und `hinweise` des Tages entstehen deshalb nicht
+   mehr von Hand, sondern durch Aneinanderhaengen der Einheiten. Sie bleiben
+   erhalten, weil die Glocke und der Gleichheitsnachweis sie lesen - aber es
+   gibt sie nur noch einmal, und keine Einheit kann in der einen Liste stehen
+   und in der anderen fehlen. */
 
 import {
   weekNumberFor, weekIndex, phaseOf, isRecoveryWeek, isWinterBlock,
@@ -126,6 +142,30 @@ function minutenText(sek){
 }
 
 /* ---- Bausteine der strukturierten Beschreibung ---- */
+
+/* Eine Einheit des Tages.
+
+   `zeit` steht nur da, wo der Plan sie nennt - "abends" beim Zirkel und beim
+   Beinblock, "davor" bei der optionalen Sonntagsfahrt. Eine erfundene
+   Tageszeit an der Hauptfahrt waere eine Vorgabe, die der Plan nicht macht.
+
+   `timer` nennt den Bereich, in dem die Uhr fuer diese Einheit steht, und die
+   Art, damit die Tageskarte den Knopf an die richtige Einheit haengt. Vorher
+   hingen die drei Knoepfe am Tag: der Mittwoch bot einen "Rumpf-Timer" unter
+   einer Karte, die mit der Fahrt begann. */
+function einheit(e){
+  return {
+    art: e.art, titel: e.titel, zeit: e.zeit || null,
+    kennzahlen: e.kennzahlen || [], bloecke: e.bloecke || [],
+    hinweise: (e.hinweise || []).filter(Boolean),
+    timer: e.timer || null
+  };
+}
+
+const TIMER_RUMPF      = { art:'rumpf',      ziel:'training',   label:'Rumpf-Timer öffnen' };
+const TIMER_BEINE      = { art:'beine',      ziel:'training',   label:'Beinblock öffnen' };
+const TIMER_INTERVALLE = { art:'intervalle', ziel:'intervalle', label:'Intervall-Timer öffnen' };
+const TIMER_TEST       = { art:'test',       ziel:'test',       label:'Testablauf öffnen' };
 
 /* Die Eckwerte einer Radeinheit in immer derselben Reihenfolge: zuerst, was
    man vor dem Losfahren wissen muss, dann was nur eine Schaetzung ist. */
@@ -290,17 +330,20 @@ function zusatzBloecke(plan, date, startDate){
    zeigten schon, wohin die Reise geht - der Rest ist ihn jetzt gegangen.
 
    Alle sieben bekommen denselben Zusammenhang c und liefern dasselbe zurueck:
-   ein info-Objekt mit type, title, detail und den drei Listen. Was danach fuer
-   alle gilt - Woche, Phase, Sollwerte, Zusatzbloecke - fuellt buildDayInfo
-   auf, damit kein Tag es vergessen kann. */
+   ein info-Objekt mit type, title, detail und den Einheiten des Tages. Was
+   danach fuer alle gilt - Woche, Phase, Sollwerte, Zusatzbloecke und die drei
+   zusammengehaengten Listen - fuellt buildDayInfo auf, damit kein Tag es
+   vergessen kann. */
 
 /* Montag ist die Invariante des Plans: er bleibt frei. */
 function montag(c){
   return {
     type:'rest', title:'Ruhetag', detail:c.T.mondayRest,
-    kennzahlen: [{ label:'Umfang', wert:'frei' }],
-    bloecke: [],
-    hinweise: [c.T.mondayRest]
+    einheiten: [einheit({
+      art:'ruhe', titel:'Ruhetag',
+      kennzahlen: [{ label:'Umfang', wert:'frei' }],
+      hinweise: [c.T.mondayRest]
+    })]
   };
 }
 
@@ -318,21 +361,36 @@ function dienstag(c){
     type:'ride',
     title: beine > 0 ? 'Rad – Grundlagenausdauer (Z2) + Beinblock' : 'Rad – Grundlagenausdauer (Z2)',
     detail:`${dur} min${distanceSuffix(plan, dur, week)} · ${z2()}. ${T.tuesdayCommute}`,
-    kennzahlen: rideKennzahlen(plan, th, week, dur, 'z2'),
-    bloecke: [
-      { label:'Grundlagenfahrt', wert:`${dur} min · ${z2()}`, hinweis:T.tuesdayCommute }
-    ]
+    einheiten: [einheit({
+      art:'z2', titel:'Rad – Grundlagenausdauer (Z2)',
+      kennzahlen: rideKennzahlen(plan, th, week, dur, 'z2'),
+      bloecke: [
+        { label:'Grundlagenfahrt', wert:`${dur} min · ${z2()}`, hinweis:T.tuesdayCommute }
+      ]
+    })]
   };
 
   if(beine > 0){
     const nachsatz = `${T.legNoTimer}, ${plan.legs.durationHint}. ${T.legTuesdayNote}`;
     info.detail += ` Abends Beinblock: ${rundenText(beine)} ${plan.legs.shortList} – ${nachsatz}`;
-    info.kennzahlen.push({ label:'Beinblock', wert:`${rundenText(beine)} (abends)` });
-    info.bloecke.push({ label:'Beinblock (abends)',
-      wert:`${rundenText(beine)} ${plan.legs.shortList}`, hinweis: nachsatz });
-    info.showLegBtn = true;
+    info.einheiten.push(beinEinheit(c, beine, nachsatz));
   }
   return info;
+}
+
+/* Der Beinblock als eigene Einheit - am Dienstagabend wie am Sonntag.
+
+   Er stand bisher als eine Zeile im Ablauf der Fahrt, obwohl er Stunden
+   spaeter stattfindet, kein Rad braucht und ohne Timer laeuft. */
+function beinEinheit(c, runden, nachsatz, zeit){
+  const { plan } = c;
+  return einheit({
+    art:'rumpf', titel:'Beinblock', zeit: zeit || 'abends',
+    kennzahlen: [{ label:'Umfang', wert: rundenText(runden) }],
+    bloecke: [{ label:'Beinblock',
+      wert:`${rundenText(runden)} ${plan.legs.shortList}`, hinweis: nachsatz }],
+    timer: TIMER_BEINE
+  });
 }
 
 /* Mittwoch: verkuerzter Zirkel, dazu in den meisten Wochen eine kurze Fahrt.
@@ -352,45 +410,63 @@ function mittwoch(c){
   const zirkel = circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (verkürzt)',
     'Abends. Kein Beinblock.');
 
+  /* Der Zirkel als eigene Einheit und nicht als letzte Zeile im Ablauf der
+     Fahrt. Genau dieser Fall war der Anlass des Umbaus: unter einer Karte mit
+     der Ueberschrift "Rad – kurzes Z2 (Arbeitsweg) + Rumpf" stand der Zirkel
+     als eine von drei Ablaufzeilen und wurde uebersehen. */
+  const zirkelEinheit = einheit({
+    art:'rumpf', titel:'Rumpf-Zirkel (verkürzt)', zeit:'abends',
+    kennzahlen: [
+      { label:'Dauer',  wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min' },
+      { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
+      { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
+    ],
+    bloecke: [zirkel],
+    timer: TIMER_RUMPF
+  });
+
   let info;
   if(dur > 0){
     const lockerer = phase === 3 ? T.wednesdayEasyPhase3 : T.wednesdayEasyDefault;
     info = { type:'ride', title:'Rad – kurzes Z2 (Arbeitsweg) + Rumpf',
       detail:`Mindestens ${dur} min direkte Strecke${distanceSuffix(plan, dur, week)} · ${z2()}. ` +
-             `${T.wednesdayMinimum} ${lockerer} ${rumpf}`,
-      showTimerBtn:true };
-    info.kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
+             `${T.wednesdayMinimum} ${lockerer} ${rumpf}` };
+    const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
     /* Die Dauer ist eine Untergrenze, keine Vorgabe - das muss schon in der
        Kennzahl stehen und nicht erst im Hinweis darunter. */
-    info.kennzahlen[0] = { label:'Dauer', wert:`mindestens ${dur} min` };
-    info.bloecke = [
+    kennzahlen[0] = { label:'Dauer', wert:`mindestens ${dur} min` };
+    const bloecke = [
       { label:'Fahrt (Arbeitsweg)', wert:`mindestens ${dur} min direkte Strecke · ${z2()}`,
-        hinweis:`${T.wednesdayMinimum} ${lockerer}` },
-      zirkel
+        hinweis:`${T.wednesdayMinimum} ${lockerer}` }
     ];
 
     /* Der Erhaltungsreiz der Phase 3 haengt an der Mittwochsfahrt und steht
-       deshalb zwischen Fahrt und Zirkel, nicht als Fussnote darunter. */
+       deshalb in ihrer Einheit, nicht als Fussnote unter dem Tag. */
     const extra = c.w.wednesdayExtra;
     if(extra){
       const sek = extra.reps * extra.workSeconds + (extra.reps - 1) * extra.restSeconds;
       const ablauf = `${extra.reps}× ${extra.workSeconds} s ${extra.effort} / ` +
                      `${extra.restSeconds} s ${extra.restEffort}`;
       info.detail += ` Dazu ${extra.label}: ${ablauf}, zusammen ca. ${minutenText(sek)}.`;
-      info.kennzahlen.push({ label: extra.label, wert:`${extra.reps} × ${extra.workSeconds} s` });
-      info.bloecke.splice(1, 0, { label: extra.label,
+      kennzahlen.push({ label: extra.label, wert:`${extra.reps} × ${extra.workSeconds} s` });
+      bloecke.push({ label: extra.label,
         wert:`${ablauf} · ca. ${minutenText(sek)}`, hinweis: extra.note });
     }
+
+    info.einheiten = [
+      einheit({ art:'z2', titel:'Rad – kurzes Z2 (Arbeitsweg)', kennzahlen, bloecke }),
+      zirkelEinheit
+    ];
   } else {
     info = { type:'core', title:'Rumpf/Oberkörper-Stabilität',
-      detail:`${T.wednesdayNoRide} ${rumpf}`, showTimerBtn:true };
-    info.kennzahlen = [
-      { label:'Dauer',  wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min' },
-      { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
-      { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
-    ];
-    info.bloecke = [zirkel];
-    info.hinweise = [T.wednesdayNoRide];
+      detail:`${T.wednesdayNoRide} ${rumpf}` };
+    info.einheiten = [einheit({
+      art:'rumpf', titel:'Rumpf/Oberkörper-Stabilität',
+      kennzahlen: zirkelEinheit.kennzahlen,
+      bloecke: zirkelEinheit.bloecke,
+      hinweise: [T.wednesdayNoRide],
+      timer: TIMER_RUMPF
+    })];
   }
   info.wellness = { rolle:'vorschau', donnerstag: thursdayPlan(plan, week).kind };
   return info;
@@ -407,20 +483,12 @@ function donnerstag(c){
     /* Der Schwellentest ist im Typ ein Intervalltag - die Ansicht behandelt
        ihn seit dem Kalenderumbau ueberall so. Als Einheit ist er aber keiner:
        er misst, statt zu belasten, und traegt deshalb ein eigenes Zeichen. */
-    info = { type:'interval', art:'test', title:t.title, detail:T.thursdayTest,
-             showIntervalBtn:true };
+    info = { type:'interval', art:'test', title:t.title, detail:T.thursdayTest };
     /* Keine Zielzone auf der Karte des Tests: der Ø-Puls der 20 min ist sein
        Ergebnis. Ein Band als Vorgabe hiesse, auf die Zahl zu zielen, die
        gerade gemessen wird. */
     const steuer = plan.thresholdTest && plan.thresholdTest.steering;
-    info.kennzahlen = [
-      { label:'Dauer',       wert: t.minutes + ' min' },
-      { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
-      steuer ? { label:'Steuergröße', wert: steuer }
-             : { label:'Zielzone',    wert: targetText(plan, th, t.zone, week) }
-    ];
-    info.bloecke = schrittBloecke(plan, th, week, plan.thresholdTest?.steps ?? []);
-    info.hinweise = [T.thursdayTest];
+    const hinweise = [T.thursdayTest];
 
     /* Die vier Punkte werden am Testmorgen abgehakt, nicht gelesen - deshalb
        eine eigene Liste und kein weiterer Absatz zwischen den Hinweisen. Der
@@ -429,15 +497,34 @@ function donnerstag(c){
     const tt = plan.testTaper;
     if(tt){
       info.checkliste = { titel: tt.goNoGoTitel, punkte: tt.goNoGo, note: tt.goNoGoNote };
-      info.hinweise.push(tt.shiftRule);
+      hinweise.push(tt.shiftRule);
     }
+
+    /* Der Testtag fuehrt in den Testbereich und nicht in den Intervalltimer.
+       Dort steht der Ablauf mit Anleitung, Go/No-Go und der Eingabe von FTP
+       und LTHR - der Intervalltimer zaehlt nur die Schritte. */
+    info.einheiten = [einheit({
+      art:'test', titel:t.title,
+      kennzahlen: [
+        { label:'Dauer',       wert: t.minutes + ' min' },
+        { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
+        steuer ? { label:'Steuergröße', wert: steuer }
+               : { label:'Zielzone',    wert: targetText(plan, th, t.zone, week) }
+      ],
+      bloecke: schrittBloecke(plan, th, week, plan.thresholdTest?.steps ?? []),
+      hinweise,
+      timer: TIMER_TEST
+    })];
   } else if(t.kind === 'z2'){
     info = { type:'ride', title:t.title,
       detail:`${t.minutes} min${distanceSuffix(plan, t.minutes, week)} · ${z2()}. ${T.thursdayBaseDay}` };
-    info.kennzahlen = rideKennzahlen(plan, th, week, t.minutes, 'z2');
-    info.bloecke = [
-      { label:'Grundlagenfahrt', wert:`${t.minutes} min · ${z2()}`, hinweis:T.thursdayBaseDay }
-    ];
+    info.einheiten = [einheit({
+      art:'z2', titel:t.title,
+      kennzahlen: rideKennzahlen(plan, th, week, t.minutes, 'z2'),
+      bloecke: [
+        { label:'Grundlagenfahrt', wert:`${t.minutes} min · ${z2()}`, hinweis:T.thursdayBaseDay }
+      ]
+    })];
   } else {
     const zt = withCadence(plan, targetText(plan, th, t.zone, week), t.zone, week);
     const pw = t.power ? ` (${t.power})` : '';
@@ -445,27 +532,30 @@ function donnerstag(c){
       detail:`Nach ${plan.interval.warmupMinutes} min Einfahren (${zoneSpan(plan, th, 'z1', 'z2', week)}): ` +
              `${t.reps}× ${t.workMin} min ${zt}${pw}, je ${t.restMin} min locker (${zoneText(plan, th, 'z1', week)}) dazwischen. ` +
              `Danach ${plan.interval.cooldownMinutes} min Ausrollen. Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
-             T.thursdayIntervalTail,
-      showIntervalBtn:true };
-    info.kennzahlen = [
+             T.thursdayIntervalTail };
+    const kennzahlen = [
       { label:'Dauer',           wert: t.minutes + ' min' },
       { label:'Wiederholungen',  wert:`${t.reps} × ${t.workMin} min` },
       { label:'Zielzone',        wert: targetText(plan, th, t.zone, week) }
     ];
-    if(t.power) info.kennzahlen.push({ label:'Leistung', wert: t.power });
+    if(t.power) kennzahlen.push({ label:'Leistung', wert: t.power });
     const cad = cadenceText(plan, t.zone, week);
-    if(cad) info.kennzahlen.push({ label:'Trittfrequenz', wert: cad });
-    info.bloecke = [
-      { label:'Einfahren',
-        wert:`${plan.interval.warmupMinutes} min · ${zoneSpan(plan, th, 'z1', 'z2', week)}` },
-      { label:`${t.reps}× ${t.workMin} min Belastung`, wert:`${zt}${pw}`,
-        hinweis:`Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
-                T.thursdayIntervalTail },
-      { label:'Pause',
-        wert:`je ${t.restMin} min locker · ${zoneText(plan, th, 'z1', week)}`,
-        hinweis:'Zwischen den Wiederholungen.' },
-      { label:'Ausrollen', wert:`${plan.interval.cooldownMinutes} min` }
-    ];
+    if(cad) kennzahlen.push({ label:'Trittfrequenz', wert: cad });
+    info.einheiten = [einheit({
+      art:'intervalle', titel:t.title, kennzahlen,
+      bloecke: [
+        { label:'Einfahren',
+          wert:`${plan.interval.warmupMinutes} min · ${zoneSpan(plan, th, 'z1', 'z2', week)}` },
+        { label:`${t.reps}× ${t.workMin} min Belastung`, wert:`${zt}${pw}`,
+          hinweis:`Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
+                  T.thursdayIntervalTail },
+        { label:'Pause',
+          wert:`je ${t.restMin} min locker · ${zoneText(plan, th, 'z1', week)}`,
+          hinweis:'Zwischen den Wiederholungen.' },
+        { label:'Ausrollen', wert:`${plan.interval.cooldownMinutes} min` }
+      ],
+      timer: TIMER_INTERVALLE
+    })];
   }
   info.wellness = { rolle:'entscheidung', donnerstag: t.kind };
   return info;
@@ -478,15 +568,18 @@ function freitag(c){
   return {
     type:'restopt', title:'Ruhetag oder lockere Fahrt',
     detail:`Optional ${fo.minMinutes}–${fo.maxMinutes} min ${zoneText(plan, th, fo.zone, week)}, sonst frei.`,
-    kennzahlen: [
-      { label:'Umfang',   wert:`optional ${fo.minMinutes}–${fo.maxMinutes} min` },
-      { label:'Zielzone', wert: targetText(plan, th, fo.zone, week) }
-    ],
-    bloecke: [
-      { label:'Lockere Fahrt (optional)',
-        wert:`${fo.minMinutes}–${fo.maxMinutes} min · ${zoneText(plan, th, fo.zone, week)}`,
-        hinweis:'Sonst frei.' }
-    ]
+    einheiten: [einheit({
+      art:'locker', titel:'Ruhetag oder lockere Fahrt',
+      kennzahlen: [
+        { label:'Umfang',   wert:`optional ${fo.minMinutes}–${fo.maxMinutes} min` },
+        { label:'Zielzone', wert: targetText(plan, th, fo.zone, week) }
+      ],
+      bloecke: [
+        { label:'Lockere Fahrt (optional)',
+          wert:`${fo.minMinutes}–${fo.maxMinutes} min · ${zoneText(plan, th, fo.zone, week)}`,
+          hinweis:'Sonst frei.' }
+      ]
+    })]
   };
 }
 
@@ -516,9 +609,9 @@ function samstag(c){
     detail:`${dur} min${distanceSuffix(plan, dur, week)} · Basis ${z2()}. ` +
            `${sr.warmupMinutes} min Einfahren, ${sr.cooldownMinutes} min Ausrollen. ${extra}` };
 
-  info.kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
+  const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
   if(bl){
-    info.kennzahlen.push({ label:'Blöcke',
+    kennzahlen.push({ label:'Blöcke',
       wert:`${bl.reps} × ${bl.minutes} min ${zoneText(plan, th, 'z3', week)}` });
   }
 
@@ -535,7 +628,6 @@ function samstag(c){
     }
   }
   lang.push({ label:'Ausrollen', wert:`${sr.cooldownMinutes} min` });
-  info.bloecke = lang;
 
   /* Die Hoehenmeter stehen als Kennzahl neben Dauer und Zielzone, nicht als
      Absatz darunter. Als Fliesstext waren es vier bis fuenf Zeilen auf der
@@ -547,8 +639,12 @@ function samstag(c){
      Zonenmodell: beide haengen am Schwellentest. Bis dahin soll der Datensatz
      flach bleiben, danach wird ueber Watt gesteuert. */
   const vorTest = week < plan.cogganFromWeek;
-  info.kennzahlen.push({ label:'Höhenmeter', wert: vorTest ? 'flach' : '50–100 hm' });
-  if(!vorTest) info.hinweise = [T.elevationShort];
+  kennzahlen.push({ label:'Höhenmeter', wert: vorTest ? 'flach' : '50–100 hm' });
+
+  info.einheiten = [einheit({
+    art:'lang', titel:'Lange Ausfahrt', kennzahlen, bloecke: lang,
+    hinweise: vorTest ? [] : [T.elevationShort]
+  })];
   return info;
 }
 
@@ -557,6 +653,36 @@ function sonntag(c){
   const { plan, th, week, exCount, T } = c;
   const dur = c.w.sundayOptionalMinutes;
   const rounds = coreRounds(plan, week);
+
+  /* Drei Einheiten und nicht eine: die optionale Fahrt liegt davor, der
+     Zirkel danach, der Beinblock direkt im Anschluss. Der Sonntag ist der Tag,
+     an dem die Reihenfolge selbst zur Vorgabe gehoert - deshalb steht die
+     Fahrt zuerst und traegt ihre Tageszeit als "davor". */
+  const einheiten = [];
+  if(dur > 0){
+    einheiten.push(einheit({
+      art:'z2', titel:'Rad (optional)', zeit:'davor',
+      kennzahlen: [
+        { label:'Dauer',    wert:'optional ' + dur + ' min' },
+        { label:'Zielzone', wert: targetText(plan, th, 'z1', week) }
+      ],
+      bloecke: [{ label:'Rad (optional)', wert:`${dur} min · ${zoneText(plan, th, 'z1', week)}`,
+                  hinweis:`Davor – ${T.sundayRideFirst}.` }]
+    }));
+  }
+  einheiten.push(einheit({
+    art:'rumpf', titel:'Rumpf-Zirkel (voll)',
+    kennzahlen: [
+      { label:'Dauer',  wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min' },
+      { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
+      { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
+    ],
+    bloecke: [circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (voll)', T.sundayLegOrder)],
+    timer: TIMER_RUMPF
+  }));
+  einheiten.push(beinEinheit(c, legRounds(plan, week),
+    `${T.legNoTimer}, ${plan.legs.durationHint}.`, 'direkt im Anschluss'));
+
   return {
     type:'sun', title:'Rumpf-Zirkel (voll) + Beinblock',
     detail:`Rumpf-Zirkel: ${rounds} Runden à ${exCount} Übungen ` +
@@ -565,20 +691,8 @@ function sonntag(c){
            `${legRounds(plan, week)} Runden ${plan.legs.shortList} – ${T.legNoTimer}, ${plan.legs.durationHint}. ` +
            `${T.sundayLegOrder} ` +
            `Optional davor ${dur} min ${zoneText(plan, th, 'z1', week)} – ${T.sundayRideFirst}.`,
-    showTimerBtn:true, showLegBlock:true,
-    kennzahlen: [
-      { label:'Dauer',     wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min Zirkel' },
-      { label:'Zirkel',    wert:`${rounds} Runden à ${exCount} Übungen` },
-      { label:'Beinblock', wert:`${legRounds(plan, week)} Runden` },
-      { label:'Takt',      wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
-    ],
-    bloecke: [
-      circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (voll)', T.sundayLegOrder),
-      { label:'Beinblock', wert:`${legRounds(plan, week)} Runden ${plan.legs.shortList}`,
-        hinweis:`${T.legNoTimer}, ${plan.legs.durationHint}.` },
-      { label:'Rad (optional)', wert:`${dur} min · ${zoneText(plan, th, 'z1', week)}`,
-        hinweis:`Davor – ${T.sundayRideFirst}.` }
-    ]
+    showLegBlock:true,
+    einheiten
   };
 }
 
@@ -610,26 +724,33 @@ function anlaufSteps(c, sess){
   const zone = arbeit[0].zone;
   const bloecke = schrittBloecke(plan, th, week, sess.steps);
 
-  const info = {
+  const kennzahlen = [
+    { label:'Dauer',     wert: Math.round(gesamt / 60) + ' min' },
+    { label:'Belastung', wert: `${arbeit.length} × ${minutenText(schrittSekunden(arbeit[0]))}` },
+    sess.steering
+      ? { label:'Steuergröße', wert: sess.steering }
+      : { label:'Zielzone',    wert: targetText(plan, th, zone, week) }
+  ];
+  const cad = sess.steering ? null : cadenceText(plan, zone, week);
+  if(cad) kennzahlen.push({ label:'Trittfrequenz', wert: cad });
+
+  return {
     type:'interval', art:'intervalle', title: sess.title,
     detail: bloecke.map(b => `${b.label}: ${b.wert}${b.hinweis ? '. ' + b.hinweis : '.'}`).join(' '),
-    showIntervalBtn: true,
-    kennzahlen: [
-      { label:'Dauer',     wert: Math.round(gesamt / 60) + ' min' },
-      { label:'Belastung', wert: `${arbeit.length} × ${minutenText(schrittSekunden(arbeit[0]))}` },
-      sess.steering
-        ? { label:'Steuergröße', wert: sess.steering }
-        : { label:'Zielzone',    wert: targetText(plan, th, zone, week) }
-    ],
-    bloecke,
-    hinweise: sess.note ? [sess.note] : [],
+    /* Die Anlaufeinheiten gehoeren zum Test und stehen deshalb im Testbereich:
+       dort laeuft ihr Ablauf neben der Anleitung, und das Ergebnis des
+       Tempoblocks - die Wattzahl, auf die im Test gezielt wird - wird gleich
+       dort notiert. Der Intervalltimer kennt sie weiterhin, er ist nur nicht
+       mehr die Stelle, an die die Tageskarte fuehrt. */
+    einheiten: [einheit({
+      art:'intervalle', titel: sess.title, kennzahlen, bloecke,
+      hinweise: sess.note ? [sess.note] : [],
+      timer: TIMER_TEST
+    })],
     target: { sport:'ride', zone, minutes: Math.round(gesamt / 60),
               hardMinutes: Math.round(hart / 60),
               reps: arbeit.length, repMinutes: schrittSekunden(arbeit[0]) / 60 }
   };
-  const cad = sess.steering ? null : cadenceText(plan, zone, week);
-  if(cad) info.kennzahlen.push({ label:'Trittfrequenz', wert: cad });
-  return info;
 }
 
 /* Eine Fahrt in einer Zone, sonst nichts.
@@ -649,17 +770,17 @@ function anlaufRide(c, sess, geplant){
   const info = {
     type:'ride', title: sess.title,
     detail: `${min} min${distanceSuffix(plan, min, week)} · ${zText}. ${sess.note || ''}`.trim(),
-    kennzahlen: rideKennzahlen(plan, th, week, min, zone),
-    bloecke: [{ label:'Fahrt', wert:`${min} min · ${zText}`, hinweis: sess.note || undefined }],
+    einheiten: [einheit({
+      art:'z2', titel: sess.title,
+      kennzahlen: rideKennzahlen(plan, th, week, min, zone),
+      bloecke: [{ label:'Fahrt', wert:`${min} min · ${zText}`, hinweis: sess.note || undefined }]
+    })],
     target: { ...zt, sport:'ride', minutes: min, zone, km: estimateDistance(plan, min, week) }
   };
 
   if(zt.legRounds > 0){
     const nachsatz = `${c.T.legNoTimer}, ${plan.legs.durationHint}. ${c.T.legTuesdayNote}`;
-    info.kennzahlen.push({ label:'Beinblock', wert:`${rundenText(zt.legRounds)} (abends)` });
-    info.bloecke.push({ label:'Beinblock (abends)',
-      wert:`${rundenText(zt.legRounds)} ${plan.legs.shortList}`, hinweis: nachsatz });
-    info.showLegBtn = true;
+    info.einheiten.push(beinEinheit(c, zt.legRounds, nachsatz));
   }
   return info;
 }
@@ -670,9 +791,11 @@ function anlaufRest(c, sess){
   return {
     type:'rest', title: sess.title,
     detail: sess.note || 'Ruhe.',
-    kennzahlen: [{ label:'Umfang', wert:'frei' }],
-    bloecke: [],
-    hinweise: sess.note ? [sess.note] : [],
+    einheiten: [einheit({
+      art:'ruhe', titel: sess.title,
+      kennzahlen: [{ label:'Umfang', wert:'frei' }],
+      hinweise: sess.note ? [sess.note] : []
+    })],
     target: { sport:'rest' }
   };
 }
@@ -688,13 +811,16 @@ function anlaufCore(c, sess){
     type:'core', title: sess.title,
     detail: `Rumpf-Zirkel: ${rounds} Runden à ${exCount} Übungen (${work} s Belastung / ${rest} s Pause), ` +
             `ca. ${min} min. ${sess.note || ''}`.trim(),
-    showTimerBtn: true,
-    kennzahlen: [
-      { label:'Dauer',  wert:'ca. ' + min + ' min' },
-      { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
-      { label:'Takt',   wert:`${work} s / ${rest} s` }
-    ],
-    bloecke: [circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (voll)', sess.note)],
+    einheiten: [einheit({
+      art:'rumpf', titel: sess.title,
+      kennzahlen: [
+        { label:'Dauer',  wert:'ca. ' + min + ' min' },
+        { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
+        { label:'Takt',   wert:`${work} s / ${rest} s` }
+      ],
+      bloecke: [circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (voll)', sess.note)],
+      timer: TIMER_RUMPF
+    })],
     target: { sport:'core', rounds, minutes: min, workSec: work, restSec: rest, legRounds: 0 }
   };
 }
@@ -801,9 +927,34 @@ export function buildDayInfo(plan, th, date, startDate){
      auf undefined stoesst - und damit ein spaeter ergaenzter Tagestyp nicht
      stillschweigend ohne Struktur durchlaeuft. */
   info.art = info.art ?? ART_JE_TYP[info.type] ?? 'sonstige';
-  info.kennzahlen = info.kennzahlen ?? [];
-  info.bloecke = info.bloecke ?? [];
-  info.hinweise = info.hinweise ?? [];
+
+  /* Die drei Listen des Tages entstehen aus den Einheiten und nicht daneben.
+
+     Sie bleiben, weil die Glocke sie liest und der Gleichheitsnachweis sie
+     prueft - aber sie werden nicht mehr gepflegt: eine Einheit, die in
+     `einheiten` steht, steht damit auch im Ablauf des Tages, und eine, die
+     dort fehlt, fehlt ueberall. Vorher liess sich beides auseinanderbringen,
+     und genau das war beim Mittwoch passiert. */
+  info.einheiten = (info.einheiten ?? []).map(einheit);
+  info.kennzahlen = info.einheiten.flatMap(e => e.kennzahlen);
+  info.bloecke = info.einheiten.flatMap(e => e.bloecke);
+
+  /* `tagHinweise` gilt fuer den ganzen Tag und nicht fuer eine seiner
+     Einheiten - im ausgelieferten Plan ist das der Testanlauf. `hinweise`
+     bleibt die Zusammenfassung beider, weil die Glocke und die Tests sie
+     lesen. */
+  info.tagHinweise = [];
+  info.hinweise = info.einheiten.flatMap(e => e.hinweise);
+
+  /* Die drei Knopfmarken bleiben abgeleitet stehen: sie sind seit dem Umbau
+     eine Aussage ueber den Tag ("hier gibt es etwas zu zaehlen"), waehrend der
+     Knopf selbst an seiner Einheit haengt. */
+  const timerArt = a => info.einheiten.some(e => e.timer && e.timer.art === a);
+  info.showTimerBtn    = timerArt('rumpf');
+  info.showLegBtn      = timerArt('beine');
+  info.showIntervalBtn = timerArt('intervalle');
+  info.showTestBtn     = timerArt('test');
+
   info.zusatz = zusatzBloecke(plan, date, startDate);
 
   /* Der Testanlauf steht an dem Tag, fuer den er gilt, und nicht als Liste in
@@ -812,7 +963,7 @@ export function buildDayInfo(plan, th, date, startDate){
   if(taper){
     info.testTaper = taper;
     const satz = taperHinweis(plan, taper);
-    if(satz) info.hinweise.push(satz);
+    if(satz){ info.tagHinweise.push(satz); info.hinweise.push(satz); }
   }
   return info;
 }

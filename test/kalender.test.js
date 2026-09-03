@@ -240,6 +240,95 @@ describe('Strukturierte Tagesbeschreibung', () => {
   });
 });
 
+/* Mehrere Einheiten an einem Tag.
+
+   Der Anlass war ein uebersehenes Rumpftraining: der Mittwoch hiess "Rad –
+   kurzes Z2 (Arbeitsweg) + Rumpf", und der Zirkel stand als eine von drei
+   Ablaufzeilen unter den Kennzahlen der Fahrt. Geprueft wird deshalb beides -
+   dass die zweite Einheit eigenstaendig dasteht, und dass die drei Listen des
+   Tages nichts verlieren, was in einer Einheit steht. Die zweite Haelfte ist
+   die wichtigere: sie ist der Grund, warum es die Listen nur noch abgeleitet
+   gibt. */
+describe('Einheiten eines Tages', () => {
+  const th = NO_THRESHOLDS;
+
+  /* Woche 1 faehrt mittwochs nicht; gesucht ist die erste Woche mit Fahrt. */
+  function ersteMittwochsfahrt(){
+    for(let w = 1; w <= plan.weekCount; w++){
+      if(plan.weeks[w - 1].wednesdayMinutes > 0) return w;
+    }
+    return null;
+  }
+
+  it('teilt den Mittwoch in Fahrt und Zirkel', () => {
+    const w = ersteMittwochsfahrt();
+    expect(w).not.toBe(null);
+    const info = buildDayInfo(plan, th, tagIn(w, 3), START);
+
+    expect(info.einheiten.map(e => e.titel))
+      .toEqual(['Rad – kurzes Z2 (Arbeitsweg)', 'Rumpf-Zirkel (verkürzt)']);
+    expect(info.einheiten[0].art).toBe('z2');
+    expect(info.einheiten[1].art).toBe('rumpf');
+    /* Die Tageszeit ist der Unterschied, den man kennen muss: der Zirkel
+       findet Stunden nach der Fahrt statt. */
+    expect(info.einheiten[1].zeit).toBe('abends');
+    /* Und er hat eigene Kennzahlen. Vorher trug der Tag ausschliesslich die
+       der Fahrt - Dauer, Zielzone, Trittfrequenz -, und die Rundenzahl des
+       Zirkels stand nirgends ausser im Fliesstext eines Ablaufeintrags. */
+    expect(info.einheiten[1].kennzahlen.map(k => k.label))
+      .toEqual(['Dauer', 'Umfang', 'Takt']);
+  });
+
+  it('haengt den Timerknopf an seine Einheit', () => {
+    const w = ersteMittwochsfahrt();
+    const info = buildDayInfo(plan, th, tagIn(w, 3), START);
+    expect(info.einheiten[0].timer).toBe(null);
+    expect(info.einheiten[1].timer.ziel).toBe('training');
+    expect(info.showTimerBtn).toBe(true);
+  });
+
+  it('trennt am Sonntag Zirkel und Beinblock', () => {
+    const info = buildDayInfo(plan, th, tagIn(1, 0), START);
+    const titel = info.einheiten.map(e => e.titel);
+    expect(titel).toContain('Rumpf-Zirkel (voll)');
+    expect(titel).toContain('Beinblock');
+    expect(info.showLegBtn).toBe(true);
+  });
+
+  it('gibt dem Dienstag ab der zweiten Beineinheit eine zweite Einheit', () => {
+    let mitBeinen = null, ohneBeine = null;
+    for(let w = 1; w <= plan.weekCount; w++){
+      const n = plan.weeks[w - 1].tuesdayLegRounds || 0;
+      if(n > 0 && mitBeinen === null) mitBeinen = w;
+      if(n === 0 && ohneBeine === null) ohneBeine = w;
+    }
+    expect(mitBeinen).not.toBe(null);
+    expect(buildDayInfo(plan, th, tagIn(ohneBeine, 2), START).einheiten.length).toBe(1);
+    const zwei = buildDayInfo(plan, th, tagIn(mitBeinen, 2), START).einheiten;
+    expect(zwei.length).toBe(2);
+    expect(zwei[1].titel).toBe('Beinblock');
+    expect(zwei[1].zeit).toBe('abends');
+  });
+
+  /* Der eigentliche Schutz: die drei Listen des Tages sind die Summe seiner
+     Einheiten und werden nicht daneben gepflegt. Waeren sie es, koennte eine
+     Einheit wieder in der einen stehen und in der anderen fehlen. */
+  it('haengt Kennzahlen, Bloecke und Hinweise aus den Einheiten zusammen', () => {
+    for(let d = 0; d < 18 * 7; d++){
+      const info = buildDayInfo(plan, th, addDays(START, d), START);
+      const aus = f => info.einheiten.flatMap(e => e[f]);
+      expect(info.kennzahlen).toEqual(aus('kennzahlen'));
+      expect(info.bloecke).toEqual(aus('bloecke'));
+      expect(info.hinweise).toEqual(aus('hinweise').concat(info.tagHinweise));
+      expect(info.einheiten.length).toBeGreaterThan(0);
+      for(const e of info.einheiten){
+        expect(typeof e.titel).toBe('string');
+        expect(e.titel.length).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
 /* Vor dem Planbeginn klemmt weekNumberFor auf Woche 1. Das ist gewollt - alle
    uebrigen Felder brauchen eine gueltige Wochennummer -, darf aber nicht dazu
    fuehren, dass ein Datum vor dem Start einen vollstaendigen Trainingstag

@@ -24,7 +24,7 @@ import {
   toMidnight, isoDayLocal, dayOffset, addMonths, startOfMonth, monthGrid,
   monthLabel, weekdayColumns, WEEKDAY_NAMES
 } from '../../../domain/week.js';
-import { Tagesinhalt, Tageskopf } from './Tag.jsx';
+import { Tagesinhalt, Tageskopf, tagesArten } from './Tag.jsx';
 import { KalenderNavi } from './KalenderNavi.jsx';
 import { Einheitssymbol } from '../../components/Einheitssymbol.jsx';
 
@@ -99,8 +99,15 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
                 aria-label={langesDatum(d) + (tinfo.vorStart ? ' – vor Planbeginn' : ' – ' + tinfo.title)}
                 onClick={() => setzeAnker(d)}>
                 <span class="kalzahl">{d.getDate()}</span>
-                {!tinfo.vorStart &&
-                  <Einheitssymbol art={tinfo.art} klasse="kalsym" />}
+                {/* Ein Tag mit zwei Arten zeigt zwei Zeichen. Im Raster ist das
+                    die einzige Stelle, an der ein zweiter Termin ueberhaupt
+                    sichtbar werden kann - ein Titel steht hier nicht. */}
+                {!tinfo.vorStart && (
+                  <span class="kalarten">
+                    {tagesArten(tinfo).map(a =>
+                      <Einheitssymbol art={a} klasse="kalsym" key={a} />)}
+                  </span>
+                )}
               </button>
             );
           })}

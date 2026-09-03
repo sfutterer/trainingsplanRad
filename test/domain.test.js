@@ -423,7 +423,11 @@ describe('Testanlauf', () => {
   });
 
   /* Der Anlauf am Donnerstag der Vorwoche: zwei mal sechs Minuten statt
-     fuenf mal fuenf, und der Sollwert gerechnet aus den Schritten. */
+     fuenf mal fuenf, und der Sollwert gerechnet aus den Schritten.
+
+     Der Knopf fuehrt seit dem 03.09.2026 in den Testbereich und nicht mehr in
+     den Intervalltimer: der Anlauf gehoert zum Test, und die Wattzahl, auf die
+     er hinausfaellt, wird gleich dort notiert. */
   it('rechnet den Sollwert aus den Schritten der Anlaufeinheit', () => {
     const anlaufTag = W.addDays(testTag, -7);
     const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, anlaufTag, start);
@@ -432,7 +436,8 @@ describe('Testanlauf', () => {
     expect(geplant.reps).toBe(5);
     expect(info.target).toEqual({ sport:'ride', zone:'z4', minutes:43,
                                  hardMinutes:12, reps:2, repMinutes:6 });
-    expect(info.showIntervalBtn).toBe(true);
+    expect(info.showTestBtn).toBe(true);
+    expect(info.showIntervalBtn).toBe(false);
   });
 
   /* Die beiden Bloecke sind Probe und Korrektur, keine Wiederholungen. Als
