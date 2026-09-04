@@ -710,7 +710,7 @@ function ErgebnisAnsicht({ p, th, termin }){
               und Gegenwind gegen 22 Grad und Windstille sind keine zwei
               Formzustaende. */}
           {hist.map((e, i) => (
-            <div class="listrow" key={i}>
+            <div class="listrow datum" key={i}>
               <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
               <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.rpe ? ' · RPE ' + e.rpe : ''}{e.conditions ? ' · ' + e.conditions : ''}</span>
             </div>

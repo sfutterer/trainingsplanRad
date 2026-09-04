@@ -168,6 +168,16 @@
   padding: 6px 0; border-top: 1px solid var(--outline);
 }
 .listrow span:last-child{ text-align: right; }
+/* Wo links ein Datum steht, darf es nicht umbrechen.
+
+   Ein Datum bricht an seinen Bindestrichen, sobald der Text rechts mehr Platz
+   verlangt: "2026-08-" stand in der einen Zeile, "26 · W2" in der naechsten.
+   Sichtbar wurde das erst, als die Notiz in die Zeile kam - vorher war rechts
+   nie genug Text. Nur die Zeilen mit Datum bekommen das feste Mass; die mit
+   freiem Text links, etwa die Einheiten einer Woche in der Analyse, behalten
+   ihren Umbruch, sonst haengen lange Titel aus der Karte. */
+.listrow.datum > span:first-child{ flex: none; white-space: nowrap; }
+.listrow.datum > span:last-child{ min-width: 0; overflow-wrap: break-word; }
 
 .row + .hint{ margin-top: 6px; }
 .hint + .row{ margin-top: 10px; }
@@ -220,7 +230,22 @@
   color: var(--on-surface);
   padding: 0 12px; font-size: 15px; text-align: right;
 }
-.field input[type=text], .field input[type=password]{ width: 100%; text-align: left; }
+/* Das Textfeld nimmt den Rest der Zeile und darf schrumpfen.
+
+   Es stand auf width:100% und erbte aus der Regel darueber flex:none - also
+   100 % der Zeilenbreite, unschrumpfbar, neben einer Beschriftung, die auch
+   noch Platz braucht. Die Zeile war damit immer um die Breite der
+   Beschriftung plus Abstand zu breit: bei "Notiz" auf einem 375er Display um
+   48 px, die rechts aus der Karte hinausragten. Ein Zahlenfeld faellt das
+   nicht auf, weil es mit festen 118 px danebensteht.
+
+   flex-basis 0 statt auto, damit die Breite aus dem uebrigen Platz entsteht
+   und nicht aus der Standardgroesse eines input (rund 20 Zeichen), und
+   min-width 0, weil ein Flex-Element sonst nicht unter seine
+   Mindestinhaltsbreite geht. */
+.field input[type=text], .field input[type=password]{
+  flex: 1 1 0; width: auto; min-width: 0; text-align: left;
+}
 /* Das Datumsfeld braucht mehr Platz - der Systemdialog rendert die Ziffern
    breiter als eine Zahleneingabe. */
 .field input[type=date]{ width: 162px; text-align: left; }

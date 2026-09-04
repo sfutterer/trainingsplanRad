@@ -262,7 +262,7 @@ function SchwellenKarte(){
       {hist.length > 0 && <>
         <div class="listhead">Testhistorie</div>
         {hist.map((e, i) => (
-          <div class="listrow" key={i}>
+          <div class="listrow datum" key={i}>
             <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
             <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.weight ? ' · ' + e.weight + ' kg' : ''}{e.conditions ? ' · ' + e.conditions : ''}</span>
           </div>
@@ -345,7 +345,7 @@ function ErhebungsKarte(){
         </p>
       )}
       {log.slice(-4).reverse().map((e, i) => (
-        <div class="listrow" key={i}>
+        <div class="listrow datum" key={i}>
           <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
           <span>{e.talkHr ? 'Sprechtest ' + e.talkHr + ' bpm' : '–'}{e.note ? ' · ' + e.note : ''}</span>
         </div>

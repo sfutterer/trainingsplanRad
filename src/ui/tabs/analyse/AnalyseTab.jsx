@@ -337,7 +337,7 @@ function TestKarte({ tests }){
       {t.sprechtest.punkte.length > 0 && <>
         <div class="vquelle">Zwischenkontrollen · Sprechtest-Puls</div>
         <TrendZeile trend={t.sprechtest.trend} was="Sprechtest-Puls" />
-        <Verlaufsgraph einheit="bpm" nachkomma={0}
+        <Verlaufsgraph einheit="bpm" nachkomma={0} punktZeilen={2}
           reihen={[{ name: 'Sprechtest', farbe: 'var(--z2)', punkte: t.sprechtest.punkte,
                      trend: t.sprechtest.trend }]} />
         <p class="hint">

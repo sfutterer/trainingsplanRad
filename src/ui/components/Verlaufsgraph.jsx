@@ -14,6 +14,14 @@
    man sich durch Antippen - jeder Punkt hat eine Trefferflaeche von 24 px,
    auch wenn er nur 3 px gross gezeichnet ist.
 
+   punktZeilen reserviert die Zeile darunter fuer mehr als einen Satz. Der
+   Sprechtest traegt dort seit dem 04.09.2026 die Notiz zum Wert, und die
+   passt selten in dieselbe Zeile wie Datum und Messwert: die Zeile wuchs beim
+   Antippen von 33 auf 52 px und schob alles darunter nach unten - derselbe
+   Sprung, gegen den die feste Hoehe ueberhaupt eingefuehrt wurde. Reserviert
+   wird nur dort, wo es Notizen gibt; die uebrigen Graphen zeigen kurze
+   Zusaetze fester Form und haetten sonst eine leere Zeile mitgetragen.
+
    Die gestrichelte Gerade ist die Theil-Sen-Steigung, verankert im Median
    beider Achsen. Sie liegt hinter der Linie, damit die Messwerte oben liegen:
    die Gerade ist die Aussage, die Messwerte sind der Beleg. */
@@ -44,7 +52,7 @@ function spanne(werte, mindest){
   return { min: min - luft, max: max + luft };
 }
 
-export function Verlaufsgraph({ reihen, nachkomma, einheit, mindestSpanne }){
+export function Verlaufsgraph({ reihen, nachkomma, einheit, mindestSpanne, punktZeilen }){
   const [gewaehlt, setGewaehlt] = useState(null);
   const echte = (reihen || []).filter(r => r && r.punkte && r.punkte.length);
   if(!echte.length) return null;
@@ -118,7 +126,7 @@ export function Verlaufsgraph({ reihen, nachkomma, einheit, mindestSpanne }){
         </div>
       )}
 
-      <div class="vgpunkt">
+      <div class={'vgpunkt' + (punktZeilen > 1 ? ' zwei' : '')}>
         {zeigen
           ? (zeigen.reihe ? zeigen.reihe + ' · ' : '') + zeigen.marke + ' · ' +
             zahl(zeigen.v, nk) + (einheit ? ' ' + einheit : '') +

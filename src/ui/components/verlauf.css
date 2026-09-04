@@ -30,7 +30,10 @@
 .vgleg i{ display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
 
 /* Feste Zeile, auch wenn nichts gewaehlt ist: sonst springt die halbe Seite,
-   sobald man einen Punkt antippt. */
+   sobald man einen Punkt antippt.
+
+   Zwei Zeilen dort, wo ein Punkt eine Notiz tragen kann - sonst wuechse die
+   Zeile beim Antippen doch wieder, nur eine Stufe spaeter. */
 .vgpunkt{
   min-height: 32px;
   font-size: 12.5px; color: var(--on-surface-var);
@@ -39,6 +42,7 @@
   padding: 7px 10px;
   margin-top: 6px;
 }
+.vgpunkt.zwei{ min-height: 51px; }
 
 .vtrend{
   display: flex; align-items: baseline; gap: 8px;
