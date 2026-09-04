@@ -493,7 +493,19 @@ code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
   font-size: 12px; color: var(--muted);
   text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px;
 }
-.heute-detail{ font-size: 14.5px; line-height: 1.5; color: var(--on-surface-var); margin: 0; }
+/* Eine Zeile je Einheit des Tages: links, was ansteht, rechts die Zahl, die
+   man vor dem Losfahren abliest. Der Mittwoch traegt zwei, der Sonntag drei -
+   im frueheren Satzband standen sie als Nebensatz am Ende und wurden genau
+   deshalb uebersehen. */
+.heute-einheiten{ list-style: none; margin: 0; padding: 0; }
+.heute-einheiten li{
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 7px 0; font-size: 14.5px; line-height: 1.4;
+  border-bottom: 1px solid var(--outline);
+}
+.heute-einheiten li:last-child{ border-bottom: 0; }
+.heute-einheit{ color: var(--on-surface); min-width: 0; }
+.heute-wert{ color: var(--on-surface-var); white-space: nowrap; font-weight: 600; }
 .heute-regel{
   margin-top: 12px; padding: 10px 12px; border-radius: var(--radius-s);
   background: var(--surface-2); font-size: 13px; color: var(--muted); line-height: 1.45;

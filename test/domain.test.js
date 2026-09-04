@@ -111,13 +111,28 @@ function dumpWeeks(th){
   return out.join('\n');
 }
 
+/* Der Abzug einer Tageskarte.
+
+   Bis zum 04.09.2026 stand hier info.detail - das Satzband, das buildDayInfo
+   neben der Struktur ein zweites Mal erzeugte. Es war der einzige Grund, aus
+   dem das Satzband ueberhaupt noch existierte: in der Oberflaeche hatte es
+   nur noch einen Leser.
+
+   Jetzt die Struktur selbst, und die ist der staerkere Nachweis: sie traegt
+   jede Zahl, die im Satzband stand, und zusaetzlich, an welcher Einheit sie
+   haengt, zu welcher Tageszeit, mit welchem Timer und unter welchem Hinweis.
+   Ein Fehler, der im Satzband nur die Wortstellung verschoben haette, faellt
+   hier als verschobene Einheit auf. */
 function dumpDays(th){
   const out = [];
   for(let d = 0; d < 18 * 7; d++){
     const date = new Date(start); date.setDate(date.getDate() + d);
     const info = D.buildDayInfo(plan, th, date, start);
-    out.push('DAY ' + W.isoDayLocal(date) + ' | ' + info.type + ' | ' + info.title
-      + ' | ' + info.detail + ' | target=' + j(info.target));
+    out.push('DAY ' + W.isoDayLocal(date) + ' | ' + info.type + ' | ' + info.art
+      + ' | ' + info.title + ' | einheiten=' + j(info.einheiten)
+      + ' | zusatz=' + j(info.zusatz) + ' | tagHinweise=' + j(info.tagHinweise)
+      + ' | ersetzt=' + j(info.ersetzt || null)
+      + ' | target=' + j(info.target));
   }
   return out.join('\n');
 }
@@ -214,7 +229,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: 'df963acd11a739a6', len: 50071 });
+      .toEqual({ hash: '4c8e153a04b057ea', len: 181789 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -234,10 +249,11 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
     }
     for(let d = 0; d < 18 * 7; d++){
       const date = new Date(start); date.setDate(date.getDate() + d);
-      out.push('D ' + W.isoDayLocal(date) + '|' + D.buildDayInfo(plan, th, date, start).detail);
+      const info = D.buildDayInfo(plan, th, date, start);
+      out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '252b92df47b304f1', len: 43056 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '96c97d23a3f1fdac', len: 162652 });
   });
 });
 
@@ -715,10 +731,12 @@ describe('Mittwoch', () => {
   });
 
   /* Der Satz stand vorher zweimal da: als "Kein Beinblock." im Code und als
-     laengere Regel in der Datei. Jetzt nur noch aus der Datei. */
+     laengere Regel in der Datei. Jetzt nur noch aus der Datei - und der Code
+     baut ueberhaupt keinen deutschen Satz mehr daneben. */
   it('baut die Regel nicht mehr im Code nach', () => {
-    expect(mittwoch.detail).not.toContain('Kein Beinblock.');
-    expect(mittwoch.detail).toContain(json.texts.legWednesdayNote);
+    const alleTexte = JSON.stringify(mittwoch.einheiten);
+    expect(alleTexte).not.toContain('Kein Beinblock.');
+    expect(alleTexte).toContain(json.texts.legWednesdayNote);
   });
 
   /* Ohne Fahrt steht der Zirkel allein - die Regel haengt an ihm und darf

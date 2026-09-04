@@ -91,10 +91,6 @@ export function estimateDistance(plan, minutes, week){
   return Math.round((minutes / 60) * estimateSpeed(plan, week));
 }
 
-export function distanceSuffix(plan, minutes, week){
-  return showsDistance(plan, week) ? ', ca. ' + estimateDistance(plan, minutes, week) + ' km' : '';
-}
-
 /* Zonenzeit aus dem Puls-Stream.
 
    Ein Sample ist NICHT eine Sekunde: Garmin zeichnet variabel auf, in echten

@@ -177,7 +177,18 @@ function Nachricht({ m, onWeg }){
   );
 }
 
-/* Der Tagesueberblick wie vor der Glockenerweiterung. */
+/* Der Tagesueberblick.
+
+   Er las bis zum 04.09.2026 `info.detail` - das Satzband, das buildDayInfo
+   neben der Struktur ein zweites Mal erzeugte, und zwar nur noch fuer diese
+   eine Stelle. Zwanzig Erzeugungsstellen in day.js gegen einen Leser hier.
+
+   Jetzt die Einheiten des Tages, jede mit ihrer Tageszeit und ihrer ersten
+   Kennzahl. Das ist nicht nur weniger Code, es ist auch die richtige Antwort
+   auf die Frage, mit der man die Glocke oeffnet: der Mittwoch traegt eine
+   Fahrt und abends den Zirkel, und im Satzband stand der Zirkel als
+   Nebensatz am Ende. Genau dieser Fall war schon der Anlass, die Einheiten
+   ueberhaupt einzufuehren. */
 function Tagesueberblick(){
   const info = buildDayInfo(plan.value, thresholds.value, today.value, startDate.value);
   const d = today.value;
@@ -189,7 +200,18 @@ function Tagesueberblick(){
         <span>Woche {info.week}{info.winter ? '' : ' / ' + plan.value.weekCount}</span>
       </div>
       <h3 class={'type-' + info.type}>{info.title}</h3>
-      <p class="heute-detail">{info.detail}</p>
+      <ul class="heute-einheiten">
+        {info.einheiten.map((e, i) => (
+          <li key={i}>
+            <span class="heute-einheit">{e.titel}{e.zeit ? ' · ' + e.zeit : ''}</span>
+            {/* Die erste Kennzahl ist die, die man vor dem Losfahren abliest -
+                Dauer bei einer Fahrt, Umfang beim Zirkel. Alle waeren hier
+                eine Tabelle, und dafuer gibt es die Tageskarte. */}
+            {e.kennzahlen[0] &&
+              <span class="heute-wert">{e.kennzahlen[0].wert}</span>}
+          </li>
+        ))}
+      </ul>
       {info.wellness && <p class="heute-regel">{plan.value.texts.wellnessRule}</p>}
     </>
   );

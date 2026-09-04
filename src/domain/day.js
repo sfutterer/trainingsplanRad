@@ -1,20 +1,29 @@
-/* Was an einem Tag ansteht - als Text fuer die Anzeige und als Zahlen fuer die
-   Auswertung.
+/* Was an einem Tag ansteht - als Struktur fuer die Anzeige und als Zahlen fuer
+   die Auswertung.
 
    Beides entsteht hier nebeneinander, damit der Abgleich mit intervals.icu
    keinen Fliesstext parsen muss. Die Fachtexte kommen aus plan.json; nur die
    Satzgerueste mit eingerechneten Zahlen stehen hier - sie in die Datei zu
    heben haette eine Vorlagensprache gebraucht und damit JavaScript nachgebaut.
 
-   Die Beschreibung entsteht seit dem Kalenderumbau doppelt: `detail` als ein
+   Bis zum 04.09.2026 entstand die Beschreibung doppelt: `detail` als ein
    Satzband, wie es die erste Fassung geschrieben hat, und daneben
-   `kennzahlen` / `bloecke` / `zusatz` / `hinweise` als Struktur. Die Anzeige
-   liest die Struktur, `detail` bleibt Wort fuer Wort stehen. Der naheliegende
-   Weg - `detail` durch die Struktur ersetzen - haette den einzigen
-   Regressionsschutz des Projekts entwertet: test/domain.test.js bildet
-   Pruefsummen ueber genau diese Saetze, ueber 18 Wochen und beide
-   Zonenmodelle. Solange beides nebeneinander steht, faellt jede ungewollte
-   Aenderung an den Zahlen weiterhin auf.
+   `kennzahlen` / `bloecke` / `zusatz` / `hinweise` als Struktur. Das Satzband
+   blieb stehen, weil test/domain.test.js Pruefsummen darueber bildete und es
+   der einzige Regressionsschutz des Projekts war - es aufzugeben hiesse, ihn
+   aufzugeben.
+
+   Der Ausweg war, die Pruefsummen umzuhaengen statt sie zu verlieren: sie
+   liegen jetzt auf der Struktur, und die ist der staerkere Nachweis. Sie
+   traegt jede Zahl, die im Satzband stand, und zusaetzlich, an welcher
+   Einheit sie haengt, zu welcher Tageszeit und mit welchem Timer. Umgehaengt
+   wurde vor dem Entfernen; die Abzuege danach waren Zeichen fuer Zeichen
+   dieselben - der Beweis, dass das Satzband reine Doppelarbeit war.
+
+   Zwanzig Erzeugungsstellen gegen einen Leser: `detail` wurde in der ganzen
+   App nur noch von der Glocke gelesen, und dort stand der Zirkel des
+   Mittwochs als Nebensatz am Ende. Genau dieser Fall war der Anlass, die
+   Einheiten ueberhaupt einzufuehren.
 
    `bloecke` ist bewusst eine flache Liste benannter Abschnitte und keine feste
    Form aus Aufwaermen / Belastung / Ausfahren. Die spaeteren Wochen bringen
@@ -34,10 +43,9 @@
    aus, ohne dass die erste es merkt.
 
    `kennzahlen`, `bloecke` und `hinweise` des Tages entstehen deshalb nicht
-   mehr von Hand, sondern durch Aneinanderhaengen der Einheiten. Sie bleiben
-   erhalten, weil die Glocke und der Gleichheitsnachweis sie lesen - aber es
-   gibt sie nur noch einmal, und keine Einheit kann in der einen Liste stehen
-   und in der anderen fehlen. */
+   von Hand, sondern durch Aneinanderhaengen der Einheiten. Es gibt sie nur
+   einmal, und keine Einheit kann in der einen Liste stehen und in der
+   anderen fehlen. */
 
 import {
   weekNumberFor, weekIndex, phaseOf, isRecoveryWeek, isWinterBlock,
@@ -46,7 +54,7 @@ import {
 } from './week.js';
 import {
   zoneText, zoneSpan, targetText, withCadence, wattText,
-  distanceSuffix, estimateDistance, showsDistance, cadenceText
+  estimateDistance, showsDistance, cadenceText
 } from './zones.js';
 import { coreWorkSeconds, coreRestSeconds, coreRounds, coreMinutes, legRounds,
          rundenText } from './core.js';
@@ -383,7 +391,7 @@ function zusatzBloecke(plan, date, startDate){
    zeigten schon, wohin die Reise geht - der Rest ist ihn jetzt gegangen.
 
    Alle sieben bekommen denselben Zusammenhang c und liefern dasselbe zurueck:
-   ein info-Objekt mit type, title, detail und den Einheiten des Tages. Was
+   ein info-Objekt mit type, title und den Einheiten des Tages. Was
    danach fuer alle gilt - Woche, Phase, Sollwerte, Zusatzbloecke und die drei
    zusammengehaengten Listen - fuellt buildDayInfo auf, damit kein Tag es
    vergessen kann. */
@@ -391,7 +399,7 @@ function zusatzBloecke(plan, date, startDate){
 /* Montag ist die Invariante des Plans: er bleibt frei. */
 function montag(c){
   return {
-    type:'rest', title:'Ruhetag', detail:c.T.mondayRest,
+    type:'rest', title:'Ruhetag',
     einheiten: [einheit({
       art:'ruhe', titel:'Ruhetag',
       kennzahlen: [{ label:'Umfang', wert:'frei' }],
@@ -413,7 +421,6 @@ function dienstag(c){
   const info = {
     type:'ride',
     title: beine > 0 ? 'Rad – Grundlagenausdauer (Z2) + Beinblock' : 'Rad – Grundlagenausdauer (Z2)',
-    detail:`${dur} min${distanceSuffix(plan, dur, week)} · ${z2()}. ${T.tuesdayCommute}`,
     einheiten: [einheit({
       art:'z2', titel:'Rad – Grundlagenausdauer (Z2)',
       kennzahlen: rideKennzahlen(plan, th, week, dur, 'z2'),
@@ -425,7 +432,6 @@ function dienstag(c){
 
   if(beine > 0){
     const nachsatz = `${T.legNoTimer}, ${plan.legs.durationHint}. ${T.legTuesdayNote}`;
-    info.detail += ` Abends Beinblock: ${rundenText(beine)} ${plan.legs.shortList} – ${nachsatz}`;
     info.einheiten.push(beinEinheit(c, beine, nachsatz));
   }
   return info;
@@ -465,9 +471,6 @@ function mittwoch(c){
   const { plan, th, week, phase, exCount, T, z2 } = c;
   const dur = c.w.wednesdayMinutes;
   const rounds = plan.circuit.wednesdayRounds;
-  const rumpf = `Abends Rumpf-Zirkel verkürzt: ${rounds} Runden à ${exCount} Übungen ` +
-    `(${coreWorkSeconds(plan, week)} s Belastung / ${coreRestSeconds(plan, week)} s Pause), ` +
-    `ca. ${coreMinutes(plan, week, rounds)} min. ${T.legWednesdayNote}`;
   const zirkel = circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (verkürzt)', 'Abends.');
 
   /* Der Zirkel als eigene Einheit und nicht als letzte Zeile im Ablauf der
@@ -489,9 +492,7 @@ function mittwoch(c){
   let info;
   if(dur > 0){
     const lockerer = phase === 3 ? T.wednesdayEasyPhase3 : T.wednesdayEasyDefault;
-    info = { type:'ride', title:'Rad – kurzes Z2 (Arbeitsweg) + Rumpf',
-      detail:`Mindestens ${dur} min direkte Strecke${distanceSuffix(plan, dur, week)} · ${z2()}. ` +
-             `${T.wednesdayMinimum} ${lockerer} ${rumpf}` };
+    info = { type:'ride', title:'Rad – kurzes Z2 (Arbeitsweg) + Rumpf' };
     const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
     /* Die Dauer ist eine Untergrenze, keine Vorgabe - das muss schon in der
        Kennzahl stehen und nicht erst im Hinweis darunter. */
@@ -508,7 +509,6 @@ function mittwoch(c){
       const sek = extra.reps * extra.workSeconds + (extra.reps - 1) * extra.restSeconds;
       const ablauf = `${extra.reps}× ${extra.workSeconds} s ${extra.effort} / ` +
                      `${extra.restSeconds} s ${extra.restEffort}`;
-      info.detail += ` Dazu ${extra.label}: ${ablauf}, zusammen ca. ${minutenText(sek)}.`;
       kennzahlen.push({ label: extra.label, wert:`${extra.reps} × ${extra.workSeconds} s` });
       bloecke.push({ label: extra.label,
         wert:`${ablauf} · ca. ${minutenText(sek)}`, hinweis: extra.note });
@@ -525,8 +525,7 @@ function mittwoch(c){
       zirkelEinheit
     ];
   } else {
-    info = { type:'core', title:'Rumpf/Oberkörper-Stabilität',
-      detail:`${T.wednesdayNoRide} ${rumpf}` };
+    info = { type:'core', title:'Rumpf/Oberkörper-Stabilität' };
     info.einheiten = [einheit({
       art:'rumpf', titel:'Rumpf/Oberkörper-Stabilität',
       kennzahlen: zirkelEinheit.kennzahlen,
@@ -554,7 +553,7 @@ function donnerstag(c){
     /* Der Schwellentest ist im Typ ein Intervalltag - die Ansicht behandelt
        ihn seit dem Kalenderumbau ueberall so. Als Einheit ist er aber keiner:
        er misst, statt zu belasten, und traegt deshalb ein eigenes Zeichen. */
-    info = { type:'interval', art:'test', title:t.title, detail:T.thursdayTest };
+    info = { type:'interval', art:'test', title:t.title };
     /* Keine Zielzone auf der Karte des Tests: der Ø-Puls der 20 min ist sein
        Ergebnis. Ein Band als Vorgabe hiesse, auf die Zahl zu zielen, die
        gerade gemessen wird. */
@@ -587,8 +586,7 @@ function donnerstag(c){
       timer: TIMER_TEST
     })];
   } else if(t.kind === 'z2'){
-    info = { type:'ride', title:t.title,
-      detail:`${t.minutes} min${distanceSuffix(plan, t.minutes, week)} · ${z2()}. ${T.thursdayBaseDay}` };
+    info = { type:'ride', title:t.title };
     info.einheiten = [einheit({
       art:'z2', titel:t.title,
       kennzahlen: rideKennzahlen(plan, th, week, t.minutes, 'z2'),
@@ -599,11 +597,7 @@ function donnerstag(c){
   } else {
     const zt = withCadence(plan, targetText(plan, th, t.zone, week), t.zone, week);
     const pw = t.power ? ` (${t.power})` : '';
-    info = { type:'interval', title:t.title,
-      detail:`Nach ${plan.interval.warmupMinutes} min Einfahren (${zoneSpan(plan, th, 'z1', 'z2', week)}): ` +
-             `${t.reps}× ${t.workMin} min ${zt}${pw}, je ${t.restMin} min locker (${zoneText(plan, th, 'z1', week)}) dazwischen. ` +
-             `Danach ${plan.interval.cooldownMinutes} min Ausrollen. Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
-             T.thursdayIntervalTail };
+    info = { type:'interval', title:t.title };
     const kennzahlen = [
       { label:'Dauer',           wert: t.minutes + ' min' },
       { label:'Wiederholungen',  wert:`${t.reps} × ${t.workMin} min` },
@@ -638,7 +632,6 @@ function freitag(c){
   const fo = plan.fridayOptional;
   return {
     type:'restopt', title:'Ruhetag oder lockere Fahrt',
-    detail:`Optional ${fo.minMinutes}–${fo.maxMinutes} min ${zoneText(plan, th, fo.zone, week)}, sonst frei.`,
     einheiten: [einheit({
       art:'locker', titel:'Ruhetag oder lockere Fahrt',
       kennzahlen: [
@@ -666,19 +659,7 @@ function samstag(c){
         : zoneText(plan, th, 'z3', week))
     : null;
 
-  let extra;
-  if(recovery){
-    extra = `${T.saturdayRecovery} (${zoneSpan(plan, th, 'z1', 'z2', week)}).`;
-  } else if(bl){
-    extra = `Dazu ${bl.reps}× ${bl.minutes} min ${bz} in der zweiten Hälfte der Fahrt, ` +
-            `mit ${bl.restMinutes} min lockerem Rollen dazwischen.`;
-  } else {
-    extra = T.saturdayPureZ2;
-  }
-
-  const info = { type:'long', title:'Lange Ausfahrt',
-    detail:`${dur} min${distanceSuffix(plan, dur, week)} · Basis ${z2()}. ` +
-           `${sr.warmupMinutes} min Einfahren, ${sr.cooldownMinutes} min Ausrollen. ${extra}` };
+  const info = { type:'long', title:'Lange Ausfahrt' };
 
   const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
   if(bl){
@@ -756,12 +737,6 @@ function sonntag(c){
 
   return {
     type:'sun', title:'Rumpf-Zirkel (voll) + Beinblock',
-    detail:`Rumpf-Zirkel: ${rounds} Runden à ${exCount} Übungen ` +
-           `(${coreWorkSeconds(plan, week)} s Belastung / ${coreRestSeconds(plan, week)} s Pause), ` +
-           `ca. ${coreMinutes(plan, week, rounds)} min. Direkt im Anschluss der Beinblock: ` +
-           `${legRounds(plan, week)} Runden ${plan.legs.shortList} – ${T.legNoTimer}, ${plan.legs.durationHint}. ` +
-           `${T.sundayLegOrder} ` +
-           `Optional davor ${dur} min ${zoneText(plan, th, 'z1', week)} – ${T.sundayRideFirst}.`,
     showLegBlock:true,
     einheiten
   };
@@ -814,7 +789,6 @@ function schrittTag(c, sess, timer){
 
   return {
     type:'interval', art:'intervalle', title: sess.title,
-    detail: bloecke.map(b => `${b.label}: ${b.wert}${b.hinweis ? '. ' + b.hinweis : '.'}`).join(' '),
     /* Die Anlaufeinheiten gehoeren zum Test und stehen deshalb im Testbereich:
        dort laeuft ihr Ablauf neben der Anleitung, und das Ergebnis des
        Tempoblocks - die Wattzahl, auf die im Test gezielt wird - wird gleich
@@ -848,7 +822,6 @@ function anlaufRide(c, sess, geplant){
 
   const info = {
     type:'ride', title: sess.title,
-    detail: `${min} min${distanceSuffix(plan, min, week)} · ${zText}. ${sess.note || ''}`.trim(),
     einheiten: [einheit({
       art:'z2', titel: sess.title,
       kennzahlen: rideKennzahlen(plan, th, week, min, zone),
@@ -869,7 +842,6 @@ function anlaufRide(c, sess, geplant){
 function anlaufRest(c, sess){
   return {
     type:'rest', title: sess.title,
-    detail: sess.note || 'Ruhe.',
     einheiten: [einheit({
       art:'ruhe', titel: sess.title,
       kennzahlen: [{ label:'Umfang', wert:'frei' }],
@@ -888,8 +860,6 @@ function anlaufCore(c, sess){
   const min = coreMinutes(plan, week, rounds);
   return {
     type:'core', title: sess.title,
-    detail: `Rumpf-Zirkel: ${rounds} Runden à ${exCount} Übungen (${work} s Belastung / ${rest} s Pause), ` +
-            `ca. ${min} min. ${sess.note || ''}`.trim(),
     einheiten: [einheit({
       art:'rumpf', titel: sess.title,
       kennzahlen: [
