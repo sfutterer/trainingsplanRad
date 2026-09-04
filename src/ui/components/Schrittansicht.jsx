@@ -32,7 +32,7 @@ import { remainingAfter } from '../../domain/timer/sequences.js';
 
    Nicht als Tabelle nach step.type: Z5 und Z4 sind derselbe Typ und tragen
    verschiedene Farben, eine Tabelle koennte das nicht ausdruecken. */
-export function schrittFarbe(step){
+function schrittFarbe(step){
   if(!step) return 'var(--prep)';
   if(step.type === 'work'){
     return step.zone && step.zone.key === 'z5' ? 'var(--hard)' : 'var(--rest)';
@@ -47,7 +47,7 @@ const PHASEN = { warm:'Einfahren', rest:'Erholung', cool:'Ausrollen', done:'Fert
    `arbeit` benennt die Belastung und ist das Einzige, was die beiden Bereiche
    unterscheidet: eine Zeichenkette, oder eine Funktion ueber den Schritt, wo
    der Name an der Zone haengt. */
-export function schrittPhase(step, arbeit){
+function schrittPhase(step, arbeit){
   if(!step) return 'Bereit';
   if(step.type === 'work'){
     return (typeof arbeit === 'function' ? arbeit(step) : arbeit) || 'Belastung';
