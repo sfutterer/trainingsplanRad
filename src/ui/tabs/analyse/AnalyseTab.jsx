@@ -12,6 +12,13 @@
    genau richtig. compareDay nahm immer schon alle Aktivitaeten eines Tages;
    nur bekam es aus dieser Ansicht immer nur eine davon.
 
+   Der Tag bleibt die Einheit; seit dem 04.09.2026 steht daneben, in welcher
+   Reihenfolge seine Summe entstanden ist. Zwei Arbeitswege, die einzeln schon
+   ueber der Untergrenze lagen, ergaben bis dahin eine Zahl und den Satz
+   "erfuellt" - der Tag stand beim Dreifachen der Vorgabe, und nichts davon war
+   zu lesen. Jede Fahrt traegt jetzt ihre eigene Karte samt Bewertung, die
+   gemeinsame Auswertungskarte am Fuss der Seite ist entfallen.
+
    Der Verlauf ist die dritte Stufe und bewusst kein eigener Tab: er beantwortet
    dieselbe Frage wie die Liste, nur ueber Wochen statt ueber Tage, und er lebt
    von genau derselben Abfrage. Ein eigener Tab haette sie ein zweites Mal
@@ -40,7 +47,8 @@ import { zonenFarbe } from '../../components/Zonenliste.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { Einheitssymbol, einheitsLabel } from '../../components/Einheitssymbol.jsx';
 import { Auswahlfeld } from '../../components/Feld.jsx';
-import { Auswertung, Fazit, WetterLeiste } from './Auswertung.jsx';
+import { Fazit, Notizen, Streckenwerte, VerfassungsLeiste,
+         WetterLeiste } from './Auswertung.jsx';
 import { gotoTab } from '../../../state/navigation.js';
 import './analyse.css';
 
@@ -148,28 +156,40 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
 
 /* ---------- Auswertung eines Tages ---------- */
 
-/* Eine einzelne Fahrt innerhalb des Tages: Karte, Wetter und Streckenbilanz.
+/* Eine einzelne Fahrt innerhalb des Tages: Karte, Wetter, Zahlen, Bewertung.
 
    Je Fahrt eine Karte und nicht eine gemeinsame: zwei Runden in einer Karte
    sind ein Knaeuel, und Hin- und Rueckweg desselben Arbeitswegs laegen
-   uebereinander. Die Zahlen des Tages stehen darueber, die dieser Fahrt hier. */
-function Fahrtkarte({ f, mehrere }){
-  const art = artDerAktivitaet(f.act);
-  const min = Math.round((f.act.moving_time || f.act.elapsed_time || 0) / 60);
+   uebereinander. Seit dem 04.09.2026 steht auch die Bewertung hier statt in
+   einer gemeinsamen Karte am Fuss der Seite - dort war bei zwei Fahrten nicht
+   mehr zu erkennen, welcher Satz zu welcher gehoert.
+
+   `bewertung` ist der Eintrag aus row.fahrten: Laufstand gegen die Vorgabe des
+   Tages, die Ueberschreitung an der Fahrt, die sie ausloest, und die Zonen
+   dieser Fahrt. `spur` ist die Auswertung der Aufzeichnung - sie fehlt, solange
+   geladen wird, und bleibt aus, wenn kein GPS-Stream vorliegt. */
+function Fahrtkarte({ act, spur, bewertung, mehrere }){
+  const art = artDerAktivitaet(act);
+  const min = Math.round((act.moving_time || act.elapsed_time || 0) / 60);
+  const km = spur && spur.bilanz ? spur.bilanz.km : (act.distance || 0) / 1000;
   return (
     <div class="card">
       <div class="fahrtkopf">
         <Einheitssymbol art={art} klasse="fahrtsym" />
-        <span class="fahrtname">{f.act.name || f.act.type}</span>
-        <span class="fahrtwert">{min} min · {zahl(f.bilanz ? f.bilanz.km : 0, 1)} km</span>
+        <span class="fahrtname">{act.name || act.type}</span>
+        <span class="fahrtwert">{min} min · {zahl(km, 1)} km</span>
       </div>
       {/* Die Zonen der einzelnen Fahrt nur, wenn es mehrere gibt - sonst
           stuende derselbe Balken zweimal auf derselben Seite. */}
-      {mehrere && <ZonenBalken z={f.zonen} />}
-      <WetterLeiste wetter={f.wetter} />
-      <RouteMap latlng={f.latlng} gruppen={f.gruppen}
-        windAus={f.wetter && f.wetter.richtung} />
-      <StreckenLegende bilanz={f.bilanz} laeuft={false} />
+      {mehrere && <ZonenBalken z={bewertung && bewertung.zones} />}
+      {spur && <>
+        <WetterLeiste wetter={spur.wetter} />
+        <RouteMap latlng={spur.latlng} gruppen={spur.gruppen}
+          windAus={spur.wetter && spur.wetter.richtung} />
+        <Streckenwerte bilanz={spur.bilanz} wetter={spur.wetter} />
+        <StreckenLegende bilanz={spur.bilanz} laeuft={false} />
+      </>}
+      <Notizen notes={bewertung && bewertung.notes} />
     </div>
   );
 }
@@ -190,11 +210,22 @@ function Tagesanalyse({ tag, acts, onZurueck }){
     varianten.value);
 
   /* Erst wenn Strecke und Wetter da sind, ist das Fazit mehr als die halbe
-     Wahrheit - vorher steht in der Kopfkarte nichts. */
+     Wahrheit - vorher steht in der Kopfkarte nichts.
+
+     Das Fazit urteilt ueber den Tag und bekommt deshalb weiterhin die Strecke
+     des Tages: "waren die Bedingungen schwer" ist eine Tagesfrage, und hm/km
+     und Windanteil sind darueber sinnvolle Mittel. Angezeigt wird diese Summe
+     nirgends mehr - die Zahlen stehen je Fahrt. */
   const fazit = zustand.phase === 'fertig'
     ? streckenFazit(row, zustand.bilanz, zustand.wetter, zustand.verfassung) : null;
 
-  const fahrten = zustand.fahrten || [];
+  /* Die Auswertung der Aufzeichnung je Fahrt, aufgeschluesselt nach Kennung -
+     die Reihenfolge gibt row.fahrten vor, weil dort die Bewertung haengt.
+     Fahrten ohne GPS-Stream bekommen so trotzdem eine Karte; vorher fielen sie
+     aus der Anzeige, und mit der Bewertung an der Fahrt waere ihr Urteil
+     mitverschwunden. */
+  const spuren = {};
+  for(const f of (zustand.fahrten || [])) spuren[f.act.id] = f;
   const gesamtMin = acts.reduce((n, a) => n + (a.moving_time || a.elapsed_time || 0), 0);
   const gesamtKm = acts.reduce((n, a) => n + (a.distance || 0), 0) / 1000;
 
@@ -218,7 +249,12 @@ function Tagesanalyse({ tag, acts, onZurueck }){
             Verfahren gelten - eine Aussage soll nicht besser klingen als ihre
             schlechteste Quelle. */}
         <ZonenBalken z={row.zones} />
-        <Fazit fazit={fazit} kompakt />
+        <VerfassungsLeiste verfassung={zustand.verfassung} />
+        {/* Nur die Saetze, die dem ganzen Tag gehoeren - Zirkel, Beinblock,
+            Dauer gegen die Vorgabe. Was an einer einzelnen Fahrt haengt, steht
+            an ihrer Karte. */}
+        <Notizen notes={row.tagNotes} />
+        <Fazit fazit={fazit} />
       </div>
 
       {/* Was der Tag sonst noch verlangte, steht als Liste daneben: bei zwei
@@ -239,15 +275,13 @@ function Tagesanalyse({ tag, acts, onZurueck }){
 
       {zustand.phase === 'laedt' && <div class="card"><p class="hint">Strecke und Wetter werden geladen …</p></div>}
 
-      {fahrten.map(f => <Fahrtkarte f={f} mehrere={fahrten.length > 1} key={f.act.id} />)}
+      {row.fahrten.map(f => (
+        <Fahrtkarte act={f.act} spur={spuren[f.act.id]} bewertung={f}
+          mehrere={row.fahrten.length > 1} key={f.act.id} />
+      ))}
 
       {zustand.phase === 'fertig' && zustand.untergrundLaeuft && (
         <div class="card"><p class="hint">Der Untergrund wird noch nachgeschlagen …</p></div>
-      )}
-
-      {zustand.phase === 'fertig' && (
-        <Auswertung bilanz={zustand.bilanz} wetter={zustand.wetter} fazit={fazit} row={row}
-          verfassung={zustand.verfassung} fahrten={fahrten.length} />
       )}
     </>
   );

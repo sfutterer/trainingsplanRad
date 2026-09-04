@@ -1,11 +1,21 @@
-/* Die Auswertung einer Fahrt: Wetterleiste, Zahlen, Begruendung, Fazit.
+/* Die Bausteine der Tagesauswertung: Wetterleiste, Verfassung, Streckenzahlen,
+   Fazit.
 
-   Stand vorher als Wetterblock in AnalyseTab - vier Kacheln mit Temperatur,
+   Standen vorher als Wetterblock in AnalyseTab - vier Kacheln mit Temperatur,
    Wind, Regen und Feuchte. Vier Zahlen ohne Zusammenhang beantworten die Frage
    aber nicht, die man nach einer Fahrt hat: war das eine gute Einheit, und wenn
    nicht, woran lag es. Deshalb zusammen mit der Strecke ausgewertet und in
-   einem Fazit zusammengefasst - eigene Datei, weil die Detailansicht sonst
-   nicht mehr auf einen Blick lesbar ist. */
+   einem Fazit gebuendelt - eigene Datei, weil die Detailansicht sonst nicht
+   mehr auf einen Blick lesbar ist.
+
+   Bis zum 04.09.2026 stand hier eine Karte "Auswertung", die Strecke,
+   Hoehenmeter und Wind ueber alle Fahrten des Tages zusammenrechnete und
+   darunter saemtliche Bewertungssaetze am Stueck zeigte. Bei zwei Fahrten war
+   das die falsche Zusammenfassung: "62 km, 340 hm, 40 % gegen den Wind" ist
+   keine Fahrt, die jemand gefahren ist, und welcher der beiden Saetze zu
+   welcher Fahrt gehoerte, stand nirgends. Die Zahlen stehen seitdem je Fahrt
+   (Streckenwerte), die Bewertung ebenso - hier bleiben die Teile, die
+   tatsaechlich dem ganzen Tag gehoeren. */
 
 import { richtungKurz } from '../../../data/wetter.js';
 import { zahl } from '../../../domain/zahlen.js';
@@ -39,10 +49,12 @@ export function WetterLeiste({ wetter }){
   );
 }
 
-/* Das Fazit steht zweimal, aber nicht doppelt: oben in der Kopfkarte das
-   Urteil mit den Massnahmen - das ist, was man wissen will, bevor man
-   scrollt - und unten am Ende der Auswertung dasselbe samt der Zahlen, auf die
-   es sich stuetzt. Die Begruendungen stehen nur dort. */
+/* Das Fazit des Tages: Urteil, Begruendung, Massnahmen.
+
+   Stand bis zum 04.09.2026 zweimal auf der Seite - oben kompakt und unten am
+   Ende der Zusammenfassung noch einmal mit Begruendungen. Mit der
+   Zusammenfassung ist die zweite Fassung entfallen; `kompakt` bleibt fuer den
+   Fall, dass nur das Urteil gebraucht wird. */
 export function Fazit({ fazit, kompakt }){
   if(!fazit) return null;
   return (
@@ -65,7 +77,7 @@ export function Fazit({ fazit, kompakt }){
 /* Ruhepuls, HRV und Schlaf am Fahrtag - dieselbe Rolle wie die Wetterleiste
    ueber der Karte: drei Zahlen, die den Rest einordnen. Ohne sie liest sich
    eine harte Fahrt nach zwei kurzen Naechten wie mangelnde Disziplin. */
-function VerfassungsLeiste({ verfassung }){
+export function VerfassungsLeiste({ verfassung }){
   if(!verfassung) return null;
   const v = verfassung;
   const posten = [];
@@ -97,35 +109,24 @@ function VerfassungsLeiste({ verfassung }){
   );
 }
 
-/* `fahrten` nennt, ueber wie viele Aufzeichnungen die Zahlen laufen.
+/* Die Zahlen einer Fahrt: Strecke, Hoehenmeter, Wind, Untergrund.
 
-   Bei einer Fahrt sagt das nichts und steht deshalb nicht da. Bei zweien ist
-   es entscheidend: "62 km, 340 hm" ist die Summe des Tages und nicht die einer
-   Runde, und wer das nicht weiss, liest die Zahl als eine Ausfahrt. Das Wetter
-   dagegen laesst sich nicht summieren - es stammt von der laengsten Fahrt, und
-   auch das gehoert dazugesagt. */
-export function Auswertung({ bilanz, wetter, fazit, row, verfassung, fahrten }){
+   Je Fahrt und nicht je Tag. Ueber zwei Fahrten summiert entsteht eine Strecke,
+   die niemand gefahren ist, und ein Windanteil, in dem sich Hin- und Rueckweg
+   gegenseitig aufheben - genau die beiden, bei denen der Wind der Unterschied
+   ist. */
+export function Streckenwerte({ bilanz, wetter }){
   if(!bilanz) return null;
   const windGewertet = bilanz.windMeter > 0;
-  const mehrere = fahrten > 1;
   return (
-    <div class="card">
-      <div class="row"><span>Auswertung</span>
-        <b>{mehrere ? fahrten + ' Fahrten zusammen' : (wetter ? 'Strecke und Wetter' : 'Strecke')}</b></div>
-      {mehrere && (
-        <p class="hint">
-          Strecke, Höhenmeter und Wind sind über alle Fahrten des Tages gerechnet. Das Wetter
-          stammt von der längsten – Bedingungen lassen sich nicht mitteln.
-        </p>
-      )}
-
+    <>
       <div class="anwerte">
         <div class="anwert"><b>{zahl1(bilanz.km)} km</b><span>gewertete Strecke</span></div>
         <div class="anwert"><b>{Math.round(bilanz.hoch)} hm</b>
-          <span>{zahl1(bilanz.hmProKm)} hm/km · max {zahl1(bilanz.steilster)} %</span></div>
+          <span>{zahl1(bilanz.hmProKm)} hm/km · max {zahl1(bilanz.steilster)} %</span></div>
         {windGewertet && (
           <div class="anwert"><b>{bilanz.gegenProzent} %</b>
-            <span>gegen den Wind · ⌀ {Math.round(bilanz.gegenSchnitt)} km/h</span></div>
+            <span>gegen den Wind · ⌀ {Math.round(bilanz.gegenSchnitt)} km/h</span></div>
         )}
         <div class="anwert">
           <b>{bilanz.untergrundBekannt ? bilanz.wegProzent + ' %' : '–'}</b>
@@ -149,12 +150,12 @@ export function Auswertung({ bilanz, wetter, fazit, row, verfassung, fahrten }){
           </div>
         </>
       )}
-
-      <VerfassungsLeiste verfassung={verfassung} />
-
-      {row.notes.map((n, i) => <div class={'annote ' + (n.kind || '')} key={i}>{n.text}</div>)}
-
-      <Fazit fazit={fazit} />
-    </div>
+    </>
   );
+}
+
+/* Bewertungssaetze, wie sie aus analysis.js kommen. */
+export function Notizen({ notes }){
+  if(!notes || !notes.length) return null;
+  return notes.map((n, i) => <div class={'annote ' + (n.kind || '')} key={i}>{n.text}</div>);
 }

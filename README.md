@@ -227,10 +227,22 @@ und die Bedingungen.
 Ausgewertet wird der **Tag** und nicht die einzelne Fahrt. Der Plan macht seine
 Vorgabe je Tag; wer sie auf zwei Fahrten verteilt, weil der Arbeitsweg zweimal
 anfällt, bekäme sie sonst zweimal ganz gegen sich gerechnet – Hinweg „kürzer“,
-Rückweg „kürzer“, zusammen genau richtig. Dauer, Distanz und Zonenzeiten laufen
-deshalb über alle Aufzeichnungen des Tages zusammen; Streckenbilanz und Wind
-ebenso. Nur das Wetter stammt von der längsten Fahrt – Bedingungen lassen sich
-nicht mitteln.
+Rückweg „kürzer“, zusammen genau richtig. Dauer und Zonenzeiten laufen deshalb
+über alle Aufzeichnungen des Tages zusammen.
+
+Die Summe entsteht aber in einer Reihenfolge, und die steht daneben: **jede
+Fahrt wird der Reihe nach bewertet**, die zweite auf dem Stand, den die erste
+hinterlassen hat. Je Fahrt ein Laufstand gegen die Vorgabe des Tages
+(„115 von 40 min Untergrenze – 75 min darüber“), die Überschreitung an der
+Fahrt, die sie auslöst, und die Pulszonen genau dieser Fahrt – über beide
+gemittelt verschwindet ein gehetzter Rückweg hinter einem ruhigen Hinweg.
+Streckenzahlen, Wetter und Karte stehen ebenso je Fahrt: über zwei Fahrten
+summiert entstünde eine Strecke, die niemand gefahren ist, und ein Windanteil,
+in dem Hin- und Rückweg sich gegenseitig aufheben.
+
+Am Tag bleibt, was in Minuten und nicht in Anteilen zählt: die harte Zeit eines
+Intervalltages und die Z3-Blöcke des Samstags. Sie auf zwei Fahrten zu
+verteilen hieße, dieselbe Vorgabe zweimal ganz zu verlangen.
 
 Die Spur wird in Abschnitte von rund 150 m geschnitten und jeder Abschnitt
 einzeln bewertet: Gegenwindanteil aus Fahrtrichtung gegen die Windrichtung
@@ -254,10 +266,12 @@ Bildschirmabstand. Der Versatz rechnet in Bildschirmpunkten und
 wird nach jedem Zoomen neu gelegt – ein Meter ist in der Gesamtübersicht weniger
 als ein Pixel.
 
-Darunter eine Auswertung, die Strecke und Wetter zusammen liest, und am Ende
-ein Fazit: passt die Einheit zum Plan, erklären die Bedingungen eine Abweichung,
-und was wäre nächstes Mal anders zu machen. Das Fazit steht auch oben in der
-Kopfkarte – die Frage nach einer Fahrt ist zuerst „war das gut so?“.
+Oben in der Kopfkarte steht das Fazit des Tages: passt die Einheit zum Plan,
+erklären die Bedingungen eine Abweichung, und was wäre nächstes Mal anders zu
+machen – die Frage nach einer Fahrt ist zuerst „war das gut so?“. Ein Tag
+deutlich über der Vorgabe ist dort kein grünes Fazit mehr, auch wo länger kein
+Planverstoß ist: die Grundlage kommt aus der Wochensumme, nicht aus einzelnen
+langen Tagen.
 
 Geladen wird in zwei Stufen: erst Aufzeichnung, Wetter und Wellness – die
 antworten in Millisekunden, die Karte steht also sofort. Der Untergrund kommt

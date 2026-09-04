@@ -349,6 +349,93 @@ describe('Mittwoch: Rumpf und Fahrt am selben Tag', () => {
   });
 });
 
+/* Die Fahrten eines Tages nacheinander.
+
+   Der Anlass: ein Mittwoch mit zwei Arbeitswegen, die einzeln schon ueber der
+   Untergrenze lagen. Die Analyse rechnete beide zu einer Zahl zusammen, fand
+   sie ueber der Untergrenze und meldete "erfuellt" - der Tag stand beim
+   Dreifachen der Vorgabe, und nichts davon war zu lesen. Bewertet wird
+   weiterhin der Tag; die Reihenfolge, in der seine Summe entsteht, steht
+   seitdem daneben. */
+describe('Fahrten eines Tages nacheinander', () => {
+  const MI2 = dayFromIso('2026-08-26');            // Woche 2: Untergrenze 40 min
+  const soll = plan.weeks[1].wednesdayMinutes;
+
+  const zwei = (min1, min2, z1, z2) => tag(MI2, [
+    Object.assign(fahrt(min1), { id: 'h' }),
+    Object.assign(fahrt(min2), { id: 'r' })
+  ], z1 || z2 ? { h: z1, r: z2 } : null);
+
+  it('nimmt die Woche mit einer Untergrenze am Mittwoch', () => {
+    expect(soll).toBe(40);
+  });
+
+  it('haelt die Fahrten in der Reihenfolge, in der gefahren wurde', () => {
+    const row = zwei(55, 60);
+    expect(row.fahrten.map(f => f.act.id)).toEqual(['h', 'r']);
+    expect(row.fahrten.map(f => f.nr)).toEqual([1, 2]);
+  });
+
+  /* Der Kern: die zweite Fahrt wird nicht fuer sich bewertet, sondern auf dem
+     Stand, den die erste hinterlassen hat. */
+  it('rechnet die zweite Fahrt auf den Stand der ersten', () => {
+    const row = zwei(55, 60);
+    const erste = row.fahrten[0].notes.map(n => n.text).join(' ');
+    const zweite = row.fahrten[1].notes.map(n => n.text).join(' ');
+    expect(erste).toContain('1. Fahrt: 55 min');
+    expect(erste).toContain('55 von 40 min Untergrenze');
+    expect(zweite).toContain('2. Fahrt: 60 min');
+    expect(zweite).toContain('115 von 40 min Untergrenze');
+    expect(zweite).toContain('75 min darüber');
+  });
+
+  /* Die Ueberschreitung haengt an der Fahrt, die sie ausloest - sonst sagt der
+     Tag zwar, dass er zu lang wurde, aber nicht, wodurch. */
+  it('haengt die Ueberschreitung an die ausloesende Fahrt', () => {
+    const row = zwei(30, 60);
+    expect(row.fahrten[0].notes.map(n => n.text).join(' '))
+      .not.toContain('über das Ziel');
+    expect(row.fahrten[1].notes.map(n => n.text).join(' '))
+      .toContain('Diese Fahrt trägt den Tag über das Ziel: 90 min gegen 40 min');
+    expect(row.umfangUeber).toEqual({ kum: 90, soll: 40, minimum: true });
+  });
+
+  it('schweigt, solange der Tag innerhalb der Toleranz bleibt', () => {
+    const row = zwei(25, 25);
+    expect(texte(row)).not.toContain('über das Ziel');
+    expect(row.umfangUeber).toBe(undefined);
+  });
+
+  /* Eine einzelne Fahrt braucht keinen Laufstand: "1. Fahrt: 50 min. Damit
+     stehen 50 von 40 min" ist derselbe Satz zweimal. */
+  it('laesst den Laufstand bei einer einzigen Fahrt weg', () => {
+    const row = tag(MI2, [fahrt(50)]);
+    expect(texte(row)).not.toContain('1. Fahrt');
+  });
+
+  /* Gemittelt ueber beide Fahrten verschwindet ein gehetzter Rueckweg hinter
+     einem ruhigen Hinweg: 15 min in Z4 sind in 110 min Gesamtzeit 14 % und
+     damit unauffaellig - in den 20 min, in denen sie gefahren wurden, sind sie
+     75 %. */
+  it('bewertet die Intensitaet je Fahrt statt ueber den Tag gemittelt', () => {
+    const row = zwei(90, 20, zonen({ z2: 5400 }), zonen({ z2: 300, z4: 900 }));
+    expect(row.badge).toBe('zu hart');
+    expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toContain('Passt für den Arbeitsweg');
+    expect(row.fahrten[1].notes.map(n => n.text).join(' ')).toContain('Zeitdruck');
+  });
+
+  /* row.notes bleibt die flache Liste: das Fazit sucht darin die schweren
+     Befunde, die Meldungen ebenso. Die Anzeige liest row.tagNotes und die
+     Notizen je Fahrt - sonst stuende jeder Satz zweimal auf der Seite. */
+  it('fuehrt Tages- und Fahrtnotizen getrennt und flach zusammen', () => {
+    const row = zwei(55, 60);
+    const fahrtNotizen = row.fahrten.reduce((n, f) => n + f.notes.length, 0);
+    expect(row.notes.length).toBe(row.tagNotes.length + fahrtNotizen);
+    expect(row.tagNotes.map(n => n.text).join(' ')).not.toContain('1. Fahrt');
+    expect(texte(row)).toContain('1. Fahrt');
+  });
+});
+
 describe('Wochensummen', () => {
   it('summiert Soll und Ist ueber die Woche', () => {
     const rows = buildReport(plan, TH, START, SA, DO, [

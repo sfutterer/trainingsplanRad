@@ -11,6 +11,7 @@
    plan.json. */
 
 import { zahl } from './zahlen.js';
+import { T } from './texte.js';
 
 export const LAST = {
   gegenViel: 55, gegenEtwas: 35,      // Prozent der Strecke gegen den Wind
@@ -200,6 +201,16 @@ export function streckenFazit(row, bilanz, wetter, verfassung){
   } else if(schlecht.length){
     urteil = 'abweichung';
     satz = schlecht[0].text;
+  } else if(row && row.umfangUeber){
+    /* Der Tag ist nicht falsch gefahren, aber er ist deutlich laenger geworden
+       als vorgesehen - und das stand bis zum 04.09.2026 nirgends, weil "laenger
+       ist kein Planverstoss" zugleich hiess "alles gut". Kein Befund, aber auch
+       kein gruenes Fazit. */
+    urteil = 'erklaert';
+    satz = T.umfangFazit(row.umfangUeber.kum, row.umfangUeber.soll);
+    massnahmen.push('Den Umfang in die Wochenplanung nehmen, nicht in den einzelnen Tag: ' +
+      'die Grundlage kommt aus der Z2-Summe der Woche, und ein deutlich längerer Tag ' +
+      'kostet vor allem die Erholung für den Qualitätstag.');
   } else if(!row || !row.zones){
     urteil = 'offen';
     satz = 'Ohne Zonenzeiten lässt sich nur die Dauer beurteilen – die passt.';

@@ -178,26 +178,92 @@ function coreEstimateNotes(row, strength, t, roundRestSec, prepSec, exCount){
    gemessen: kuerzer oder gar nicht ist bei einer freiwilligen Einheit kein
    Fehler. Zu hart gefahren dagegen schon - eine Erholungsfahrt in Z3 frisst
    genau die Erholung, fuer die sie da ist. */
-function easyRideNotes(row, sollMin){
-  const notes = [];
+/* ---- Die Fahrten eines Tages der Reihe nach ----
+
+   Der Tag bleibt die Einheit der Bewertung: ob zu kurz oder zu lang, entscheidet
+   die Summe und nicht die einzelne Fahrt. Wer den Arbeitsweg zweimal faehrt,
+   soll nicht zweimal "kuerzer" lesen.
+
+   Die Summe entsteht aber in einer Reihenfolge, und bis zum 04.09.2026 stand
+   davon nichts da: zwei Fahrten, die einzeln schon ueber der Vorgabe lagen,
+   ergaben eine Zahl und den Satz "erfuellt". Deshalb je Fahrt ein Laufstand,
+   die Ueberschreitung an der Fahrt, die sie ausloest, und die Intensitaet aus
+   den Zonen genau dieser Fahrt - gemittelt ueber beide verschwindet ein
+   gehetzter Rueckweg hinter einem ruhigen Hinweg.
+
+   Was in Minuten und nicht in Anteilen zaehlt, bleibt am Tag: die Intervallzeit
+   und die Z3-Bloecke des Samstags. Sie auf zwei Fahrten aufzuteilen hiesse,
+   dieselbe Vorgabe zweimal ganz zu verlangen - genau der Fehler, den der Umbau
+   vom 03.09.2026 beseitigt hat. */
+function fahrtTeile(rides, zonesById){
+  let kum = 0;
+  return rides.map((a, i) => {
+    const sec = a.moving_time || a.elapsed_time || 0;
+    const vorher = kum;
+    kum += sec;
+    return { act: a, nr: i + 1, sec, vorherSec: vorher, kumSec: kum,
+             zones: zonesById ? (zonesById[a.id] || null) : null, notes: [] };
+  });
+}
+
+/* Unter fuenf Minuten Aufzeichnung sagt eine Zonenverteilung nichts - dann
+   soll auch nichts behauptet werden. */
+function jeFahrt(fn){
+  return f => (f.zones && f.zones._total > 300 ? fn(f.zones) : []);
+}
+
+function fahrtenNotizen(row, teile, sollMin, minimum, intensitaet){
+  const mehrere = teile.length > 1;
+  const grenze = sollMin ? sollMin * 60 * (1 + DUR_TOL_LONG) : 0;
+  for(const f of teile){
+    if(mehrere){
+      f.notes.push({ kind:'', text: T.fahrtLaufstand(f.nr, Math.round(f.sec / 60),
+                                                     Math.round(f.kumSec / 60), sollMin, minimum) });
+    }
+    /* Bei einer einzelnen Fahrt sagt T.dauerLang dasselbe schon - ausser auf
+       den Tagen mit blosser Untergrenze, wo bisher gar nichts dazu stand. */
+    if(grenze && (mehrere || minimum) && f.vorherSec < grenze && f.kumSec >= grenze){
+      const kum = Math.round(f.kumSec / 60);
+      f.notes.push({ kind:'info', text: T.fahrtUeberZiel(mehrere, kum, sollMin, minimum) });
+    }
+    if(intensitaet) f.notes.push(...intensitaet(f));
+    const aufz = recordingNote(f.zones);
+    if(aufz) f.notes.push(aufz);
+  }
+  const gesamt = teile.length ? teile[teile.length - 1].kumSec : 0;
+  if(grenze && (mehrere || minimum) && gesamt >= grenze){
+    row.umfangUeber = { kum: Math.round(gesamt / 60), soll: sollMin, minimum };
+  }
+}
+
+/* row.notes bleibt die flache Liste aus Tages- und Fahrtnotizen: das Fazit
+   sucht darin die schweren Befunde, und die Meldungen tun es ebenso. Die
+   Anzeige liest stattdessen row.tagNotes und die Notizen je Fahrt - sonst
+   stuende jeder Satz zweimal auf der Seite. */
+function fertig(row){
+  row.tagNotes = row.notes;
+  row.notes = row.tagNotes.concat(...(row.fahrten || []).map(f => f.notes));
+  return row;
+}
+
+function lockerNotes(row, z){
+  const locker = pct((z.unter || 0) + (z.z1 || 0) + (z.z2 || 0), z._total);
+  const hart = pct((z.z3 || 0) + (z.z4 || 0) + (z.z5 || 0), z._total);
+  if(hart > 25){
+    downgrade(row, 'zu hart');
+    return [{ kind:'bad', text: T.lockerZuHart(hart) }];
+  }
+  return [{ kind:'good', text: T.lockerPasst(locker) }];
+}
+
+/* Die Tageszeile zur freiwilligen Fahrt; die Zonen stehen je Fahrt darunter.
+   Ohne Umfangsvorgabe, deshalb ohne Laufstand: bei einer freiwilligen Einheit
+   gibt es nichts zu erfuellen und nichts zu ueberschreiten. */
+function easyRideNotes(row, teile, sollMin){
   const ist = Math.round(row.rideSec / 60);
   const km = row.rideKm >= 1 ? ' (' + row.rideKm.toFixed(1) + ' km)' : '';
-  notes.push({ kind:'', text: T.optionaleFahrt(ist, km, sollMin) });
-
-  const z = row.zones;
-  if(z && z._total > 300){
-    const locker = pct((z.unter || 0) + (z.z1 || 0) + (z.z2 || 0), z._total);
-    const hart = pct((z.z3 || 0) + (z.z4 || 0) + (z.z5 || 0), z._total);
-    if(hart > 25){
-      downgrade(row, 'zu hart');
-      notes.push({ kind:'bad', text: T.lockerZuHart(hart) });
-    } else {
-      notes.push({ kind:'good', text: T.lockerPasst(locker) });
-    }
-    const aufz = recordingNote(z);
-    if(aufz) notes.push(aufz);
-  }
-  return notes;
+  fahrtenNotizen(row, teile, 0, false, jeFahrt(z => lockerNotes(row, z)));
+  return [{ kind:'', text: T.optionaleFahrt(ist, km, sollMin) }];
 }
 
 /* Beinblock aus dem eigenen Protokoll. intervals.icu sieht davon nichts:
@@ -303,12 +369,17 @@ function z2Notes(row, zones, t){
     notes.push({ kind:'good', text: T.z2Passt(anteil, basis) });
   }
 
-  if(t.hardMinutes){
-    const z3min = Math.round((zones.z3 || 0) / 60);
-    notes.push({ kind: z3min >= t.hardMinutes * 0.7 ? 'good' : '',
-                 text: T.z3Block(z3min, t.hardMinutes) });
-  }
   return notes;
+}
+
+/* Die geplanten Z3-Bloecke am Samstag zaehlen in Minuten und nicht in Anteilen.
+   Deshalb bleiben sie am Tag: ueber zwei Fahrten verteilt sind zweimal "6 von
+   15 min" zwei falsche Saetze, wo einer ueber 12 von 15 min richtig waere. */
+function z3BlockNote(zones, t){
+  if(!t.hardMinutes) return [];
+  const z3min = Math.round((zones.z3 || 0) / 60);
+  return [{ kind: z3min >= t.hardMinutes * 0.7 ? 'good' : '',
+            text: T.z3Block(z3min, t.hardMinutes) }];
 }
 
 /* Intervalltag: die harte Zeit zaehlt, nicht der Anteil. Der Puls hinkt dem
@@ -340,7 +411,7 @@ function intervallNotes(row, zones, t){
 }
 
 /* Der Rumpftag: Zirkel, Beinblock und am Mittwoch zusaetzlich die Fahrt. */
-function coreDayNotes(plan, row, t, rides, strength){
+function coreDayNotes(plan, row, t, rides, strength, teile){
   const notes = [];
 
   /* Das eigene Protokoll ist die genauere Quelle und hat Vorrang; die
@@ -383,14 +454,14 @@ function coreDayNotes(plan, row, t, rides, strength){
       } else if(ist < t.rideMinutes){
         notes.push({ kind:'info', text: T.mittwochToleranz(ist, t.rideMinutes) });
       } else {
-        notes.push({ kind:'good', text: T.mittwochErfuellt(ist, t.rideMinutes) });
+        notes.push({ kind: ist > t.rideMinutes * (1 + DUR_TOL_LONG) ? 'info' : 'good',
+                     text: T.mittwochErfuellt(ist, t.rideMinutes) });
       }
-      notes.push(...commuteIntensityNotes(row, row.zones));
-      const aufz = recordingNote(row.zones);
-      if(aufz) notes.push(aufz);
     }
+    fahrtenNotizen(row, teile, t.rideMinutes, true,
+                   jeFahrt(z => commuteIntensityNotes(row, z)));
   } else if(rides.length){
-    notes.push(...easyRideNotes(row, t.optionalRideMinutes));
+    notes.push(...easyRideNotes(row, teile, t.optionalRideMinutes));
   }
   return notes;
 }
@@ -414,6 +485,12 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
     notes: [], status: 'ok', badge: ''
   };
 
+  /* Die Fahrten in der Reihenfolge, in der gefahren wurde, mit Laufstand und
+     den Zonen genau dieser Fahrt. Die Notizen dazu haengen an der Fahrt und
+     nicht am Tag; fertig() haengt beide Listen zusammen. */
+  const teile = fahrtTeile(rides, zonesById);
+  row.fahrten = teile;
+
   row.rideSec = rides.reduce((n, a) => n + (a.moving_time || a.elapsed_time || 0), 0);
   row.rideKm  = rides.reduce((n, a) => n + (a.distance || 0), 0) / 1000;
 
@@ -436,26 +513,27 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
     if(rides.length){
       row.status = 'extra'; row.badge = 'Zusatz';
       row.notes.push({ kind:'', text: T.ruhetagGefahren(fmtMin(row.rideSec)) });
+      fahrtenNotizen(row, teile, 0, false, null);
     } else {
       row.status = 'ok'; row.badge = 'Ruhetag';
     }
-    return row;
+    return fertig(row);
   }
 
   if(t.sport === 'optional'){
     row.status = 'ok';
     if(rides.length){
       row.badge = 'optional gefahren';
-      row.notes.push(...easyRideNotes(row, t.minutes));
+      row.notes.push(...easyRideNotes(row, teile, t.minutes));
     } else {
       row.badge = 'frei';
     }
-    return row;
+    return fertig(row);
   }
 
   if(t.sport === 'core'){
-    row.notes.push(...coreDayNotes(plan, row, t, rides, strength));
-    return row;
+    row.notes.push(...coreDayNotes(plan, row, t, rides, strength, teile));
+    return fertig(row);
   }
 
   /* Ab hier: Radeinheit mit messbarem Soll.
@@ -477,7 +555,7 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
   if(!rides.length){
     row.status = 'miss'; row.badge = 'ausgefallen';
     row.notes.push({ kind:'bad', text: t.test ? T.testFehlt : T.fahrtFehlt });
-    return row;
+    return fertig(row);
   }
 
   const sollSec = (t.minutes || 0) * 60;
@@ -496,25 +574,24 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
 
   if(t.test) row.notes.push({ kind:'info', text: T.testtag });
 
-  /* Der Dienstag ist Pendelweg: laenger ist normal, zu hart ist der Fehler. */
-  if(t.commute && row.zones && row.zones._total > 300){
-    row.notes.push(...commuteIntensityNotes(row, row.zones));
-    const aufz = recordingNote(row.zones);
-    if(aufz) row.notes.push(aufz);
-    return row;
-  }
-
-  /* Zonen bewerten - nur wenn Streams geladen wurden. */
+  /* Was in Minuten zaehlt, bleibt am Tag: die harte Zeit eines Intervalltages
+     und die Z3-Bloecke des Samstags. Was als Anteil zaehlt, geht je Fahrt -
+     der Dienstag ist Pendelweg, dort ist laenger normal und zu hart der
+     Fehler. */
   if(row.zones && row.zones._total > 300){
     row.zoneShare = pct(row.zones[t.zone] || 0, row.zones._total);
-    row.notes.push(...(t.zone === 'z2'
-      ? z2Notes(row, row.zones, t)
-      : intervallNotes(row, row.zones, t)));
-    const aufz = recordingNote(row.zones);
-    if(aufz) row.notes.push(aufz);
+    if(!t.commute){
+      row.notes.push(...(t.zone === 'z2'
+        ? z3BlockNote(row.zones, t)
+        : intervallNotes(row, row.zones, t)));
+    }
   }
 
-  return row;
+  fahrtenNotizen(row, teile, t.minutes || 0, false,
+    t.commute ? jeFahrt(z => commuteIntensityNotes(row, z))
+              : t.zone === 'z2' ? jeFahrt(z => z2Notes(row, z, t)) : null);
+
+  return fertig(row);
 }
 
 /* Wochensummen. Bei getauschten Tagen ist die Tagesbewertung wertlos - sie

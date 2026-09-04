@@ -131,6 +131,44 @@ export const T = {
     + 'Beides im Tab „Heute“ unter Schwellenwerte eintragen und in intervals.icu '
     + 'übernehmen, danach Power Zones und HR Zones auf Coggan.',
 
+  /* ---- Die Fahrten eines Tages nacheinander ----
+
+     Der Tag bleibt die Einheit, in der der Plan seine Vorgabe macht - aber die
+     Summe des Tages entsteht in einer Reihenfolge, und die gehoert dazugesagt.
+     Wer zweimal denselben Arbeitsweg faehrt, will lesen, dass die Vorgabe schon
+     nach dem Hinweg stand und der Rueckweg den Tag darueber hinaus getragen
+     hat. Bis zum 04.09.2026 stand dort eine einzige Zahl fuer beide Fahrten
+     zusammen, und die las sich als "alles gut". */
+
+  fahrtLaufstand: (nr, ist, kum, soll, minimum) => {
+    const kopf = nr + '. Fahrt: ' + ist + ' min.';
+    if(!soll) return kopf;
+    const bezug = minimum ? 'min Untergrenze' : 'min Tagesvorgabe';
+    if(kum < soll) return kopf + ' Damit stehen ' + kum + ' von ' + soll + ' ' + bezug
+      + ' – es fehlen noch ' + (soll - kum) + ' min.';
+    if(kum > soll) return kopf + ' Damit stehen ' + kum + ' von ' + soll + ' ' + bezug
+      + ' – ' + (kum - soll) + ' min darüber.';
+    return kopf + ' Damit stehen ' + kum + ' von ' + soll + ' ' + bezug + '.';
+  },
+
+  /* Die Ueberschreitung haengt an der Fahrt, die sie ausloest - nicht am Tag.
+     "80 min gegen 40 min" sagt nicht, welche der beiden Fahrten den Tag
+     darueber getragen hat; genau das ist aber die Frage, wenn man den naechsten
+     Mittwoch anders einteilen will. */
+  fahrtUeberZiel: (mehrere, kum, soll, minimum) =>
+    (mehrere ? 'Diese Fahrt trägt den Tag über das Ziel: '
+             : 'Der Tag liegt über dem Ziel: ')
+    + kum + ' min gegen ' + soll + ' min ' + (minimum ? 'Untergrenze' : 'Vorgabe')
+    + ' (+' + Math.round((kum - soll) / soll * 100) + ' %).'
+    + (minimum
+      ? ' Kein Planverstoß – aber die Minuten zählen gegen den Wochendeckel, und '
+        + 'die Grundlage kommt aus der Wochensumme, nicht aus einzelnen langen Tagen.'
+      : ''),
+
+  umfangFazit: (kum, soll) =>
+    'Die Einheit passt zum Plan, der Umfang liegt aber deutlich darüber: '
+    + kum + ' min gegen ' + soll + ' min.',
+
   /* ---- Wochenumfang ---- */
 
   deckelUeberschritten: (ist, plan, cap) =>
