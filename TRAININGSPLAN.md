@@ -10,14 +10,18 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 3, Stand 30.08.2026.** Überarbeitet nach einer Auswertung der ersten drei
-> Trainingswochen gegen die tatsächlichen intervals.icu-Daten. Die wesentlichen
-> Änderungen: **2:1-Rhythmus ab Woche 5**, Wochenumfang als Obergrenze statt als
-> Sollwert, verbindlicher Testanlauf zum 10.09., zweite Beineinheit ab Phase 3,
-> Ernährungs-Zieldaten als eigener Abschnitt. Der Plan endet mit Woche 16 — danach
-> wird ein neuer Plan geschrieben.
+> **Fassung 4, Stand 04.09.2026.** Änderung gegenüber Fassung 3 an genau einer Stelle:
+> **Der 5-Minuten-All-out entfällt aus dem Schwellentest.** Der Test besteht ab sofort
+> nur noch aus dem 20-Minuten-Abschnitt. Die VO2max-Referenzleistung wird stattdessen
+> als erste Wiederholung der ersten Intervalleinheit erhoben. Alles andere aus
+> Fassung 3 bleibt unverändert.
 >
-> Begründungen der Änderungen in Abschnitt 9.
+> Fassung 3 (30.08.2026) brachte: 2:1-Rhythmus ab Woche 5, Wochenumfang als Obergrenze
+> statt als Sollwert, verbindlicher Testanlauf zum 10.09., zweite Beineinheit ab
+> Phase 3, Ernährungs-Zieldaten als eigener Abschnitt. Der Plan endet mit Woche 16 —
+> danach wird ein neuer Plan geschrieben.
+>
+> Begründungen der Änderungen in Abschnitt 9 (Fassung 3) und Abschnitt 9a (Fassung 4).
 
 ---
 
@@ -424,19 +428,19 @@ Geschwindigkeitsschätzungen ohne Aussagewert und werden nicht mehr angezeigt.
 | 1 | 1 | 60 | — | 4×5 min Z3 → 56 | 120, reines Z2 + 18 min Z3 | 30 | 2 Rd × 25 s / 25 s → 14 |
 | 2 | 1 | 70 | 40 | 4×5 min Z3 → 56 | 130, reines Z2 | 30 | 2 Rd × 30 s / 25 s → 15 |
 | 3 | 1 | 80 | 40 | 5×5 min Z3 → 64 | 140, reines Z2 | 35 | 2 Rd × 35 s / 25 s → 16 |
-| **4** Erh. | 1 | 45 | 30 | **Schwellentest → 65** | 90, reines Z2 | 25 | 2 Rd × 25 s / 25 s → 14 |
-| 5 | 2 | 85 | 40 | 5×4 min Z5 → 63 | 150, reines Z2 | 35 | 3 Rd × 30 s / 20 s → 21 |
+| **4** Erh. | 1 | 45 | 30 | **Schwellentest → 55** | 90, reines Z2 | 25 | 2 Rd × 25 s / 25 s → 14 |
+| 5 | 2 | 85 | 40 | **5 min max + 4×4 min Z5 → 65** | 150, reines Z2 | 35 | 3 Rd × 30 s / 20 s → 21 |
 | 6 | 2 | 90 | 40 | 5×4 min Z5 → 63 | 160 **+ 2×12 min Z3** | 40 | 3 Rd × 35 s / 20 s → 23 |
 | **7** Erh. | 2 | 50 | 30 | 4×3 min Sweetspot → 48 | 100, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
 | 8 | 2 | 90 | 40 | 5×4 min Z5 → 63 | 165, reines Z2 | 40 | 3 Rd × 35 s / 20 s → 23 |
 | 9 | 2 | 90 | 40 | 5×4 min Z5 → 63 | 175 **+ 2×12 min Z3** | 40 | 3 Rd × 40 s / 20 s → 25 |
-| **10** Erh. | 2 | 50 | 30 | **Retest → 65** | 100, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
+| **10** Erh. | 2 | 50 | 30 | **Retest → 55** | 100, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
 | 11 | 3 | 90 | **60** | **70 min Z2** | 170, reines Z2 | 40 | 3 Rd × 40 s / 20 s → 25 |
 | 12 | 3 | 90 | **60** | **75 min Z2** | 180 **+ 2×12 min Z3** | 40 | 3 Rd × 40 s / 20 s → 25 |
 | **13** Erh. | 3 | 50 | 30 | 55 min Z2 | 105, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
 | 14 | 4 | 90 | 40 | 3×10 min Z4 → 67 | 175, reines Z2 | 40 | 3 Rd × 40 s / 20 s → 25 |
 | 15 | 4 | 90 | 40 | 3×12 min Z4 → 73 | 185, reines Z2 | 40 | 3 Rd × 40 s / 20 s → 25 |
-| **16** Erh. | 4 | 50 | 30 | **Retest → 65** | 105, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
+| **16** Erh. | 4 | 50 | 30 | **Retest → 55** | 105, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
 
 Alle Werte in Minuten.
 
@@ -444,8 +448,8 @@ Alle Werte in Minuten.
 
 | Woche | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Soll** | 266 | 326 | 359 | 255 | 373 | 393 | 253 | 398 | 408 | 270 | 430 | 445 | 265 | 412 | 428 | 275 |
-| **Max (+10 %)** | 293 | 359 | 395 | 281 | 410 | 432 | 278 | 438 | 449 | 297 | 473 | 490 | 292 | 453 | 471 | 303 |
+| **Soll** | 266 | 326 | 359 | **245** | **375** | 393 | 253 | 398 | 408 | **260** | 430 | 445 | 265 | 412 | 428 | **265** |
+| **Max (+10 %)** | 293 | 359 | 395 | **270** | **413** | 432 | 278 | 438 | 449 | **286** | 473 | 490 | 292 | 453 | 471 | **292** |
 
 Die Steigerung je Belastungswoche liegt ab Woche 5 zwischen 1 und 6 %. Der Sprung von
 Woche 1 auf Woche 2 (+23 %) war der Einführung des Pendeltags geschuldet und einmalig.
@@ -478,7 +482,8 @@ Belastung und Pause.
 |---|---|---|---|
 | 1 | 1–3 | 4–5 × 5 min Z3, 3 min Pause | Tempo, pulsfreundliche Intervalllänge |
 | 1 | 4 | Schwellentest | FTP + LTHR |
-| 2 | 5, 6, 8, 9 | **5 × 4 min**, 4 min Pause, 108–115 % FTP | VO2max |
+| 2 | **5** | **5 min maximal** (VO2max-Referenz) + **4 × 4 min**, 4 min Pause, 108–115 % FTP | VO2max + Referenzwert |
+| 2 | 6, 8, 9 | **5 × 4 min**, 4 min Pause, 108–115 % FTP | VO2max |
 | 2 | 7 | 4 × 3 min bei ~95 % FTP | Erholungswoche, kein Z5 |
 | 2 | 10 | Retest | FTP + LTHR |
 | 3 | 11–12 | 70–75 min Z2 | dritter Grundlagentag |
@@ -488,6 +493,10 @@ Belastung und Pause.
 
 Einfahren immer 15 min, Ausrollen 12 min. Die Wiederholungszahl in Phase 2 ist **fest
 bei 5** — die Progression läuft über die Leistung, nicht über mehr Wiederholungen.
+
+**Ausnahme Woche 5:** Der 5-min-Maximalversuch für die VO2max-Referenz zählt als erste
+Wiederholung, deshalb folgen nur noch 4 × 4 min. Details und Begründung in Abschnitt 2a.
+Wird der Referenzwert nicht erhoben, gilt die reguläre Struktur 5 × 4 min.
 
 **Erhaltungsreiz Phase 3 (Woche 11 und 12):** An den Mittwoch wird **6 × 30 s zügig mit
 30 s lockerem Rollen** angehängt, insgesamt knapp 6 min. Grund: Phase 3 enthält sonst
@@ -524,14 +533,80 @@ Testtermine: **Do 10.09.** (W4), **Do 22.10.** (W10), **Do 03.12.** (W16).
 | Schritt | Dauer |
 |---|---|
 | Einfahren, darin 3 × 1 min zügig mit je 1 min Pause | 20 min |
-| All-out | 5 min |
-| Locker rollen | 10 min |
+| Locker rollen | 5 min |
 | **Gleichmäßig maximal** | 20 min |
 | Ausrollen | 10 min |
 
+Gesamtdauer 55 min.
+
 - **FTP** = Ø-Watt der 20 min × 0,95
 - **LTHR** = Ø-Puls der 20 min
-- Der 5-min-Wert ist die VO2max-Referenzleistung.
+- **Die VO2max-Referenzleistung wird hier nicht erhoben** — siehe „5-Minuten-Wert"
+  weiter unten.
+
+#### Warum der 5-Minuten-All-out entfällt
+
+Das Originalprotokoll nach Coggan/Allen stellt einen 5-min-All-out mit 10 min Pause vor
+den 20-min-Abschnitt. Zweck: die anaerobe Kapazität leeren, damit die 20 min überwiegend
+aerob gefahren werden. Nur dafür ist der Faktor 0,95 kalibriert.
+
+Für diesen Plan überwiegen die Nachteile:
+
+| Punkt | Konsequenz |
+|---|---|
+| Anaerobe Kapazität ist bei Einsteigern klein | Die Verzerrung, die der All-out beseitigen soll, ist ohnehin gering |
+| 10 min Pause reichen bei CTL um 10 nicht zur Laktatklärung | Trainierte räumen schneller ab. Der 20-min-Abschnitt startet mit Restlast |
+| **Die Pacing-Vorgabe stammt aus einer Einheit ohne Vorbelastung** | Die Werte aus dem Anlauf am 03.09. gelten für frische Beine. Nach einem All-out passen sie nicht mehr — der Test wäre wieder blind gepact |
+| Pacing-Fehler beim All-out selbst | Ein zu harter 5-min-Antritt reißt die 20 min ein. Der Testwert liegt dann noch weiter unter dem wahren Wert als ohnehin erwartet |
+
+Der dritte Punkt ist der entscheidende. Der Anlauf am 03.09. wurde eingeführt, um blindes
+Pacing zu vermeiden. Ein All-out davor würde diesen Gewinn wieder wegwerfen.
+
+**Preis dieser Entscheidung:** Der Faktor 0,95 ist streng genommen für das Originalprotokoll
+kalibriert. Ohne Vorermüdung fällt der Ø-Wattwert der 20 min minimal höher aus, die
+errechnete FTP damit ebenfalls. Bei einem Test, der ohnehin ausdrücklich als **Untergrenze**
+gilt, ist das unkritisch. Die eFTP ab Woche 6 bleibt der Gegencheck.
+
+**Verbindlich für alle drei Termine:** Der Ablauf muss am 10.09., 22.10. und 03.12.
+**identisch** sein, sonst sind die Tests nicht vergleichbar. Entweder überall ohne
+All-out oder überall mit. Diese Fassung legt fest: **überall ohne.**
+
+### Der 5-Minuten-Wert (VO2max-Referenz)
+
+Der Wert wird **nicht** am Testtag erhoben, sondern als **erste Wiederholung der ersten
+Intervalleinheit am Do 17.09.** (Woche 5).
+
+| Schritt | Dauer |
+|---|---|
+| Einfahren, darin 3 × 1 min zügig | 15 min |
+| **5 min maximal** ← der Referenzwert | 5 min |
+| Locker rollen | 5 min |
+| 4 × 4 min bei 108–115 % FTP, 4 min Pause | 28 min |
+| Ausrollen | 12 min |
+
+Gesamtdauer 65 min. Ab Woche 6 gilt wieder die reguläre Struktur 5 × 4 min.
+
+**Warum dort und nicht am Testtag:** Der 5-min-Maximalversuch **ist** ein VO2max-Reiz und
+ersetzt deshalb die erste Wiederholung — er kostet keinen zusätzlichen Tag und keine
+zusätzliche Erholung. Frisch gefahren ist der Wert außerdem deutlich aussagekräftiger als
+nach 20 min Maximalbelastung.
+
+**Warum nicht am Samstag nach dem Test** (12.09., geprüft und verworfen):
+
+1. **Zu nah am Testtag.** Bei CTL um 10 kostet ein 20-min-Maximaltest zwei bis drei Tage.
+   Ein Ruhetag am Freitag reicht nicht, um am Samstag wirklich auszubelasten.
+2. **Der 12.09. ist die erste saubere Decoupling-Messung mit Watt.** Ein Maximalversuch
+   mitten in der Fahrt macht Decoupling und Efficiency Factor für diesen Samstag
+   unbrauchbar — dieselbe Logik wie in Abschnitt 4.8.
+3. **Die 150 min danach wären kein sauberes Z2 mehr.** Nach maximaler Ausbelastung liegt
+   der Puls für den Rest der Fahrt erhöht.
+
+**Der Wert ist Kür, nicht Pflicht.** Seine einzige Funktion ist der Plausibilitätscheck der
+108–115-%-Vorgabe. Ist der 17.09. zu voll, entfällt er ersatzlos und die Intervalle werden
+nach Atmung gefahren, wie in diesem Abschnitt ohnehin vorgesehen.
+
+**Gegenprobe:** Liegt der 5-min-Wert deutlich über 118 % der Test-FTP, war der Test zu
+niedrig. Dann rückt der Retest nach vorn (zusammen mit dem eFTP-Kriterium weiter unten).
 
 **Pacing:** die ersten drei Minuten bewusst konservativer als das Ziel. Auf die
 Runden-Durchschnittsleistung schauen, nicht auf den Momentanwert. Die letzten zwei
@@ -608,7 +683,6 @@ für den gesamten Folgeblock.
 | Ø-Watt der 20 min | Aktivität | Notiz + Testhistorie |
 | **FTP** = Ø-Watt × 0,95 | Rechnung | intervals.icu Settings + App |
 | **LTHR** = Ø-Puls der 20 min | Aktivität | intervals.icu Settings + App |
-| Ø-Watt der 5 min | Aktivität | Notiz, VO2max-Referenz |
 | Ø-Kadenz der 20 min | Aktivität | Notiz |
 | Gewicht am Testtag | Waage | Wellness — sonst ist W/kg über die Tests nicht vergleichbar |
 | Bedingungen | selbst | Temperatur, Wind, Strecke, Rad, Reifendruck |
@@ -643,11 +717,20 @@ Praktische Folgen:
 
 ### Testhistorie
 
-| Datum | Woche | Ø-Watt 20 min | FTP | LTHR | Ø-Watt 5 min | Gewicht | Bedingungen |
+| Datum | Woche | Ø-Watt 20 min | FTP | LTHR | Ø-Kadenz | Gewicht | Bedingungen |
 |---|---|---|---|---|---|---|---|
 | 10.09.2026 | 4 | | | | | | |
 | 22.10.2026 | 10 | | | | | | |
 | 03.12.2026 | 16 | | | | | | |
+
+### VO2max-Referenz (5-Minuten-Wert)
+
+Getrennt geführt, weil der Wert nicht mehr am Testtag erhoben wird.
+
+| Datum | Woche | Ø-Watt 5 min | % der aktuellen FTP | Bemerkung |
+|---|---|---|---|---|
+| 17.09.2026 | 5 | | | erste Wiederholung der ersten Intervalleinheit |
+| | | | | |
 
 ### Laufende Kontrolle zwischen den Tests
 
@@ -1009,7 +1092,7 @@ Ausrollen, Zonenanzeige und Sprachansage.
 
 **Analyse** — Abgleich der tatsächlichen Aktivitäten mit dem Plan, siehe Abschnitt 7.
 
-### Anpassungsbedarf für Fassung 3
+### Anpassungsbedarf für Fassung 3 und 4
 
 Der Code steht auf Fassung 2. Folgendes muss nachgezogen werden:
 
@@ -1026,6 +1109,19 @@ Der Code steht auf Fassung 2. Folgendes muss nachgezogen werden:
    angezeigte Wiederholungsspanne.
 10. **Testanlauf** aus Abschnitt 2a als Hinweis ab 10 Tagen vor dem Testtermin, inklusive
     Go/No-Go-Liste am Testmorgen.
+
+Neu mit Fassung 4:
+
+11. **Schwellentest-Ablauf im Timer:** All-out-Segment und die 10 min Pause danach
+    entfernen. Neue Sequenz: 20 min Einfahren (mit 3 × 1 min zügig), 5 min locker,
+    20 min Test, 10 min Ausrollen. Gesamtdauer 55 statt 65 min.
+12. **Woche 5 als Sonderfall im Intervall-Timer:** 5 min maximal, 5 min locker,
+    danach 4 × 4 min. Ab Woche 6 wieder die Regelstruktur. Am besten als Schalter
+    „VO2max-Referenz erheben" an der Donnerstagskarte, weil der Wert optional ist.
+13. **Wochenwerte für Woche 4, 5, 10 und 16** in `plan.json` auf die geänderten
+    Summen aus Abschnitt 2 setzen (245 / 375 / 260 / 265).
+14. **Testhistorie:** Spalte „Ø-Watt 5 min" aus der Tabelle nehmen, durch „Ø-Kadenz"
+    ersetzen. Die VO2max-Referenz bekommt eine eigene, kleine Tabelle.
 
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.
@@ -1310,6 +1406,33 @@ Punkte, die dann zu klären sind — hier nur als Merkposten, ohne Festlegung:
 - **Phase 3 umfasst nur zwei Belastungswochen.** Als Grundlagenblock ist das kurz. Sie
   ist hier vor allem die Brücke zwischen VO2max- und Schwellenblock und trägt die zweite
   Beineinheit.
+
+---
+
+## 9a. Änderungen gegenüber Fassung 3
+
+Eine einzige inhaltliche Entscheidung, mit ihren Folgeanpassungen.
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **5-min-All-out aus dem Schwellentest gestrichen.** Test besteht nur noch aus dem 20-min-Abschnitt, Pause davor von 10 auf 5 min gekürzt | Der All-out soll die anaerobe Kapazität leeren. Bei einem Einsteiger ist die klein, die Verzerrung also gering. Gleichzeitig reicht bei CTL um 10 die Pause nicht zur Erholung, und die am 03.09. ermittelte Pacing-Vorgabe gilt nur für frische Beine. Ein blind gepacter Test war genau das, was der Anlauf verhindern sollte |
+| 2 | **VO2max-Referenz auf Do 17.09. verlegt**, als erste Wiederholung der ersten Intervalleinheit | Kostet keinen zusätzlichen Tag und keine zusätzliche Erholung, weil der Maximalversuch selbst ein VO2max-Reiz ist. Frisch gefahren ist der Wert aussagekräftiger als nach 20 min Maximalbelastung |
+| 3 | **Variante „am Samstag 12.09. innerhalb der langen Ausfahrt" geprüft und verworfen** | Zu nah am Testtag; zerstört die erste saubere Decoupling-Messung mit Watt; hebt den Puls für den Rest der Fahrt an |
+| 4 | **Woche 5 Donnerstag: 5 × 4 min → 5 min max + 4 × 4 min** | Folge aus 2. Ab Woche 6 wieder Regelstruktur |
+| 5 | **Testdauer 65 → 55 min**, Wochensummen 4, 10 und 16 um 10 min gesenkt, Woche 5 um 2 min erhöht | Rechnerische Folge. Der Umfangsdeckel muss auf den geänderten Werten rechnen |
+| 6 | **Testhistorie getrennt:** Spalte „Ø-Watt 5 min" raus, dafür „Ø-Kadenz"; eigene kleine Tabelle für die VO2max-Referenz | Die beiden Werte entstehen jetzt an verschiedenen Tagen und gehören nicht in dieselbe Zeile |
+| 7 | **Ablaufgleichheit über alle drei Termine festgeschrieben** | Ohne diese Festlegung wären 22.10. und 03.12. nicht mit dem 10.09. vergleichbar |
+
+### Bewusst **nicht** geändert
+
+- **Der Faktor 0,95.** Er ist streng genommen für das Originalprotokoll mit Vorermüdung
+  kalibriert und liefert ohne All-out eine minimal zu hohe FTP. Bei einem Test, der
+  ausdrücklich als Untergrenze gilt, ist das die kleinere Verzerrung. Die eFTP ab
+  Woche 6 bleibt der Gegencheck.
+- **Der Testanlauf** aus Fassung 3 einschließlich Öffnern am 09.09.
+- **Die Go/No-Go-Liste** und die Verschiebungsregel.
+- **Die Einordnung des ersten Testwerts als Untergrenze.** Von den drei dort genannten
+  Faktoren fällt keiner durch diese Änderung weg.
 
 ---
 
