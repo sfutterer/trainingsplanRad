@@ -16,7 +16,7 @@ import * as W from '../src/domain/week.js';
 import {
   testTermine, aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
   vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke, testZiel,
-  FTP_FAKTOR
+  vo2maxTermin, vo2maxBezug, VO2MAX_GRENZE, FTP_FAKTOR
 } from '../src/domain/test.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
@@ -142,9 +142,10 @@ describe('Ablaeufe im Testbereich', () => {
 
 describe('Werte aus dem Test', () => {
   it('rechnet FTP aus den 20-min-Watt und nimmt die LTHR wie gemessen', () => {
-    const w = testWerte({ w20: 240, hr20: 165, w5: 300, gewicht: 84.5 });
+    const w = testWerte({ w20: 240, hr20: 165, kadenz: 88, gewicht: 84.5 });
     expect(w.ftp).toBe(Math.round(240 * FTP_FAKTOR));
     expect(w.lthr).toBe(165);
+    expect(w.kadenz).toBe(88);
     expect(w.wkg).toBe(Math.round(240 * FTP_FAKTOR / 84.5 * 100) / 100);
   });
 
@@ -159,8 +160,44 @@ describe('Werte aus dem Test', () => {
   });
 
   it('nimmt Null und Unsinn als "nicht gemessen"', () => {
-    const w = testWerte({ w20: 0, hr20: null, w5: undefined, gewicht: 0 });
-    expect(w).toEqual({ w20:null, w5:null, hr20:null, weight:null, ftp:null, lthr:null, wkg:null });
+    const w = testWerte({ w20: 0, hr20: null, kadenz: undefined, gewicht: 0 });
+    expect(w).toEqual({ w20:null, kadenz:null, hr20:null, weight:null,
+                        ftp:null, lthr:null, wkg:null });
+  });
+});
+
+/* Die VO2max-Referenz.
+
+   Seit Fassung 4 entsteht sie nicht mehr am Testtag, sondern eine Woche
+   spaeter als erste Wiederholung der ersten Intervalleinheit. Sie gehoert
+   trotzdem zum Test - nur dessen FTP kann sie pruefen -, und genau diese
+   Zuordnung wird hier geprueft: nicht der Termin, der gerade ansteht, sondern
+   der letzte davor. */
+describe('VO2max-Referenz', () => {
+  it('liegt am Tag mit Variante und gehoert zum Test davor', () => {
+    const t = vo2maxTermin(plan, START);
+    expect(t.week).toBe(5);
+    expect(W.isoDayLocal(t.datum)).toBe('2026-09-17');
+    expect(t.datum.getDay()).toBe(4);
+    expect(W.isoDayLocal(t.test.datum)).toBe(W.isoDayLocal(testTag(4)));
+    expect(t.variante.ergebnis).toBe('vo2max5');
+  });
+
+  it('bleibt ohne Startdatum leer', () => {
+    expect(vo2maxTermin(plan, null)).toBe(null);
+  });
+
+  /* Die Gegenprobe des Trainingsplans: ueber 118 % war der Test zu niedrig. */
+  it('meldet einen zu niedrigen Test erst oberhalb der Grenze', () => {
+    expect(vo2maxBezug(209 * 1.18, 209).zuNiedrig).toBe(false);
+    expect(vo2maxBezug(209 * 1.25, 209).zuNiedrig).toBe(true);
+    expect(vo2maxBezug(250, 209).prozent).toBe(120);
+    expect(VO2MAX_GRENZE).toBe(118);
+  });
+
+  it('schweigt, solange eine der beiden Zahlen fehlt', () => {
+    expect(vo2maxBezug(250, null)).toBe(null);
+    expect(vo2maxBezug(null, 209)).toBe(null);
   });
 });
 

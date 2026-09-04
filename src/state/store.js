@@ -34,6 +34,9 @@ export const interimLog  = signal([]);
 /* Was zu einem Testtermin notiert wurde, bevor er stattfand - vor allem die
    Zielleistung aus dem Tempotest. Schluessel ist das Datum des Tests. */
 export const testPrep    = signal({});
+/* Welche Variante an einem Tag gilt: ISO-Tag auf Kennung, 'regel' fuer die
+   ausdrueckliche Abwahl, kein Eintrag fuer unentschieden. */
+export const varianten   = signal({});
 export const settings    = signal({ voice:true, keepAwake:true, showIllu:true, mapStyle:'atlas' });
 export const tab         = signal('plan');
 export const ready       = signal(false);
@@ -85,6 +88,7 @@ export async function boot(){
   testLog.value    = await store.testLog();
   interimLog.value = await store.interimLog();
   testPrep.value   = await store.testPrep();
+  varianten.value  = await store.varianten();
   settings.value   = Object.assign({ voice:true, keepAwake:true, showIllu:true, theme:'system', mapStyle:'atlas' }, await store.settings());
   theme.value      = settings.value.theme;
 
@@ -144,6 +148,12 @@ export async function addTestEntry(entry){
 export async function addInterimEntry(entry){
   interimLog.value = interimLog.value.concat([entry]);
   await store.setInterimLog(interimLog.value);
+}
+
+export async function setVariante(tagIso, kennung){
+  if(!tagIso) return;
+  varianten.value = { ...varianten.value, [tagIso]: kennung };
+  await store.setVarianten(varianten.value);
 }
 
 /* Die Notiz zu einem Testtermin ergaenzen, nicht ersetzen: der Tempotest

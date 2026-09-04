@@ -22,7 +22,7 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, startDate, apiKey, coreLog, testLog, interimLog,
-         today } from '../../../state/store.js';
+         today, varianten } from '../../../state/store.js';
 import { fetchActivities } from '../../../data/icu.js';
 import { streckenFazit } from '../../../domain/fazit.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
@@ -186,7 +186,8 @@ function Tagesanalyse({ tag, acts, onZurueck }){
      der Umbau: vorher stand hier [act], und die Vorgabe wurde je Fahrt einmal
      ganz verlangt. */
   const row = compareDay(p, th, datum, start, acts, zustand.zonenById || null,
-    logs.filter(e => e.kind !== 'leg'), logs.filter(e => e.kind === 'leg'));
+    logs.filter(e => e.kind !== 'leg'), logs.filter(e => e.kind === 'leg'),
+    varianten.value);
 
   /* Erst wenn Strecke und Wetter da sind, ist das Fazit mehr als die halbe
      Wahrheit - vorher steht in der Kopfkarte nichts. */
@@ -446,7 +447,8 @@ export function AnalyseTab(){
       a.sort((x, y) => (x.start_date_local < y.start_date_local ? 1 : -1));
       setActs(a);
       /* Wochensummen ohne Streams - eine Abfrage, kein Nachladen. */
-      setWochen(weekTotals(buildReport(p, th, start, from, to, a, null, coreLog.value), p));
+      setWochen(weekTotals(buildReport(p, th, start, from, to, a, null,
+                                       coreLog.value, varianten.value), p));
     } catch(e){ setFehler(e.message); }
     finally { setLaedt(false); }
   }
@@ -477,7 +479,7 @@ export function AnalyseTab(){
     if(wochen) return wochen;
     if(!p || !start) return [];
     return weekTotals(buildReport(p, th, start, vonDatum(), toMidnight(today.value),
-                                      [], null, coreLog.value), p);
+                                  [], null, coreLog.value, varianten.value), p);
   }
 
   if(ansicht === 'verlauf'){

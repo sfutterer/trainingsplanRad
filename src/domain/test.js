@@ -21,8 +21,9 @@
 
    Rein: kein DOM, kein fetch, keine Uhr. */
 
-import { testWeeks, testDateFor, toMidnight, dayOffset, isoDayLocal, addDays } from './week.js';
-import { thursdayPlan, schrittSekunden } from './day.js';
+import { testWeeks, testDateFor, thursdayDateFor, toMidnight, dayOffset,
+         isoDayLocal, addDays } from './week.js';
+import { thursdayPlan, thursdayVariante, schrittSekunden } from './day.js';
 
 /* Alle Testtermine des Plans mit ihrem Datum. Abgeleitet aus den Testwochen,
    damit keine zweite Liste danebensteht. */
@@ -162,18 +163,56 @@ export function vorgewaehlterAblauf(ablaeufe){
    des Folgeblocks entstehen. */
 export const FTP_FAKTOR = 0.95;
 
-export function testWerte({ w20, hr20, w5, gewicht }){
+export function testWerte({ w20, hr20, kadenz, gewicht }){
   const zahl = v => (v > 0 ? v : null);
   const watt = zahl(w20);
   return {
     w20: watt,
-    w5: zahl(w5),
+    /* Seit Fassung 4 die Kadenz statt der 5-min-Leistung: der 5-min-Wert
+       entsteht jetzt an einem anderen Tag und gehoert nicht mehr in dieselbe
+       Zeile. Die Kadenz gehoert dagegen zum Test - sie sagt, ob zwei Tests
+       mit derselben Trittfrequenz gefahren wurden. */
+    kadenz: zahl(kadenz),
     hr20: zahl(hr20),
     weight: zahl(gewicht),
     ftp: watt ? Math.round(watt * FTP_FAKTOR) : null,
     lthr: zahl(hr20),
     wkg: watt && gewicht > 0 ? Math.round(watt * FTP_FAKTOR / gewicht * 100) / 100 : null
   };
+}
+
+/* ---- Die VO2max-Referenz ----
+
+   Sie entsteht seit Fassung 4 nicht mehr am Testtag, sondern als erste
+   Wiederholung der ersten Intervalleinheit danach. Ihr Termin ist deshalb ein
+   Tag mit Variante, und der Test, auf den sie sich bezieht, ist der letzte
+   davor - nur dessen FTP kann sie pruefen. */
+export function vo2maxTermin(plan, startDate){
+  if(!startDate) return null;
+  for(let w = 1; w <= plan.weekCount; w++){
+    const v = thursdayVariante(plan, w);
+    if(v && v.ergebnis === 'vo2max5'){
+      const datum = thursdayDateFor(plan, w, startDate);
+      const test = testTermine(plan, startDate)
+        .filter(t => dayOffset(t.datum, datum) <= 0).pop() || null;
+      return { week: w, datum, variante: v, test };
+    }
+  }
+  return null;
+}
+
+/* Die Gegenprobe des Trainingsplans: liegt der 5-min-Wert deutlich ueber
+   118 % der Test-FTP, war der Test zu niedrig und der Retest rueckt vor.
+
+   Die Grenze steht hier und nicht in plan.json, weil sie Bewertungspolitik
+   ist und keine Trainingsvorgabe - dieselbe Trennung wie bei den Toleranzen
+   in analysis.js. */
+export const VO2MAX_GRENZE = 118;
+
+export function vo2maxBezug(watt, ftp){
+  if(!(watt > 0) || !(ftp > 0)) return null;
+  const prozent = Math.round(watt / ftp * 100);
+  return { watt, ftp, prozent, zuNiedrig: prozent > VO2MAX_GRENZE, grenze: VO2MAX_GRENZE };
 }
 
 /* ---- Das Ergebnis des Tempotests aus der Aufzeichnung ----

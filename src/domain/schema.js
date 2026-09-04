@@ -111,6 +111,26 @@ function pvThursday(err, t, feld, zonen){
   } else {
     err.push(feld + '.kind ist "' + t.kind + '" – erlaubt sind "intervals", "z2" und "test".');
   }
+  if(t.variante != null) pvVariante(err, t.variante, feld + '.variante', zonen);
+}
+
+/* Die zweite zulaessige Form eines Tages.
+
+   Optional - die meisten Tage haben nur eine. Wo sie steht, muss sie
+   vollstaendig sein: eine Variante ohne Schrittfolge waere eine Frage ohne
+   Antwort, und eine ohne Kennung liesse sich nicht speichern. Die Kennung darf
+   nicht "regel" heissen, denn unter diesem Wort merkt sich die App die
+   ausdrueckliche Abwahl. */
+function pvVariante(err, v, feld, zonen){
+  if(!pvObj(err, v, feld)) return;
+  pvStr(err, v.id, feld + '.id');
+  if(v.id === 'regel') err.push(feld + '.id darf nicht "regel" heissen – das Wort steht für die Abwahl.');
+  pvStr(err, v.title, feld + '.title');
+  pvStr(err, v.frage, feld + '.frage');
+  if(v.ergebnis != null) pvStr(err, v.ergebnis, feld + '.ergebnis');
+  if(v.steering != null) pvStr(err, v.steering, feld + '.steering');
+  if(v.note != null) pvStr(err, v.note, feld + '.note');
+  pvSteps(err, v.steps, feld + '.steps', zonen);
 }
 
 /* Eine Schrittfolge fuer den Timer: Schwellentest und Anlaufeinheiten.
@@ -411,6 +431,14 @@ export function planValidate(p){
      die Anlaufeinheiten weiter unten - geprueft wird beides mit pvSteps. */
   if(pvObj(err, p.thresholdTest, 'thresholdTest')){
     if(p.thresholdTest.steering != null) pvStr(err, p.thresholdTest.steering, 'thresholdTest.steering');
+    /* Kennung und Fassung des Protokolls. Sie wandern in jeden Testeintrag,
+       damit spaeter feststellbar bleibt, welche Werte miteinander vergleichbar
+       sind - der Trainingsplan verlangt einen identischen Ablauf ueber alle
+       Termine, und ohne Kennung waere diese Regel nicht pruefbar. */
+    pvStr(err, p.thresholdTest.id, 'thresholdTest.id');
+    pvNum(err, p.thresholdTest.fassung, 'thresholdTest.fassung', {min:1, int:true});
+    if(p.thresholdTest.label != null) pvStr(err, p.thresholdTest.label, 'thresholdTest.label');
+    if(p.thresholdTest.seit != null) pvStr(err, p.thresholdTest.seit, 'thresholdTest.seit');
     pvSteps(err, p.thresholdTest.steps, 'thresholdTest.steps', zonen);
   }
 

@@ -41,7 +41,8 @@
 
 import {
   weekNumberFor, weekIndex, phaseOf, isRecoveryWeek, isWinterBlock,
-  thursdayData, saturdayBlockData, dayOffset, testWeeks, testDateFor, thursdayDateFor
+  thursdayData, saturdayBlockData, dayOffset, testWeeks, testDateFor, thursdayDateFor,
+  isoDayLocal
 } from './week.js';
 import {
   zoneText, zoneSpan, targetText, withCadence, wattText,
@@ -73,6 +74,27 @@ export function thursdayPlan(plan, week){
   };
 }
 
+/* Die Variante eines Donnerstags - eine zweite zulaessige Form desselben Tages.
+
+   Im ausgelieferten Plan gibt es genau eine: die VO2max-Referenz in Woche 5.
+   Der Trainingsplan verlegt den 5-min-Maximalversuch aus dem Schwellentest
+   dorthin, wo er als erste Wiederholung der ersten Intervalleinheit
+   mitgefahren wird - und laesst zugleich offen, ob er ueberhaupt erhoben wird
+   ("Kuer, nicht Pflicht").
+
+   Deshalb eine Variante neben dem Regelfall und kein zweiter Donnerstag: der
+   Tag hat zwei zulaessige Formen, und welche gilt, entscheidet der Nutzer am
+   Tag selbst. Ohne Entscheidung gilt der Regelfall. */
+export function thursdayVariante(plan, week){
+  return thursdayData(plan, week).variante || null;
+}
+
+/* Die Dauer einer Schrittfolge in Minuten. Gerechnet und nicht gepflegt -
+   sonst laufen die Summe der Schritte und die Zahl daneben auseinander. */
+export function schritteMinuten(steps){
+  return Math.round((steps || []).reduce((n, s) => n + schrittSekunden(s), 0) / 60);
+}
+
 export function saturdayBlocks(plan, week){
   const b = saturdayBlockData(plan, week);
   if(!b) return null;
@@ -89,9 +111,19 @@ export function saturdayBlocks(plan, week){
 
    Der optionale Sonntag zaehlt mit, weil er in der Tabelle des Plans mitzaehlt.
    Der Freitag nicht: er ist eine Entscheidung, keine Vorgabe. */
+/* Die Wochensumme rechnet mit der Variante, wo es eine gibt.
+
+   Nicht mit der Entscheidung des Nutzers: weekPlanMinutes ist eine reine
+   Funktion ueber Plan und Wochennummer und kennt weder Datum noch Zustand.
+   Sie davon abhaengig zu machen hiesse, den Umfangsdeckel von einer
+   Tagesentscheidung abhaengig zu machen - fuer zwei Minuten, die unter seiner
+   Aufloesung liegen. Der Trainingsplan nennt die Wochensumme ebenso mit
+   Variante. */
 export function weekPlanMinutes(plan, week){
   const w = plan.weeks[weekIndex(plan, week)];
-  return w.tuesdayMinutes + w.wednesdayMinutes + thursdayPlan(plan, week).minutes
+  const v = thursdayVariante(plan, week);
+  const donnerstag = v ? schritteMinuten(v.steps) : thursdayPlan(plan, week).minutes;
+  return w.tuesdayMinutes + w.wednesdayMinutes + donnerstag
        + w.saturdayMinutes + w.sundayOptionalMinutes;
 }
 
@@ -139,6 +171,23 @@ function taperHinweis(plan, taper){
    aufgerundet stuende in der Karte mehr, als der Plan verlangt. */
 function minutenText(sek){
   return String(Math.round(sek / 6) / 10).replace('.', ',') + ' min';
+}
+
+/* Die Belastungen einer Schrittfolge in einem Satzteil: "2× 6 min", aber auch
+   "5 min + 4× 4 min".
+
+   Gebraucht, seit die VO2max-Variante ungleiche Bloecke hat: der
+   Maximalversuch zaehlt als erste Wiederholung, ist aber eine Minute laenger
+   als die vier danach. "5× 5 min" waere dort falsch, und genau das haette die
+   Auswertung bis dahin geschrieben. */
+function ablaufText(sekunden){
+  const teile = [];
+  for(const s of sekunden){
+    const letzte = teile[teile.length - 1];
+    if(letzte && letzte.sek === s) letzte.n += 1;
+    else teile.push({ sek: s, n: 1 });
+  }
+  return teile.map(t => (t.n > 1 ? t.n + '× ' : '') + minutenText(t.sek)).join(' + ');
 }
 
 /* ---- Bausteine der strukturierten Beschreibung ---- */
@@ -713,10 +762,15 @@ function sonntag(c){
    Was ersetzt wurde, bleibt als `ersetzt` am Tag stehen. Ein Tausch, den man
    nicht sieht, ist von einem Fehler nicht zu unterscheiden. */
 
-/* Eine Schrittfolge wie der Schwellentest: Anlauf im Testtempo, Oeffner am
-   Vortag. Die Zahlen der Karte werden aus den Schritten gerechnet und nicht
-   danebengeschrieben - sonst laufen Ablauf und Kennzahl auseinander. */
-function anlaufSteps(c, sess){
+/* Ein Tag, der als Schrittfolge dasteht: der Anlauf im Testtempo, die Oeffner
+   am Vortag, die VO2max-Variante der Woche 5. Die Zahlen der Karte werden aus
+   den Schritten gerechnet und nicht danebengeschrieben - sonst laufen Ablauf
+   und Kennzahl auseinander.
+
+   `timer` entscheidet, wohin der Knopf fuehrt: die Anlaufeinheiten gehoeren
+   zum Test und stehen im Testbereich, die Variante ist eine Intervalleinheit
+   und bleibt im Intervalltimer. */
+function schrittTag(c, sess, timer){
   const { plan, th, week } = c;
   const arbeit = sess.steps.filter(x => x.type === 'work');
   const gesamt = sess.steps.reduce((n, x) => n + schrittSekunden(x), 0);
@@ -726,7 +780,9 @@ function anlaufSteps(c, sess){
 
   const kennzahlen = [
     { label:'Dauer',     wert: Math.round(gesamt / 60) + ' min' },
-    { label:'Belastung', wert: `${arbeit.length} × ${minutenText(schrittSekunden(arbeit[0]))}` },
+    /* Nicht "5 × 5 min": die Bloecke der VO2max-Variante sind ungleich lang,
+       und die Kennzahl ist die Zahl, die man vor dem Losfahren abliest. */
+    { label:'Belastung', wert: ablaufText(arbeit.map(schrittSekunden)) },
     sess.steering
       ? { label:'Steuergröße', wert: sess.steering }
       : { label:'Zielzone',    wert: targetText(plan, th, zone, week) }
@@ -745,11 +801,12 @@ function anlaufSteps(c, sess){
     einheiten: [einheit({
       art:'intervalle', titel: sess.title, kennzahlen, bloecke,
       hinweise: sess.note ? [sess.note] : [],
-      timer: TIMER_TEST
+      timer
     })],
     target: { sport:'ride', zone, minutes: Math.round(gesamt / 60),
               hardMinutes: Math.round(hart / 60),
-              reps: arbeit.length, repMinutes: schrittSekunden(arbeit[0]) / 60 }
+              reps: arbeit.length, repMinutes: schrittSekunden(arbeit[0]) / 60,
+              ablauf: ablaufText(arbeit.map(schrittSekunden)) }
   };
 }
 
@@ -825,7 +882,8 @@ function anlaufCore(c, sess){
   };
 }
 
-const ANLAUF_ARTEN = { steps: anlaufSteps, ride: anlaufRide, rest: anlaufRest, core: anlaufCore };
+const ANLAUF_ARTEN = { steps: (c, sess) => schrittTag(c, sess, TIMER_TEST),
+                       ride: anlaufRide, rest: anlaufRest, core: anlaufCore };
 
 function anlaufEinheit(c, taper, geplant){
   const sess = taper.step.session;
@@ -841,6 +899,32 @@ function anlaufEinheit(c, taper, geplant){
      Entscheidung. */
   if(!info.wellness && geplant.wellness) info.wellness = geplant.wellness;
   return info;
+}
+
+/* ---- Die Variante eines Tages ----
+
+   Ein Donnerstag mit `variante` hat zwei zulaessige Formen. Welche gilt,
+   entscheidet der Nutzer am Tag selbst; bis dahin gilt der Regelfall.
+
+   Die Wahl kommt als Tabelle von ISO-Tag auf Kennung herein - 'regel' heisst
+   ausdruecklich abgewaehlt, ein fehlender Eintrag heisst unentschieden. Die
+   beiden auseinanderzuhalten ist keine Feinheit: eine Karte, die nach einer
+   Entscheidung weiter fragt, wird beim dritten Mal nicht mehr gelesen, und
+   eine, die nie fragt, laesst den Wert ausfallen.
+
+   Der Zustand bleibt draussen, day.js bleibt rein: gerechnet wird mit dem,
+   was hereinkommt. */
+export const VARIANTE_REGEL = 'regel';
+
+export function varianteFuer(plan, date, week, wahlen){
+  if(date.getDay() !== 4) return null;
+  const def = thursdayVariante(plan, week);
+  if(!def) return null;
+  const wahl = (wahlen || {})[isoDayLocal(date)];
+  return {
+    def,
+    gewaehlt: wahl === def.id ? true : (wahl === VARIANTE_REGEL ? false : null)
+  };
 }
 
 /* Die Anlauffolge eines Tages - fuer den Intervalltimer. Nur Schrittfolgen:
@@ -884,7 +968,7 @@ const ART_JE_TYP = {
 /* getDay() zaehlt ab Sonntag. */
 const TAGE = [sonntag, montag, dienstag, mittwoch, donnerstag, freitag, samstag];
 
-export function buildDayInfo(plan, th, date, startDate){
+export function buildDayInfo(plan, th, date, startDate, wahlen){
   /* Vor dem Planbeginn klemmt weekNumberFor auf Woche 1 und liefert damit
      einen vollstaendigen Trainingstag fuer ein Datum, an dem der Plan noch
      gar nicht lief. In der alten Ansicht fiel das nie auf, weil sie nur
@@ -906,8 +990,20 @@ export function buildDayInfo(plan, th, date, startDate){
     z2: () => withCadence(plan, targetText(plan, th, 'z2', week), 'z2', week)
   };
 
-  const geplant = TAGE[date.getDay()](c);
+  let geplant = TAGE[date.getDay()](c);
   geplant.target = buildDayTarget(plan, date, week);
+
+  /* Die Variante tritt an die Stelle des Regelfalls, wenn sie gewaehlt wurde -
+     vor dem Anlauf, weil der Anlauf den ganzen Tag ersetzt und nicht eine
+     seiner beiden Formen. Die Frage selbst bleibt am Tag stehen, auch wenn
+     sie beantwortet ist: ein Tausch, den man nicht sieht, ist von einem
+     Fehler nicht zu unterscheiden. */
+  const variante = vorStart ? null : varianteFuer(plan, date, week, wahlen);
+  if(variante && variante.gewaehlt){
+    const regel = geplant;
+    geplant = schrittTag(c, variante.def, TIMER_INTERVALLE);
+    geplant.ersetzt = { titel: regel.title, grund: variante.def.title.replace(/^Rad – /, '') };
+  }
 
   /* Der Anlauf kann den geplanten Tag ersetzen, und zwar bevor die
      gemeinsamen Felder gefuellt werden: sonst traegt die Ersatzeinheit die
@@ -919,6 +1015,7 @@ export function buildDayInfo(plan, th, date, startDate){
 
   info.week = week;
   info.vorStart = vorStart;
+  if(variante) info.variante = variante;
   info.phase = c.phase;
   info.recovery = c.recovery;
   info.winter = c.winter;
@@ -1006,8 +1103,13 @@ function buildDayTarget(plan, date, week){
     case 4: {
       const t = thursdayPlan(plan, week);
       if(t.kind === 'test'){
+        /* Seit Fassung 4 besteht der Test nur noch aus den 20 Minuten - der
+           5-min-All-out davor ist gestrichen. Die harte Zeit ist damit 20 und
+           nicht mehr 25 Minuten; sie stehenzulassen hiesse, einen sauber
+           gefahrenen Test als zu kurz zu melden. */
         return { sport:'ride', zone:'z4', minutes:t.minutes, test:true,
-                 hardMinutes:25, reps:1, repMinutes:20 };
+                 hardMinutes:20, reps:1, repMinutes:20,
+                 ablauf:'20 min gleichmäßig maximal' };
       }
       if(t.kind === 'z2'){
         return { sport:'ride', zone:'z2', minutes:t.minutes,

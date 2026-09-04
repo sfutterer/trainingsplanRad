@@ -18,7 +18,8 @@
    eine, die schweigt. */
 
 import { signal, computed } from '@preact/signals';
-import { store, plan, thresholds, startDate, today, apiKey, coreLog } from './store.js';
+import { store, plan, thresholds, startDate, today, apiKey, coreLog,
+         varianten } from './store.js';
 import { fetchActivities } from '../data/icu.js';
 import { isoDayLocal, toMidnight, addDays } from '../domain/week.js';
 import { buildReport } from '../domain/analysis.js';
@@ -50,7 +51,7 @@ async function rueckschau(key, heute){
      "zu kurz", und das steht in Dauer und Anwesenheit. Wie hart eine Fahrt war,
      beantwortet die Analyse, wenn man sie oeffnet. */
   return buildReport(plan.value, thresholds.value, startDate.value,
-                     von, bis, acts, null, coreLog.value);
+                     von, bis, acts, null, coreLog.value, varianten.value);
 }
 
 export async function ladeMeldungen(){
@@ -72,7 +73,8 @@ export async function ladeMeldungen(){
   ]);
 
   const alle = baueMeldungen({ plan: p, th, heute, startDate: startDate.value,
-                               serie: serie || wellness.value, rows });
+                               serie: serie || wellness.value, rows,
+                               wahlen: varianten.value });
   meldungen.value = offeneMeldungen(alle, alt);
 }
 

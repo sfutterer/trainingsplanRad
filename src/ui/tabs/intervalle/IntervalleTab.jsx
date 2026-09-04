@@ -43,8 +43,8 @@
    dastehen, aus denen sich eine Folge bauen liesse. */
 
 import { useEffect, useState } from 'preact/hooks';
-import { plan, thresholds, week, settings, startDate, today } from '../../../state/store.js';
-import { buildIntervalSequence, intervalDefaults,
+import { plan, thresholds, week, settings, startDate, today, varianten } from '../../../state/store.js';
+import { buildIntervalSequence, buildStepSequence, intervalDefaults,
          totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
 import { isRecoveryWeek } from '../../../domain/week.js';
@@ -71,7 +71,7 @@ function dauer(sec){
 export function IntervalleTab(){
   const p = plan.value, th = thresholds.value, w = week.value;
   const s = settings.value;
-  const vorgabe = intervalDefaults(p, w, startDate.value, today.value);
+  const vorgabe = intervalDefaults(p, w, startDate.value, today.value, varianten.value);
 
   const ausVorgabe = () => (vorgabe.mode === 'intervals'
     ? { warmMin: vorgabe.warmMin, workMin: vorgabe.workMin, restMin: vorgabe.restMin,
@@ -85,9 +85,16 @@ export function IntervalleTab(){
      Testbereich - siehe die Weiche weiter unten. */
   const anlauf = vorgabe.mode === 'steps' ? vorgabe.anlauf : null;
   const zumTest = testmodus || !!anlauf;
+  /* Die gewaehlte Variante eines Tages laeuft hier und nicht im Testbereich:
+     sie ist eine Intervalleinheit, nur mit einem ungleichen ersten Block. Wie
+     der Anlauf steht sie als feste Folge in plan.json - der Maximalversuch
+     laesst sich nicht auf 4,5 Minuten zurechtlegen, ohne etwas anderes zu
+     messen. */
+  const variante = vorgabe.mode === 'steps' ? (vorgabe.variante || null) : null;
 
   function sequenz(){
     if(nurZ2 || zumTest) return [];
+    if(variante) return buildStepSequence(p, th, w, vorgabe.steps);
     return buildIntervalSequence(p, th, w, cfg);
   }
 
@@ -157,15 +164,19 @@ export function IntervalleTab(){
   /* Kopf, Status und Hinweise der beiden verbliebenen Betriebsarten an einer
      Stelle - im Baugeruest darunter unterscheiden sie sich nur noch darin, ob
      es eine Buehne und Einstellungen gibt. */
-  const titel = nurZ2 ? 'Grundlagentag' : vorgabe.plan.title.replace('Rad – ', '');
+  const titel = variante ? variante.title.replace('Rad – ', '')
+    : nurZ2 ? 'Grundlagentag' : vorgabe.plan.title.replace('Rad – ', '');
 
   const kopfmeta = nurZ2 ? vorgabe.plan.minutes + ' min' : dauer(totalSeconds(vorschau));
 
-  const status = nurZ2
+  const status = variante
+    ? 'Woche ' + w + ' · ' + (variante.steering || 'feste Folge')
+    : nurZ2
     ? 'Woche ' + w + ' · ' + vorgabe.plan.minutes + ' min ' + zoneText(p, th, 'z2', w) + ' am Stück'
     : 'Woche ' + w + ' · ' + cfg.reps + '× ' + cfg.workMin + ' min ' + zoneText(p, th, cfg.zoneKey, w);
 
-  const hinweise = nurZ2 ? [p.texts.thursdayNoTimer]
+  const hinweise = variante ? [variante.note].filter(Boolean)
+    : nurZ2 ? [p.texts.thursdayNoTimer]
     : [p.texts.intervalRollingStart + (isRecoveryWeek(p, w) ? ' ' + p.texts.intervalRecoveryWeek : '')];
 
   return (
@@ -194,7 +205,9 @@ export function IntervalleTab(){
       )}
       hinweise={hinweise}
       schluss={
-        nurZ2 ? null : (
+        variante
+          ? <p class="hint">Der Ablauf steht fest und lässt sich nicht verstellen – der Maximalversuch ist der Messwert dieser Einheit, und eine Messung, die sich zurechtlegen lässt, ist keine.</p>
+          : nurZ2 ? null : (
           <div class="card">
             <div class="row"><span>Einstellungen</span><b>anpassbar</b></div>
             {/* Einfahren und Ausrollen duerfen auf null: wer schon warm ist,

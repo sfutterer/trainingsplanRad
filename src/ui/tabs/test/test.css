@@ -116,6 +116,9 @@
 }
 .formel b{ display: block; font-size: 14.5px; margin-bottom: 2px; }
 .formel span{ font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+/* Die Gegenprobe, wenn sie den Test in Frage stellt. Kein Rot: der Wert ist
+   keine Verfehlung, sondern ein Hinweis, dass der Retest vorruecken sollte. */
+.formel.warn{ background: var(--dev-bg); box-shadow: inset 3px 0 0 var(--dev); }
 
 /* ---- Ergebnis ----
 

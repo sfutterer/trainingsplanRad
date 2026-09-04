@@ -20,6 +20,7 @@ function vollerBestand(){
     [KEYS.testLog]:      JSON.stringify([{ day:'2026-08-18', week:1, w20:242, ftp:230 }]),
     [KEYS.interimLog]:   JSON.stringify([{ day:'2026-08-19', week:1, talkHr:138, rpe:4, note:'' }]),
     [KEYS.testPrep]:     JSON.stringify({ '2026-09-10': { zielWatt:215, notiz:'Block 2 ging gut' } }),
+    [KEYS.varianten]:    JSON.stringify({ '2026-09-17': 'vo2max-referenz' }),
     [KEYS.planOverride]: JSON.stringify({ schemaVersion:2, weeks:[] }),
     [KEYS.settings]:     JSON.stringify({ voice:false, keepAwake:true, showIllu:true, theme:'dark', mapStyle:'cycle' }),
     [KEYS.untergrund]:   JSON.stringify({ i123: { asphalt:0.9 } }),

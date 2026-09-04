@@ -238,6 +238,23 @@ button.dayzeile:active{ background: var(--surface-2); }
 
 .tagbtn{ margin-top: 12px; }
 
+/* Die Wahl zwischen zwei zulaessigen Formen eines Tages.
+
+   Zwei Knoepfe nebeneinander und kein Schalter: ein Schalter hat zwei
+   Stellungen und keine dritte, die App muss aber "noch nicht entschieden" von
+   "ausdruecklich Regelstruktur" unterscheiden koennen. Die gewaehlte Seite
+   traegt die Akzentfarbe, solange nichts gewaehlt ist keine von beiden. */
+.variantenknoepfe{ display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.variantenknoepfe .btn.klein{
+  flex: 1 1 auto; min-height: 38px; padding: 0 14px;
+  font-size: 13px; border-radius: 19px;
+  background: var(--surface-3); color: var(--on-surface);
+}
+.variantenknoepfe .btn.klein.an{
+  background: var(--primary-container); color: var(--on-primary-container);
+  font-weight: 700;
+}
+
 /* ---- Navigation ueber Wochen und Monate ---- */
 
 .card.kalnavi-karte{ padding: 6px 8px; }

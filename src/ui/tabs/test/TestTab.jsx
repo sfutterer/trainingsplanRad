@@ -40,7 +40,7 @@ import { plan, thresholds, startDate, today, testLog, testPrep, apiKey, settings
          setThresholds, addTestEntry, setTestPrep } from '../../../state/store.js';
 import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
          vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke,
-         testZiel, FTP_FAKTOR }
+         testZiel, vo2maxTermin, vo2maxBezug, FTP_FAKTOR }
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
@@ -293,6 +293,78 @@ function TempotestKarte({ ablauf, prep, onNotiz, laden, kompakt }){
   );
 }
 
+/* Die VO2max-Referenz - der 5-Minuten-Wert.
+
+   Er stand bis Fassung 3 im Test selbst und ist seit Fassung 4 die erste
+   Wiederholung der ersten Intervalleinheit danach. Genau deshalb braucht er
+   hier eine Karte: er gehoert zum Test, findet aber eine Woche spaeter an
+   einem anderen Tag statt, und ohne diese Karte stuende er nirgends im
+   Zusammenhang mit der FTP, die er pruefen soll.
+
+   Er haengt am Testtermin und nicht am Kalender - deshalb gibt es ihn zum
+   ersten Test und nicht zu den Retests, ohne dass irgendwo "der erste Test"
+   steht. */
+function Vo2maxKarte({ termin, prep, onNotiz, ftp, laden }){
+  const [suche, setSuche] = useState(null);
+  if(!termin) return null;
+  const wert = prep && prep.vo2max5 > 0 ? prep.vo2max5 : null;
+  const bezug = vo2maxBezug(wert, ftp);
+
+  async function holen(){
+    setSuche({ phase: 'laedt' });
+    try { setSuche({ phase: 'fertig', ...(await laden(termin)) }); }
+    catch(e){ setSuche({ phase: 'fehler', text: e.message }); }
+  }
+
+  return (
+    <div class="card">
+      <div class="row"><span>VO2max-Referenz am {kurzDatum(termin.datum)}</span>
+        <b>{wert ? wert + ' W' : 'Kür, offen'}</b></div>
+      <p class="hint">
+        Der 5-Minuten-Wert wird nicht mehr am Testtag erhoben, sondern als erste Wiederholung
+        der ersten Intervalleinheit – der Maximalversuch ist selbst ein VO2max-Reiz und kostet
+        so weder einen Tag noch zusätzliche Erholung. Frisch gefahren ist er außerdem
+        aussagekräftiger als nach 20 min Maximalbelastung. Ob er erhoben wird, wird auf der
+        Tageskarte des {kurzDatum(termin.datum)} entschieden.
+      </p>
+      <Zahlenfeld titel="Ø-Watt der 5 min (W)" wert={wert} min={1}
+        onWert={v => onNotiz({ vo2max5: v })} />
+      <button class="btn block secondary" type="button"
+        disabled={!apiKey.value || (suche && suche.phase === 'laedt')}
+        onClick={holen}>
+        {suche && suche.phase === 'laedt' ? 'Wird gesucht …' : 'Aus der Aufzeichnung holen'}
+      </button>
+      {suche && suche.phase === 'fehler' && <div class="meldung fehler"><b>{suche.text}</b></div>}
+      {suche && suche.phase === 'fertig' && (
+        <div class="blockzeile">
+          <span class="blockname">Bestes 5-min-Fenster</span>
+          <span class="blockwert">{suche.block.watt} W{suche.block.puls ? ' · ⌀ ' + suche.block.puls + ' bpm' : ''}</span>
+          <span class="blockzeit">ab {klok(suche.block.vonSek)}</span>
+          <button class="btn klein" type="button"
+            onClick={() => { onNotiz({ vo2max5: suche.block.watt }); setSuche(null); }}>Übernehmen</button>
+        </div>
+      )}
+      {/* Die Gegenprobe des Trainingsplans. Sie ist der einzige Zweck des
+          Wertes und steht deshalb als Ergebnis da, nicht als Fussnote. */}
+      {bezug && (
+        <div class={'formel' + (bezug.zuNiedrig ? ' warn' : '')}>
+          <b>{bezug.prozent} % der Test-FTP ({bezug.ftp} W)</b>
+          <span>
+            {bezug.zuNiedrig
+              ? 'Über ' + bezug.grenze + ' % – der Test lag zu niedrig. Der Retest rückt nach vorn, '
+                + 'zusammen mit dem eFTP-Kriterium.'
+              : 'Bis ' + bezug.grenze + ' % ist die 108–115-%-Vorgabe der Intervalle plausibel.'}
+          </span>
+        </div>
+      )}
+      {!bezug && wert && <p class="hint">
+        Die Gegenprobe braucht die FTP des Tests – sie steht, sobald das Testergebnis
+        eingetragen ist.
+      </p>}
+    </div>
+  );
+}
+
 /* Was die notierte Zahl fuer den Testtag bedeutet.
 
    Ohne diese Karte war die Zielleistung eine Notiz ohne Anschluss: sie stand
@@ -508,10 +580,10 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
 
 /* ---------- Ergebnis ---------- */
 
-function ErgebnisAnsicht({ th, termin }){
-  const [f, setF] = useState({ w20:null, hr20:null, w5:null, kg:null, bed:'' });
+function ErgebnisAnsicht({ p, th, termin }){
+  const [f, setF] = useState({ w20:null, hr20:null, kadenz:null, kg:null, bed:'' });
   const [meldung, setMeldung] = useState(null);
-  const werte = testWerte({ w20:f.w20, hr20:f.hr20, w5:f.w5, gewicht:f.kg });
+  const werte = testWerte({ w20:f.w20, hr20:f.hr20, kadenz:f.kadenz, gewicht:f.kg });
   const tagIso = isoDayLocal(toMidnight(today.value));
   const bereit = werte.ftp != null || werte.lthr != null;
 
@@ -537,10 +609,16 @@ function ErgebnisAnsicht({ th, termin }){
     await addTestEntry({
       day: tagIso,
       week: weekNumberFor(dayFromIso(tagIso), startDate.value),
-      w20: werte.w20, w5: werte.w5,
+      w20: werte.w20, kadenz: werte.kadenz,
       ftp: neu.ftp, lthr: neu.lthr,
       weight: werte.weight,
-      conditions: f.bed.trim()
+      conditions: f.bed.trim(),
+      /* Unter welchem Ablauf der Wert entstand. Der Trainingsplan verlangt
+         einen identischen Ablauf ueber alle drei Termine - ohne diese Kennung
+         waere die Regel nicht pruefbar, und zwei Werte aus zwei Protokollen
+         stuenden stillschweigend in derselben Linie. */
+      protokoll: p.thresholdTest.id,
+      protokollFassung: p.thresholdTest.fassung
     });
     /* Anders als im Zonen-Tab werden beide Werte uebernommen und nicht nur die
        FTP, wenn noch keine dastand. Ein Test, dessen LTHR man danach von Hand
@@ -566,6 +644,8 @@ function ErgebnisAnsicht({ th, termin }){
   }
 
   const hist = testLog.value.slice().sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, 4);
+  const protokolle = new Set(testLog.value.map(e => e.protokoll || 'unbekannt'));
+  const gemischt = protokolle.size > 1;
 
   return (
     <>
@@ -583,8 +663,12 @@ function ErgebnisAnsicht({ th, termin }){
           onWert={v => setF({ ...f, w20: v })} />
         <Zahlenfeld titel="Ø-Puls der 20 min (bpm)" wert={f.hr20} min={1}
           onWert={v => setF({ ...f, hr20: v })} />
-        <Zahlenfeld titel="Ø-Watt der 5 min" wert={f.w5} min={1}
-          onWert={v => setF({ ...f, w5: v })} />
+        {/* Kadenz statt der 5-min-Leistung: die entsteht seit Fassung 4 an
+            einem anderen Tag und steht in ihrer eigenen Karte. Die Kadenz
+            gehoert dagegen zum Test - zwei Tests bei 78 und bei 92 U/min sind
+            nicht dasselbe. */}
+        <Zahlenfeld titel="Ø-Kadenz der 20 min (U/min)" wert={f.kadenz} min={1}
+          onWert={v => setF({ ...f, kadenz: v })} />
         <Zahlenfeld titel="Gewicht (kg)" wert={f.kg} min={1} dezimal schritt="0.1"
           onWert={v => setF({ ...f, kg: v })} />
         <Textfeld titel="Bedingungen" wert={f.bed} onWert={v => setF({ ...f, bed: v })}
@@ -607,9 +691,18 @@ function ErgebnisAnsicht({ th, termin }){
           {hist.map((e, i) => (
             <div class="listrow" key={i}>
               <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
-              <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}</span>
+              <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}</span>
             </div>
           ))}
+          {/* Die Regel des Trainingsplans, hier nachgeprueft statt nur
+              zitiert: zwei Tests unter verschiedenen Ablaeufen sind nicht
+              vergleichbar, und ein Trendbild aus ihnen ist stillschweigend
+              falsch. */}
+          {gemischt && <p class="hint warn">
+            Die Einträge stammen aus verschiedenen Testabläufen. Der Trainingsplan verlangt
+            über alle Termine denselben Ablauf – die Werte sind untereinander nicht
+            vergleichbar.
+          </p>}
           <p class="hint">Der Verlauf über alle Tests steht unter „Zonen“ und in der Analyse.</p>
         </div>
       )}
@@ -636,6 +729,17 @@ export function TestTab(){
 
   const tempo = ablaeufe.find(a => a.tempo) || null;
   const ziel = testZiel(prep, th);
+
+  /* Die VO2max-Referenz haengt am Test davor und nicht am aktuellen Termin -
+     nach dem 10.09. rueckt der Blick auf den Retest, der 5-min-Wert bleibt
+     aber der des ersten Tests. Deshalb ein eigener Schluessel. */
+  const vo2 = vo2maxTermin(p, start);
+  const vo2Schluessel = vo2 && vo2.test ? terminSchluessel(vo2.test) : null;
+  const vo2Prep = (vo2Schluessel && testPrep.value[vo2Schluessel]) || null;
+  const vo2Ftp = (() => {
+    const eintrag = testLog.value.find(e => e.day === vo2Schluessel);
+    return eintrag && eintrag.ftp > 0 ? eintrag.ftp : (th.ftp > 0 ? th.ftp : null);
+  })();
 
   /* Das Ergebnis des Tempotests aus der Aufzeichnung holen.
 
@@ -671,6 +775,38 @@ export function TestTab(){
     return { bloecke, act: fahrten[0] };
   }
 
+  /* Dieselbe Fensterrechnung, nur mit einem Fenster: die VO2max-Referenz ist
+     der eine Maximalversuch der Einheit, und der ist ihr staerkstes Fenster.
+     Die Zuordnung ist hier eindeutig - anders als beim Tempotest gibt es
+     keinen zweiten Block, mit dem er zu verwechseln waere. */
+  async function ladeVo2max(t){
+    const key = apiKey.value;
+    const iso = isoDayLocal(t.datum);
+    const acts = await fetchActivities(key, iso, iso);
+    const fahrten = (Array.isArray(acts) ? acts : []).filter(x => isRide(x.type))
+      .sort((x, y) => (y.moving_time || y.elapsed_time || 0) - (x.moving_time || x.elapsed_time || 0));
+    if(!fahrten.length){
+      throw new Error('Für den ' + t.datum.toLocaleDateString('de-DE') +
+        ' liegt keine Radaufzeichnung vor.');
+    }
+    const streams = await fetchStreams(key, fahrten[0].id, 'watts,heartrate,time');
+    const max = (t.variante.steps || []).find(s => s.type === 'work');
+    const bloecke = tempoBloecke({
+      watts: zahlenStrom(streams, 'watts'),
+      puls:  zahlenStrom(streams, 'heartrate'),
+      zeit:  zahlenStrom(streams, 'time'),
+      sekunden: max ? Math.round((max.minutes || 0) * 60) : 300
+    });
+    if(!bloecke){
+      throw new Error('„' + (fahrten[0].name || fahrten[0].type) + '" enthält keinen ' +
+        'Leistungsstrom. Ohne Watt bleibt das Eintippen.');
+    }
+    /* Das staerkste Fenster, nicht das spaetere: hier zaehlt der eine
+       Maximalversuch, und der ist die haerteste Stelle der Fahrt. */
+    const b = [bloecke.erster, bloecke.zweiter].sort((x, y) => y.watt - x.watt)[0];
+    return { block: b, act: fahrten[0] };
+  }
+
   /* Die Woche des Testtermins und nicht die heutige: die Baender im Ablauf
      sollen die des Tests sein, auch wenn man drei Tage vorher hineinsieht. */
   const w = termin ? Math.max(weekNumberFor(termin.datum, start), 1) : 1;
@@ -695,7 +831,7 @@ export function TestTab(){
     return (
       <>
         {umschalter}
-        <ErgebnisAnsicht th={th} termin={termin} />
+        <ErgebnisAnsicht p={p} th={th} termin={termin} />
       </>
     );
   }
@@ -721,6 +857,8 @@ export function TestTab(){
       )}
       <ZielKarte ziel={ziel} termin={termin} />
       <DurchfuehrungKarte p={p} />
+      <Vo2maxKarte termin={vo2} prep={vo2Prep} ftp={vo2Ftp} laden={ladeVo2max}
+        onNotiz={patch => setTestPrep(vo2Schluessel, patch)} />
       {phase !== 'heute' && goNoGo}
       <AuswertungsKarte th={th} />
     </>

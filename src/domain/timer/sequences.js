@@ -3,7 +3,8 @@
 
 import { repTarget } from '../core.js';
 import { zeitDosis } from '../koerper.js';
-import { thursdayPlan, thursdayAnlauf, anlaufSchritte, schrittSekunden } from '../day.js';
+import { thursdayPlan, thursdayAnlauf, anlaufSchritte, schrittSekunden,
+         varianteFuer } from '../day.js';
 import { zoneText, zoneSpan, wattText } from '../zones.js';
 
 /* Ein Zonenetikett fuer die Anzeige im Timer. z12 ist die Spanne beim
@@ -116,11 +117,20 @@ export function buildIntervalSequence(plan, th, week, { warmMin, workMin, restMi
 
    Ohne startDate bleibt es bei der Wochenvorgabe. Ein Aufrufer, der den
    Kalender nicht kennt, soll die geplante Einheit bekommen und keine falsch
-   datierte Ersatzeinheit. */
-export function intervalDefaults(plan, week, startDate, heute){
+   datierte Ersatzeinheit.
+
+   Die gewaehlte Variante geht dem Regelfall vor: wer sich am Donnerstag der
+   Woche 5 fuer die VO2max-Referenz entschieden hat, soll im Timer die fuenf
+   Minuten zaehlen und nicht das fuenfte Intervall, das dafuer ausfaellt. */
+export function intervalDefaults(plan, week, startDate, heute, wahlen){
   const anlauf = anlaufSchritte(plan, heute, startDate)
               || thursdayAnlauf(plan, week, startDate);
   if(anlauf) return { mode:'steps', anlauf, steps: anlauf.session.steps };
+
+  const v = heute ? varianteFuer(plan, heute, week, wahlen) : null;
+  if(v && v.gewaehlt){
+    return { mode:'steps', variante: v.def, steps: v.def.steps };
+  }
 
   const t = thursdayPlan(plan, week);
   if(t.kind === 'test') return { mode:'test', plan:t };

@@ -30,7 +30,8 @@
    eigene Anfrage stellt. */
 
 import { useEffect } from 'preact/hooks';
-import { plan, apiKey, today } from '../../../state/store.js';
+import { plan, apiKey, today, setVariante } from '../../../state/store.js';
+import { VARIANTE_REGEL } from '../../../domain/day.js';
 import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { wellnessMassnahmen } from '../../../domain/wellness.js';
 import { wellness, ladeWellness } from '../../../state/wellness.js';
@@ -167,6 +168,39 @@ function Ersatzhinweis({ ersetzt }){
   );
 }
 
+/* Die zweite zulaessige Form eines Tages - und die Frage, welche gilt.
+
+   Im ausgelieferten Plan ist das die VO2max-Referenz am Donnerstag der
+   Woche 5: fuenf Minuten maximal als erste Wiederholung statt der fuenften.
+   Der Trainingsplan nennt sie ausdruecklich Kuer, also fragt die Karte, statt
+   zu entscheiden.
+
+   Beantwortet bleibt die Zeile stehen und nennt die Wahl. Eine Frage, die
+   nach der Antwort verschwindet, laesst sich nicht zurechtruecken - und ein
+   Tag, der still in einer von zwei Formen dasteht, ist von einem Fehler nicht
+   zu unterscheiden. */
+function Variantenwahl({ variante, datum }){
+  if(!variante) return null;
+  const iso = isoDayLocal(datum);
+  const v = variante.def;
+  const offen = variante.gewaehlt === null;
+
+  return (
+    <div class={'daynote' + (offen ? ' gelb' : '')}>
+      <b>{offen ? v.frage
+        : variante.gewaehlt ? 'Referenzwert wird erhoben.'
+        : 'Regelstruktur gewählt, kein Referenzwert.'}</b>
+      {(offen || !variante.gewaehlt) && v.note ? ' ' + v.note : ''}
+      <div class="variantenknoepfe">
+        <button class={'btn klein' + (variante.gewaehlt === true ? ' an' : '')} type="button"
+          onClick={() => setVariante(iso, v.id)}>Referenz erheben</button>
+        <button class={'btn klein' + (variante.gewaehlt === false ? ' an' : '')} type="button"
+          onClick={() => setVariante(iso, VARIANTE_REGEL)}>Regelstruktur</button>
+      </div>
+    </div>
+  );
+}
+
 /* Die Go/No-Go-Liste am Testmorgen.
 
    Eigene Liste und kein weiterer Absatz zwischen den Hinweisen: die vier
@@ -290,7 +324,7 @@ function Einheitsabschnitt({ e, mitKopf }){
   );
 }
 
-export function Tagesinhalt({ info, istHeute, serie }){
+export function Tagesinhalt({ info, datum, istHeute, serie }){
   /* Ein Datum vor dem Beginn der Woche 1 bekommt keinen Trainingsinhalt.
      buildDayInfo klemmt dort auf Woche 1 und lieferte sonst einen
      vollstaendigen Tag fuer einen Zeitraum, in dem nicht trainiert wurde. */
@@ -304,6 +338,7 @@ export function Tagesinhalt({ info, istHeute, serie }){
   return (
     <>
       <Ersatzhinweis ersetzt={info.ersetzt} />
+      <Variantenwahl variante={info.variante} datum={datum} />
 
       {/* Die Zahl steht ueber den Abschnitten und nicht als Fussnote darunter:
           sie ist das Erste, was man vom Tag wissen muss. */}

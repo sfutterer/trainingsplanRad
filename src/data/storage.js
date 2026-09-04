@@ -18,6 +18,7 @@ export const KEYS = {
   testLog:    'test-history',
   interimLog: 'interim-log',
   testPrep:   'test-prep',
+  varianten:  'tages-varianten',
   planOverride: 'plan-override',
   settings:   'app-settings',
   untergrund: 'untergrund-cache',
@@ -134,6 +135,21 @@ export function createRepos(store){
        sieben Tage spaeter erinnert sie niemand mehr. Ein eigener Schluessel und
        kein Eintrag in der Testhistorie - dort stehen Ergebnisse, hier steht
        eine Vorgabe fuer einen Test, den es noch nicht gegeben hat. */
+    /* Welche Variante an einem Tag gewaehlt wurde: ISO-Tag auf Kennung, oder
+       "regel" fuer die ausdrueckliche Abwahl. Ein fehlender Eintrag heisst
+       unentschieden - die drei Zustaende auseinanderzuhalten ist der ganze
+       Zweck des Speichers. */
+    async varianten(){
+      const v = await json(KEYS.varianten, {});
+      return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+    },
+    async setVarianten(map){
+      const paare = Object.entries(map || {}).sort((a, b) => (a[0] < b[0] ? -1 : 1)).slice(-40);
+      const knapp = {};
+      for(const [k, v] of paare) knapp[k] = v;
+      return store.set(KEYS.varianten, JSON.stringify(knapp));
+    },
+
     async testPrep(){
       const v = await json(KEYS.testPrep, {});
       return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};

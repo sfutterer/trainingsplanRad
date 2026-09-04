@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "planName": "Trainingsplan Radfahren – Fassung 3",
+  "planName": "Trainingsplan Radfahren – Fassung 4",
 
   "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
@@ -17,6 +17,9 @@
     "beweglichkeit": "mobilityFlow, coordination und boneStimulus stehen bewusst neben dem Radplan, nicht darin. Sie haengen an keiner Woche und an keiner Phase, weil sie radunabhaengig sind. Deshalb keine Dosierung je Phase wie beim legBlock, sondern ein fester Dosierungstext je Uebung. Seit Fassung 3 sind sie ausdruecklich kein Teil der Opferreihenfolge mehr - sie kosten keine Erholung.",
     "sprache": "Die Schluessel sind englisch, alle Werte und dieser Block sind deutsch. Absicht: die Schluessel bleiben maschinennah und stimmen mit den Feldnamen im Code ueberein, alles Erklaerende bleibt in der Sprache der App.",
     "farben": "Die Zonenfarben standen bis zum 29.08.2026 hier als Hexwerte und gleichzeitig als Tokens in src/ui/theme.css - beide wurden benutzt, also hatte dieselbe Zone je nach Anzeige eine andere Farbe, und die Fassung aus dieser Datei folgte dem Dunkelmodus nicht. Welche Farbe eine Zone traegt, ist Darstellung und keine Trainingsvorgabe; sie steht deshalb nur noch in theme.css.",
+    "fassung4": "Stand 04.09.2026. Eine einzige inhaltliche Aenderung: der 5-min-All-out entfaellt aus dem Schwellentest, die Pause davor sinkt von 10 auf 5 min, der Test dauert 55 statt 65 min. Die VO2max-Referenz wird stattdessen als erste Wiederholung der ersten Intervalleinheit am Donnerstag der Woche 5 erhoben - dort steht sie als thursday.variante. Der Testablauf traegt seit dieser Fassung eine Kennung, damit gespeicherte Ergebnisse sagen koennen, unter welchem Protokoll sie entstanden sind.",
+    "testProtokoll": "thresholdTest.id und .fassung benennen das Protokoll. Der Trainingsplan verlangt, dass alle drei Termine identisch gefahren werden - deshalb gibt es genau ein aktives Protokoll und keine Liste. Die Kennung wandert in jeden Testeintrag; weichen zwei Eintraege voneinander ab, sagt die Anzeige das, statt zwei unvergleichbare Werte in dieselbe Linie zu zeichnen.",
+    "variante": "Ein thursday darf eine benannte Variante tragen: eine zweite zulaessige Form desselben Tages, ueber die am Tag selbst entschieden wird. Im ausgelieferten Plan ist das die VO2max-Referenz in Woche 5. Der Regelfall bleibt daneben unveraendert stehen - gewaehlt wird in der App, und die Wahl wird gespeichert. Die Wochensumme rechnet mit der Variante, weil der Trainingsplan sie so nennt; die zwei Minuten Unterschied liegen unter der Aufloesung des Umfangsdeckels.",
     "wiederholungenInWeeks": "Das thursday-Objekt steht in mehreren Wochen woertlich gleich da. Das ist Absicht und kein Copy-Paste-Rest: jede Woche bleibt fuer sich lesbar, und nichts kann sich gegeneinander verschieben.",
     "unbekannteSchluessel": "Die Pruefung meldet Schluessel der obersten Ebene, die sie nicht kennt. Ein Tippfehler in einem optionalen Feld wurde vorher stillschweigend verworfen, und die App rechnete mit dem Standardwert weiter - das widerspricht dem Grundsatz, lieber gar keine Zahl zu zeigen als eine falsche.",
     "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach."
@@ -62,7 +65,7 @@
       "tuesdayMinutes": 45, "wednesdayMinutes": 30, "saturdayMinutes": 90, "sundayOptionalMinutes": 25,
       "coreWorkSeconds": 25, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
       "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "test", "title": "Rad – Schwellentest", "zone": "z4", "minutes": 65},
+      "thursday": {"kind": "test", "title": "Rad – Schwellentest", "zone": "z4", "minutes": 55},
       "saturdayBlocks": null
     },
     {
@@ -70,7 +73,28 @@
       "tuesdayMinutes": 85, "wednesdayMinutes": 40, "saturdayMinutes": 150, "sundayOptionalMinutes": 35,
       "coreWorkSeconds": 30, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 2,
       "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
+      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP",
+        "variante": {
+          "id": "vo2max-referenz",
+          "title": "Rad – VO2max-Referenz + Intervalle",
+          "frage": "Den 5-Minuten-Referenzwert heute erheben?",
+          "ergebnis": "vo2max5",
+          "steering": "5 min alles geben, danach 108–115 % FTP",
+          "note": "Der Maximalversuch ist selbst ein VO2max-Reiz und zählt als erste Wiederholung – deshalb folgen nur noch vier statt fünf. Der Wert ist Kür: wird er nicht erhoben, gilt die Regelstruktur 5 × 4 min.",
+          "steps": [
+            {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 15, "zone": "z12"},
+            {"type": "work", "label": "5 min maximal", "short": "5 min maximal", "minutes": 5, "zone": "z5", "rep": 1, "reps": 1, "effort": "alles geben", "note": "Die VO2max-Referenzleistung. Gleichmäßig alles geben, nicht antreten und einbrechen – der Ø-Wert der fünf Minuten zählt. Der Puls ist hier Ergebnis und keine Vorgabe."},
+            {"type": "rest", "label": "Locker rollen", "short": "Locker rollen", "minutes": 5, "zone": "z1", "rep": 1, "reps": 1},
+            {"type": "work", "label": "Intervall 1 / 4", "short": "Intervall 1/4", "minutes": 4, "zone": "z5", "rep": 1, "reps": 4},
+            {"type": "rest", "label": "Erholung", "short": "Erholung 1/3", "minutes": 4, "zone": "z1", "rep": 1, "reps": 4},
+            {"type": "work", "label": "Intervall 2 / 4", "short": "Intervall 2/4", "minutes": 4, "zone": "z5", "rep": 2, "reps": 4},
+            {"type": "rest", "label": "Erholung", "short": "Erholung 2/3", "minutes": 4, "zone": "z1", "rep": 2, "reps": 4},
+            {"type": "work", "label": "Intervall 3 / 4", "short": "Intervall 3/4", "minutes": 4, "zone": "z5", "rep": 3, "reps": 4},
+            {"type": "rest", "label": "Erholung", "short": "Erholung 3/3", "minutes": 4, "zone": "z1", "rep": 3, "reps": 4},
+            {"type": "work", "label": "Intervall 4 / 4", "short": "Intervall 4/4", "minutes": 4, "zone": "z5", "rep": 4, "reps": 4},
+            {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 12, "zone": "z1"}
+          ]
+        }},
       "saturdayBlocks": null
     },
     {
@@ -110,7 +134,7 @@
       "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 100, "sundayOptionalMinutes": 25,
       "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
       "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "test", "title": "Rad – Schwellentest (Retest)", "zone": "z4", "minutes": 65},
+      "thursday": {"kind": "test", "title": "Rad – Schwellentest (Retest)", "zone": "z4", "minutes": 55},
       "saturdayBlocks": null
     },
     {
@@ -170,7 +194,7 @@
       "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 105, "sundayOptionalMinutes": 25,
       "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
       "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "test", "title": "Rad – Schwellentest (Retest)", "zone": "z4", "minutes": 65},
+      "thursday": {"kind": "test", "title": "Rad – Schwellentest (Retest)", "zone": "z4", "minutes": 55},
       "saturdayBlocks": null
     }
   ],
@@ -242,6 +266,10 @@
   },
 
   "thresholdTest": {
+    "id": "20min-ohne-allout",
+    "fassung": 4,
+    "seit": "2026-09-04",
+    "label": "20-min-Test ohne All-out",
     "steering": "gleichmäßig maximal – Ø-Leistung, nicht Puls",
     "steps": [
       {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 8, "zone": "z12"},
@@ -252,8 +280,7 @@
       {"type": "work", "label": "Zügig 3 / 3", "short": "Zügig 3/3", "minutes": 1, "zone": "z3", "rep": 3, "reps": 3, "effort": "zügig", "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
       {"type": "rest", "label": "Locker", "short": "Locker 3/3", "minutes": 1, "zone": "z1", "rep": 3, "reps": 3},
       {"type": "warm", "label": "Einfahren, Rest", "short": "Einfahren", "minutes": 6, "zone": "z12"},
-      {"type": "work", "label": "5 min all-out", "short": "5 min all-out", "minutes": 5, "zone": "z5", "rep": 1, "reps": 1, "effort": "all-out", "note": "VO2max-Referenzleistung. Alles geben, der Puls ist hier Ergebnis und keine Vorgabe."},
-      {"type": "rest", "label": "Locker rollen", "short": "Locker rollen", "minutes": 10, "zone": "z1", "rep": 1, "reps": 1},
+      {"type": "rest", "label": "Locker rollen", "short": "Locker rollen", "minutes": 5, "zone": "z1", "rep": 1, "reps": 1, "note": "Nur so lange, bis die Atmung ruhig ist. Der 5-min-All-out des Originalprotokolls entfällt in diesem Plan: die Pacing-Vorgabe aus dem Anlauf gilt für frische Beine, nach einer Vorbelastung wäre der Test wieder blind gepact."},
       {"type": "work", "label": "20 min gleichmäßig maximal", "short": "20 min maximal", "minutes": 20, "zone": "z4", "rep": 1, "reps": 1, "effort": "gleichmäßig maximal", "note": "Erste drei Minuten bewusst konservativer als das Ziel, danach auf die Ø-Leistung der Runde schauen und nicht auf den Momentanwert. Die letzten zwei Minuten sollen sich anfühlen wie „gerade noch“. Ø-Watt × 0,95 = FTP · Ø-Puls = LTHR."},
       {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 10, "zone": "z1"}
     ]
@@ -630,7 +657,7 @@
     "wednesdayEasyDefault": "Bewusst der lockerste Fahrtag der Woche: unteres bis mittleres Z2, nicht am Sprechtest-Limit. Der Donnerstag ist der Qualitätstag.",
     "wednesdayEasyPhase3": "In Phase 3 ist der Donnerstag selbst ein Z2-Tag – der Mittwoch darf deshalb länger sein und trägt den Erhaltungsreiz.",
     "wednesdayNoRide": "Keine Mittwochsfahrt in dieser Woche.",
-    "thursdayTest": "65 min: 20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker rollen, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95, LTHR = Ø-Puls der 20 min. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad, gleicher Reifendruck – sonst ist der Retest nicht vergleichbar.",
+    "thursdayTest": "55 min: 20 min Einfahren mit 3× 1 min zügig, 5 min locker rollen, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95, LTHR = Ø-Puls der 20 min. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad, gleicher Reifendruck – sonst ist der Retest nicht vergleichbar.",
     "thursdayBaseDay": "Phase 3 hat keine harten Intervalle – dieser Tag ist der dritte Grundlagentag der Woche.",
     "thursdayNoTimer": "In Phase 3 gibt es keine harten Intervalle – der Timer ist an diesem Tag nicht nötig.",
     "thursdayIntervalTail": "Die letzte Wiederholung soll die härteste sein.",
@@ -649,7 +676,7 @@
     "coreAbortRule": "Regel: Wenn die Form kippt – Hüfte hängt durch, Rücken wird rund, Zittern – ist der Satz zu Ende. Abbrechen ist besser als schlecht weitermachen; eine Runde weniger kostet nichts.",
     "zoneNoteTransition": "Arbeitsannahme, kein gemessener Wert – ein Datenpunkt, eine ungeprüfte HFmax, Geschwindigkeit statt Leistung. Das Band reicht wie im Plan bis 142; belegt ist aber nur der Arbeitsbereich 128–135, dort wird gefahren. 142 ist eine harte Grenze, kein Ziel. Der Sprechtest sticht die Zahl.",
     "zoneNoteCoggan": "Auch Coggan-Z2 ist breit und reicht oben oft über LT1. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich sein. Zweite Kontrollinstanz ist der Drift – liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band lag.",
-    "thresholdTestSummary": "20 min Einfahren mit 3× 1 min zügig, 5 min all-out, 10 min locker, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95 · LTHR = Ø-Puls der 20 min. Pacing: die ersten drei Minuten bewusst konservativer als das Ziel, auf die Durchschnittsleistung schauen, nicht auf den Momentanwert.",
+    "thresholdTestSummary": "20 min Einfahren mit 3× 1 min zügig, 5 min locker, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95 · LTHR = Ø-Puls der 20 min. Pacing: die ersten drei Minuten bewusst konservativer als das Ziel, auf die Durchschnittsleistung schauen, nicht auf den Momentanwert.",
     "intervalRollingStart": "Rollender Start: in der letzten Minute der Erholung das Tempo leicht anziehen.",
     "intervalRecoveryWeek": "Erholungswoche – reduzierter Umfang, kein Z5.",
     "elevationShort": "Ersetzen statt addieren: eine flache Einheit gegen eine hügelige mit ähnlicher Zeit tauschen, Kadenz nicht unter 70 rpm – passende Übersetzung ist die wirksamere Lösung als Disziplin am Berg.",

@@ -21,7 +21,8 @@ import {
   trainingWeekStart, trainingWeekDays, startOfMonth, addMonths, monthLabel,
   monthGrid, weekdayColumns, WEEKDAY_SHORT
 } from '../src/domain/week.js';
-import { buildDayInfo, isCoordinationDay, thursdayPlan } from '../src/domain/day.js';
+import { buildDayInfo, isCoordinationDay, thursdayPlan,
+         weekPlanMinutes } from '../src/domain/day.js';
 import { NO_THRESHOLDS } from '../src/domain/zones.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
@@ -326,6 +327,64 @@ describe('Einheiten eines Tages', () => {
         expect(e.titel.length).toBeGreaterThan(0);
       }
     }
+  });
+});
+
+/* Die zweite zulaessige Form eines Tages.
+
+   Der Trainingsplan verlegt den 5-min-Maximalversuch aus dem Schwellentest in
+   die erste Intervalleinheit danach und laesst zugleich offen, ob er ueberhaupt
+   gefahren wird. Der Donnerstag der Woche 5 hat damit zwei richtige Formen -
+   und die App muss beide zeigen koennen, ohne eine davon stillschweigend zu
+   waehlen. */
+describe('Variante eines Tages', () => {
+  const th = NO_THRESHOLDS;
+  const woche5Do = tagIn(5, 4);
+  const iso = isoDayLocal(woche5Do);
+
+  it('bleibt ohne Entscheidung beim Regelfall und fragt', () => {
+    const info = buildDayInfo(plan, th, woche5Do, START);
+    expect(info.title).toBe('Rad – VO2max-Intervalle');
+    expect(info.variante.gewaehlt).toBe(null);
+    expect(info.variante.def.frage).toBeTruthy();
+    expect(info.target.reps).toBe(5);
+  });
+
+  it('ersetzt den Tag, wenn die Variante gewaehlt ist', () => {
+    const info = buildDayInfo(plan, th, woche5Do, START, { [iso]: 'vo2max-referenz' });
+    expect(info.title).toBe('Rad – VO2max-Referenz + Intervalle');
+    expect(info.variante.gewaehlt).toBe(true);
+    /* Fuenf Belastungen, aber die erste ist laenger - genau der Fall, fuer den
+       der Sollwert seinen Ablauftext mitbringt. */
+    expect(info.target.reps).toBe(5);
+    expect(info.target.ablauf).toBe('5 min + 4× 4 min');
+    expect(info.target.minutes).toBe(65);
+    /* Ein Tausch, den man nicht sieht, ist von einem Fehler nicht zu
+       unterscheiden. */
+    expect(info.ersetzt.titel).toBe('Rad – VO2max-Intervalle');
+  });
+
+  it('haelt Abwahl und Unentschieden auseinander', () => {
+    const ab = buildDayInfo(plan, th, woche5Do, START, { [iso]: 'regel' });
+    expect(ab.variante.gewaehlt).toBe(false);
+    expect(ab.title).toBe('Rad – VO2max-Intervalle');
+    expect(buildDayInfo(plan, th, woche5Do, START, {}).variante.gewaehlt).toBe(null);
+  });
+
+  /* Die Wahl gilt fuer genau diesen Tag - nicht fuer jeden Donnerstag und
+     nicht fuer den Tag daneben. */
+  it('gilt nur an ihrem Tag', () => {
+    const wahlen = { [iso]: 'vo2max-referenz' };
+    expect(buildDayInfo(plan, th, addDays(woche5Do, 1), START, wahlen).variante).toBeUndefined();
+    expect(buildDayInfo(plan, th, tagIn(6, 4), START, wahlen).variante).toBeUndefined();
+    expect(buildDayInfo(plan, th, tagIn(6, 4), START, wahlen).title).toBe('Rad – VO2max-Intervalle');
+  });
+
+  /* Die Wochensumme rechnet mit der Variante, weil der Trainingsplan sie so
+     nennt - unabhaengig von der Entscheidung, denn weekPlanMinutes kennt
+     weder Datum noch Zustand. */
+  it('rechnet die Wochensumme mit der Variante', () => {
+    expect(weekPlanMinutes(plan, 5)).toBe(375);
   });
 });
 

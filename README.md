@@ -157,11 +157,35 @@ brauchen den intervals.icu-Schlüssel; ohne ihn bleibt die Tagesmeldung.
 Nur über das Menü erreichbar, weil man sie selten braucht:
 
 - **Schwellentest** – Anleitung, Anlauf als Zeitleiste, Go/No-Go zum Abhaken,
-  die Uhr für Test, Tempotest und Öffner, und die Eingabe von FTP und LTHR
+  die Uhr für Test, Tempotest und Öffner, die VO2max-Referenz mit ihrer
+  118-%-Gegenprobe, und die Eingabe von FTP und LTHR
 - **Zonen & Schwellenwerte** – Zonenmodell, FTP und LTHR, Sprechtest-Erhebung
 - **Einstellungen** – Zugänge, Erscheinungsbild, Planbeginn, Plan, Sicherung, Diagnose
 - **Über die App** – Version, welche Schnittstelle wofür benutzt wird, was dabei
   das Gerät verlässt, Zeitgrenzen, Nachweise
+
+## Testablauf und Varianten
+
+Der Ablauf des Schwellentests trägt in `plan.json` eine Kennung und eine
+Fassungsnummer (`thresholdTest.id`, `.fassung`). Sie wandert in jeden Eintrag der
+Testhistorie. Grund: der Trainingsplan verlangt einen **identischen Ablauf über
+alle drei Termine**, sonst sind die Werte nicht vergleichbar – ohne Kennung wäre
+diese Regel nicht prüfbar, und zwei Werte aus zwei Protokollen stünden
+stillschweigend in derselben Linie. Weichen Einträge voneinander ab, sagt die
+Testhistorie das.
+
+Deshalb gibt es genau **ein** aktives Protokoll und keine Liste: eine Liste wäre
+die Einladung, die Regel zu brechen.
+
+Ein Donnerstag darf daneben eine **Variante** tragen – eine zweite zulässige Form
+desselben Tages, über die am Tag selbst entschieden wird. Im ausgelieferten Plan
+ist das die VO2max-Referenz in Woche 5: fünf Minuten maximal als erste
+Wiederholung statt der fünften. Der Regelfall bleibt unverändert daneben stehen;
+die Wahl steht auf der Tageskarte und wird gespeichert. Drei Zustände, und alle
+drei sind unterscheidbar: noch nicht entschieden, Variante gewählt, ausdrücklich
+abgewählt. Die Wochensumme rechnet mit der Variante, weil der Trainingsplan sie so
+nennt – `weekPlanMinutes` kennt weder Datum noch Zustand, und die zwei Minuten
+Unterschied liegen unter der Auflösung des Umfangsdeckels.
 
 ## Zugänge
 

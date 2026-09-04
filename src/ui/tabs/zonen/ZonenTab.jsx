@@ -123,7 +123,7 @@ function Verlauf({ eintraege }){
    sieht man vor dem Speichern, welche Zahl daraus wird. */
 function TestFormular({ tagIso, vorschlag, onSpeichern, onAbbrechen }){
   const [w20, setW20] = useState(null);
-  const [w5, setW5] = useState(null);
+  const [kadenz, setKadenz] = useState(null);
   const [kg, setKg] = useState(vorschlag);
   const [bed, setBed] = useState('');
 
@@ -132,12 +132,14 @@ function TestFormular({ tagIso, vorschlag, onSpeichern, onAbbrechen }){
       <div class="row"><span>Test vom {dayFromIso(tagIso).toLocaleDateString('de-DE')}</span>
         <b>{w20 > 0 ? 'FTP ' + Math.round(w20 * 0.95) + ' W' : 'Ø-Watt eintragen'}</b></div>
       <Zahlenfeld titel="Ø-Watt der 20 min" wert={w20} min={1} onWert={setW20} />
-      <Zahlenfeld titel="Ø-Watt der 5 min" wert={w5} min={1} onWert={setW5} />
+      {/* Seit Fassung 4 die Kadenz statt der 5-min-Leistung: die entsteht an
+          einem anderen Tag und steht im Testbereich unter „VO2max-Referenz". */}
+      <Zahlenfeld titel="Ø-Kadenz der 20 min" wert={kadenz} min={1} onWert={setKadenz} />
       <Zahlenfeld titel="Gewicht (kg)" wert={kg} min={1} dezimal schritt="0.1" onWert={setKg} />
       <Textfeld titel="Bedingungen" wert={bed} onWert={setBed}
         platzhalter="Temperatur, Wind, Strecke, Rad" />
       <div class="buttons">
-        <button class="btn" onClick={() => onSpeichern({ w20, w5, kg, bed: bed.trim() })}>Speichern</button>
+        <button class="btn" onClick={() => onSpeichern({ w20, kadenz, kg, bed: bed.trim() })}>Speichern</button>
         <button class="btn secondary" onClick={onAbbrechen}>Abbrechen</button>
       </div>
       <p class="hint">
@@ -179,7 +181,7 @@ function SchwellenKarte(){
     setTest(t => (t && t.tagIso === tagIso ? { tagIso, vorschlag, bereit: true } : t));
   }
 
-  async function testSpeichern({ w20, w5, kg, bed }){
+  async function testSpeichern({ w20, kadenz, kg, bed }){
     const { tagIso, vorschlag } = test;
     setTest(null);
 
@@ -195,10 +197,15 @@ function SchwellenKarte(){
       day: tagIso,
       week: weekNumberFor(dayFromIso(tagIso), startDate.value),
       w20: w20 > 0 ? w20 : null,
-      w5:  w5  > 0 ? w5  : null,
+      kadenz: kadenz > 0 ? kadenz : null,
       ftp, lthr: f.lthr,
       weight: kg > 0 ? kg : null,
-      conditions: bed
+      conditions: bed,
+      /* Auch hier: unter welchem Ablauf der Wert entstand. Ein Eintrag ohne
+         Kennung liesse sich spaeter nicht mehr einordnen, und die Regel
+         "identischer Ablauf ueber alle Termine" nicht mehr pruefen. */
+      protokoll: plan.value.thresholdTest.id,
+      protokollFassung: plan.value.thresholdTest.fassung
     });
     setMeldung({ art:'ok', text:'Test gespeichert.' });
 
@@ -256,7 +263,7 @@ function SchwellenKarte(){
         {hist.map((e, i) => (
           <div class="listrow" key={i}>
             <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
-            <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.weight ? ' · ' + e.weight + ' kg' : ''}</span>
+            <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.weight ? ' · ' + e.weight + ' kg' : ''}</span>
           </div>
         ))}
       </>}

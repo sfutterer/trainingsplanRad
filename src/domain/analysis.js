@@ -325,7 +325,11 @@ function intervallNotes(row, zones, t){
   const darunter = ziel === 'z5' ? 'z4' : ziel === 'z4' ? 'z3' : 'z2';
   const zielMin = Math.round((zones[ziel] || 0) / 60);
   const hartMin = Math.round(((zones[ziel] || 0) + (zones[darunter] || 0)) / 60);
-  const ablauf = t.test ? '5 min all-out + 20 min maximal' : t.reps + '× ' + t.repMinutes + ' min';
+  /* Der Ablauf in einem Satzteil. Die Sollwerte aus einer Schrittfolge bringen
+     ihn mit, weil ihre Bloecke ungleich lang sein duerfen - "5× 5 min" waere
+     bei der VO2max-Variante falsch. Die uebrigen Intervalltage rechnen ihn
+     weiterhin aus Wiederholung und Laenge. */
+  const ablauf = t.ablauf || (t.reps + '× ' + t.repMinutes + ' min');
   const zone = ziel.toUpperCase();
 
   if(hartMin >= soll * 0.7){
@@ -391,8 +395,14 @@ function coreDayNotes(plan, row, t, rides, strength){
   return notes;
 }
 
-export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessions, legSessions){
-  const info = buildDayInfo(plan, th, date, startDate);
+/* `wahlen` traegt die gewaehlten Tagesvarianten herein - siehe day.js.
+
+   Ohne sie bewertete die Auswertung den Regelfall, waehrend die Tageskarte die
+   Variante zeigt: am Donnerstag der Woche 5 stuende dann "5× 4 min" im Soll,
+   obwohl der Nutzer 5 min maximal und 4× 4 min gefahren hat. Zwei Minuten
+   Unterschied, aber ein falscher Satz in der Begruendung. */
+export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessions, legSessions, wahlen){
+  const info = buildDayInfo(plan, th, date, startDate, wahlen);
   const t = info.target || { sport:'rest' };
   const rides = acts.filter(a => isRide(a.type));
   const strength = acts.filter(a => !isRide(a.type) && isStrength(a.type));
@@ -553,7 +563,7 @@ export function weekTotals(rows, plan){
 /* Bericht ueber einen Zeitraum. Rumpf- und Beinblock-Eintraege kommen getrennt
    herein; Eintraege ohne kind stammen aus der Zeit vor dem Beinblock und sind
    Rumpf. */
-export function buildReport(plan, th, startDate, from, to, activities, zonesById, logEntries){
+export function buildReport(plan, th, startDate, from, to, activities, zonesById, logEntries, wahlen){
   const byDay = {};
   for(const a of (activities || [])){
     const d = localDay(a.start_date_local);
@@ -571,7 +581,8 @@ export function buildReport(plan, th, startDate, from, to, activities, zonesById
   while(cur <= to){
     const key = isoDayLocal(cur);
     rows.push(compareDay(plan, th, new Date(cur), startDate,
-                         byDay[key] || [], zonesById, coreByDay[key] || [], legByDay[key] || []));
+                         byDay[key] || [], zonesById, coreByDay[key] || [],
+                         legByDay[key] || [], wahlen));
     cur.setDate(cur.getDate() + 1);
   }
   return rows;

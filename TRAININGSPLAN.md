@@ -1110,18 +1110,29 @@ Der Code steht auf Fassung 2. Folgendes muss nachgezogen werden:
 10. **Testanlauf** aus Abschnitt 2a als Hinweis ab 10 Tagen vor dem Testtermin, inklusive
     Go/No-Go-Liste am Testmorgen.
 
-Neu mit Fassung 4:
+Neu mit Fassung 4 — **umgesetzt am 04.09.2026**:
 
-11. **Schwellentest-Ablauf im Timer:** All-out-Segment und die 10 min Pause danach
-    entfernen. Neue Sequenz: 20 min Einfahren (mit 3 × 1 min zügig), 5 min locker,
-    20 min Test, 10 min Ausrollen. Gesamtdauer 55 statt 65 min.
-12. **Woche 5 als Sonderfall im Intervall-Timer:** 5 min maximal, 5 min locker,
-    danach 4 × 4 min. Ab Woche 6 wieder die Regelstruktur. Am besten als Schalter
-    „VO2max-Referenz erheben" an der Donnerstagskarte, weil der Wert optional ist.
-13. **Wochenwerte für Woche 4, 5, 10 und 16** in `plan.json` auf die geänderten
-    Summen aus Abschnitt 2 setzen (245 / 375 / 260 / 265).
-14. **Testhistorie:** Spalte „Ø-Watt 5 min" aus der Tabelle nehmen, durch „Ø-Kadenz"
-    ersetzen. Die VO2max-Referenz bekommt eine eigene, kleine Tabelle.
+11. ✅ **Schwellentest-Ablauf im Timer:** All-out-Segment entfernt, Pause davor von
+    10 auf 5 min gekürzt. Sequenz: 20 min Einfahren (mit 3 × 1 min zügig), 5 min
+    locker, 20 min Test, 10 min Ausrollen. Gesamtdauer 55 min. Der Sollwert der
+    Testtage führt entsprechend 20 statt 25 harte Minuten — mit 25 hätte die
+    Auswertung einen sauber gefahrenen Test als zu kurz gemeldet.
+12. ✅ **Woche 5 als Variante, nicht als Sonderfall.** Der `thursday` der Woche 5
+    trägt in `plan.json` neben dem Regelfall eine benannte `variante` mit eigener
+    Schrittfolge. Auf der Donnerstagskarte stehen zwei Knöpfe; die Wahl wird
+    gespeichert und gilt für Tageskarte, Intervall-Timer und Auswertung. Drei
+    Zustände sind unterscheidbar: unentschieden, gewählt, ausdrücklich abgewählt.
+13. ✅ **Wochenwerte 245 / 375 / 260 / 265** — nicht eingetragen, sondern gerechnet:
+    `weekPlanMinutes` rechnet den Donnerstag der Woche 5 mit der Variante. Der
+    Umfangsdeckel folgt automatisch (270 / 413 / 286 / 292).
+14. ✅ **Testhistorie:** „Ø-Watt 5 min" durch „Ø-Kadenz" ersetzt, in beiden
+    Eingabeformularen. Die VO2max-Referenz hat im Testbereich eine eigene Karte
+    samt Import aus der Aufzeichnung und der 118-%-Gegenprobe; sie hängt am Test
+    davor und nicht am Kalender.
+15. ✅ **Ablaufgleichheit prüfbar gemacht.** `thresholdTest` trägt eine Kennung und
+    eine Fassungsnummer, die in jeden Eintrag der Testhistorie wandert. Stammen
+    zwei Einträge aus verschiedenen Abläufen, sagt die Historie das — die Regel
+    aus Abschnitt 2a steht damit nicht nur im Dokument.
 
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.

@@ -29,7 +29,7 @@
    dagegen echte <button> mit aria-expanded. */
 
 import { useState } from 'preact/hooks';
-import { plan, thresholds, startDate, today, week } from '../../../state/store.js';
+import { plan, thresholds, startDate, today, week, varianten } from '../../../state/store.js';
 import { buildDayInfo } from '../../../domain/day.js';
 import { isoDayLocal, toMidnight, dayFromIso, addDays, phaseName,
          isWinterBlock, isRecoveryWeek, isTestWeek, testWeeks, testDateFor,
@@ -120,7 +120,7 @@ function Wochenzeile({ datum, info, istHeute, offen, umschalten, serie }){
           </button>}
       {(istHeute || offen) && (
         <div class="dayinhalt">
-          <Tagesinhalt info={info} istHeute={istHeute} serie={serie} />
+          <Tagesinhalt info={info} datum={datum} istHeute={istHeute} serie={serie} />
         </div>
       )}
     </div>
@@ -160,7 +160,7 @@ function Wochenansicht({ anker, setzeAnker, serie }){
       {tage.map(d => {
         const iso = isoDayLocal(d);
         return (
-          <Wochenzeile key={iso} datum={d} info={buildDayInfo(p, th, d, start)}
+          <Wochenzeile key={iso} datum={d} info={buildDayInfo(p, th, d, start, varianten.value)}
             istHeute={iso === heuteIso} offen={offen.includes(iso)}
             umschalten={() => umschalten(iso)} serie={serie} />
         );

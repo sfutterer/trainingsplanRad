@@ -46,9 +46,9 @@ const VERPASST = { miss: true, dev: true };
    Glocke am Mittwoch "Dauer: mindestens 30 min · Zielzone: … · Trittfrequenz:
    …" und schwieg zum Zirkel am selben Abend. Wer nur die Meldung las, wusste
    von der zweiten Einheit nichts. */
-export function trainingsMeldung(plan, th, heute, startDate){
+export function trainingsMeldung(plan, th, heute, startDate, wahlen){
   const tag = isoDayLocal(heute);
-  const info = buildDayInfo(plan, th, heute, startDate);
+  const info = buildDayInfo(plan, th, heute, startDate, wahlen);
   /* Vor dem Planbeginn gibt es keine Vorgabe, ueber die sich etwas melden
      liesse - buildDayInfo klemmt dort auf Woche 1. */
   if(info.vorStart) return null;
@@ -78,12 +78,12 @@ export function trainingsMeldung(plan, th, heute, startDate){
    uebrigen Tagen bleibt es bei den Gruenden: ein erhoehter Ruhepuls ist auch
    am Sonntag eine Nachricht, aber "Donnerstag wird 60 min Z2" waere dort eine
    Anweisung fuer einen Tag, ueber den heute nichts entschieden wird. */
-export function gateMeldung(serie, plan, th, heute, startDate){
+export function gateMeldung(serie, plan, th, heute, startDate, wahlen){
   if(!serie || !serie.heute || !serie.heute.rot) return null;
 
   const gate = serie.heute;
   const tag = gate.heute.id;
-  const info = buildDayInfo(plan, th, heute, startDate);
+  const info = buildDayInfo(plan, th, heute, startDate, wahlen);
   const rolle = info.wellness ? info.wellness.rolle : null;
 
   const zeilen = [gate.gruende.join(' · ') + '.'];
@@ -123,12 +123,12 @@ export function zielMeldungen(rows){
    moeglicherweise die Woche. Was heute ansteht, steht darunter - es ist die
    Meldung, die immer da ist, und deshalb die, die sich nach unten sortieren
    laesst, ohne verloren zu gehen. */
-export function baueMeldungen({ plan, th, heute, startDate, serie, rows }){
+export function baueMeldungen({ plan, th, heute, startDate, serie, rows, wahlen }){
   const liste = [];
-  const gate = gateMeldung(serie, plan, th, heute, startDate);
+  const gate = gateMeldung(serie, plan, th, heute, startDate, wahlen);
   if(gate) liste.push(gate);
   liste.push(...zielMeldungen(rows));
-  const training = trainingsMeldung(plan, th, heute, startDate);
+  const training = trainingsMeldung(plan, th, heute, startDate, wahlen);
   if(training) liste.push(training);
   return liste;
 }

@@ -67,6 +67,7 @@ export const EINTRAEGE = {
   [KEYS.testLog]:      { name: 'Testhistorie',                   pruef: r => alsJson(r, istListe,  'ist keine Liste') },
   [KEYS.interimLog]:   { name: 'Erhebungen',                     pruef: r => alsJson(r, istListe,  'ist keine Liste') },
   [KEYS.testPrep]:     { name: 'Testvorbereitung',               pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
+  [KEYS.varianten]:    { name: 'Gewählte Tagesvarianten',        pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
   [KEYS.thresholds]:   { name: 'Schwellenwerte',                 pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
   [KEYS.settings]:     { name: 'Einstellungen',                  pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
   [KEYS.planOverride]: { name: 'eigener Plan',                   pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },

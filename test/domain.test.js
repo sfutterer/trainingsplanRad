@@ -49,7 +49,21 @@
    angesteuert", und beim Test waere das Band zirkulaer - er erzeugt die
    LTHR, aus der es spaeter gerechnet wird. Die Zonenschluessel bleiben an den
    Schritten: sie tragen die Ringfarbe des Timers und den Sollwert der
-   Auswertung, nur nicht mehr die Vorgabe auf der Karte. */
+   Auswertung, nur nicht mehr die Vorgabe auf der Karte.
+
+   Neu gesetzt am 04.09.2026 auf Fassung 4 des Trainingsplans: der
+   5-min-All-out entfaellt aus dem Schwellentest, die Pause davor sinkt von 10
+   auf 5 min, der Test dauert 55 statt 65 min. Betroffen sind genau neun der
+   126 Tage, und sie liessen sich vor dem Neusetzen einzeln benennen: die drei
+   Testtage (Text, Dauer, harte Zeit 25 -> 20 min) und die sechs
+   Anlauftage, deren Sollwert den Ablauftext dazubekommen hat. Die uebrigen
+   117 Tage sind Zeichen fuer Zeichen dieselben geblieben.
+
+   Der Ablauftext im Sollwert ist keine Kosmetik: die VO2max-Variante der
+   Woche 5 hat ungleiche Bloecke - 5 min maximal, dann viermal 4 min -, und
+   "5x 5 min" waere dort die falsche Begruendung. Die Wochenangaben haben
+   ihre Laenge behalten und nur ihre Pruefsumme geaendert: 65 und 55 sind
+   gleich viele Zeichen. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -183,11 +197,11 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: '9eaad8b2e2b99721', len: 12261 });
+      .toEqual({ hash: 'e4e9efdba6397a64', len: 12261 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '2b7a87f9aeb6b029', len: 47770 });
+      .toEqual({ hash: 'b5b959710c288bdf', len: 47956 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -210,7 +224,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + D.buildDayInfo(plan, th, date, start).detail);
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '8e8b538b18151423', len: 40989 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: 'a2fa0bf48f7746aa', len: 40941 });
   });
 });
 
@@ -219,7 +233,9 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
      nicht gepflegt - stuende sie zusaetzlich in plan.json, waere sie die
      zweite Zahl fuer dieselbe Sache. */
   it('Wochenumfaenge Rad stimmen mit Abschnitt 2 ueberein', () => {
-    const soll = [266, 326, 359, 255, 373, 393, 253, 398, 408, 270, 430, 445, 265, 412, 428, 275];
+    /* Fassung 4: der Test dauert 55 statt 65 min (Wochen 4, 10, 16), und der
+       Donnerstag der Woche 5 rechnet mit der VO2max-Variante - 65 statt 63. */
+    const soll = [266, 326, 359, 245, 375, 393, 253, 398, 408, 260, 430, 445, 265, 412, 428, 265];
     const ist = [];
     for(let w = 1; w <= 16; w++) ist.push(D.weekPlanMinutes(plan, w));
     expect(ist).toEqual(soll);
@@ -227,7 +243,7 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
 
   /* Die Zeile "Max (+10 %)" derselben Tabelle. */
   it('Umfangsdeckel stimmt mit Abschnitt 2 ueberein', () => {
-    const max = [293, 359, 395, 281, 410, 432, 278, 438, 449, 297, 473, 490, 292, 453, 471, 303];
+    const max = [293, 359, 395, 270, 413, 432, 278, 438, 449, 286, 473, 490, 292, 453, 471, 292];
     const ist = [];
     for(let w = 1; w <= 16; w++) ist.push(D.weekCapMinutes(plan, w));
     expect(ist).toEqual(max);
@@ -435,7 +451,8 @@ describe('Testanlauf', () => {
 
     expect(geplant.reps).toBe(5);
     expect(info.target).toEqual({ sport:'ride', zone:'z4', minutes:43,
-                                 hardMinutes:12, reps:2, repMinutes:6 });
+                                 hardMinutes:12, reps:2, repMinutes:6,
+                                 ablauf:'2× 6 min' });
     expect(info.showTestBtn).toBe(true);
     expect(info.showIntervalBtn).toBe(false);
   });
@@ -544,6 +561,42 @@ describe('Anstrengung statt Pulsband', () => {
     expect(zwanzig.zone.label).toBe('gleichmäßig maximal');
     expect(zwanzig.zone.cls).toBe('z4');
     seq.filter(x => x.type === 'work').forEach(x => expect(x.zone.label).not.toMatch(bpm));
+  });
+});
+
+/* Die gewaehlte Variante muss auch im Timer gelten.
+
+   Sonst zaehlte er am 17.09. fuenf gleiche Intervalle, waehrend die Tageskarte
+   fuenf Minuten maximal und danach vier Intervalle nennt - und der
+   Maximalversuch, um den es an diesem Tag geht, fiele als fuenftes Intervall
+   aus. */
+describe('Intervalltimer mit Variante', () => {
+  const woche5Do = W.thursdayDateFor(plan, 5, start);
+  const iso = W.isoDayLocal(woche5Do);
+
+  it('bleibt ohne Wahl bei den fuenf gleichen Intervallen', () => {
+    const v = S.intervalDefaults(plan, 5, start, woche5Do, {});
+    expect(v.mode).toBe('intervals');
+    expect(v.reps).toBe(5);
+    expect(v.workMin).toBe(4);
+  });
+
+  it('zaehlt mit Wahl die Schrittfolge der Variante', () => {
+    const v = S.intervalDefaults(plan, 5, start, woche5Do, { [iso]: 'vo2max-referenz' });
+    expect(v.mode).toBe('steps');
+    expect(v.variante.id).toBe('vo2max-referenz');
+    const seq = S.buildStepSequence(plan, Z.NO_THRESHOLDS, 5, v.steps);
+    const arbeit = seq.filter(x => x.type === 'work');
+    expect(arbeit.length).toBe(5);
+    expect(arbeit[0].duration).toBe(5 * 60);
+    expect(arbeit[1].duration).toBe(4 * 60);
+    expect(S.totalSeconds(seq)).toBe(65 * 60 + plan.interval.prepSeconds);
+  });
+
+  it('laesst die uebrigen Donnerstage unberuehrt', () => {
+    const wahlen = { [iso]: 'vo2max-referenz' };
+    expect(S.intervalDefaults(plan, 6, start, W.thursdayDateFor(plan, 6, start), wahlen).mode)
+      .toBe('intervals');
   });
 });
 

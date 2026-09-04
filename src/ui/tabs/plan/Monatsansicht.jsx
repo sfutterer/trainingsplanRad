@@ -18,7 +18,7 @@
    und kostet zwei Bedienschritte statt keinem; der Bereich darunter laesst
    Raster und Tag gleichzeitig stehen. */
 
-import { plan, thresholds, startDate, today } from '../../../state/store.js';
+import { plan, thresholds, startDate, today, varianten } from '../../../state/store.js';
 import { buildDayInfo } from '../../../domain/day.js';
 import {
   toMidnight, isoDayLocal, dayOffset, addMonths, startOfMonth, monthGrid,
@@ -58,7 +58,7 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
     setzeAnker(gleicherMonat(ziel, heute) ? heute : ziel);
   }
 
-  const info = buildDayInfo(p, th, anker, start);
+  const info = buildDayInfo(p, th, anker, start, varianten.value);
   const istHeute = ankerIso === heuteIso;
 
   return (
@@ -79,7 +79,7 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
         <div class="kalgitter">
           {zellen.map(d => {
             const iso = isoDayLocal(d);
-            const tinfo = buildDayInfo(p, th, d, start);
+            const tinfo = buildDayInfo(p, th, d, start, varianten.value);
             const klassen = ['kaltag'];
             if(!gleicherMonat(d, monat)) klassen.push('fremd');
             if(iso === heuteIso) klassen.push('istheute');
@@ -119,7 +119,7 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
           <Tageskopf datum={anker} info={info} istHeute={istHeute} />
         </div>
         <div class="dayinhalt">
-          <Tagesinhalt info={info} istHeute={istHeute} serie={serie} />
+          <Tagesinhalt info={info} datum={anker} istHeute={istHeute} serie={serie} />
         </div>
       </div>
     </>
