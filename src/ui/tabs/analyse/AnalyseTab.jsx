@@ -267,7 +267,8 @@ function letzterWert(punkte, nk, einheit){
    Gewicht. Hier zaehlen die absoluten Werte, weil die Zonen daran haengen. */
 function TestKarte({ tests }){
   const t = tests;
-  const hatWas = t.ftp.punkte.length || t.lthr.punkte.length || t.sprechtest.punkte.length;
+  const hatWas = t.ftp.punkte.length || t.lthr.punkte.length
+    || t.sprechtest.punkte.length || t.rpe.punkte.length;
   if(!hatWas){
     return (
       <div class="card">
@@ -300,7 +301,7 @@ function TestKarte({ tests }){
       </>}
 
       {t.sprechtest.punkte.length > 0 && <>
-        <div class="vquelle">Zwischenkontrollen</div>
+        <div class="vquelle">Zwischenkontrollen · Sprechtest-Puls</div>
         <TrendZeile trend={t.sprechtest.trend} was="Sprechtest-Puls" />
         <Verlaufsgraph einheit="bpm" nachkomma={0}
           reihen={[{ name: 'Sprechtest', farbe: 'var(--z2)', punkte: t.sprechtest.punkte,
@@ -309,6 +310,26 @@ function TestKarte({ tests }){
           Bewusst ohne Urteil: ein steigender Sprechtest-Puls kann heißen, dass die Bänder zu
           eng liegen, und ein fallender kann Müdigkeit sein. Er ist die Gegenprobe zu den
           Zonen, kein Leistungsmaß.
+        </p>
+      </>}
+
+      {/* Das RPE wurde bis zum 04.09.2026 erhoben, seine Reihe gerechnet - und
+          nirgends gezeigt. Der Hinweis unter dem Eingabefeld versprach genau
+          diesen Verlauf: das Empfinden als Vergleichsmaßstab für später, wenn
+          Wattwerte danebenstehen. Hier steht er. */}
+      {t.rpe.punkte.length > 0 && <>
+        {/* Eigene Ueberschrift: ohne sie stuende die zweite Kurve unter dem
+            Satz zur ersten und saehe aus wie deren Fortsetzung - eine Achse in
+            bpm, die andere in RPE-Punkten. */}
+        <div class="vquelle">Zwischenkontrollen · RPE</div>
+        <TrendZeile trend={t.rpe.trend} was="RPE" />
+        <Verlaufsgraph einheit="RPE" nachkomma={1}
+          reihen={[{ name: 'RPE', farbe: 'var(--z3)', punkte: t.rpe.punkte,
+                     trend: t.rpe.trend }]} />
+        <p class="hint">
+          Dieselbe Einheit bei sinkendem RPE heißt gewachsene Form – und derselbe RPE bei
+          mehr Watt ebenso. Auch das ohne Urteil: ein hoher Wert kann eine harte Einheit
+          sein oder ein schlechter Tag, und welches von beidem, sagt erst die Zeile daneben.
         </p>
       </>}
 

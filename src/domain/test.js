@@ -163,11 +163,27 @@ export function vorgewaehlterAblauf(ablaeufe){
    des Folgeblocks entstehen. */
 export const FTP_FAKTOR = 0.95;
 
-export function testWerte({ w20, hr20, kadenz, gewicht }){
+/* Ab hier gilt der Test als ausbelastet.
+
+   Der Trainingsplan fuehrt die Zahl in "Was nach jedem Test festgehalten
+   wird": RPE der letzten fuenf Minuten, unter 9 heisst nicht ausbelastet.
+   Sie steht hier und nicht in plan.json, weil sie eine Bewertung des
+   Messwerts ist und keine Trainingsvorgabe - dieselbe Trennung wie bei den
+   Toleranzen in analysis.js. */
+export const AUSBELASTET_RPE = 9;
+
+export function testWerte({ w20, hr20, kadenz, rpe, gewicht }){
   const zahl = v => (v > 0 ? v : null);
   const watt = zahl(w20);
+  const anstrengung = zahl(rpe);
   return {
     w20: watt,
+    /* Wie hart es sich angefuehlt hat - das einzige Feld des Tests, das etwas
+       ueber seine Guete sagt. Ein Test bei RPE 7 ist kein zu niedriger
+       Messwert, sondern gar keiner: gemessen wurde dann nicht die Schwelle,
+       sondern die Bereitschaft, an sie heranzugehen. */
+    rpe: anstrengung,
+    ausbelastet: anstrengung == null ? null : anstrengung >= AUSBELASTET_RPE,
     /* Seit Fassung 4 die Kadenz statt der 5-min-Leistung: der 5-min-Wert
        entsteht jetzt an einem anderen Tag und gehoert nicht mehr in dieselbe
        Zeile. Die Kadenz gehoert dagegen zum Test - sie sagt, ob zwei Tests
@@ -317,6 +333,36 @@ export function testZiel(prep, thresholds){
        an einem zu vorsichtigen Anlauf, entscheidet der Test. */
     gegenAlt: alt ? Math.round((ftp - alt) / alt * 100) : null,
     alteFtp: alt
+  };
+}
+
+/* ---- Der Sprechtest gegen die Z2-Obergrenze ----
+
+   Punkt 6 der Checkliste nach jedem Test: liegt der Sprechtest-Puls deutlich
+   unter der neuen Z2-Obergrenze, wird Z2 nach unten begrenzt. Der Sprechtest
+   sticht die Zahl - Coggan-Z2 ist breit und liegt oben oft ueber LT1.
+
+   Gezaehlt wird nur, was seit dem letzten Test erhoben wurde. Vorher galten
+   die Uebergangsbaender aus einer ungeprueften HFmax; ein Schnitt ueber beide
+   Zeitraeume vergliche Werte aus zwei Zonenmodellen gegen das neuere von
+   ihnen. Gab es noch keinen Test, zaehlt alles - dann gibt es auch nur ein
+   Modell. */
+export const SPRECHTEST_ABSTAND = 6;   // bpm unter der Obergrenze
+
+export function sprechtestBezug(interimLog, testLog, z2){
+  if(!z2 || !(z2.max > 0)) return null;
+  const tests = (testLog || []).map(e => e && e.day).filter(Boolean).sort();
+  const seit = tests.length ? tests[tests.length - 1] : null;
+  const werte = (interimLog || [])
+    .filter(e => e && e.talkHr > 0 && (!seit || e.day >= seit))
+    .map(e => e.talkHr);
+  if(!werte.length) return null;
+  const schnitt = Math.round(werte.reduce((a, b) => a + b, 0) / werte.length);
+  return {
+    schnitt, anzahl: werte.length, seit,
+    max: z2.max,
+    zuHoch: schnitt < z2.max - SPRECHTEST_ABSTAND,
+    abstand: SPRECHTEST_ABSTAND
   };
 }
 

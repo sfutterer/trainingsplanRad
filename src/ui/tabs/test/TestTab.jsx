@@ -40,7 +40,7 @@ import { plan, thresholds, startDate, today, testLog, testPrep, apiKey, settings
          setThresholds, addTestEntry, setTestPrep } from '../../../state/store.js';
 import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
          vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke,
-         testZiel, vo2maxTermin, vo2maxBezug, FTP_FAKTOR }
+         testZiel, vo2maxTermin, vo2maxBezug, FTP_FAKTOR, AUSBELASTET_RPE }
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
@@ -581,9 +581,9 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
 /* ---------- Ergebnis ---------- */
 
 function ErgebnisAnsicht({ p, th, termin }){
-  const [f, setF] = useState({ w20:null, hr20:null, kadenz:null, kg:null, bed:'' });
+  const [f, setF] = useState({ w20:null, hr20:null, kadenz:null, rpe:null, kg:null, bed:'' });
   const [meldung, setMeldung] = useState(null);
-  const werte = testWerte({ w20:f.w20, hr20:f.hr20, kadenz:f.kadenz, gewicht:f.kg });
+  const werte = testWerte({ w20:f.w20, hr20:f.hr20, kadenz:f.kadenz, rpe:f.rpe, gewicht:f.kg });
   const tagIso = isoDayLocal(toMidnight(today.value));
   const bereit = werte.ftp != null || werte.lthr != null;
 
@@ -609,7 +609,7 @@ function ErgebnisAnsicht({ p, th, termin }){
     await addTestEntry({
       day: tagIso,
       week: weekNumberFor(dayFromIso(tagIso), startDate.value),
-      w20: werte.w20, kadenz: werte.kadenz,
+      w20: werte.w20, kadenz: werte.kadenz, rpe: werte.rpe,
       ftp: neu.ftp, lthr: neu.lthr,
       weight: werte.weight,
       conditions: f.bed.trim(),
@@ -669,6 +669,19 @@ function ErgebnisAnsicht({ p, th, termin }){
             nicht dasselbe. */}
         <Zahlenfeld titel="Ø-Kadenz der 20 min (U/min)" wert={f.kadenz} min={1}
           onWert={v => setF({ ...f, kadenz: v })} />
+        {/* Das einzige Feld, das etwas ueber die Guete des Messwerts sagt.
+            Der Trainingsplan verlangt es ausdruecklich: RPE der letzten fuenf
+            Minuten, unter 9 heisst nicht ausbelastet. */}
+        <Zahlenfeld titel="RPE der letzten 5 min (1–10)" wert={f.rpe} min={1} max={10}
+          onWert={v => setF({ ...f, rpe: v })} />
+        {werte.ausbelastet === false && (
+          <p class="hint warn">
+            Unter {AUSBELASTET_RPE} heißt: nicht ausbelastet. Dann ist die FTP eher zu niedrig –
+            gemessen wurde nicht die Schwelle, sondern die Bereitschaft, an sie heranzugehen.
+            Der Wert gilt trotzdem als Untergrenze; die eFTP und die VO2max-Referenz bleiben
+            die Gegenproben.
+          </p>
+        )}
         <Zahlenfeld titel="Gewicht (kg)" wert={f.kg} min={1} dezimal schritt="0.1"
           onWert={v => setF({ ...f, kg: v })} />
         <Textfeld titel="Bedingungen" wert={f.bed} onWert={v => setF({ ...f, bed: v })}
@@ -691,7 +704,7 @@ function ErgebnisAnsicht({ p, th, termin }){
           {hist.map((e, i) => (
             <div class="listrow" key={i}>
               <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
-              <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}</span>
+              <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.rpe ? ' · RPE ' + e.rpe : ''}</span>
             </div>
           ))}
           {/* Die Regel des Trainingsplans, hier nachgeprueft statt nur

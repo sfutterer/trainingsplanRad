@@ -16,7 +16,8 @@ import * as W from '../src/domain/week.js';
 import {
   testTermine, aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
   vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke, testZiel,
-  vo2maxTermin, vo2maxBezug, VO2MAX_GRENZE, FTP_FAKTOR
+  vo2maxTermin, vo2maxBezug, VO2MAX_GRENZE, FTP_FAKTOR,
+  sprechtestBezug, SPRECHTEST_ABSTAND, AUSBELASTET_RPE
 } from '../src/domain/test.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
@@ -161,8 +162,67 @@ describe('Werte aus dem Test', () => {
 
   it('nimmt Null und Unsinn als "nicht gemessen"', () => {
     const w = testWerte({ w20: 0, hr20: null, kadenz: undefined, gewicht: 0 });
-    expect(w).toEqual({ w20:null, kadenz:null, hr20:null, weight:null,
-                        ftp:null, lthr:null, wkg:null });
+    expect(w).toEqual({ w20:null, kadenz:null, rpe:null, ausbelastet:null,
+                        hr20:null, weight:null, ftp:null, lthr:null, wkg:null });
+  });
+
+  /* Das RPE ist das einzige Feld, das etwas ueber die Guete des Messwerts
+     sagt: unter 9 wurde nicht ausbelastet, und dann ist die FTP eher zu
+     niedrig. Ohne Angabe wird nichts behauptet - "nicht ausbelastet" waere
+     ein Urteil ueber eine Zahl, die niemand eingetragen hat. */
+  it('urteilt ueber die Ausbelastung erst ab einem eingetragenen RPE', () => {
+    expect(testWerte({ w20: 240, rpe: AUSBELASTET_RPE }).ausbelastet).toBe(true);
+    expect(testWerte({ w20: 240, rpe: AUSBELASTET_RPE - 1 }).ausbelastet).toBe(false);
+    expect(testWerte({ w20: 240 }).ausbelastet).toBe(null);
+    expect(testWerte({ w20: 240, rpe: 0 }).ausbelastet).toBe(null);
+  });
+});
+
+/* Der Sprechtest gegen die Z2-Obergrenze - Punkt 6 der Checkliste nach jedem
+   Test. Der heikle Teil ist der Zeitraum: vor dem Test galten andere Baender,
+   und ein Schnitt ueber beide Zeitraeume vergleicht Werte aus zwei
+   Zonenmodellen gegen das neuere von ihnen. */
+describe('Sprechtest gegen die Z2-Obergrenze', () => {
+  const z2 = { min: 128, max: 142 };
+  const erhebung = (tag, hr) => ({ day: tag, talkHr: hr });
+
+  it('zaehlt nur die Erhebungen seit dem letzten Test', () => {
+    /* Der alte Wert von 120 stammt aus der Zeit der Uebergangsbaender. Zaehlte
+       er mit, ruecke der Schnitt auf 132 und die Baender stuenden als zu weit
+       da - obwohl beide neuen Erhebungen sauber im Band liegen. */
+    const log = [erhebung('2026-09-01', 120), erhebung('2026-09-12', 138),
+                 erhebung('2026-09-19', 140)];
+    const b = sprechtestBezug(log, [{ day:'2026-09-10' }], z2);
+    expect(b.anzahl).toBe(2);
+    expect(b.schnitt).toBe(139);
+    expect(b.seit).toBe('2026-09-10');
+    expect(b.zuHoch).toBe(false);
+    expect(sprechtestBezug(log, [], z2).zuHoch).toBe(true);
+  });
+
+  it('nimmt ohne Test alles - dann gibt es nur ein Zonenmodell', () => {
+    const log = [erhebung('2026-09-01', 120), erhebung('2026-09-08', 124)];
+    const b = sprechtestBezug(log, [], z2);
+    expect(b.anzahl).toBe(2);
+    expect(b.seit).toBe(null);
+    /* 122 liegt mehr als sechs bpm unter 142 - die Baender liegen oben zu weit. */
+    expect(b.zuHoch).toBe(true);
+  });
+
+  it('meldet erst ab dem Abstand aus dem Plan', () => {
+    const knapp = sprechtestBezug([erhebung('2026-09-12', z2.max - SPRECHTEST_ABSTAND)],
+                                  [], z2);
+    expect(knapp.zuHoch).toBe(false);
+    const drunter = sprechtestBezug([erhebung('2026-09-12', z2.max - SPRECHTEST_ABSTAND - 1)],
+                                    [], z2);
+    expect(drunter.zuHoch).toBe(true);
+  });
+
+  it('schweigt ohne Werte und ohne Band', () => {
+    expect(sprechtestBezug([], [], z2)).toBe(null);
+    expect(sprechtestBezug([erhebung('2026-09-12', 130)], [], null)).toBe(null);
+    /* Eine Erhebung ohne Sprechtest-Puls - nur RPE oder nur Notiz - zaehlt nicht. */
+    expect(sprechtestBezug([{ day:'2026-09-12', rpe: 5 }], [], z2)).toBe(null);
   });
 });
 

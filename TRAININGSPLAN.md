@@ -1133,6 +1133,17 @@ Neu mit Fassung 4 — **umgesetzt am 04.09.2026**:
     eine Fassungsnummer, die in jeden Eintrag der Testhistorie wandert. Stammen
     zwei Einträge aus verschiedenen Abläufen, sagt die Historie das — die Regel
     aus Abschnitt 2a steht damit nicht nur im Dokument.
+16. ✅ **RPE der letzten 5 min** ist als Feld im Testergebnis nachgetragen. Unter 9
+    steht dort, dass nicht ausbelastet wurde und die FTP eher zu niedrig ist —
+    das einzige Feld des Tests, das etwas über die Güte des Messwerts sagt.
+17. ✅ **Sprechtest-Puls gegen die Z2-Obergrenze** zählt nur noch die Erhebungen
+    seit dem letzten Test. Davor galten die Übergangsbänder; ein Schnitt über
+    beide Zeiträume verglich Werte aus zwei Zonenmodellen gegen das neuere von
+    ihnen. Damit ist Punkt 6 der Checkliste nach dem Test in der App gerechnet
+    und nicht nur im Dokument genannt.
+18. ✅ **RPE-Verlauf sichtbar.** Die Reihe wurde seit dem Verlaufsumbau gerechnet
+    und nirgends gezeigt; sie steht jetzt in der Testkarte neben dem
+    Sprechtest-Puls.
 
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.

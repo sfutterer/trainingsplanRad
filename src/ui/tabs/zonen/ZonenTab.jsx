@@ -11,6 +11,7 @@ import { plan, thresholds, startDate, week, testLog, interimLog, apiKey,
 import { fetchWellness, putWellness } from '../../../data/icu.js';
 import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag } from '../../../domain/week.js';
 import { hrBands, usesCoggan, zoneBand } from '../../../domain/zones.js';
+import { sprechtestBezug } from '../../../domain/test.js';
 import { zahl } from '../../../domain/zahlen.js';
 import { bestaetige } from '../../../state/dialog.js';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
@@ -276,9 +277,11 @@ function ErhebungsKarte(){
   const [f, setF] = useState({ talk: null, rpe: null, note: '' });
   const log = interimLog.value;
 
-  const werte = log.map(e => e.talkHr).filter(v => v > 0);
-  const schnitt = werte.length ? Math.round(werte.reduce((a, b) => a + b, 0) / werte.length) : null;
+  /* Der Vergleich mit der Z2-Obergrenze liegt in domain/test.js: er ist Punkt
+     6 der Checkliste nach jedem Test und zaehlt nur, was seit dem letzten Test
+     erhoben wurde - davor galten andere Baender. */
   const z2 = zoneBand(p, th, 'z2', w);
+  const bezug = sprechtestBezug(log, testLog.value, z2);
   const leer = !(f.talk > 0) && !(f.rpe > 0) && !f.note.trim();
 
   async function eintragen(){
@@ -310,13 +313,19 @@ function ErhebungsKarte(){
       <button class="btn block" disabled={leer} onClick={eintragen}>Eintragen</button>
       <p class="hint">
         Sprechtest: nach Atmung fahren. Sobald ganze Sätze anstrengend werden, Puls ablesen und
-        hier notieren – nicht umgekehrt. RPE nach jeder Einheit; das ist der Vergleichsmaßstab für
-        später, wenn plötzlich Wattwerte danebenstehen.
+        hier notieren – nicht umgekehrt. RPE nach jeder Einheit; der Verlauf steht in der
+        Analyse unter „Zwischenkontrollen“.
       </p>
-      {schnitt && z2 && (
-        <p class={'hint ' + (schnitt < z2.max - 6 ? 'warn' : 'good')}>
-          Ø Sprechtest-Puls {schnitt} bpm, Z2-Obergrenze {z2.max} bpm.{' '}
-          {schnitt < z2.max - 6 ? 'Deutlich darunter – Z2 gehört nach unten begrenzt.' : 'Die Bänder passen zur Atmung.'}
+      {bezug && (
+        <p class={'hint ' + (bezug.zuHoch ? 'warn' : 'good')}>
+          Ø Sprechtest-Puls {bezug.schnitt} bpm aus {bezug.anzahl}{' '}
+          {bezug.anzahl === 1 ? 'Erhebung' : 'Erhebungen'}
+          {bezug.seit ? ' seit dem Test vom ' + dayFromIso(bezug.seit).toLocaleDateString('de-DE') : ''},
+          Z2-Obergrenze {bezug.max} bpm.{' '}
+          {bezug.zuHoch
+            ? 'Mehr als ' + bezug.abstand + ' bpm darunter – Z2 gehört nach unten begrenzt. '
+              + 'Das ist Punkt 6 der Checkliste nach dem Test: der Sprechtest sticht die Zahl.'
+            : 'Die Bänder passen zur Atmung.'}
         </p>
       )}
       {log.slice(-4).reverse().map((e, i) => (
