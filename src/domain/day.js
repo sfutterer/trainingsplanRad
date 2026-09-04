@@ -50,6 +50,13 @@ import {
 } from './zones.js';
 import { coreWorkSeconds, coreRestSeconds, coreRounds, coreMinutes, legRounds,
          rundenText } from './core.js';
+/* Die Zeitformate stehen seit dem 04.09.2026 in zeit.js - dieselben, die der
+   Testbereich und die Auswertung benutzen. schrittSekunden und
+   schritteMinuten werden hier weitergereicht, weil die Aufrufer sie bis
+   hierher aus day.js geholt haben und sie inhaltlich zum Planschritt
+   gehoeren. */
+import { minutenText, schrittSekunden, schritteMinuten } from './zeit.js';
+export { schrittSekunden, schritteMinuten };
 
 /* Der Donnerstag je Woche. Die Wiederholungsformel aus Fassung 1 ist entfallen;
    massgeblich ist die Tabelle in plan.json. Die Gesamtdauer wird gerechnet,
@@ -87,12 +94,6 @@ export function thursdayPlan(plan, week){
    Tag selbst. Ohne Entscheidung gilt der Regelfall. */
 export function thursdayVariante(plan, week){
   return thursdayData(plan, week).variante || null;
-}
-
-/* Die Dauer einer Schrittfolge in Minuten. Gerechnet und nicht gepflegt -
-   sonst laufen die Summe der Schritte und die Zahl daneben auseinander. */
-export function schritteMinuten(steps){
-  return Math.round((steps || []).reduce((n, s) => n + schrittSekunden(s), 0) / 60);
 }
 
 export function saturdayBlocks(plan, week){
@@ -167,12 +168,6 @@ function taperHinweis(plan, taper){
   return null;
 }
 
-/* "5,5 min" - der Erhaltungsreiz ist keine ganze Minute lang, und auf 6
-   aufgerundet stuende in der Karte mehr, als der Plan verlangt. */
-function minutenText(sek){
-  return String(Math.round(sek / 6) / 10).replace('.', ',') + ' min';
-}
-
 /* Die Belastungen einer Schrittfolge in einem Satzteil: "2× 6 min", aber auch
    "5 min + 4× 4 min".
 
@@ -239,12 +234,6 @@ function circuitBlock(plan, week, rounds, label, nachsatz){
     hinweis: `${coreWorkSeconds(plan, week)} s Belastung / ${coreRestSeconds(plan, week)} s Pause.` +
              (nachsatz ? ' ' + nachsatz : '')
   };
-}
-
-/* Dauer eines Timerschritts. Die Datei darf "minutes" oder "seconds" nennen -
-   ein Oeffner ueber 40 s laesst sich als 0,666 Minuten nicht hinschreiben. */
-export function schrittSekunden(s){
-  return typeof s.seconds === 'number' ? s.seconds : Math.round((s.minutes || 0) * 60);
 }
 
 /* Der Schwellentest steht in plan.json als Schrittliste fuer den Timer, und

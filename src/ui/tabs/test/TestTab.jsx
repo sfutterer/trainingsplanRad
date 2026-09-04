@@ -43,7 +43,7 @@ import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
          testZiel, vo2maxTermin, vo2maxBezug, FTP_FAKTOR, AUSBELASTET_RPE }
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
-import { buildStepSequence, totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
+import { buildStepSequence, totalSeconds } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
          WEEKDAY_NAMES } from '../../../domain/week.js';
@@ -51,9 +51,11 @@ import { fetchWellness, putWellness, fetchActivities, fetchStreams,
          zahlenStrom } from '../../../data/icu.js';
 import { bestaetige } from '../../../state/dialog.js';
 import { Segmented } from '../../components/Segmented.jsx';
-import { Buehne } from '../../components/Buehne.jsx';
 import { Baustein } from '../training/Baustein.jsx';
-import { Zonenliste } from '../../components/Zonenliste.jsx';
+/* Ring, Vorschau und Zonenkarte teilt sich dieser Bereich mit dem
+   Intervalltimer - siehe Schrittansicht.jsx. */
+import { Schrittbuehne, Schrittvorschau, Zonenkarte } from '../../components/Schrittansicht.jsx';
+import { mmss, dauerText, schrittDauer } from '../../../domain/zeit.js';
 import { Zahlenfeld, Textfeld, Auswahlfeld } from '../../components/Feld.jsx';
 import { useSchrittTimer } from '../../components/useSchrittTimer.js';
 import { zahl } from '../../../domain/zahlen.js';
@@ -66,29 +68,9 @@ const ANSICHTEN = [
   { id: 'ergebnis',  label: 'Ergebnis' }
 ];
 
-function klok(sec){
-  sec = Math.max(0, Math.round(sec));
-  return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
-}
-function dauer(sec){
-  const m = Math.round(sec / 60);
-  return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0') + ' min';
-}
 function kurzDatum(d){
   return WEEKDAY_NAMES[d.getDay()].slice(0, 2) + ', ' +
     d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
-}
-
-/* Die Dauer eines Schritts, so wie der Plan sie nennt.
-
-   "15:00 min" waere fuer eine glatte Viertelstunde eine Ziffernwueste, und ein
-   Oeffner ueber 40 s laesst sich nicht als 0,67 Minuten hinschreiben - deshalb
-   drei Faelle statt einer Formel. */
-function schrittDauer(s){
-  const sek = s.seconds != null ? s.seconds : Math.round((s.minutes || 0) * 60);
-  if(sek < 60) return sek + ' s';
-  if(sek % 60 === 0) return (sek / 60) + ' min';
-  return klok(sek) + ' min';
 }
 
 /* ---------- Anleitung ---------- */
@@ -282,7 +264,7 @@ function TempotestKarte({ ablauf, prep, onNotiz, laden, kompakt }){
             <div class="blockzeile" key={name}>
               <span class="blockname">{name}</span>
               <span class="blockwert">{b.watt} W{b.puls ? ' · ⌀ ' + b.puls + ' bpm' : ''}</span>
-              <span class="blockzeit">ab {klok(b.vonSek)}</span>
+              <span class="blockzeit">ab {mmss(b.vonSek)}</span>
               <button class="btn klein" type="button"
                 onClick={() => uebernehmen(b)}>Übernehmen</button>
             </div>
@@ -339,7 +321,7 @@ function Vo2maxKarte({ termin, prep, onNotiz, ftp, laden }){
         <div class="blockzeile">
           <span class="blockname">Bestes 5-min-Fenster</span>
           <span class="blockwert">{suche.block.watt} W{suche.block.puls ? ' · ⌀ ' + suche.block.puls + ' bpm' : ''}</span>
-          <span class="blockzeit">ab {klok(suche.block.vonSek)}</span>
+          <span class="blockzeit">ab {mmss(suche.block.vonSek)}</span>
           <button class="btn klein" type="button"
             onClick={() => { onNotiz({ vo2max5: suche.block.watt }); setSuche(null); }}>Übernehmen</button>
         </div>
@@ -467,45 +449,21 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
   const timer = uhr.timer;
 
   const vorschau = timer.sequence.length ? timer.sequence : buildStepSequence(p, th, w, a.steps);
-  const step = timer.step;
-  const sec = timer.secondsLeft();
-
-  const phase = !step ? 'Bereit'
-    : step.type === 'work' ? (a.id === 'test' ? 'Test' : 'Belastung')
-    : step.type === 'warm' ? 'Einfahren'
-    : step.type === 'rest' ? 'Erholung'
-    : step.type === 'cool' ? 'Ausrollen'
-    : step.type === 'done' ? 'Fertig' : 'Bereit';
-
-  const farbe = !step ? 'var(--prep)'
-    : step.type === 'work' ? (step.zone && step.zone.key === 'z5' ? 'var(--hard)' : 'var(--rest)')
-    : step.type === 'warm' ? 'var(--work)' : 'var(--prep)';
+  /* Wie die Belastung heisst - das Einzige, was diese Buehne von der im
+     Intervalltimer unterscheidet. Im Test sind es die zwanzig Minuten selbst,
+     im Anlauf ein Block wie jeder andere. */
+  const arbeitsname = a.id === 'test' ? 'Test' : 'Belastung';
 
   return (
     <Baustein
       titel={a.titel.replace('Rad – ', '')}
-      meta={dauer(totalSeconds(vorschau))}
+      meta={dauerText(totalSeconds(vorschau))}
       status={<p class="tagchip">
         {a.datum ? kurzDatum(a.datum) + ' · ' : ''}{a.steering || 'fester Ablauf'}
       </p>}
       buehne={
-        <Buehne
-          ring={{
-            fraction: timer.fraction(),
-            color: farbe,
-            phase,
-            time: step ? (step.type === 'done' ? '0:00' : klok(sec)) : klok(vorschau[1] ? vorschau[1].duration : 0),
-            exercise: step ? step.label : 'Tippen zum Starten',
-            meta: step && step.type !== 'done'
-              ? 'noch ' + dauer(remainingAfter(timer.sequence, timer.index) + sec) : '',
-            zone: step ? step.zone : (vorschau[1] && vorschau[1].zone)
-          }}
-          zurueck={{ onClick: uhr.zurueck, disabled: !step || timer.index <= 0 }}
-          haupt={{ label: timer.running ? 'Pause'
-                          : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
-                   onClick: uhr.starten }}
-          weiter={{ onClick: uhr.weiter, disabled: !step || step.type === 'done' }}
-          ende={step ? { label: 'Ablauf beenden', onClick: uhr.beenden } : null} />
+        <Schrittbuehne uhr={uhr} vorschau={vorschau} arbeit={arbeitsname}
+          endeLabel="Ablauf beenden" />
       }
       hinweise={[a.note].filter(Boolean)}
       schluss={
@@ -550,30 +508,16 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
 
       <div class="card">
         <div class="row"><span>Ablauf</span><b>{a.steps.length} Schritte</b></div>
-        <div class="seglist">
-          {vorschau.map((s2, i) => {
-            if(s2.type === 'done' || s2.type === 'prep') return null;
-            const farbe2 = s2.type === 'work' ? (s2.zone && s2.zone.key === 'z5' ? 'var(--hard)' : 'var(--rest)')
-                         : s2.type === 'warm' ? 'var(--work)' : 'var(--prep)';
-            return (
-              <div class={'seg' + (i === timer.index ? ' aktiv' : (timer.index > i ? ' fertig' : ''))} key={i}>
-                <span><i class="dot" style={'background:' + farbe2}></i>{s2.label}</span>
-                <span class="dur">{klok(s2.duration)} · {(s2.zone && s2.zone.label ? s2.zone.label.split(' · ')[0] : '')}</span>
-              </div>
-            );
-          })}
-        </div>
+        <Schrittvorschau sequenz={vorschau} index={timer.index} />
       </div>
 
-      <div class="card">
-        <div class="row"><span>Pulszonen Woche {w}</span>
-          <b>{usesCoggan(p, th, w) ? 'Coggan aus LTHR' : 'Übergangsbänder'}</b></div>
-        <Zonenliste bands={hrBands(p, th, w)} plan={p} thresholds={th} />
+      <Zonenkarte woche={w} bands={hrBands(p, th, w)} plan={p} thresholds={th}
+        coggan={usesCoggan(p, th, w)}>
         <p class="hint">
           Während des Tests ist der Puls Ergebnis und keine Vorgabe – die Bänder stehen hier
           nur, damit Einfahren und Ausrollen eine Obergrenze haben.
         </p>
-      </div>
+      </Zonenkarte>
     </Baustein>
   );
 }

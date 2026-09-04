@@ -22,6 +22,7 @@ import { buildDayInfo, weekPlanMinutes, weekCapMinutes } from './day.js';
 import { legDoneRounds, legAborts } from './core.js';
 import { isoDayLocal } from './week.js';
 import { T } from './texte.js';
+import { stundenText } from './zeit.js';
 
 export function isRide(type){
   return /ride|cycl|bike|biking|spinning/i.test(type || '');
@@ -66,11 +67,10 @@ export function recordingNote(z){
   return null;
 }
 
-export function fmtMin(sec){
-  const m = Math.round(sec / 60);
-  if(m < 60) return m + ' min';
-  return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0') + ' h';
-}
+/* Weitergereicht aus zeit.js. Der Name bleibt: die Auswertung und ihre
+   Tests kennen ihn seit der Einzeldatei-Fassung, und ein Umbenennen haette
+   nur die Aufrufer angefasst, ohne etwas zu klaeren. */
+export const fmtMin = stundenText;
 
 export function pct(part, whole){
   if(!whole) return 0;

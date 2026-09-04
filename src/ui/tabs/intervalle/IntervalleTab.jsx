@@ -45,28 +45,21 @@
 import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, week, settings, startDate, today, varianten } from '../../../state/store.js';
 import { buildIntervalSequence, buildStepSequence, intervalDefaults,
-         totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
+         totalSeconds } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
+/* Ring, Vorschau und Zonenkarte teilt sich dieser Bereich mit dem Ablauf im
+   Testbereich - siehe Schrittansicht.jsx. */
+import { Schrittbuehne, Schrittvorschau, Zonenkarte } from '../../components/Schrittansicht.jsx';
+import { dauerText } from '../../../domain/zeit.js';
 import { isRecoveryWeek } from '../../../domain/week.js';
 import { gotoTab } from '../../../state/navigation.js';
-import { Buehne } from '../../components/Buehne.jsx';
 /* Dasselbe Geruest wie in den vier Trainingsbausteinen - aus demselben Grund,
    aus dem die Buehne dort ausgezogen ist: eine Form, die nur einer der fuenf
    Timer kennt, halten die anderen vier nicht ein. */
 import { Baustein } from '../training/Baustein.jsx';
-import { Zonenliste } from '../../components/Zonenliste.jsx';
 import { Zahlenfeld } from '../../components/Feld.jsx';
 import { useSchrittTimer } from '../../components/useSchrittTimer.js';
 import '../../components/timer.css';
-
-function klok(sec){
-  sec = Math.max(0, Math.round(sec));
-  return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
-}
-function dauer(sec){
-  const m = Math.round(sec / 60);
-  return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0') + ' min';
-}
 
 export function IntervalleTab(){
   const p = plan.value, th = thresholds.value, w = week.value;
@@ -112,22 +105,15 @@ export function IntervalleTab(){
   }, [w]);
 
   const vorschau = timer.sequence.length ? timer.sequence : sequenz();
-  const step = timer.step;
-  const sec = timer.secondsLeft();
 
-  /* Die Beschriftung des Rings kommt aus der Zone des laufenden Schritts und
-     nur ersatzweise aus den Einstellungen: eine feste Folge hat keine. */
-  const wz = step && step.zone ? step.zone.key : (cfg ? cfg.zoneKey : null);
-  const phase = !step ? 'Bereit'
-    : step.type === 'work' ? (wz === 'z5' ? 'VO2max' : wz === 'z4' ? 'Schwelle' : 'Tempo')
-    : step.type === 'warm' ? 'Einfahren'
-    : step.type === 'rest' ? 'Erholung'
-    : step.type === 'cool' ? 'Ausrollen'
-    : step.type === 'done' ? 'Fertig' : 'Bereit';
+  /* Wie die Belastung heisst, haengt hier an der Zone - das ist das Einzige,
+     was diese Buehne von der im Testbereich unterscheidet.
 
-  const farbe = !step ? 'var(--prep)'
-    : step.type === 'work' ? (step.zone && step.zone.key === 'z5' ? 'var(--hard)' : 'var(--rest)')
-    : step.type === 'warm' ? 'var(--work)' : 'var(--prep)';
+     Der Ersatzwert aus den Einstellungen ist entfallen: er stand nur im
+     work-Zweig, und dort traegt jeder Schritt eine Zone. Er konnte also nie
+     greifen. */
+  const arbeitsname = st => (st.zone && st.zone.key === 'z5' ? 'VO2max'
+                          : st.zone && st.zone.key === 'z4' ? 'Schwelle' : 'Tempo');
 
   const kadenz = cfg ? cadenceText(p, cfg.zoneKey, w) : null;
   const watt = cfg ? wattText(p, th, cfg.zoneKey) : null;
@@ -167,7 +153,7 @@ export function IntervalleTab(){
   const titel = variante ? variante.title.replace('Rad – ', '')
     : nurZ2 ? 'Grundlagentag' : vorgabe.plan.title.replace('Rad – ', '');
 
-  const kopfmeta = nurZ2 ? vorgabe.plan.minutes + ' min' : dauer(totalSeconds(vorschau));
+  const kopfmeta = nurZ2 ? vorgabe.plan.minutes + ' min' : dauerText(totalSeconds(vorschau));
 
   const status = variante
     ? 'Woche ' + w + ' · ' + (variante.steering || 'feste Folge')
@@ -185,23 +171,8 @@ export function IntervalleTab(){
       meta={kopfmeta}
       status={<p class="tagchip">{status}</p>}
       buehne={nurZ2 ? null : (
-        <Buehne
-          ring={{
-            fraction: timer.fraction(),
-            color: farbe,
-            phase,
-            time: step ? (step.type === 'done' ? '0:00' : klok(sec)) : klok(vorschau[1] ? vorschau[1].duration : 0),
-            exercise: step ? step.label : 'Tippen zum Starten',
-            meta: step && step.type !== 'done'
-              ? 'noch ' + dauer(remainingAfter(timer.sequence, timer.index) + sec) : '',
-            zone: step ? step.zone : (vorschau[1] && vorschau[1].zone)
-          }}
-          zurueck={{ onClick: uhr.zurueck, disabled: !step || timer.index <= 0 }}
-          haupt={{ label: timer.running ? 'Pause'
-                          : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
-                   onClick: uhr.starten }}
-          weiter={{ onClick: uhr.weiter, disabled: !step || step.type === 'done' }}
-          ende={step ? { label: 'Einheit beenden', onClick: uhr.beenden } : null} />
+        <Schrittbuehne uhr={uhr} vorschau={vorschau} arbeit={arbeitsname}
+          endeLabel="Einheit beenden" />
       )}
       hinweise={hinweise}
       schluss={
@@ -242,29 +213,12 @@ export function IntervalleTab(){
               {kadenz && <div class="row"><span>Trittfrequenz</span><b>{kadenz}</b></div>}
             </>
           )}
-          <div class="seglist">
-            {vorschau.map((s2, i) => {
-              if(s2.type === 'done' || s2.type === 'prep') return null;
-              const farbe2 = s2.type === 'work' ? (s2.zone && s2.zone.key === 'z5' ? 'var(--hard)' : 'var(--rest)')
-                           : s2.type === 'warm' ? 'var(--work)' : 'var(--prep)';
-              return (
-                <div class={'seg' + (i === timer.index ? ' aktiv' : (timer.index > i ? ' fertig' : ''))} key={i}>
-                  <span><i class="dot" style={'background:' + farbe2}></i>{s2.label}</span>
-                  <span class="dur">{klok(s2.duration)} · {(s2.zone && s2.zone.label ? s2.zone.label.split(' · ')[0] : '')}</span>
-                </div>
-              );
-            })}
-          </div>
+          <Schrittvorschau sequenz={vorschau} index={timer.index} />
         </div>
       )}
 
-      <div class="card">
-        <div class="row"><span>Pulszonen Woche {w}</span>
-          <b>{usesCoggan(p, th, w) ? 'Coggan aus LTHR' : 'Übergangsbänder'}</b></div>
-        {/* Ohne Wattbereich: die Vorgabe fuer heute steht schon ueber der
-            Ablaufliste, hier geht es nur um die Baender. */}
-        <Zonenliste bands={hrBands(p, th, w)} plan={p} thresholds={th} />
-      </div>
+      <Zonenkarte woche={w} bands={hrBands(p, th, w)} plan={p} thresholds={th}
+        coggan={usesCoggan(p, th, w)} />
     </Baustein>
   );
 }
