@@ -379,8 +379,16 @@ export function testSerie(testLog, interimLog){
     };
   };
 
-  const sprechtest = logReihe(interimLog, 'talkHr');
-  const rpe = logReihe(interimLog, 'rpe');
+  /* Die Notiz reist als Zusatz am Punkt mit. Sie war bisher nur auf der
+     Eingabekarte zu sehen, und dort nur in den letzten vier Eintraegen -
+     ausgerechnet die Frage, die eine Notiz beantwortet ("warum steht da
+     148?"), stellt man aber vor einem alten Punkt der Kurve.
+
+     Eine zweite Reihe aus dem Zwischenlog gibt es seit dem 04.09.2026 nicht
+     mehr: das RPE je Einheit warf Z2-Fahrt und Intervalltag in eine Kurve,
+     ohne die Einheit mitzuspeichern. Begruendung an der Eingabestelle in
+     ZonenTab.jsx. */
+  const sprechtest = logReihe(interimLog, 'talkHr', e => e.note || null);
 
   return {
     schluessel: 'tests', titel: 'Schwellentests',
@@ -396,14 +404,8 @@ export function testSerie(testLog, interimLog){
         minPunkte: VERLAUF.interim.minPunkte, minWochen: VERLAUF.interim.minWochen,
         flachAbsolut: 0.5 })
     },
-    rpe: {
-      punkte: rpe, einheit: 'RPE', nachkomma: 1,
-      trend: trendAus(rpe, { einheit: 'Punkte', nachkomma: 2,
-        minPunkte: VERLAUF.interim.minPunkte, minWochen: VERLAUF.interim.minWochen,
-        flachAbsolut: 0.1 })
-    },
     anzahl: tests.length,
-    regel: 'FTP und LTHR aus der Testhistorie, Sprechtest-Puls und RPE aus den ' +
+    regel: 'FTP und LTHR aus der Testhistorie, Sprechtest-Puls aus den ' +
       'Zwischenkontrollen. Beides wird im Tab „Zonen“ eingetragen und liegt nur auf diesem Gerät.'
   };
 }

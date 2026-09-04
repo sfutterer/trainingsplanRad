@@ -701,10 +701,18 @@ function ErgebnisAnsicht({ p, th, termin }){
       {hist.length > 0 && (
         <div class="card">
           <div class="row"><span>Testhistorie</span><b>{testLog.value.length} Einträge</b></div>
+          {/* Die Bedingungen stehen seit dem 04.09.2026 mit in der Zeile. Sie
+              wurden seit jeher erhoben - der Trainingsplan verlangt sie
+              ausdruecklich und fuehrt eine eigene Spalte dafuer - und in der
+              ganzen App nirgends gelesen: conditions hatte keinen Leser,
+              derselbe Befund wie beim RPE-Verlauf. Bei drei Tests im Plan
+              haengt der Vergleich zweier Werte an genau dieser Zeile: 6 Grad
+              und Gegenwind gegen 22 Grad und Windstille sind keine zwei
+              Formzustaende. */}
           {hist.map((e, i) => (
             <div class="listrow" key={i}>
               <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
-              <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.rpe ? ' · RPE ' + e.rpe : ''}</span>
+              <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.rpe ? ' · RPE ' + e.rpe : ''}{e.conditions ? ' · ' + e.conditions : ''}</span>
             </div>
           ))}
           {/* Die Regel des Trainingsplans, hier nachgeprueft statt nur

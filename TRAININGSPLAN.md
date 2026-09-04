@@ -1141,9 +1141,26 @@ Neu mit Fassung 4 — **umgesetzt am 04.09.2026**:
     beide Zeiträume verglich Werte aus zwei Zonenmodellen gegen das neuere von
     ihnen. Damit ist Punkt 6 der Checkliste nach dem Test in der App gerechnet
     und nicht nur im Dokument genannt.
-18. ✅ **RPE-Verlauf sichtbar.** Die Reihe wurde seit dem Verlaufsumbau gerechnet
-    und nirgends gezeigt; sie steht jetzt in der Testkarte neben dem
-    Sprechtest-Puls.
+18. ✅ **RPE je Einheit entfällt** — am 04.09.2026 erst sichtbar gemacht, am selben
+    Tag gestrichen. Es hatte keinen Auftrag: Empfinden verlangt dieser Plan an zwei
+    Stellen, und beide sind woanders verankert — das RPE der letzten fünf Testminuten
+    als Güteprüfung (Punkt 16) und der Sprechtest als oberste Instanz für Z2,
+    erhoben als Puls. Auch Coggan braucht es nicht: dort sind FTP und LTHR die
+    Eingaben, und die RPE-Spalte der Zonentabelle ist beschreibend — sie sagt, wie
+    sich eine Zone anfühlen soll, damit man sie ohne Messgerät findet. Dazu kam ein
+    Fehler in der Reihe selbst: Z2-Fahrt und Intervalltag lagen in einer Kurve, ohne
+    dass die Einheit mitgespeichert wurde — ein Ausschlag nach oben hieß dort nicht
+    „schlechte Form", sondern „das war ein Donnerstag".
+19. ✅ **Die Notiz steht am Wert.** Sie war nur auf der Eingabekarte zu sehen, und dort
+    nur in den letzten vier Einträgen — also gerade nicht bei dem alten Ausreißer, zu
+    dem man sie sucht. Sie erscheint jetzt am angetippten Punkt der Sprechtest-Kurve.
+    Ihr Platzhalter nennt nur noch, was die App nicht selbst herleitet: Wind und Strecke
+    rechnet das Fazit aus der Aufzeichnung genauer aus, als man sie tippen kann.
+20. ✅ **Bedingungen des Tests bekommen einen Leser.** Das Feld wurde seit jeher erhoben —
+    dieser Abschnitt verlangt es und führt eine eigene Spalte dafür — und in der ganzen
+    App nirgends angezeigt. Es steht jetzt in beiden Testhistorien. Bei drei Tests im
+    Plan hängt der Vergleich zweier Werte an dieser Zeile: 6 Grad und Gegenwind gegen
+    22 Grad und Windstille sind keine zwei Formzustände.
 
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.
@@ -1187,7 +1204,7 @@ Seit 23.08.2026 stehen alle Plandaten in `plan.json` neben `index.html`.
 | `intervals-icu-api-key` | API-Key für intervals.icu, nur auf dem Gerät |
 | `core-session-log` | Protokoll der Rumpfeinheiten, JSON-Array, max. 80 Einträge |
 | `test-history` | Testhistorie |
-| `interim-log` | Sprechtest-Puls und RPE der Übergangszeit |
+| `interim-log` | Sprechtest-Puls und Notiz. Alte Einträge tragen noch ein `rpe`; es wird nicht mehr gelesen |
 
 ### Protokoll der Rumpfeinheiten
 

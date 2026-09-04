@@ -291,12 +291,32 @@ describe('Schwellentests und Zwischenkontrollen', () => {
   it('faellt ueber den Sprechtest-Puls kein Urteil', () => {
     const interim = [];
     for(let i = 0; i < 6; i++){
-      interim.push({ day: tagPlus(AB, i * 7), week: i + 1, talkHr: 130 + i, rpe: 5 });
+      interim.push({ day: tagPlus(AB, i * 7), week: i + 1, talkHr: 130 + i });
     }
     const s = testSerie([], interim);
     expect(s.sprechtest.trend.belastbar).toBe(true);
     expect(s.sprechtest.trend.urteil).toBe('offen');
-    expect(s.rpe.trend.richtung).toBe('unveraendert');
+  });
+
+  /* Die Notiz erklaert den Wert und muss deshalb dort ankommen, wo der Wert
+     angesehen wird: am Punkt der Kurve. Sie stand vorher nur auf der
+     Eingabekarte, und dort nur in den letzten vier Eintraegen - also gerade
+     nicht bei dem alten Ausreisser, zu dem man sie sucht. */
+  it('haengt die Notiz an den Punkt des Sprechtests', () => {
+    const s = testSerie([], [
+      { day: tagPlus(AB, 0), week: 1, talkHr: 132, note: 'Knie' },
+      { day: tagPlus(AB, 7), week: 2, talkHr: 148 }
+    ]);
+    expect(s.sprechtest.punkte.map(p => p.zusatz)).toEqual(['Knie', null]);
+  });
+
+  /* Das RPE je Einheit ist am 04.09.2026 entfallen - ohne Auftrag im
+     Trainingsplan und mit einer Reihe, die Z2-Fahrten und Intervalltage in
+     eine Kurve warf. Alte Eintraege tragen den Schluessel weiter; gerechnet
+     wird nichts mehr daraus. */
+  it('rechnet aus dem RPE alter Eintraege keine Reihe mehr', () => {
+    const s = testSerie([], [{ day: tagPlus(AB, 0), week: 1, talkHr: 132, rpe: 7 }]);
+    expect(s.rpe).toBe(undefined);
   });
 
   it('schweigt ohne jeden Eintrag', () => {
@@ -425,7 +445,7 @@ describe('Bericht als Ganzes', () => {
       acts: [], thresholds: TH, startIso: AB,
       wochen: [1, 2, 3, 4].map(w => ({ week: w, sollMin: 220, istSec: 0, z2Sec: 0, hardSec: 0, tage: 0 })),
       testLog: [{ day: '2026-09-10', week: 4, ftp: 200, lthr: 158 }],
-      interimLog: [{ day: tagPlus(AB, 1), week: 1, talkHr: 132, rpe: 4 }],
+      interimLog: [{ day: tagPlus(AB, 1), week: 1, talkHr: 132 }],
       coreLog: [{ day: tagPlus(AB, 4), sets: 24 }],
       verbunden: false
     });

@@ -264,7 +264,7 @@ function SchwellenKarte(){
         {hist.map((e, i) => (
           <div class="listrow" key={i}>
             <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
-            <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.weight ? ' · ' + e.weight + ' kg' : ''}</span>
+            <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.weight ? ' · ' + e.weight + ' kg' : ''}{e.conditions ? ' · ' + e.conditions : ''}</span>
           </div>
         ))}
       </>}
@@ -272,9 +272,26 @@ function SchwellenKarte(){
   );
 }
 
+/* Ein Wert mit Regel, dazu die Notiz, die ihn erklaert.
+
+   Hier stand bis zum 04.09.2026 auch ein RPE je Einheit. Es hatte keinen
+   Auftrag: der Trainingsplan verlangt Empfinden an zwei Stellen, und beide
+   sind woanders verankert - das RPE der letzten fuenf Testminuten als
+   Guetepruefung im Testformular, und der Sprechtest als oberste Instanz fuer
+   Z2, erhoben als Puls und nicht als Zahl von eins bis zehn. Auch Coggan
+   braucht es nicht: dort sind FTP und LTHR die Eingaben, und die RPE-Spalte
+   der Zonentabelle ist beschreibend - sie sagt, wie sich eine Zone anfuehlen
+   soll, damit man sie ohne Messgeraet findet. Eine Ausgabe des Modells, keine
+   Eingabe.
+
+   Dazu kam ein Fehler in der Reihe selbst: Z2-Fahrt und Intervalltag landeten
+   in einer Kurve, ohne dass die Einheit mitgespeichert wurde. Ein Ausschlag
+   nach oben hiess dort nicht "schlechte Form", sondern "das war ein
+   Donnerstag". Bereits gespeicherte Eintraege behalten ihren rpe-Schluessel;
+   die Sicherung reicht ihn unveraendert durch. */
 function ErhebungsKarte(){
   const p = plan.value, th = thresholds.value, w = week.value;
-  const [f, setF] = useState({ talk: null, rpe: null, note: '' });
+  const [f, setF] = useState({ talk: null, note: '' });
   const log = interimLog.value;
 
   /* Der Vergleich mit der Z2-Obergrenze liegt in domain/test.js: er ist Punkt
@@ -282,7 +299,7 @@ function ErhebungsKarte(){
      erhoben wurde - davor galten andere Baender. */
   const z2 = zoneBand(p, th, 'z2', w);
   const bezug = sprechtestBezug(log, testLog.value, z2);
-  const leer = !(f.talk > 0) && !(f.rpe > 0) && !f.note.trim();
+  const leer = !(f.talk > 0) && !f.note.trim();
 
   async function eintragen(){
     if(leer) return;
@@ -291,30 +308,29 @@ function ErhebungsKarte(){
       day: isoDayLocal(heute),
       week: weekNumberFor(heute, startDate.value),
       talkHr: f.talk > 0 ? f.talk : null,
-      rpe: f.rpe > 0 ? f.rpe : null,
       note: f.note.trim()
     });
-    setF({ talk: null, rpe: null, note: '' });
+    setF({ talk: null, note: '' });
   }
 
   return (
     <div class="card">
-      <div class="row"><span>Erhebung je Einheit</span>
+      <div class="row"><span>Sprechtest-Erhebung</span>
         <b>{log.length ? log.length + (log.length === 1 ? ' Eintrag' : ' Einträge') : 'noch nichts erfasst'}</b></div>
-      {/* Die Obergrenze 10 steht jetzt am Feld statt hinter der Eingabe: ein
-          Wert, den die App stillschweigend auf 10 zurechtstutzte, sah wie ein
-          angenommener 12er aus. */}
       <Zahlenfeld titel="Sprechtest-Puls (bpm)" wert={f.talk} min={1}
         onWert={v => setF({ ...f, talk: v })} />
-      <Zahlenfeld titel="RPE 1–10" wert={f.rpe} min={1} max={10}
-        onWert={v => setF({ ...f, rpe: v })} />
-      <Textfeld titel="Notiz" wert={f.note} platzhalter="Wind, Knie, Strecke"
+      {/* Der Platzhalter nennt nur noch, was die App nicht selbst herleitet.
+          Er nannte "Wind, Knie, Strecke" - und Wind und Strecke rechnet das
+          Fazit aus der Aufzeichnung genauer aus, als man sie tippen kann:
+          Gegenwindanteil, Hoehenmeter, hm/km, steilster Abschnitt. Uebrig
+          bleibt, was in keiner Datei steht. */}
+      <Textfeld titel="Notiz" wert={f.note} platzhalter="Knie, Schlaf, Erkältung, Rad"
         onWert={v => setF({ ...f, note: v })} />
       <button class="btn block" disabled={leer} onClick={eintragen}>Eintragen</button>
       <p class="hint">
         Sprechtest: nach Atmung fahren. Sobald ganze Sätze anstrengend werden, Puls ablesen und
-        hier notieren – nicht umgekehrt. RPE nach jeder Einheit; der Verlauf steht in der
-        Analyse unter „Zwischenkontrollen“.
+        hier notieren – nicht umgekehrt. Die Notiz gehört zu genau diesem Wert: sie steht
+        in der Analyse am angetippten Punkt der Kurve und sagt dort, warum er so liegt.
       </p>
       {bezug && (
         <p class={'hint ' + (bezug.zuHoch ? 'warn' : 'good')}>
@@ -331,7 +347,7 @@ function ErhebungsKarte(){
       {log.slice(-4).reverse().map((e, i) => (
         <div class="listrow" key={i}>
           <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
-          <span>{e.talkHr ? 'Sprechtest ' + e.talkHr + ' bpm' : '–'}{e.rpe ? ' · RPE ' + e.rpe : ''}{e.note ? ' · ' + e.note : ''}</span>
+          <span>{e.talkHr ? 'Sprechtest ' + e.talkHr + ' bpm' : '–'}{e.note ? ' · ' + e.note : ''}</span>
         </div>
       ))}
     </div>
