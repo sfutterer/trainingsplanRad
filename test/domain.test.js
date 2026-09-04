@@ -164,20 +164,19 @@ describe('plan.json', () => {
     expect(planValidate(k)[0]).toContain('lückenlos ab 1');
   });
 
+  /* Eine zu neue Fassung wird abgelehnt und nicht geraten. Eine zu alte auch -
+     die Migration hebt sie vorher an, und was sie nicht kennt, soll hier
+     auflaufen statt halb weitergerechnet zu werden. */
   it('lehnt eine fremde Schemafassung ab', () => {
     const k = structuredClone(json);
-    k.schemaVersion = 3;
-    expect(planValidate(k)[0]).toContain('diese App liest Fassung 2');
+    k.schemaVersion = 4;
+    expect(planValidate(k)[0]).toContain('diese App liest Fassung 3');
   });
 
-  /* Fassung 2 kannte recoveryEveryNthWeek und keine recoveryWeeks. Ein solcher
-     Plan darf nicht halb durchlaufen: die Erholungswochen entschieden ueber
-     Beinblock-Dosierung und Samstagsbloecke, und ohne die Liste stuenden dort
-     stillschweigend andere Zahlen. */
-  it('lehnt einen Plan der Fassung 2 ab', () => {
+  it('lehnt eine Fassung ab, fuer die es keine Migration gibt', () => {
     const k = structuredClone(json);
     k.schemaVersion = 1;
-    expect(planValidate(k)[0]).toContain('diese App liest Fassung 2');
+    expect(planValidate(k)[0]).toContain('diese App liest Fassung 3');
   });
 
   it('meldet eine Erholungswoche jenseits des Planendes', () => {
@@ -197,8 +196,8 @@ describe('plan.json', () => {
      zeigte ihn trotzdem an. */
   it('meldet einen Erhaltungsreiz ohne Mittwochsfahrt', () => {
     const k = structuredClone(json);
-    k.weeks[0].wednesdayExtra = structuredClone(k.weeks[10].wednesdayExtra);
-    expect(planValidate(k).join(' ')).toContain('wednesdayExtra');
+    k.weeks[0].tage.mi.extra = structuredClone(k.weeks[10].tage.mi.extra);
+    expect(planValidate(k).join(' ')).toContain('mi.extra');
   });
 
   it('verlangt volle Dosis in der ersten Muskelkater-Stufe', () => {
@@ -318,7 +317,7 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
   it('Erhaltungsreiz am Mittwoch nur in Woche 11 und 12', () => {
     const mit = [];
     for(let w = 1; w <= 16; w++){
-      if(plan.weeks[W.weekIndex(plan, w)].wednesdayExtra) mit.push(w);
+      if(plan.weeks[W.weekIndex(plan, w)].tage.mi.extra) mit.push(w);
     }
     expect(mit).toEqual([11, 12]);
   });

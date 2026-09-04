@@ -11,7 +11,7 @@
 
    Rein: kein DOM, kein fetch. Das Laden steht in data/planSource.js. */
 
-export const PLAN_SCHEMA_VERSION = 2;
+export const PLAN_SCHEMA_VERSION = 3;
 
 const PV_ZONE_KEYS = ['unter','z1','z2','z3','z4','z5'];
 
@@ -223,6 +223,72 @@ function pvExtra(err, x, feld){
   pvStr(err, x.note, feld + '.note');
 }
 
+/* Die Taktung des Rumpfzirkels in dieser Woche.
+
+   Ein eigener Abschnitt und keine drei Zahlen zwischen den Tagen: sie
+   gehoeren zusammen und zu keinem einzelnen Tag - der Zirkel laeuft am
+   Mittwoch verkuerzt und am Sonntag voll, mit derselben Taktung. */
+function pvZirkelWoche(err, z, feld){
+  if(!pvObj(err, z, feld)) return;
+  pvNum(err, z.workSeconds, feld + '.workSeconds', {min:0, int:true});
+  pvNum(err, z.restSeconds, feld + '.restSeconds', {min:0, int:true});
+  pvNum(err, z.rounds, feld + '.rounds', {min:1, int:true});
+}
+
+/* Die Tage einer Woche.
+
+   Bis Fassung 2 stand der Wochentag im Feldnamen - tuesdayMinutes,
+   wednesdayExtra, saturdayBlocks - und daneben der Donnerstag als
+   vollwertiges Objekt. Ein Tag war damit entweder eine Zahl mit einem
+   Wochentag davor oder ein Objekt, je nachdem, welchen man erwischte.
+
+   Fassung 3 gibt jedem Tag ein Objekt unter seinem Kuerzel. Montag und
+   Freitag fehlen: an ihnen haengt nichts von der Woche ab, der Montag ist
+   frei und der Freitag steht in fridayOptional. Ein Kuerzel zu viel ist
+   deshalb ein Fehler und kein stiller Zusatz - sonst schriebe jemand "mo"
+   hin und wunderte sich, dass der Montag sich nicht ruehrt. */
+const PV_TAGE = ['di', 'mi', 'do', 'sa', 'so'];
+
+function pvTage(err, t, feld, zonen){
+  if(!pvObj(err, t, feld)) return;
+
+  for(const k of Object.keys(t)){
+    if(PV_TAGE.indexOf(k) < 0){
+      err.push(feld + '.' + k + ' kennt diese Fassung nicht – erlaubt sind ' +
+               PV_TAGE.join(', ') + '. Montag und Freitag hängen an keiner Woche.');
+    }
+  }
+  for(const k of PV_TAGE){
+    if(!t[k]) err.push(feld + '.' + k + ' fehlt.');
+  }
+  if(PV_TAGE.some(k => !t[k])) return;
+
+  /* Dienstag: Arbeitsweg, ab Phase 3 abends der Beinblock. */
+  pvNum(err, t.di.minutes, feld + '.di.minutes', {min:0, int:true});
+  pvNum(err, t.di.legRounds, feld + '.di.legRounds', {min:0, int:true});
+
+  /* Mittwoch: kurze Fahrt, daran ein Reiz. Der Reiz haengt an der Fahrt -
+     ohne sie gibt es nichts, woran er haengen koennte. */
+  pvNum(err, t.mi.minutes, feld + '.mi.minutes', {min:0, int:true});
+  pvExtra(err, t.mi.extra, feld + '.mi.extra');
+  if(t.mi.extra && !(t.mi.minutes > 0)){
+    err.push(feld + '.mi.extra hängt an einer Mittwochsfahrt, aber mi.minutes ist 0.');
+  }
+
+  pvThursday(err, t.do, feld + '.do', zonen);
+
+  /* Samstag: die lange Ausfahrt und die Z3-Bloecke darin. */
+  pvNum(err, t.sa.minutes, feld + '.sa.minutes', {min:0, int:true});
+  pvBlocks(err, t.sa.bloecke, feld + '.sa.bloecke');
+
+  /* Sonntag: Zirkel und Beinblock, davor optional eine Fahrt. Der Beinblock
+     heisst hier legRounds wie am Dienstag - in Fassung 2 hiess er am Sonntag
+     legRounds und am Dienstag tuesdayLegRounds, zweimal dasselbe unter zwei
+     Namen. */
+  pvNum(err, t.so.optionalMinutes, feld + '.so.optionalMinutes', {min:0, int:true});
+  pvNum(err, t.so.legRounds, feld + '.so.legRounds', {min:0, int:true});
+}
+
 /* Beweglichkeit und Koordination: gleiche Uebungsgestalt wie im Kraftteil, nur
    ohne Dosierung je Phase - die Dosierung steht als Text an der Uebung, weil
    diese Bloecke an keiner Trainingswoche haengen. Die Schluessel muessen trotzdem
@@ -389,28 +455,24 @@ export function planValidate(p){
           err.push(name + '.phase ist ' + w.phase + ', dazu fehlt ein Eintrag in phaseNames.');
         }
       }
-      ['tuesdayMinutes','wednesdayMinutes','saturdayMinutes','sundayOptionalMinutes',
-       'coreWorkSeconds','coreRestSeconds'].forEach(k => {
-        pvNum(err, w[k], name + '.' + k, {min:0, int:true});
-      });
-      pvNum(err, w.coreRounds, name + '.coreRounds', {min:1, int:true});
-      pvNum(err, w.legRounds, name + '.legRounds', {min:0, int:true});
-      pvNum(err, w.tuesdayLegRounds, name + '.tuesdayLegRounds', {min:0, int:true});
-      pvThursday(err, w.thursday, name + '.thursday', zonen);
-      pvBlocks(err, w.saturdayBlocks, name + '.saturdayBlocks');
-      pvExtra(err, w.wednesdayExtra, name + '.wednesdayExtra');
-      if(w.wednesdayExtra && !(w.wednesdayMinutes > 0)){
-        err.push(name + '.wednesdayExtra hängt an einer Mittwochsfahrt, aber wednesdayMinutes ist 0.');
-      }
+      pvZirkelWoche(err, w.zirkel, name + '.zirkel');
+      pvTage(err, w.tage, name + '.tage', zonen);
     });
   }
 
+  /* Der Winterblock traegt dieselbe Tagesform wie eine Woche, nur mit den
+     beiden Tagen, die er ueberhaupt vorgibt: Donnerstag und Samstag. Die
+     uebrigen Werte bleiben auf der letzten Planwoche stehen. */
   if(pvObj(err, p.winterBlock, 'winterBlock')){
     pvNum(err, p.winterBlock.phase, 'winterBlock.phase', {min:1, int:true});
     pvStr(err, p.winterBlock.name, 'winterBlock.name');
     pvStr(err, p.winterBlock.note, 'winterBlock.note');
-    pvThursday(err, p.winterBlock.thursday, 'winterBlock.thursday', zonen);
-    pvBlocks(err, p.winterBlock.saturdayBlocks, 'winterBlock.saturdayBlocks');
+    if(pvObj(err, p.winterBlock.tage, 'winterBlock.tage')){
+      pvThursday(err, p.winterBlock.tage.do, 'winterBlock.tage.do', zonen);
+      if(pvObj(err, p.winterBlock.tage.sa, 'winterBlock.tage.sa')){
+        pvBlocks(err, p.winterBlock.tage.sa.bloecke, 'winterBlock.tage.sa.bloecke');
+      }
+    }
   }
 
   if(pvObj(err, p.cadenceTargets, 'cadenceTargets')){

@@ -256,7 +256,7 @@ describe('Einheiten eines Tages', () => {
   /* Woche 1 faehrt mittwochs nicht; gesucht ist die erste Woche mit Fahrt. */
   function ersteMittwochsfahrt(){
     for(let w = 1; w <= plan.weekCount; w++){
-      if(plan.weeks[w - 1].wednesdayMinutes > 0) return w;
+      if(plan.weeks[w - 1].tage.mi.minutes > 0) return w;
     }
     return null;
   }
@@ -299,7 +299,7 @@ describe('Einheiten eines Tages', () => {
   it('gibt dem Dienstag ab der zweiten Beineinheit eine zweite Einheit', () => {
     let mitBeinen = null, ohneBeine = null;
     for(let w = 1; w <= plan.weekCount; w++){
-      const n = plan.weeks[w - 1].tuesdayLegRounds || 0;
+      const n = plan.weeks[w - 1].tage.di.legRounds || 0;
       if(n > 0 && mitBeinen === null) mitBeinen = w;
       if(n === 0 && ohneBeine === null) ohneBeine = w;
     }

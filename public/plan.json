@@ -1,13 +1,11 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "planName": "Trainingsplan Radfahren – Fassung 4",
-
   "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
     "bearbeiten": "Zahlen und Texte hier aendern und die Datei speichern. Den Service Worker erzeugt vite-plugin-pwa beim Bauen; er nimmt plan.json selbsttaetig in den Precache. Eine Fassungsnummer von Hand gibt es nicht mehr.",
-    "fassung3": "Stand 30.08.2026. Gegenueber Fassung 2 geaendert: 2:1-Rhythmus ab Woche 5 mit fester Erholungswochenliste, neue Phasengrenzen 1-4 / 5-10 / 11-13 / 14-16, Tests in Woche 4, 10 und 16, Samstagsbloecke in 6, 9 und 12, Erhaltungsreiz am Mittwoch in Woche 11 und 12, zweite Beineinheit am Dienstag ab Woche 11, Umfangsdeckel, Muskelkater-Regel, Testanlauf und Knochenreiz.",
-    "weeks": "Ein Objekt je Trainingswoche. Alles, was zu einer Woche gehoert, steht beisammen - anders als in parallelen Reihen kann sich hier nichts gegeneinander verschieben. Die Reihenfolge muss bei 1 beginnen und darf keine Luecke haben.",
-    "nachDemPlanende": "Nach der letzten Woche gilt winterBlock. Die Wochenwerte bleiben auf der letzten Planwoche stehen, Donnerstag und Samstag kommen aus winterBlock. Ab Fassung 3 traegt der Block keinen Winterplan mehr, sondern die Merkposten fuer den Nachfolgeplan.",
+    "weeks": "Ein Objekt je Trainingswoche. week zaehlt lueckenlos ab 1, phase verweist auf phaseNames, zirkel traegt die Taktung des Rumpfzirkels (workSeconds, restSeconds, rounds), und tage traegt je Wochentag, was an ihm von der Woche abhaengt.",
+    "nachDemPlanende": "Nach der letzten Woche gilt winterBlock. Er nennt die Tage, die er aendert - do und sa -, und ein genannter Tag ersetzt den der letzten Planwoche vollstaendig; die uebrigen erbt er von ihr. Ab Fassung 3 traegt der Block keinen Winterplan mehr, sondern die Merkposten fuer den Nachfolgeplan.",
     "erholungswochen": "recoveryWeeks nennt die Erholungswochen einzeln. Bis Fassung 2 stand hier recoveryEveryNthWeek und die App rechnete week % n === 0; der 2:1-Rhythmus ab Woche 5 laesst sich so nicht mehr abbilden. Reduzierte Umfaenge stehen wie bisher ausgeschrieben in weeks - die Liste steuert nur Beschriftung, Samstagsbloecke und die Beinblock-Dosierung.",
     "umfangsdeckel": "weeklyVolumeCapPercent ist der zulaessige Aufschlag auf die Wochensumme Rad (Di + Mi + Do + Sa + So). Die Analyse warnt, wenn eine vollstaendig erfasste Woche darueber liegt. Er ersetzt die Ramp-Rate als Fruehwarnung, solange die CTL unter 20 liegt.",
     "zonen": "heartRateZones.transitionBands gelten bis heartRateZones.cogganFromWeek bzw. solange keine LTHR eingetragen ist. Danach rechnet die App die Baender aus der LTHR nach Coggan. Die Baender muessen lueckenlos aneinander anschliessen: max der einen Zone ist min der naechsten. max null heisst offen nach oben.",
@@ -17,254 +15,872 @@
     "beweglichkeit": "mobilityFlow, coordination und boneStimulus stehen bewusst neben dem Radplan, nicht darin. Sie haengen an keiner Woche und an keiner Phase, weil sie radunabhaengig sind. Deshalb keine Dosierung je Phase wie beim legBlock, sondern ein fester Dosierungstext je Uebung. Seit Fassung 3 sind sie ausdruecklich kein Teil der Opferreihenfolge mehr - sie kosten keine Erholung.",
     "sprache": "Die Schluessel sind englisch, alle Werte und dieser Block sind deutsch. Absicht: die Schluessel bleiben maschinennah und stimmen mit den Feldnamen im Code ueberein, alles Erklaerende bleibt in der Sprache der App.",
     "farben": "Die Zonenfarben standen bis zum 29.08.2026 hier als Hexwerte und gleichzeitig als Tokens in src/ui/theme.css - beide wurden benutzt, also hatte dieselbe Zone je nach Anzeige eine andere Farbe, und die Fassung aus dieser Datei folgte dem Dunkelmodus nicht. Welche Farbe eine Zone traegt, ist Darstellung und keine Trainingsvorgabe; sie steht deshalb nur noch in theme.css.",
-    "fassung4": "Stand 04.09.2026. Eine einzige inhaltliche Aenderung: der 5-min-All-out entfaellt aus dem Schwellentest, die Pause davor sinkt von 10 auf 5 min, der Test dauert 55 statt 65 min. Die VO2max-Referenz wird stattdessen als erste Wiederholung der ersten Intervalleinheit am Donnerstag der Woche 5 erhoben - dort steht sie als thursday.variante. Der Testablauf traegt seit dieser Fassung eine Kennung, damit gespeicherte Ergebnisse sagen koennen, unter welchem Protokoll sie entstanden sind.",
     "testProtokoll": "thresholdTest.id und .fassung benennen das Protokoll. Der Trainingsplan verlangt, dass alle drei Termine identisch gefahren werden - deshalb gibt es genau ein aktives Protokoll und keine Liste. Die Kennung wandert in jeden Testeintrag; weichen zwei Eintraege voneinander ab, sagt die Anzeige das, statt zwei unvergleichbare Werte in dieselbe Linie zu zeichnen.",
-    "variante": "Ein thursday darf eine benannte Variante tragen: eine zweite zulaessige Form desselben Tages, ueber die am Tag selbst entschieden wird. Im ausgelieferten Plan ist das die VO2max-Referenz in Woche 5. Der Regelfall bleibt daneben unveraendert stehen - gewaehlt wird in der App, und die Wahl wird gespeichert. Die Wochensumme rechnet mit der Variante, weil der Trainingsplan sie so nennt; die zwei Minuten Unterschied liegen unter der Aufloesung des Umfangsdeckels.",
-    "wiederholungenInWeeks": "Das thursday-Objekt steht in mehreren Wochen woertlich gleich da. Das ist Absicht und kein Copy-Paste-Rest: jede Woche bleibt fuer sich lesbar, und nichts kann sich gegeneinander verschieben.",
+    "variante": "Ein tage.do darf eine benannte Variante tragen: eine zweite zulaessige Form desselben Tages, ueber die am Tag selbst entschieden wird. Im ausgelieferten Plan ist das die VO2max-Referenz in Woche 5. Der Regelfall bleibt daneben unveraendert stehen - gewaehlt wird in der App, und die Wahl wird gespeichert. Die Wochensumme rechnet mit der Variante, weil der Trainingsplan sie so nennt; die zwei Minuten Unterschied liegen unter der Aufloesung des Umfangsdeckels.",
+    "wiederholungenInWeeks": "Das tage.do-Objekt steht in mehreren Wochen woertlich gleich da. Das ist Absicht und kein Copy-Paste-Rest: jede Woche bleibt fuer sich lesbar, und nichts kann sich gegeneinander verschieben.",
     "unbekannteSchluessel": "Die Pruefung meldet Schluessel der obersten Ebene, die sie nicht kennt. Ein Tippfehler in einem optionalen Feld wurde vorher stillschweigend verworfen, und die App rechnete mit dem Standardwert weiter - das widerspricht dem Grundsatz, lieber gar keine Zahl zu zeigen als eine falsche.",
-    "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach."
+    "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach.",
+    "tage": "Die Wochentage unter ihrem Kuerzel: di, mi, do, sa, so. Montag und Freitag fehlen, weil an ihnen nichts von der Woche abhaengt - der Montag ist frei, der Freitag steht in fridayOptional. di.minutes und di.legRounds: Arbeitsweg und die zweite Beineinheit am Abend. mi.minutes und mi.extra: die kurze Fahrt und ein daran haengender Reiz. do: der Qualitaetstag als vollstaendiges Objekt, siehe variante. sa.minutes und sa.bloecke: die lange Ausfahrt und die Z3-Bloecke darin. so.optionalMinutes und so.legRounds: die optionale Fahrt davor und die Runden des Beinblocks. Ein Kuerzel, das hier nicht steht, wird beanstandet - sonst schriebe jemand \"mo\" hin und wunderte sich, dass der Montag sich nicht ruehrt.",
+    "migration": "Ein Plan der Fassung 2 wird beim Laden auf Fassung 3 gehoben: die Wochentage im Feldnamen (tuesdayMinutes, saturdayBlocks …) werden zu einem Objekt je Tag unter weeks[].tage."
   },
-
-  "recoveryWeeks": [4, 7, 10, 13, 16],
+  "recoveryWeeks": [
+    4,
+    7,
+    10,
+    13,
+    16
+  ],
   "weeklyVolumeCapPercent": 10,
-
   "phaseNames": {
     "1": "Grundlage",
     "2": "VO2max",
     "3": "Grundlagenblock",
     "4": "Schwelle"
   },
-
   "weeks": [
     {
-      "week": 1, "phase": 1,
-      "tuesdayMinutes": 60, "wednesdayMinutes": 0, "saturdayMinutes": 120, "sundayOptionalMinutes": 30,
-      "coreWorkSeconds": 25, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – Tempo-Intervalle", "zone": "z3", "reps": 4, "workMinutes": 5, "restMinutes": 3, "power": null},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 2, "phase": 1,
-      "tuesdayMinutes": 70, "wednesdayMinutes": 40, "saturdayMinutes": 130, "sundayOptionalMinutes": 30,
-      "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – Tempo-Intervalle", "zone": "z3", "reps": 4, "workMinutes": 5, "restMinutes": 3, "power": null},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 3, "phase": 1,
-      "tuesdayMinutes": 80, "wednesdayMinutes": 40, "saturdayMinutes": 140, "sundayOptionalMinutes": 35,
-      "coreWorkSeconds": 35, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – Tempo-Intervalle", "zone": "z3", "reps": 5, "workMinutes": 5, "restMinutes": 3, "power": null},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 4, "phase": 1,
-      "tuesdayMinutes": 45, "wednesdayMinutes": 30, "saturdayMinutes": 90, "sundayOptionalMinutes": 25,
-      "coreWorkSeconds": 25, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "test", "title": "Rad – Schwellentest", "zone": "z4", "minutes": 55},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 5, "phase": 2,
-      "tuesdayMinutes": 85, "wednesdayMinutes": 40, "saturdayMinutes": 150, "sundayOptionalMinutes": 35,
-      "coreWorkSeconds": 30, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP",
-        "variante": {
-          "id": "vo2max-referenz",
-          "title": "Rad – VO2max-Referenz + Intervalle",
-          "frage": "Den 5-Minuten-Referenzwert heute erheben?",
-          "ergebnis": "vo2max5",
-          "steering": "5 min alles geben, danach 108–115 % FTP",
-          "note": "Der Maximalversuch ist selbst ein VO2max-Reiz und zählt als erste Wiederholung – deshalb folgen nur noch vier statt fünf. Der Wert ist Kür: wird er nicht erhoben, gilt die Regelstruktur 5 × 4 min.",
-          "steps": [
-            {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 15, "zone": "z12"},
-            {"type": "work", "label": "5 min maximal", "short": "5 min maximal", "minutes": 5, "zone": "z5", "rep": 1, "reps": 1, "effort": "alles geben", "note": "Die VO2max-Referenzleistung. Gleichmäßig alles geben, nicht antreten und einbrechen – der Ø-Wert der fünf Minuten zählt. Der Puls ist hier Ergebnis und keine Vorgabe."},
-            {"type": "rest", "label": "Locker rollen", "short": "Locker rollen", "minutes": 5, "zone": "z1", "rep": 1, "reps": 1},
-            {"type": "work", "label": "Intervall 1 / 4", "short": "Intervall 1/4", "minutes": 4, "zone": "z5", "rep": 1, "reps": 4},
-            {"type": "rest", "label": "Erholung", "short": "Erholung 1/3", "minutes": 4, "zone": "z1", "rep": 1, "reps": 4},
-            {"type": "work", "label": "Intervall 2 / 4", "short": "Intervall 2/4", "minutes": 4, "zone": "z5", "rep": 2, "reps": 4},
-            {"type": "rest", "label": "Erholung", "short": "Erholung 2/3", "minutes": 4, "zone": "z1", "rep": 2, "reps": 4},
-            {"type": "work", "label": "Intervall 3 / 4", "short": "Intervall 3/4", "minutes": 4, "zone": "z5", "rep": 3, "reps": 4},
-            {"type": "rest", "label": "Erholung", "short": "Erholung 3/3", "minutes": 4, "zone": "z1", "rep": 3, "reps": 4},
-            {"type": "work", "label": "Intervall 4 / 4", "short": "Intervall 4/4", "minutes": 4, "zone": "z5", "rep": 4, "reps": 4},
-            {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 12, "zone": "z1"}
-          ]
-        }},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 6, "phase": 2,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 160, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 35, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
-      "saturdayBlocks": {"reps": 2, "minutes": 12, "restMinutes": 8}
-    },
-    {
-      "week": 7, "phase": 2,
-      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 100, "sundayOptionalMinutes": 25,
-      "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – Sweetspot (Erholungswoche)", "zone": "z3", "reps": 4, "workMinutes": 3, "restMinutes": 3, "power": "ca. 95 % FTP"},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 8, "phase": 2,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 165, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 35, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 9, "phase": 2,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 175, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – VO2max-Intervalle", "zone": "z5", "reps": 5, "workMinutes": 4, "restMinutes": 4, "power": "108–115 % FTP"},
-      "saturdayBlocks": {"reps": 2, "minutes": 12, "restMinutes": 8}
-    },
-    {
-      "week": 10, "phase": 2,
-      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 100, "sundayOptionalMinutes": 25,
-      "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "test", "title": "Rad – Schwellentest (Retest)", "zone": "z4", "minutes": 55},
-      "saturdayBlocks": null
-    },
-    {
-      "week": 11, "phase": 3,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 60, "saturdayMinutes": 170, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "tuesdayLegRounds": 2,
-      "wednesdayExtra": {
-        "label": "Erhaltungsreiz",
-        "reps": 6, "workSeconds": 30, "restSeconds": 30,
-        "effort": "zügig", "restEffort": "locker rollen",
-        "note": "An die Mittwochsfahrt angehängt. Phase 3 hat keinen harten Reiz, und die VO2max bildet sich von allen Größen am schnellsten zurück. Der Mittwoch ist hier nicht mehr der Schontag vor dem Qualitätstag, weil es keinen gibt."
+      "week": 1,
+      "phase": 1,
+      "zirkel": {
+        "workSeconds": 25,
+        "restSeconds": 25,
+        "rounds": 2
       },
-      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 70},
-      "saturdayBlocks": null
+      "tage": {
+        "di": {
+          "minutes": 60,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 0,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – Tempo-Intervalle",
+          "zone": "z3",
+          "reps": 4,
+          "workMinutes": 5,
+          "restMinutes": 3,
+          "power": null
+        },
+        "sa": {
+          "minutes": 120,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 30,
+          "legRounds": 2
+        }
+      }
     },
     {
-      "week": 12, "phase": 3,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 60, "saturdayMinutes": 180, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "tuesdayLegRounds": 2,
-      "wednesdayExtra": {
-        "label": "Erhaltungsreiz",
-        "reps": 6, "workSeconds": 30, "restSeconds": 30,
-        "effort": "zügig", "restEffort": "locker rollen",
-        "note": "An die Mittwochsfahrt angehängt. Phase 3 hat keinen harten Reiz, und die VO2max bildet sich von allen Größen am schnellsten zurück. Der Mittwoch ist hier nicht mehr der Schontag vor dem Qualitätstag, weil es keinen gibt."
+      "week": 2,
+      "phase": 1,
+      "zirkel": {
+        "workSeconds": 30,
+        "restSeconds": 25,
+        "rounds": 2
       },
-      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 75},
-      "saturdayBlocks": {"reps": 2, "minutes": 12, "restMinutes": 8}
+      "tage": {
+        "di": {
+          "minutes": 70,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 40,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – Tempo-Intervalle",
+          "zone": "z3",
+          "reps": 4,
+          "workMinutes": 5,
+          "restMinutes": 3,
+          "power": null
+        },
+        "sa": {
+          "minutes": 130,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 30,
+          "legRounds": 2
+        }
+      }
     },
     {
-      "week": 13, "phase": 3,
-      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 105, "sundayOptionalMinutes": 25,
-      "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (Erholungswoche)", "zone": "z2", "minutes": 55},
-      "saturdayBlocks": null
+      "week": 3,
+      "phase": 1,
+      "zirkel": {
+        "workSeconds": 35,
+        "restSeconds": 25,
+        "rounds": 2
+      },
+      "tage": {
+        "di": {
+          "minutes": 80,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 40,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – Tempo-Intervalle",
+          "zone": "z3",
+          "reps": 5,
+          "workMinutes": 5,
+          "restMinutes": 3,
+          "power": null
+        },
+        "sa": {
+          "minutes": 140,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 35,
+          "legRounds": 2
+        }
+      }
     },
     {
-      "week": 14, "phase": 4,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 175, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "tuesdayLegRounds": 1, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – Schwellenintervalle", "zone": "z4", "reps": 3, "workMinutes": 10, "restMinutes": 5, "power": "90–95 % FTP"},
-      "saturdayBlocks": null
+      "week": 4,
+      "phase": 1,
+      "zirkel": {
+        "workSeconds": 25,
+        "restSeconds": 25,
+        "rounds": 2
+      },
+      "tage": {
+        "di": {
+          "minutes": 45,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 30,
+          "extra": null
+        },
+        "do": {
+          "kind": "test",
+          "title": "Rad – Schwellentest",
+          "zone": "z4",
+          "minutes": 55
+        },
+        "sa": {
+          "minutes": 90,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 25,
+          "legRounds": 2
+        }
+      }
     },
     {
-      "week": 15, "phase": 4,
-      "tuesdayMinutes": 90, "wednesdayMinutes": 40, "saturdayMinutes": 185, "sundayOptionalMinutes": 40,
-      "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
-      "tuesdayLegRounds": 1, "wednesdayExtra": null,
-      "thursday": {"kind": "intervals", "title": "Rad – Schwellenintervalle", "zone": "z4", "reps": 3, "workMinutes": 12, "restMinutes": 5, "power": "90–95 % FTP"},
-      "saturdayBlocks": null
+      "week": 5,
+      "phase": 2,
+      "zirkel": {
+        "workSeconds": 30,
+        "restSeconds": 20,
+        "rounds": 3
+      },
+      "tage": {
+        "di": {
+          "minutes": 85,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 40,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – VO2max-Intervalle",
+          "zone": "z5",
+          "reps": 5,
+          "workMinutes": 4,
+          "restMinutes": 4,
+          "power": "108–115 % FTP",
+          "variante": {
+            "id": "vo2max-referenz",
+            "title": "Rad – VO2max-Referenz + Intervalle",
+            "frage": "Den 5-Minuten-Referenzwert heute erheben?",
+            "ergebnis": "vo2max5",
+            "steering": "5 min alles geben, danach 108–115 % FTP",
+            "note": "Der Maximalversuch ist selbst ein VO2max-Reiz und zählt als erste Wiederholung – deshalb folgen nur noch vier statt fünf. Der Wert ist Kür: wird er nicht erhoben, gilt die Regelstruktur 5 × 4 min.",
+            "steps": [
+              {
+                "type": "warm",
+                "label": "Einfahren",
+                "short": "Einfahren",
+                "minutes": 15,
+                "zone": "z12"
+              },
+              {
+                "type": "work",
+                "label": "5 min maximal",
+                "short": "5 min maximal",
+                "minutes": 5,
+                "zone": "z5",
+                "rep": 1,
+                "reps": 1,
+                "effort": "alles geben",
+                "note": "Die VO2max-Referenzleistung. Gleichmäßig alles geben, nicht antreten und einbrechen – der Ø-Wert der fünf Minuten zählt. Der Puls ist hier Ergebnis und keine Vorgabe."
+              },
+              {
+                "type": "rest",
+                "label": "Locker rollen",
+                "short": "Locker rollen",
+                "minutes": 5,
+                "zone": "z1",
+                "rep": 1,
+                "reps": 1
+              },
+              {
+                "type": "work",
+                "label": "Intervall 1 / 4",
+                "short": "Intervall 1/4",
+                "minutes": 4,
+                "zone": "z5",
+                "rep": 1,
+                "reps": 4
+              },
+              {
+                "type": "rest",
+                "label": "Erholung",
+                "short": "Erholung 1/3",
+                "minutes": 4,
+                "zone": "z1",
+                "rep": 1,
+                "reps": 4
+              },
+              {
+                "type": "work",
+                "label": "Intervall 2 / 4",
+                "short": "Intervall 2/4",
+                "minutes": 4,
+                "zone": "z5",
+                "rep": 2,
+                "reps": 4
+              },
+              {
+                "type": "rest",
+                "label": "Erholung",
+                "short": "Erholung 2/3",
+                "minutes": 4,
+                "zone": "z1",
+                "rep": 2,
+                "reps": 4
+              },
+              {
+                "type": "work",
+                "label": "Intervall 3 / 4",
+                "short": "Intervall 3/4",
+                "minutes": 4,
+                "zone": "z5",
+                "rep": 3,
+                "reps": 4
+              },
+              {
+                "type": "rest",
+                "label": "Erholung",
+                "short": "Erholung 3/3",
+                "minutes": 4,
+                "zone": "z1",
+                "rep": 3,
+                "reps": 4
+              },
+              {
+                "type": "work",
+                "label": "Intervall 4 / 4",
+                "short": "Intervall 4/4",
+                "minutes": 4,
+                "zone": "z5",
+                "rep": 4,
+                "reps": 4
+              },
+              {
+                "type": "cool",
+                "label": "Ausrollen",
+                "short": "Ausrollen",
+                "minutes": 12,
+                "zone": "z1"
+              }
+            ]
+          }
+        },
+        "sa": {
+          "minutes": 150,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 35,
+          "legRounds": 2
+        }
+      }
     },
     {
-      "week": 16, "phase": 4,
-      "tuesdayMinutes": 50, "wednesdayMinutes": 30, "saturdayMinutes": 105, "sundayOptionalMinutes": 25,
-      "coreWorkSeconds": 30, "coreRestSeconds": 25, "coreRounds": 2, "legRounds": 2,
-      "tuesdayLegRounds": 0, "wednesdayExtra": null,
-      "thursday": {"kind": "test", "title": "Rad – Schwellentest (Retest)", "zone": "z4", "minutes": 55},
-      "saturdayBlocks": null
+      "week": 6,
+      "phase": 2,
+      "zirkel": {
+        "workSeconds": 35,
+        "restSeconds": 20,
+        "rounds": 3
+      },
+      "tage": {
+        "di": {
+          "minutes": 90,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 40,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – VO2max-Intervalle",
+          "zone": "z5",
+          "reps": 5,
+          "workMinutes": 4,
+          "restMinutes": 4,
+          "power": "108–115 % FTP"
+        },
+        "sa": {
+          "minutes": 160,
+          "bloecke": {
+            "reps": 2,
+            "minutes": 12,
+            "restMinutes": 8
+          }
+        },
+        "so": {
+          "optionalMinutes": 40,
+          "legRounds": 2
+        }
+      }
+    },
+    {
+      "week": 7,
+      "phase": 2,
+      "zirkel": {
+        "workSeconds": 30,
+        "restSeconds": 25,
+        "rounds": 2
+      },
+      "tage": {
+        "di": {
+          "minutes": 50,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 30,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – Sweetspot (Erholungswoche)",
+          "zone": "z3",
+          "reps": 4,
+          "workMinutes": 3,
+          "restMinutes": 3,
+          "power": "ca. 95 % FTP"
+        },
+        "sa": {
+          "minutes": 100,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 25,
+          "legRounds": 2
+        }
+      }
+    },
+    {
+      "week": 8,
+      "phase": 2,
+      "zirkel": {
+        "workSeconds": 35,
+        "restSeconds": 20,
+        "rounds": 3
+      },
+      "tage": {
+        "di": {
+          "minutes": 90,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 40,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – VO2max-Intervalle",
+          "zone": "z5",
+          "reps": 5,
+          "workMinutes": 4,
+          "restMinutes": 4,
+          "power": "108–115 % FTP"
+        },
+        "sa": {
+          "minutes": 165,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 40,
+          "legRounds": 2
+        }
+      }
+    },
+    {
+      "week": 9,
+      "phase": 2,
+      "zirkel": {
+        "workSeconds": 40,
+        "restSeconds": 20,
+        "rounds": 3
+      },
+      "tage": {
+        "di": {
+          "minutes": 90,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 40,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – VO2max-Intervalle",
+          "zone": "z5",
+          "reps": 5,
+          "workMinutes": 4,
+          "restMinutes": 4,
+          "power": "108–115 % FTP"
+        },
+        "sa": {
+          "minutes": 175,
+          "bloecke": {
+            "reps": 2,
+            "minutes": 12,
+            "restMinutes": 8
+          }
+        },
+        "so": {
+          "optionalMinutes": 40,
+          "legRounds": 3
+        }
+      }
+    },
+    {
+      "week": 10,
+      "phase": 2,
+      "zirkel": {
+        "workSeconds": 30,
+        "restSeconds": 25,
+        "rounds": 2
+      },
+      "tage": {
+        "di": {
+          "minutes": 50,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 30,
+          "extra": null
+        },
+        "do": {
+          "kind": "test",
+          "title": "Rad – Schwellentest (Retest)",
+          "zone": "z4",
+          "minutes": 55
+        },
+        "sa": {
+          "minutes": 100,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 25,
+          "legRounds": 2
+        }
+      }
+    },
+    {
+      "week": 11,
+      "phase": 3,
+      "zirkel": {
+        "workSeconds": 40,
+        "restSeconds": 20,
+        "rounds": 3
+      },
+      "tage": {
+        "di": {
+          "minutes": 90,
+          "legRounds": 2
+        },
+        "mi": {
+          "minutes": 60,
+          "extra": {
+            "label": "Erhaltungsreiz",
+            "reps": 6,
+            "workSeconds": 30,
+            "restSeconds": 30,
+            "effort": "zügig",
+            "restEffort": "locker rollen",
+            "note": "An die Mittwochsfahrt angehängt. Phase 3 hat keinen harten Reiz, und die VO2max bildet sich von allen Größen am schnellsten zurück. Der Mittwoch ist hier nicht mehr der Schontag vor dem Qualitätstag, weil es keinen gibt."
+          }
+        },
+        "do": {
+          "kind": "z2",
+          "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)",
+          "zone": "z2",
+          "minutes": 70
+        },
+        "sa": {
+          "minutes": 170,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 40,
+          "legRounds": 3
+        }
+      }
+    },
+    {
+      "week": 12,
+      "phase": 3,
+      "zirkel": {
+        "workSeconds": 40,
+        "restSeconds": 20,
+        "rounds": 3
+      },
+      "tage": {
+        "di": {
+          "minutes": 90,
+          "legRounds": 2
+        },
+        "mi": {
+          "minutes": 60,
+          "extra": {
+            "label": "Erhaltungsreiz",
+            "reps": 6,
+            "workSeconds": 30,
+            "restSeconds": 30,
+            "effort": "zügig",
+            "restEffort": "locker rollen",
+            "note": "An die Mittwochsfahrt angehängt. Phase 3 hat keinen harten Reiz, und die VO2max bildet sich von allen Größen am schnellsten zurück. Der Mittwoch ist hier nicht mehr der Schontag vor dem Qualitätstag, weil es keinen gibt."
+          }
+        },
+        "do": {
+          "kind": "z2",
+          "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)",
+          "zone": "z2",
+          "minutes": 75
+        },
+        "sa": {
+          "minutes": 180,
+          "bloecke": {
+            "reps": 2,
+            "minutes": 12,
+            "restMinutes": 8
+          }
+        },
+        "so": {
+          "optionalMinutes": 40,
+          "legRounds": 3
+        }
+      }
+    },
+    {
+      "week": 13,
+      "phase": 3,
+      "zirkel": {
+        "workSeconds": 30,
+        "restSeconds": 25,
+        "rounds": 2
+      },
+      "tage": {
+        "di": {
+          "minutes": 50,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 30,
+          "extra": null
+        },
+        "do": {
+          "kind": "z2",
+          "title": "Rad – Grundlagenausdauer (Erholungswoche)",
+          "zone": "z2",
+          "minutes": 55
+        },
+        "sa": {
+          "minutes": 105,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 25,
+          "legRounds": 2
+        }
+      }
+    },
+    {
+      "week": 14,
+      "phase": 4,
+      "zirkel": {
+        "workSeconds": 40,
+        "restSeconds": 20,
+        "rounds": 3
+      },
+      "tage": {
+        "di": {
+          "minutes": 90,
+          "legRounds": 1
+        },
+        "mi": {
+          "minutes": 40,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – Schwellenintervalle",
+          "zone": "z4",
+          "reps": 3,
+          "workMinutes": 10,
+          "restMinutes": 5,
+          "power": "90–95 % FTP"
+        },
+        "sa": {
+          "minutes": 175,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 40,
+          "legRounds": 3
+        }
+      }
+    },
+    {
+      "week": 15,
+      "phase": 4,
+      "zirkel": {
+        "workSeconds": 40,
+        "restSeconds": 20,
+        "rounds": 3
+      },
+      "tage": {
+        "di": {
+          "minutes": 90,
+          "legRounds": 1
+        },
+        "mi": {
+          "minutes": 40,
+          "extra": null
+        },
+        "do": {
+          "kind": "intervals",
+          "title": "Rad – Schwellenintervalle",
+          "zone": "z4",
+          "reps": 3,
+          "workMinutes": 12,
+          "restMinutes": 5,
+          "power": "90–95 % FTP"
+        },
+        "sa": {
+          "minutes": 185,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 40,
+          "legRounds": 3
+        }
+      }
+    },
+    {
+      "week": 16,
+      "phase": 4,
+      "zirkel": {
+        "workSeconds": 30,
+        "restSeconds": 25,
+        "rounds": 2
+      },
+      "tage": {
+        "di": {
+          "minutes": 50,
+          "legRounds": 0
+        },
+        "mi": {
+          "minutes": 30,
+          "extra": null
+        },
+        "do": {
+          "kind": "test",
+          "title": "Rad – Schwellentest (Retest)",
+          "zone": "z4",
+          "minutes": 55
+        },
+        "sa": {
+          "minutes": 105,
+          "bloecke": null
+        },
+        "so": {
+          "optionalMinutes": 25,
+          "legRounds": 2
+        }
+      }
     }
   ],
-
   "winterBlock": {
     "phase": 5,
     "name": "Nach dem Plan",
-    "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer", "zone": "z2", "minutes": 75},
-    "saturdayBlocks": null,
-    "note": "Der 16-Wochen-Plan endet am 04.12.2026. Danach wird auf Basis der drei Testergebnisse und der Auswertung ein neuer Plan geschrieben – dieser wird nicht fortgeschrieben. Offen: Entwicklung von FTP, LTHR und Gewicht, Rolle oder Smarttrainer für den Winter, Zieltermin und Zielereignis, Höhenmeter als eigenständige Progression, lange Ausfahrten jenseits von drei Stunden. Die Wochenwerte unten stehen weiter auf Woche 16."
+    "note": "Der 16-Wochen-Plan endet am 04.12.2026. Danach wird auf Basis der drei Testergebnisse und der Auswertung ein neuer Plan geschrieben – dieser wird nicht fortgeschrieben. Offen: Entwicklung von FTP, LTHR und Gewicht, Rolle oder Smarttrainer für den Winter, Zieltermin und Zielereignis, Höhenmeter als eigenständige Progression, lange Ausfahrten jenseits von drei Stunden. Die Wochenwerte unten stehen weiter auf Woche 16.",
+    "tage": {
+      "do": {
+        "kind": "z2",
+        "title": "Rad – Grundlagenausdauer",
+        "zone": "z2",
+        "minutes": 75
+      },
+      "sa": {
+        "minutes": 105,
+        "bloecke": null
+      }
+    }
   },
-
   "heartRateZones": {
     "cogganFromWeek": 5,
     "transitionBands": [
-      {"key": "unter", "label": "<Z1", "min": 0,   "max": 100},
-      {"key": "z1",    "label": "Z1",  "min": 100, "max": 128},
-      {"key": "z2",    "label": "Z2",  "min": 128, "max": 142},
-      {"key": "z3",    "label": "Z3",  "min": 142, "max": 155},
-      {"key": "z4",    "label": "Z4",  "min": 155, "max": 168},
-      {"key": "z5",    "label": "Z5",  "min": 168, "max": null}
+      {
+        "key": "unter",
+        "label": "<Z1",
+        "min": 0,
+        "max": 100
+      },
+      {
+        "key": "z1",
+        "label": "Z1",
+        "min": 100,
+        "max": 128
+      },
+      {
+        "key": "z2",
+        "label": "Z2",
+        "min": 128,
+        "max": 142
+      },
+      {
+        "key": "z3",
+        "label": "Z3",
+        "min": 142,
+        "max": 155
+      },
+      {
+        "key": "z4",
+        "label": "Z4",
+        "min": 155,
+        "max": 168
+      },
+      {
+        "key": "z5",
+        "label": "Z5",
+        "min": 168,
+        "max": null
+      }
     ],
     "cogganBands": [
-      {"key": "unter", "label": "<Z1", "minFactor": 0,    "maxFactor": 0.55},
-      {"key": "z1",    "label": "Z1",  "minFactor": 0.55, "maxFactor": 0.68},
-      {"key": "z2",    "label": "Z2",  "minFactor": 0.68, "maxFactor": 0.83},
-      {"key": "z3",    "label": "Z3",  "minFactor": 0.83, "maxFactor": 0.94},
-      {"key": "z4",    "label": "Z4",  "minFactor": 0.94, "maxFactor": 1.05},
-      {"key": "z5",    "label": "Z5",  "minFactor": 1.05, "maxFactor": null}
+      {
+        "key": "unter",
+        "label": "<Z1",
+        "minFactor": 0,
+        "maxFactor": 0.55
+      },
+      {
+        "key": "z1",
+        "label": "Z1",
+        "minFactor": 0.55,
+        "maxFactor": 0.68
+      },
+      {
+        "key": "z2",
+        "label": "Z2",
+        "minFactor": 0.68,
+        "maxFactor": 0.83
+      },
+      {
+        "key": "z3",
+        "label": "Z3",
+        "minFactor": 0.83,
+        "maxFactor": 0.94
+      },
+      {
+        "key": "z4",
+        "label": "Z4",
+        "minFactor": 0.94,
+        "maxFactor": 1.05
+      },
+      {
+        "key": "z5",
+        "label": "Z5",
+        "minFactor": 1.05,
+        "maxFactor": null
+      }
     ]
   },
-
   "powerZones": {
-    "z1": {"minFactor": 0,    "maxFactor": 0.55},
-    "z2": {"minFactor": 0.56, "maxFactor": 0.75},
-    "z3": {"minFactor": 0.76, "maxFactor": 0.90},
-    "z4": {"minFactor": 0.91, "maxFactor": 1.05},
-    "z5": {"minFactor": 1.06, "maxFactor": 1.20}
+    "z1": {
+      "minFactor": 0,
+      "maxFactor": 0.55
+    },
+    "z2": {
+      "minFactor": 0.56,
+      "maxFactor": 0.75
+    },
+    "z3": {
+      "minFactor": 0.76,
+      "maxFactor": 0.9
+    },
+    "z4": {
+      "minFactor": 0.91,
+      "maxFactor": 1.05
+    },
+    "z5": {
+      "minFactor": 1.06,
+      "maxFactor": 1.2
+    }
   },
-
   "cadenceTargets": {
     "fromWeek": 3,
-    "byZone": {"z1": null, "z2": "85–90 rpm", "z3": "85–90 rpm", "z4": "85–90 rpm", "z5": "95–100 rpm"}
+    "byZone": {
+      "z1": null,
+      "z2": "85–90 rpm",
+      "z3": "85–90 rpm",
+      "z4": "85–90 rpm",
+      "z5": "95–100 rpm"
+    }
   },
-
   "speedEstimate": {
     "showUntilWeek": 4,
     "baseKmh": 21,
     "perWeekKmh": 0.15,
     "maxKmh": 24
   },
-
   "saturdayRide": {
     "warmupMinutes": 15,
     "cooldownMinutes": 10
   },
-
   "fridayOptional": {
     "minMinutes": 30,
     "maxMinutes": 40,
     "targetMinutes": 35,
     "zone": "z1"
   },
-
   "intervalTimer": {
     "prepSeconds": 10,
     "warmupMinutes": 15,
     "cooldownMinutes": 12
   },
-
   "thresholdTest": {
     "id": "20min-ohne-allout",
     "fassung": 4,
@@ -272,63 +888,299 @@
     "label": "20-min-Test ohne All-out",
     "steering": "gleichmäßig maximal – Ø-Leistung, nicht Puls",
     "steps": [
-      {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 8, "zone": "z12"},
-      {"type": "work", "label": "Zügig 1 / 3", "short": "Zügig 1/3", "minutes": 1, "zone": "z3", "rep": 1, "reps": 3, "effort": "zügig", "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
-      {"type": "rest", "label": "Locker", "short": "Locker 1/3", "minutes": 1, "zone": "z1", "rep": 1, "reps": 3},
-      {"type": "work", "label": "Zügig 2 / 3", "short": "Zügig 2/3", "minutes": 1, "zone": "z3", "rep": 2, "reps": 3, "effort": "zügig", "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
-      {"type": "rest", "label": "Locker", "short": "Locker 2/3", "minutes": 1, "zone": "z1", "rep": 2, "reps": 3},
-      {"type": "work", "label": "Zügig 3 / 3", "short": "Zügig 3/3", "minutes": 1, "zone": "z3", "rep": 3, "reps": 3, "effort": "zügig", "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
-      {"type": "rest", "label": "Locker", "short": "Locker 3/3", "minutes": 1, "zone": "z1", "rep": 3, "reps": 3},
-      {"type": "warm", "label": "Einfahren, Rest", "short": "Einfahren", "minutes": 6, "zone": "z12"},
-      {"type": "rest", "label": "Locker rollen", "short": "Locker rollen", "minutes": 5, "zone": "z1", "rep": 1, "reps": 1, "note": "Nur so lange, bis die Atmung ruhig ist. Der 5-min-All-out des Originalprotokolls entfällt in diesem Plan: die Pacing-Vorgabe aus dem Anlauf gilt für frische Beine, nach einer Vorbelastung wäre der Test wieder blind gepact."},
-      {"type": "work", "label": "20 min gleichmäßig maximal", "short": "20 min maximal", "minutes": 20, "zone": "z4", "rep": 1, "reps": 1, "effort": "gleichmäßig maximal", "note": "Erste drei Minuten bewusst konservativer als das Ziel, danach auf die Ø-Leistung der Runde schauen und nicht auf den Momentanwert. Die letzten zwei Minuten sollen sich anfühlen wie „gerade noch“. Ø-Watt × 0,95 = FTP · Ø-Puls = LTHR."},
-      {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 10, "zone": "z1"}
+      {
+        "type": "warm",
+        "label": "Einfahren",
+        "short": "Einfahren",
+        "minutes": 8,
+        "zone": "z12"
+      },
+      {
+        "type": "work",
+        "label": "Zügig 1 / 3",
+        "short": "Zügig 1/3",
+        "minutes": 1,
+        "zone": "z3",
+        "rep": 1,
+        "reps": 3,
+        "effort": "zügig",
+        "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."
+      },
+      {
+        "type": "rest",
+        "label": "Locker",
+        "short": "Locker 1/3",
+        "minutes": 1,
+        "zone": "z1",
+        "rep": 1,
+        "reps": 3
+      },
+      {
+        "type": "work",
+        "label": "Zügig 2 / 3",
+        "short": "Zügig 2/3",
+        "minutes": 1,
+        "zone": "z3",
+        "rep": 2,
+        "reps": 3,
+        "effort": "zügig",
+        "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."
+      },
+      {
+        "type": "rest",
+        "label": "Locker",
+        "short": "Locker 2/3",
+        "minutes": 1,
+        "zone": "z1",
+        "rep": 2,
+        "reps": 3
+      },
+      {
+        "type": "work",
+        "label": "Zügig 3 / 3",
+        "short": "Zügig 3/3",
+        "minutes": 1,
+        "zone": "z3",
+        "rep": 3,
+        "reps": 3,
+        "effort": "zügig",
+        "note": "Öffnungsintervall, nicht all-out. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."
+      },
+      {
+        "type": "rest",
+        "label": "Locker",
+        "short": "Locker 3/3",
+        "minutes": 1,
+        "zone": "z1",
+        "rep": 3,
+        "reps": 3
+      },
+      {
+        "type": "warm",
+        "label": "Einfahren, Rest",
+        "short": "Einfahren",
+        "minutes": 6,
+        "zone": "z12"
+      },
+      {
+        "type": "rest",
+        "label": "Locker rollen",
+        "short": "Locker rollen",
+        "minutes": 5,
+        "zone": "z1",
+        "rep": 1,
+        "reps": 1,
+        "note": "Nur so lange, bis die Atmung ruhig ist. Der 5-min-All-out des Originalprotokolls entfällt in diesem Plan: die Pacing-Vorgabe aus dem Anlauf gilt für frische Beine, nach einer Vorbelastung wäre der Test wieder blind gepact."
+      },
+      {
+        "type": "work",
+        "label": "20 min gleichmäßig maximal",
+        "short": "20 min maximal",
+        "minutes": 20,
+        "zone": "z4",
+        "rep": 1,
+        "reps": 1,
+        "effort": "gleichmäßig maximal",
+        "note": "Erste drei Minuten bewusst konservativer als das Ziel, danach auf die Ø-Leistung der Runde schauen und nicht auf den Momentanwert. Die letzten zwei Minuten sollen sich anfühlen wie „gerade noch“. Ø-Watt × 0,95 = FTP · Ø-Puls = LTHR."
+      },
+      {
+        "type": "cool",
+        "label": "Ausrollen",
+        "short": "Ausrollen",
+        "minutes": 10,
+        "zone": "z1"
+      }
     ]
   },
-
   "testTaper": {
     "leadDays": 10,
     "intro": "Der Testanlauf läuft. Er ist verbindlich: ein blind gepacter Test fällt zu niedrig aus und verzerrt die Zonen für den gesamten Folgeblock.",
     "steps": [
-      {"offsetDays": -7, "label": "7 Tage davor (Do)", "text": "Statt der Qualitätseinheit: 15 min Einfahren, 2 × 6 min im angestrebten Testtempo, 6 min Pause dazwischen, 10 min Ausrollen. Das liefert die Wattzahl, auf die im Test gezielt wird.",
-       "session": {
-         "kind": "steps", "title": "Rad – Anlauf im Testtempo",
-         "steering": "Tempo, das 20 min haltbar wäre – Sprechtest 3–5 Worte",
-         "steps": [
-           {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 15, "zone": "z12"},
-           {"type": "work", "label": "Block 1 – Tempo suchen", "short": "Block 1", "minutes": 6, "zone": "z4", "effort": "geschätztes Testtempo",
-            "note": "Nach Anstrengung fahren, nicht nach Puls – bei sechs Minuten hinkt er hinterher und ist erst gegen Ende dort, wo er hingehört. In der letzten Minute prüfen: Puls ablesen, Sprechtest (3–5 Worte am Stück), und die Frage „könnte ich das 20 min halten?“"},
-           {"type": "rest", "label": "Pause – Entscheidung", "short": "Pause", "minutes": 6, "zone": "z1",
-            "note": "Ging Block 1 zu leicht – ganze Sätze möglich, Gefühl „könnte ewig so weiter“: +15 W für Block 2. Zu schwer – kaum drei Worte am Stück, 20 min klar nicht haltbar: −15 W. Passte es: dieselbe Leistung halten."},
-           {"type": "work", "label": "Block 2 – korrigiertes Tempo", "short": "Block 2", "minutes": 6, "zone": "z4", "effort": "korrigiertes Testtempo",
-            "note": "Mit der Leistung aus der Entscheidung. Ihr Ø-Watt ist die Zahl, auf die im Test gezielt wird – notieren. Der Puls dieses Blocks wird mitgeschrieben, nicht angesteuert; die LTHR liefert erst der Test."},
-           {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 10, "zone": "z1"}
-         ]
-       }},
-      {"offsetDays": -6, "label": "6 Tage davor (Fr)", "text": "Ruhe.",
-       "session": {"kind": "rest", "title": "Ruhetag", "note": "Die lockere Fahrt entfällt – der Freitag im Anlauf ist Ruhe und keine Entscheidung."}},
-      {"offsetDays": -5, "label": "5 Tage davor (Sa)", "text": "90 min reines Z2 statt der geplanten langen Ausfahrt."},
-      {"offsetDays": -4, "label": "4 Tage davor (So)", "text": "Nur Rumpf-Zirkel, kein Beinblock.",
-       "session": {"kind": "core", "title": "Rumpf-Zirkel (voll), kein Beinblock", "note": "Beinblock und optionale Fahrt entfallen – die Beine sollen am Testtag frisch sein."}},
-      {"offsetDays": -3, "label": "3 Tage davor (Mo)", "text": "Ruhe."},
-      {"offsetDays": -2, "label": "2 Tage davor (Di)", "text": "45 min, direkte Strecke, unteres Z2 – nicht verlängern.",
-       "session": {"kind": "ride", "title": "Rad – direkte Strecke", "zone": "z2", "note": "Direkte Strecke, unteres Z2 – nicht verlängern. Der Arbeitsweg wird an diesem Dienstag nicht gedehnt."}},
-      {"offsetDays": -1, "label": "Tag davor (Mi)", "text": "30 min Z1 mit 3 × 1 min zügig / 1 min locker, kein Rumpf. Die Öffner stellen nach zwei ruhigen Tagen die Spritzigkeit her, ohne Ermüdung zu erzeugen.",
-       "session": {
-         "kind": "steps", "title": "Rad – Öffner vor dem Test", "note": "Kein Rumpf-Zirkel an diesem Mittwoch.",
-         "steering": "kurz und spritzig – nicht all-out",
-         "steps": [
-           {"type": "warm", "label": "Einrollen", "short": "Einrollen", "minutes": 12, "zone": "z1"},
-           {"type": "work", "label": "Zügig 1 / 3", "short": "Zügig 1/3", "minutes": 1, "zone": "z3", "rep": 1, "reps": 3, "effort": "zügig", "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
-           {"type": "rest", "label": "Locker", "short": "Locker 1/3", "minutes": 1, "zone": "z1", "rep": 1, "reps": 3},
-           {"type": "work", "label": "Zügig 2 / 3", "short": "Zügig 2/3", "minutes": 1, "zone": "z3", "rep": 2, "reps": 3, "effort": "zügig", "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
-           {"type": "rest", "label": "Locker", "short": "Locker 2/3", "minutes": 1, "zone": "z1", "rep": 2, "reps": 3},
-           {"type": "work", "label": "Zügig 3 / 3", "short": "Zügig 3/3", "minutes": 1, "zone": "z3", "rep": 3, "reps": 3, "effort": "zügig", "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."},
-           {"type": "rest", "label": "Locker", "short": "Locker 3/3", "minutes": 1, "zone": "z1", "rep": 3, "reps": 3},
-           {"type": "cool", "label": "Ausrollen", "short": "Ausrollen", "minutes": 12, "zone": "z1"}
-         ]
-       }},
-      {"offsetDays": 1, "label": "Tag danach (Fr)", "text": "Ruhe oder 30 min Z1. Der Test war eine harte Einheit."}
+      {
+        "offsetDays": -7,
+        "label": "7 Tage davor (Do)",
+        "text": "Statt der Qualitätseinheit: 15 min Einfahren, 2 × 6 min im angestrebten Testtempo, 6 min Pause dazwischen, 10 min Ausrollen. Das liefert die Wattzahl, auf die im Test gezielt wird.",
+        "session": {
+          "kind": "steps",
+          "title": "Rad – Anlauf im Testtempo",
+          "steering": "Tempo, das 20 min haltbar wäre – Sprechtest 3–5 Worte",
+          "steps": [
+            {
+              "type": "warm",
+              "label": "Einfahren",
+              "short": "Einfahren",
+              "minutes": 15,
+              "zone": "z12"
+            },
+            {
+              "type": "work",
+              "label": "Block 1 – Tempo suchen",
+              "short": "Block 1",
+              "minutes": 6,
+              "zone": "z4",
+              "effort": "geschätztes Testtempo",
+              "note": "Nach Anstrengung fahren, nicht nach Puls – bei sechs Minuten hinkt er hinterher und ist erst gegen Ende dort, wo er hingehört. In der letzten Minute prüfen: Puls ablesen, Sprechtest (3–5 Worte am Stück), und die Frage „könnte ich das 20 min halten?“"
+            },
+            {
+              "type": "rest",
+              "label": "Pause – Entscheidung",
+              "short": "Pause",
+              "minutes": 6,
+              "zone": "z1",
+              "note": "Ging Block 1 zu leicht – ganze Sätze möglich, Gefühl „könnte ewig so weiter“: +15 W für Block 2. Zu schwer – kaum drei Worte am Stück, 20 min klar nicht haltbar: −15 W. Passte es: dieselbe Leistung halten."
+            },
+            {
+              "type": "work",
+              "label": "Block 2 – korrigiertes Tempo",
+              "short": "Block 2",
+              "minutes": 6,
+              "zone": "z4",
+              "effort": "korrigiertes Testtempo",
+              "note": "Mit der Leistung aus der Entscheidung. Ihr Ø-Watt ist die Zahl, auf die im Test gezielt wird – notieren. Der Puls dieses Blocks wird mitgeschrieben, nicht angesteuert; die LTHR liefert erst der Test."
+            },
+            {
+              "type": "cool",
+              "label": "Ausrollen",
+              "short": "Ausrollen",
+              "minutes": 10,
+              "zone": "z1"
+            }
+          ]
+        }
+      },
+      {
+        "offsetDays": -6,
+        "label": "6 Tage davor (Fr)",
+        "text": "Ruhe.",
+        "session": {
+          "kind": "rest",
+          "title": "Ruhetag",
+          "note": "Die lockere Fahrt entfällt – der Freitag im Anlauf ist Ruhe und keine Entscheidung."
+        }
+      },
+      {
+        "offsetDays": -5,
+        "label": "5 Tage davor (Sa)",
+        "text": "90 min reines Z2 statt der geplanten langen Ausfahrt."
+      },
+      {
+        "offsetDays": -4,
+        "label": "4 Tage davor (So)",
+        "text": "Nur Rumpf-Zirkel, kein Beinblock.",
+        "session": {
+          "kind": "core",
+          "title": "Rumpf-Zirkel (voll), kein Beinblock",
+          "note": "Beinblock und optionale Fahrt entfallen – die Beine sollen am Testtag frisch sein."
+        }
+      },
+      {
+        "offsetDays": -3,
+        "label": "3 Tage davor (Mo)",
+        "text": "Ruhe."
+      },
+      {
+        "offsetDays": -2,
+        "label": "2 Tage davor (Di)",
+        "text": "45 min, direkte Strecke, unteres Z2 – nicht verlängern.",
+        "session": {
+          "kind": "ride",
+          "title": "Rad – direkte Strecke",
+          "zone": "z2",
+          "note": "Direkte Strecke, unteres Z2 – nicht verlängern. Der Arbeitsweg wird an diesem Dienstag nicht gedehnt."
+        }
+      },
+      {
+        "offsetDays": -1,
+        "label": "Tag davor (Mi)",
+        "text": "30 min Z1 mit 3 × 1 min zügig / 1 min locker, kein Rumpf. Die Öffner stellen nach zwei ruhigen Tagen die Spritzigkeit her, ohne Ermüdung zu erzeugen.",
+        "session": {
+          "kind": "steps",
+          "title": "Rad – Öffner vor dem Test",
+          "note": "Kein Rumpf-Zirkel an diesem Mittwoch.",
+          "steering": "kurz und spritzig – nicht all-out",
+          "steps": [
+            {
+              "type": "warm",
+              "label": "Einrollen",
+              "short": "Einrollen",
+              "minutes": 12,
+              "zone": "z1"
+            },
+            {
+              "type": "work",
+              "label": "Zügig 1 / 3",
+              "short": "Zügig 1/3",
+              "minutes": 1,
+              "zone": "z3",
+              "rep": 1,
+              "reps": 3,
+              "effort": "zügig",
+              "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."
+            },
+            {
+              "type": "rest",
+              "label": "Locker",
+              "short": "Locker 1/3",
+              "minutes": 1,
+              "zone": "z1",
+              "rep": 1,
+              "reps": 3
+            },
+            {
+              "type": "work",
+              "label": "Zügig 2 / 3",
+              "short": "Zügig 2/3",
+              "minutes": 1,
+              "zone": "z3",
+              "rep": 2,
+              "reps": 3,
+              "effort": "zügig",
+              "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."
+            },
+            {
+              "type": "rest",
+              "label": "Locker",
+              "short": "Locker 2/3",
+              "minutes": 1,
+              "zone": "z1",
+              "rep": 2,
+              "reps": 3
+            },
+            {
+              "type": "work",
+              "label": "Zügig 3 / 3",
+              "short": "Zügig 3/3",
+              "minutes": 1,
+              "zone": "z3",
+              "rep": 3,
+              "reps": 3,
+              "effort": "zügig",
+              "note": "Kurz und spritzig, nicht all-out – der Reiz stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen. Eine Minute ist zu kurz, als dass der Puls etwas aussagen würde."
+            },
+            {
+              "type": "rest",
+              "label": "Locker",
+              "short": "Locker 3/3",
+              "minutes": 1,
+              "zone": "z1",
+              "rep": 3,
+              "reps": 3
+            },
+            {
+              "type": "cool",
+              "label": "Ausrollen",
+              "short": "Ausrollen",
+              "minutes": 12,
+              "zone": "z1"
+            }
+          ]
+        }
+      },
+      {
+        "offsetDays": 1,
+        "label": "Tag danach (Fr)",
+        "text": "Ruhe oder 30 min Z1. Der Test war eine harte Einheit."
+      }
     ],
     "goNoGoTitel": "Go/No-Go am Testmorgen",
     "goNoGo": [
@@ -340,14 +1192,16 @@
     "goNoGoNote": "Alle vier Punkte müssen zutreffen. Der TSB ist bewusst kein Kriterium: bei einer CTL um 10 ist ein Wert über −10 rechnerisch kaum zu erreichen, ein solches Kriterium würde den Test dauerhaft blockieren.",
     "shiftRule": "Fällt das Go/No-Go durch, wird nach hinten verschoben – ohne Ersatzeinheit und ohne Tausch. Testtag: Ruhe oder höchstens 40 min Z1, die Einheit entfällt ersatzlos. Freitag Ruhetag. Der Test läuft am Samstag und ersetzt dort die lange Ausfahrt der neuen Woche, er kommt nicht dazu. Sonntag nur Rumpf-Zirkel, kein Beinblock. Bei einer zweiten Absage: Test am Donnerstag der Folgewoche, die betreffende Woche wird zur Grundlagenwoche."
   },
-
   "coreCircuit": {
     "prepSeconds": 10,
     "roundRestSeconds": 60,
     "wednesdayRounds": 2,
     "exercises": [
       {
-        "name": "Dead Bug", "mode": "reps", "tempoSeconds": 5, "alternating": true,
+        "name": "Dead Bug",
+        "mode": "reps",
+        "tempoSeconds": 5,
+        "alternating": true,
         "image": "assets/DeadBug.webp",
         "steps": [
           "Rückenlage, Arme zeigen zur Decke, Knie 90° angewinkelt",
@@ -359,7 +1213,10 @@
         "goal": "Ziel: Kräftigt die tiefe Bauchmuskulatur, ohne den Rücken zu belasten."
       },
       {
-        "name": "Schulterstabilität (Band-Pull-Apart)", "mode": "reps", "tempoSeconds": 3, "alternating": false,
+        "name": "Schulterstabilität (Band-Pull-Apart)",
+        "mode": "reps",
+        "tempoSeconds": 3,
+        "alternating": false,
         "image": "assets/BandPullApart.webp",
         "steps": [
           "Band mit beiden Händen vor der Brust halten",
@@ -371,7 +1228,8 @@
         "goal": "Ziel: Wichtig gegen das typische Einsinken in den Schultern bei langem Fahren."
       },
       {
-        "name": "Unterarmstütz (Plank)", "mode": "hold",
+        "name": "Unterarmstütz (Plank)",
+        "mode": "hold",
         "image": "assets/Plank.webp",
         "steps": [
           "Unterarme und Zehen am Boden aufstützen",
@@ -382,7 +1240,10 @@
         "goal": "Ziel: Trainiert die gesamte Rumpfmuskulatur, die beim Rennrad die gebückte Haltung stützt."
       },
       {
-        "name": "Bird Dog", "mode": "reps", "tempoSeconds": 5, "alternating": true,
+        "name": "Bird Dog",
+        "mode": "reps",
+        "tempoSeconds": 5,
+        "alternating": true,
         "image": "assets/BirdDog.webp",
         "steps": [
           "Vierfüßlerstand einnehmen, Hände unter den Schultern",
@@ -394,7 +1255,10 @@
         "goal": "Ziel: Trainiert Koordination und tiefe Rückenmuskulatur."
       },
       {
-        "name": "Liegestütz", "mode": "reps", "tempoSeconds": 3, "alternating": false,
+        "name": "Liegestütz",
+        "mode": "reps",
+        "tempoSeconds": 3,
+        "alternating": false,
         "image": "assets/Liegestuetz.webp",
         "steps": [
           "Auf Zehen oder Knien abstützen, Körper gerade",
@@ -406,7 +1270,8 @@
         "goal": "Ziel: Kräftigt Brust, Trizeps und Schultern – wichtig für Armhaltung und Stützkraft am Lenker."
       },
       {
-        "name": "Seitstütz links", "mode": "hold",
+        "name": "Seitstütz links",
+        "mode": "hold",
         "image": "assets/SidePlankLinks.webp",
         "steps": [
           "Auf einem Unterarm seitlich abstützen",
@@ -416,7 +1281,10 @@
         "goal": "Ziel: Wichtig für seitliche Stabilität, verhindert Wackeln im Oberkörper beim Antritt."
       },
       {
-        "name": "Hüftheben (Glute Bridge)", "mode": "reps", "tempoSeconds": 3, "alternating": false,
+        "name": "Hüftheben (Glute Bridge)",
+        "mode": "reps",
+        "tempoSeconds": 3,
+        "alternating": false,
         "image": "assets/GluteBridge.webp",
         "steps": [
           "Rückenlage, Knie angewinkelt, Füße hüftbreit und flach am Boden",
@@ -429,7 +1297,8 @@
         "goal": "Ziel: Kräftigt Gesäß und hintere Oberschenkel – die Muskeln, die auf dem Rad das Becken stabilisieren und den unteren Rücken entlasten. Radfahrer sind hier klassisch schwach, weil im Sattel kaum Hüftstreckung gegen Widerstand vorkommt."
       },
       {
-        "name": "Seitstütz rechts", "mode": "hold",
+        "name": "Seitstütz rechts",
+        "mode": "hold",
         "image": "assets/SidePlankRechts.webp",
         "steps": [
           "Auf einem Unterarm seitlich abstützen",
@@ -440,7 +1309,6 @@
       }
     ]
   },
-
   "legBlock": {
     "restBetweenExercisesSeconds": 30,
     "restBetweenRoundsSeconds": 60,
@@ -449,19 +1317,92 @@
     "sorenessNote": "Muskelkater in den Oberschenkeln ist in den ersten Wochen zu erwarten. Er kommt überwiegend nicht von der Samstagsausfahrt, sondern vom exzentrischen Absenken im Beinblock – ein Reiz, der beim Radfahren praktisch nicht vorkommt. Nach zwei bis drei gleichartigen Belastungen reagiert die Muskulatur deutlich weniger; nach etwa vier Wochen ist das Thema erledigt.",
     "sorenessWarning": "Kein normaler Muskelkater ist: einseitig statt symmetrisch, punktuell lokalisierbar statt diffus, scharf statt dumpf, in Ruhe vorhanden, beim Fahren schlechter statt besser, oder länger als drei Tage anhaltend. Dann Pause und Ursache klären.",
     "sorenessLevels": [
-      {"key": "frei",   "label": "frei",              "dose": "full", "text": "Volle Wiederholungsspanne."},
-      {"key": "leicht", "label": "leichter Kater",    "dose": "low",  "text": "Unteres Ende der Wiederholungsspanne, volle Runden."},
-      {"key": "stark",  "label": "ausgeprägt",        "dose": "skip", "text": "Beinblock entfällt heute, nur Rumpf-Zirkel."}
+      {
+        "key": "frei",
+        "label": "frei",
+        "dose": "full",
+        "text": "Volle Wiederholungsspanne."
+      },
+      {
+        "key": "leicht",
+        "label": "leichter Kater",
+        "dose": "low",
+        "text": "Unteres Ende der Wiederholungsspanne, volle Runden."
+      },
+      {
+        "key": "stark",
+        "label": "ausgeprägt",
+        "dose": "skip",
+        "text": "Beinblock entfällt heute, nur Rumpf-Zirkel."
+      }
     ],
     "doseByPhase": {
-      "1": {"squat": [8, 10],  "split": [6, 6], "calf": [10, 10], "extra": null},
-      "2": {"squat": [10, 12], "split": [8, 8], "calf": [12, 12], "extra": null},
-      "3": {"squat": [12, 15], "split": [8, 8], "calf": [12, 15], "extra": null},
-      "4": {"squat": [8, 10],  "split": [6, 8], "calf": [12, 15], "extra": "Kniebeuge und Split Squat mit Zusatzgewicht, Wadenheben mit erhöhter Ferse."}
+      "1": {
+        "squat": [
+          8,
+          10
+        ],
+        "split": [
+          6,
+          6
+        ],
+        "calf": [
+          10,
+          10
+        ],
+        "extra": null
+      },
+      "2": {
+        "squat": [
+          10,
+          12
+        ],
+        "split": [
+          8,
+          8
+        ],
+        "calf": [
+          12,
+          12
+        ],
+        "extra": null
+      },
+      "3": {
+        "squat": [
+          12,
+          15
+        ],
+        "split": [
+          8,
+          8
+        ],
+        "calf": [
+          12,
+          15
+        ],
+        "extra": null
+      },
+      "4": {
+        "squat": [
+          8,
+          10
+        ],
+        "split": [
+          6,
+          8
+        ],
+        "calf": [
+          12,
+          15
+        ],
+        "extra": "Kniebeuge und Split Squat mit Zusatzgewicht, Wadenheben mit erhöhter Ferse."
+      }
     },
     "exercises": [
       {
-        "key": "squat", "name": "Kniebeuge", "perSide": false,
+        "key": "squat",
+        "name": "Kniebeuge",
+        "perSide": false,
         "image": "assets/Squat.webp",
         "steps": [
           "Füße schulterbreit, Zehen leicht nach außen",
@@ -475,7 +1416,9 @@
         "goal": "Ziel: Beinstrecker und Gesäß unter Last – die Muskulatur, die im Sattel nie gegen volle Widerstände arbeitet."
       },
       {
-        "key": "split", "name": "Split Squat / Ausfallschritt", "perSide": true,
+        "key": "split",
+        "name": "Split Squat / Ausfallschritt",
+        "perSide": true,
         "image": "assets/Lunges.webp",
         "steps": [
           "Ein Fuß etwa eine Schrittlänge vor dem anderen, beide Füße zeigen nach vorn",
@@ -489,7 +1432,9 @@
         "goal": "Ziel: einbeinige Kontrolle und Beckenstabilität – überträgt sich direkt auf einen ruhigen Tritt."
       },
       {
-        "key": "calf", "name": "Wadenheben einbeinig", "perSide": true,
+        "key": "calf",
+        "name": "Wadenheben einbeinig",
+        "perSide": true,
         "image": "assets/WadenhebenEinbeinig.webp",
         "steps": [
           "Auf einem Bein stehen, mit den Fingerspitzen an einer Wand balancieren, nicht abstützen",
@@ -503,7 +1448,6 @@
       }
     ]
   },
-
   "mobilityFlow": {
     "durationHint": "ca. 5–6 min",
     "placement": "An jedem Tag möglich, auch am Ruhetag Montag – kollidiert mit nichts im bestehenden Plan. Bewusst kurz gehalten: passt morgens, als Pause im Büro oder abends dazwischen, ein eigener Termin ist nicht nötig.",
@@ -511,8 +1455,10 @@
     "note": "Größter Hebel bei Radfahrern: verkürzte Hüftbeuger durch die gebeugte Sitzposition. Statisches Dehnen davon direkt nach der Fahrt, solange der Muskel warm ist, wirkt am zuverlässigsten – 5 min reichen.",
     "exercises": [
       {
-        "key": "deepSquat", "name": "Tiefe Kniebeuge halten, seitlich pendeln",
-        "dosage": "60 s", "focus": "Hüfte, Sprunggelenk",
+        "key": "deepSquat",
+        "name": "Tiefe Kniebeuge halten, seitlich pendeln",
+        "dosage": "60 s",
+        "focus": "Hüfte, Sprunggelenk",
         "image": "assets/TiefeKniebeuge.webp",
         "steps": [
           "Füße etwa schulterbreit, Zehen leicht nach außen, Fersen bleiben am Boden",
@@ -524,8 +1470,10 @@
         "goal": "Ziel: Öffnet Hüfte und Sprunggelenk – beide Gelenke arbeiten im Sattel nur in einem schmalen Ausschnitt ihres Bewegungsumfangs."
       },
       {
-        "key": "ninetyNinety", "name": "90/90-Wechsel im Sitzen",
-        "dosage": "10 Wdh. je Seite", "focus": "Hüftrotation innen/außen",
+        "key": "ninetyNinety",
+        "name": "90/90-Wechsel im Sitzen",
+        "dosage": "10 Wdh. je Seite",
+        "focus": "Hüftrotation innen/außen",
         "image": "assets/NeunzigNeunzig.webp",
         "steps": [
           "Im Sitzen beide Beine 90° anwinkeln: ein Bein vor dem Körper, das andere zur Seite",
@@ -537,8 +1485,10 @@
         "goal": "Ziel: Innen- und Außenrotation der Hüfte, die beim Treten praktisch nicht vorkommt und deshalb zuerst verloren geht."
       },
       {
-        "key": "catCow", "name": "Katze-Kuh und BWS-Rotation im Vierfüßlerstand",
-        "dosage": "8 Wdh. je Seite", "focus": "Brustwirbelsäule",
+        "key": "catCow",
+        "name": "Katze-Kuh und BWS-Rotation im Vierfüßlerstand",
+        "dosage": "8 Wdh. je Seite",
+        "focus": "Brustwirbelsäule",
         "image": "assets/KatzeKuh.webp",
         "steps": [
           "Vierfüßlerstand, Hände unter den Schultern, Knie unter der Hüfte",
@@ -550,8 +1500,10 @@
         "goal": "Ziel: Hält die Brustwirbelsäule beweglich – sie versteift in der gebeugten Lenkerhaltung als Erstes."
       },
       {
-        "key": "shoulderCircles", "name": "Schulterkreisen mit Stab oder Handtuch über Kopf",
-        "dosage": "10 Wdh.", "focus": "Schulter",
+        "key": "shoulderCircles",
+        "name": "Schulterkreisen mit Stab oder Handtuch über Kopf",
+        "dosage": "10 Wdh.",
+        "focus": "Schulter",
         "image": "assets/Schulterkreisen.webp",
         "steps": [
           "Stab oder gespanntes Handtuch mit weitem Griff vor dem Körper halten",
@@ -562,8 +1514,10 @@
         "goal": "Ziel: Voller Bewegungsumfang der Schulter als Gegenstück zur dauerhaften Stützhaltung am Lenker."
       },
       {
-        "key": "lungeRotation", "name": "Ausfallschritt mit Rotation zum vorderen Bein",
-        "dosage": "6 je Seite", "focus": "Hüftbeuger, Rotation",
+        "key": "lungeRotation",
+        "name": "Ausfallschritt mit Rotation zum vorderen Bein",
+        "dosage": "6 je Seite",
+        "focus": "Hüftbeuger, Rotation",
         "image": "assets/AusfallschrittRotation.webp",
         "steps": [
           "Aus dem Stand einen langen Schritt nach vorn setzen, hinteres Knie tief absenken",
@@ -575,7 +1529,6 @@
       }
     ]
   },
-
   "coordination": {
     "everyNthDay": 2,
     "durationHint": "ca. 5–8 min",
@@ -587,8 +1540,10 @@
     ],
     "exercises": [
       {
-        "key": "singleLegEyesClosed", "name": "Einbeinstand, Augen zu",
-        "dosage": "3 × 20–30 s je Seite", "focus": "Propriozeption",
+        "key": "singleLegEyesClosed",
+        "name": "Einbeinstand, Augen zu",
+        "dosage": "3 × 20–30 s je Seite",
+        "focus": "Propriozeption",
         "image": "assets/EinbeinstandAugenZu.webp",
         "steps": [
           "Barfuß oder in flachen Schuhen auf ein Bein stellen, Blick zuerst geradeaus",
@@ -600,8 +1555,10 @@
         "goal": "Ziel: Das Gleichgewicht ohne Augen halten – ohne Sicht bleibt nur die Tiefensensibilität, und genau die lässt mit den Jahren nach."
       },
       {
-        "key": "singleLegHeadTurns", "name": "Einbeinstand mit Kopfdrehungen",
-        "dosage": "2 × 20 s je Seite", "focus": "Vestibularis",
+        "key": "singleLegHeadTurns",
+        "name": "Einbeinstand mit Kopfdrehungen",
+        "dosage": "2 × 20 s je Seite",
+        "focus": "Vestibularis",
         "image": "assets/EinbeinstandKopfdrehung.webp",
         "steps": [
           "Auf ein Bein stellen, Augen offen, Blick geradeaus",
@@ -612,8 +1569,10 @@
         "goal": "Ziel: Fordert das Gleichgewichtsorgan zusätzlich – auf dem Rad ist der Schulterblick genau diese Bewegung."
       },
       {
-        "key": "crossCrawl", "name": "Diagonalgang mit kontralateralem Arm-Bein-Schwung",
-        "dosage": "20 Schritte", "focus": "Koordination",
+        "key": "crossCrawl",
+        "name": "Diagonalgang mit kontralateralem Arm-Bein-Schwung",
+        "dosage": "20 Schritte",
+        "focus": "Koordination",
         "image": "assets/Diagonalgang.webp",
         "steps": [
           "Betont langsam gehen und jeden Schritt einzeln setzen",
@@ -624,8 +1583,10 @@
         "goal": "Ziel: Übt das über Kreuz laufende Zusammenspiel von Arm und Bein – dieselbe Ansteuerung, die den Tritt rund macht."
       },
       {
-        "key": "tandemUnstable", "name": "Tandemstand auf instabiler Unterlage",
-        "dosage": "2 × 30 s", "focus": "Gleichgewicht unter Zusatzreiz",
+        "key": "tandemUnstable",
+        "name": "Tandemstand auf instabiler Unterlage",
+        "dosage": "2 × 30 s",
+        "focus": "Gleichgewicht unter Zusatzreiz",
         "image": "assets/Tandemstand.webp",
         "steps": [
           "Ein Kissen oder ein gerolltes Handtuch auf den Boden legen",
@@ -638,17 +1599,17 @@
       }
     ]
   },
-
   "boneStimulus": {
     "label": "Knochenreiz",
     "dosage": "20–30 beidbeinige Sprünge, zügig, weich landen",
     "frequency": "2–3 × pro Woche, unter 1 min.",
-    "skipWeekdays": [3],
+    "skipWeekdays": [
+      3
+    ],
     "placement": "An den Mobility-Flow gehängt, nicht am Tag vor dem Qualitätstag. Ausdrücklich keine eigene Einheit: zählt in der Wochenrechnung nicht mit, taucht in keiner Opferreihenfolge auf, erzeugt keine messbare Erholungslast.",
     "note": "Radfahren ist nicht gewichtstragend und leistet für die Knochendichte nichts. Der Reiz, der dort wirkt, ist kurz, stoßhaltig und ermüdungsfrei – bei laufendem Kaloriendefizit der einzige Reiz im Programm, den das Rad prinzipiell nicht liefern kann.",
     "progression": "Steigerung erst, wenn 30 Sprünge ohne Ermüdung und mit weicher Landung gelingen: dann einbeinig, wenige Wiederholungen je Seite."
   },
-
   "texts": {
     "wellnessRule": "Wellness-Gate prüfen: Ruhepuls > 7-Tage-Schnitt + 5 bpm, HRV deutlich darunter oder zwei Nächte unter 6 h Schlaf → Donnerstag wird 60 min Z2, Samstag ohne Blöcke. Zwei rote Tage hintereinander → die gesamte Woche als Erholungswoche.",
     "mondayRest": "Komplette Erholung – kein Training. Invariante des Plans: der Montag bleibt frei.",

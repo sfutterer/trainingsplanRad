@@ -74,16 +74,31 @@ export function phaseName(plan, week){
   return plan.phaseNames[String(phaseOf(plan, week))] || '';
 }
 
-/* Donnerstag und Samstagsbloecke stehen je Woche in der Datei. Im Winterblock
-   greift der eigene Abschnitt, sonst rechnete die App mit der rohen
-   Wochennummer weiter - was in der Einzeldatei-Fassung ein stiller Fehler war. */
+/* Was an einem Wochentag dieser Woche steht - unter seinem Kuerzel: di, mi,
+   do, sa, so. Montag und Freitag fehlen, weil an ihnen nichts von der Woche
+   abhaengt.
+
+   Im Winterblock greift dessen eigener Abschnitt, sonst rechnete die App mit
+   der rohen Wochennummer weiter - was in der Einzeldatei-Fassung ein stiller
+   Fehler war. Ein Tag, den der Winterblock nennt, ersetzt den der letzten
+   Planwoche vollstaendig; einen, den er nicht nennt, erbt er von ihr.
+
+   Bis Fassung 2 gab es dafuer zwei benannte Zugriffe - thursdayData und
+   saturdayBlockData -, weil nur diese beiden Tage im Winterblock ueberhaupt
+   eine Entsprechung hatten. Alle uebrigen las day.js roh aus plan.weeks[i],
+   an der Winterlogik vorbei. */
+export function tagDaten(plan, week, tag){
+  const winter = isWinterBlock(plan, week) ? plan.winterBlock.tage : null;
+  return (winter && winter[tag]) || planWeek(plan, week).tage[tag];
+}
+
 export function thursdayData(plan, week){
-  return isWinterBlock(plan, week) ? plan.winterBlock.thursday : planWeek(plan, week).thursday;
+  return tagDaten(plan, week, 'do');
 }
 
 export function saturdayBlockData(plan, week){
   if(isRecoveryWeek(plan, week)) return null;
-  return (isWinterBlock(plan, week) ? plan.winterBlock.saturdayBlocks : planWeek(plan, week).saturdayBlocks) || null;
+  return tagDaten(plan, week, 'sa').bloecke || null;
 }
 
 export function isTestWeek(plan, week){

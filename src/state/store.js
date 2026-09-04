@@ -78,6 +78,16 @@ export async function boot(){
     plan.value = r.plan;
     planJson.value = r.json;
     planSource.value = r.source;
+
+    /* Wurde ein eigener Plan auf die neue Fassung gehoben, wandert die
+       gehobene Datei einmal in den Speicher zurueck.
+
+       Ohne das laege dort dauerhaft die alte Fassung, und die Migration
+       muesste sie bei jedem Start erneut heben - eine Migration, die nie
+       fertig wird, ist eine, die man nicht mehr entfernen kann. Fuer den
+       Default aus dem Repo gilt das nicht: er wird bei jedem Start neu
+       geholt und gehoert nicht dem Geraet. */
+    if(r.source === 'override' && r.gehoben) await store.setPlanOverride(r.json);
   } catch(e){
     planError.value = e instanceof PlanError ? e : new PlanError(e.message, []);
     ready.value = true;
@@ -177,9 +187,13 @@ export async function setTestPrep(schluessel, patch){
 
 /* --- Eigener Plan --- */
 
-export async function applyPlanOverride(json){
+export async function applyPlanOverride(roh){
   /* Wirft, wenn die Datei nicht taugt - der laufende Plan bleibt dann stehen. */
-  const modell = parsePlan(json, 'importierter Plan');
+  const { plan: modell, json } = parsePlan(roh, 'importierter Plan');
+  /* Gespeichert wird die gehobene Fassung, nicht die eingelesene: wer eine
+     alte Datei importiert, soll sie nicht bei jedem Start erneut migriert
+     bekommen - und der Export soll die Datei liefern, mit der die App
+     tatsaechlich rechnet. */
   await store.setPlanOverride(json);
   plan.value = modell;
   planJson.value = json;

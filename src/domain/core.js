@@ -4,12 +4,22 @@
    kein Zufall: eine Kniebeuge mit 3 s Absenken laesst sich nicht gegen einen
    Timer fahren, ohne genau das Tempo zu verlieren, das den Reiz ausmacht. */
 
-import { weekIndex, phaseOf, isRecoveryWeek } from './week.js';
+import { weekIndex, phaseOf, isRecoveryWeek, tagDaten } from './week.js';
 
-export function coreWorkSeconds(plan, week){ return plan.weeks[weekIndex(plan, week)].coreWorkSeconds; }
-export function coreRestSeconds(plan, week){ return plan.weeks[weekIndex(plan, week)].coreRestSeconds; }
-export function coreRounds(plan, week){     return plan.weeks[weekIndex(plan, week)].coreRounds; }
-export function legRounds(plan, week){      return plan.weeks[weekIndex(plan, week)].legRounds; }
+/* Die Taktung des Zirkels steht seit Fassung 3 als eigener Abschnitt an der
+   Woche: sie gehoert zusammen und zu keinem einzelnen Tag - der Zirkel laeuft
+   am Mittwoch verkuerzt und am Sonntag voll, mit denselben Sekunden. */
+function zirkel(plan, week){ return plan.weeks[weekIndex(plan, week)].zirkel; }
+
+export function coreWorkSeconds(plan, week){ return zirkel(plan, week).workSeconds; }
+export function coreRestSeconds(plan, week){ return zirkel(plan, week).restSeconds; }
+export function coreRounds(plan, week){      return zirkel(plan, week).rounds; }
+
+/* Die Runden des Beinblocks am Sonntag. Sie stehen am Sonntag und nicht mehr
+   als legRounds neben der Woche - in Fassung 2 hiessen die des Sonntags
+   legRounds und die des Dienstags tuesdayLegRounds, zweimal dasselbe unter
+   zwei Namen. */
+export function legRounds(plan, week){ return tagDaten(plan, week, 'so').legRounds; }
 
 /* Die zweite Beineinheit am Dienstagabend, ab Woche 11.
 
@@ -21,7 +31,7 @@ export function legRounds(plan, week){      return plan.weeks[weekIndex(plan, we
 
    0 heisst: an diesem Dienstag steht keine an. */
 export function tuesdayLegRounds(plan, week){
-  return plan.weeks[weekIndex(plan, week)].tuesdayLegRounds || 0;
+  return tagDaten(plan, week, 'di').legRounds || 0;
 }
 
 /* Gesamtdauer des Zirkels in Minuten, damit Plan und App dieselbe Zahl nennen. */

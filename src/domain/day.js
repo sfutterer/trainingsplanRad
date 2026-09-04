@@ -49,8 +49,8 @@
 
 import {
   weekNumberFor, weekIndex, phaseOf, isRecoveryWeek, isWinterBlock,
-  thursdayData, saturdayBlockData, dayOffset, testWeeks, testDateFor, thursdayDateFor,
-  isoDayLocal
+  thursdayData, saturdayBlockData, tagDaten, dayOffset, testWeeks, testDateFor,
+  thursdayDateFor, isoDayLocal
 } from './week.js';
 import {
   zoneText, zoneSpan, targetText, withCadence, wattText,
@@ -129,11 +129,11 @@ export function saturdayBlocks(plan, week){
    Aufloesung liegen. Der Trainingsplan nennt die Wochensumme ebenso mit
    Variante. */
 export function weekPlanMinutes(plan, week){
-  const w = plan.weeks[weekIndex(plan, week)];
+  const tage = plan.weeks[weekIndex(plan, week)].tage;
   const v = thursdayVariante(plan, week);
   const donnerstag = v ? schritteMinuten(v.steps) : thursdayPlan(plan, week).minutes;
-  return w.tuesdayMinutes + w.wednesdayMinutes + donnerstag
-       + w.saturdayMinutes + w.sundayOptionalMinutes;
+  return tage.di.minutes + tage.mi.minutes + donnerstag
+       + tage.sa.minutes + tage.so.optionalMinutes;
 }
 
 export function weekCapMinutes(plan, week){
@@ -404,7 +404,8 @@ function montag(c){
       art:'ruhe', titel:'Ruhetag',
       kennzahlen: [{ label:'Umfang', wert:'frei' }],
       hinweise: [c.T.mondayRest]
-    })]
+    })],
+    target: { sport:'rest' }
   };
 }
 
@@ -415,8 +416,9 @@ function montag(c){
    Qualitaetstag, und der haengt daran, was am Donnerstag steht. */
 function dienstag(c){
   const { plan, th, week, T, z2 } = c;
-  const dur = c.w.tuesdayMinutes;
-  const beine = c.w.tuesdayLegRounds || 0;
+  const tag = c.tag('di');
+  const dur = tag.minutes;
+  const beine = tag.legRounds || 0;
 
   const info = {
     type:'ride',
@@ -427,7 +429,12 @@ function dienstag(c){
       bloecke: [
         { label:'Grundlagenfahrt', wert:`${dur} min · ${z2()}`, hinweis:T.tuesdayCommute }
       ]
-    })]
+    })],
+    /* legRounds steht auch am Dienstag im Soll, sobald die Woche eine zweite
+       Beineinheit vorsieht - sonst waere sie in der Anzeige geplant und in
+       der Auswertung nicht vorhanden. */
+    target: { sport:'ride', minutes: dur, km: estimateDistance(plan, dur, week),
+              zone:'z2', commute:true, legRounds: beine }
   };
 
   if(beine > 0){
@@ -469,7 +476,7 @@ function beinEinheit(c, runden, nachsatz, zeit){
    noch die Tageszeit. */
 function mittwoch(c){
   const { plan, th, week, phase, exCount, T, z2 } = c;
-  const dur = c.w.wednesdayMinutes;
+  const dur = c.tag('mi').minutes;
   const rounds = plan.circuit.wednesdayRounds;
   const zirkel = circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (verkürzt)', 'Abends.');
 
@@ -504,7 +511,7 @@ function mittwoch(c){
 
     /* Der Erhaltungsreiz der Phase 3 haengt an der Mittwochsfahrt und steht
        deshalb in ihrer Einheit, nicht als Fussnote unter dem Tag. */
-    const extra = c.w.wednesdayExtra;
+    const extra = c.tag('mi').extra;
     if(extra){
       const sek = extra.reps * extra.workSeconds + (extra.reps - 1) * extra.restSeconds;
       const ablauf = `${extra.reps}× ${extra.workSeconds} s ${extra.effort} / ` +
@@ -538,6 +545,19 @@ function mittwoch(c){
       timer: TIMER_RUMPF
     })];
   }
+
+  /* Der Zirkel ist der Sollwert des Tages, die Fahrt kommt als Untergrenze
+     dazu. Laenger zu fahren darf keine Warnung ausloesen; die Toleranz gilt
+     nur nach unten. */
+  info.target = { sport:'core', rounds, minutes: coreMinutes(plan, week, rounds),
+                  workSec: coreWorkSeconds(plan, week),
+                  restSec: coreRestSeconds(plan, week), legRounds: 0 };
+  if(dur > 0){
+    info.target.rideMinutes = dur;
+    info.target.rideZone = 'z2';
+    info.target.rideMinimum = true;
+  }
+
   info.wellness = { rolle:'vorschau', donnerstag: thursdayPlan(plan, week).kind };
   return info;
 }
@@ -622,6 +642,22 @@ function donnerstag(c){
       timer: TIMER_INTERVALLE
     })];
   }
+  /* Der Sollwert des Qualitaetstags haengt an seiner Art. Beim Test sind es
+     seit Fassung 4 nur noch die 20 Minuten - der 5-min-All-out davor ist
+     gestrichen, und 25 stehenzulassen hiesse, einen sauber gefahrenen Test
+     als zu kurz zu melden. */
+  if(t.kind === 'test'){
+    info.target = { sport:'ride', zone:'z4', minutes: t.minutes, test:true,
+                    hardMinutes:20, reps:1, repMinutes:20,
+                    ablauf:'20 min gleichmäßig maximal' };
+  } else if(t.kind === 'z2'){
+    info.target = { sport:'ride', zone:'z2', minutes: t.minutes,
+                    km: estimateDistance(plan, t.minutes, week) };
+  } else {
+    info.target = { sport:'ride', zone: t.zone, minutes: t.minutes,
+                    hardMinutes: t.reps * t.workMin, reps: t.reps, repMinutes: t.workMin };
+  }
+
   info.wellness = { rolle:'entscheidung', donnerstag: t.kind };
   return info;
 }
@@ -643,14 +679,15 @@ function freitag(c){
           wert:`${fo.minMinutes}–${fo.maxMinutes} min · ${zoneText(plan, th, fo.zone, week)}`,
           hinweis:'Sonst frei.' }
       ]
-    })]
+    })],
+    target: { sport:'optional', minutes: fo.targetMinutes, zone: fo.zone }
   };
 }
 
 /* Samstag ist die lange Ausfahrt und der Beginn der Trainingswoche. */
 function samstag(c){
   const { plan, th, week, recovery, T, z2 } = c;
-  const dur = c.w.saturdayMinutes;
+  const dur = c.tag('sa').minutes;
   const bl = saturdayBlocks(plan, week);
   const sr = plan.saturdayRide;
   const bz = bl
@@ -697,13 +734,18 @@ function samstag(c){
     art:'lang', titel:'Lange Ausfahrt', kennzahlen, bloecke: lang,
     hinweise: vorTest ? [] : [T.elevationShort]
   })];
+  /* In der Erholungswoche zaehlt keine harte Zeit - saturdayBlocks liefert
+     dort ohnehin nichts, die Bedingung stand bis Fassung 3 trotzdem ein
+     zweites Mal im Sollwert. */
+  info.target = { sport:'ride', minutes: dur, km: estimateDistance(plan, dur, week),
+                  zone:'z2', hardMinutes: bl ? bl.hardMinutes : 0, hardZone:'z3' };
   return info;
 }
 
 /* Sonntag: voller Zirkel, direkt danach der Beinblock. */
 function sonntag(c){
   const { plan, th, week, exCount, T } = c;
-  const dur = c.w.sundayOptionalMinutes;
+  const dur = c.tag('so').optionalMinutes;
   const rounds = coreRounds(plan, week);
 
   /* Drei Einheiten und nicht eine: die optionale Fahrt liegt davor, der
@@ -738,7 +780,13 @@ function sonntag(c){
   return {
     type:'sun', title:'Rumpf-Zirkel (voll) + Beinblock',
     showLegBlock:true,
-    einheiten
+    einheiten,
+    target: { sport:'core', rounds,
+              minutes: coreMinutes(plan, week, rounds),
+              workSec: coreWorkSeconds(plan, week),
+              restSec: coreRestSeconds(plan, week),
+              legRounds: legRounds(plan, week),
+              optionalRideMinutes: dur, optionalZone:'z1' }
   };
 }
 
@@ -973,7 +1021,12 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
 
   const c = {
     plan, th, week,
-    w: plan.weeks[weekIndex(plan, week)],
+    /* Der Zugriff auf einen Wochentag laeuft ueber sein Kuerzel und ueber
+       week.js - dort steckt die Regel, dass der Winterblock einzelne Tage
+       ersetzt. Bis Fassung 2 las jede Tagesfunktion roh aus plan.weeks[i]
+       und ging an dieser Regel vorbei; nur Donnerstag und Samstagsbloecke
+       hatten dafuer einen eigenen benannten Zugriff. */
+    tag: k => tagDaten(plan, week, k),
     phase: phaseOf(plan, week),
     recovery: isRecoveryWeek(plan, week),
     winter: isWinterBlock(plan, week),
@@ -982,8 +1035,14 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
     z2: () => withCadence(plan, targetText(plan, th, 'z2', week), 'z2', week)
   };
 
+  /* Jeder Tag bringt seinen Sollwert selbst mit.
+
+     Bis Fassung 2 stand er in buildDayTarget, einem zweiten switch ueber
+     date.getDay() neben der Tabelle TAGE darueber. Zwei Wochentagstabellen
+     nebeneinander, beide lasen dieselben Felder, und keine von beiden wusste
+     von der anderen: wer eine Zahl in der Anzeige aenderte, musste die zweite
+     Stelle finden, an der sie in die Auswertung ging. */
   let geplant = TAGE[date.getDay()](c);
-  geplant.target = buildDayTarget(plan, date, week);
 
   /* Die Variante tritt an die Stelle des Regelfalls, wenn sie gewaehlt wurde -
      vor dem Anlauf, weil der Anlauf den ganzen Tag ersetzt und nicht eine
@@ -1055,78 +1114,4 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
     if(satz){ info.tagHinweise.push(satz); info.hinweise.push(satz); }
   }
   return info;
-}
-
-
-/* Maschinenlesbare Sollwerte je Tag. Dauer in Minuten, Distanz in km, zone als
-   Schluessel aus den Pulsbaendern. */
-function buildDayTarget(plan, date, week){
-  const idx = weekIndex(plan, week);
-  const w = plan.weeks[idx];
-  const recovery = isRecoveryWeek(plan, week);
-
-  switch(date.getDay()){
-    case 1:
-      return { sport:'rest' };
-
-    case 2:
-      /* legRounds steht auch am Dienstag im Soll, sobald die Woche eine zweite
-         Beineinheit vorsieht - sonst waere sie in der Anzeige geplant und in
-         der Auswertung nicht vorhanden. */
-      return { sport:'ride', minutes:w.tuesdayMinutes,
-               km:estimateDistance(plan, w.tuesdayMinutes, week), zone:'z2', commute:true,
-               legRounds: w.tuesdayLegRounds || 0 };
-
-    case 3: {
-      const rounds = plan.circuit.wednesdayRounds;
-      const t = { sport:'core', rounds, minutes:coreMinutes(plan, week, rounds),
-                  workSec:coreWorkSeconds(plan, week), restSec:coreRestSeconds(plan, week),
-                  legRounds:0 };
-      if(w.wednesdayMinutes > 0){
-        /* Die Fahrt ist Plan, aber die Dauer ist eine Untergrenze. Laenger zu
-           fahren darf keine Warnung ausloesen; die Toleranz gilt nur nach unten. */
-        t.rideMinutes = w.wednesdayMinutes;
-        t.rideZone = 'z2';
-        t.rideMinimum = true;
-      }
-      return t;
-    }
-
-    case 4: {
-      const t = thursdayPlan(plan, week);
-      if(t.kind === 'test'){
-        /* Seit Fassung 4 besteht der Test nur noch aus den 20 Minuten - der
-           5-min-All-out davor ist gestrichen. Die harte Zeit ist damit 20 und
-           nicht mehr 25 Minuten; sie stehenzulassen hiesse, einen sauber
-           gefahrenen Test als zu kurz zu melden. */
-        return { sport:'ride', zone:'z4', minutes:t.minutes, test:true,
-                 hardMinutes:20, reps:1, repMinutes:20,
-                 ablauf:'20 min gleichmäßig maximal' };
-      }
-      if(t.kind === 'z2'){
-        return { sport:'ride', zone:'z2', minutes:t.minutes,
-                 km:estimateDistance(plan, t.minutes, week) };
-      }
-      return { sport:'ride', zone:t.zone, minutes:t.minutes,
-               hardMinutes:t.reps * t.workMin, reps:t.reps, repMinutes:t.workMin };
-    }
-
-    case 5:
-      return { sport:'optional', minutes:plan.fridayOptional.targetMinutes, zone:plan.fridayOptional.zone };
-
-    case 6: {
-      const bl = recovery ? null : saturdayBlocks(plan, week);
-      return { sport:'ride', minutes:w.saturdayMinutes,
-               km:estimateDistance(plan, w.saturdayMinutes, week),
-               zone:'z2', hardMinutes: bl ? bl.hardMinutes : 0, hardZone:'z3' };
-    }
-
-    case 0:
-      return { sport:'core', rounds:coreRounds(plan, week),
-               minutes:coreMinutes(plan, week, coreRounds(plan, week)),
-               workSec:coreWorkSeconds(plan, week), restSec:coreRestSeconds(plan, week),
-               legRounds:legRounds(plan, week),
-               optionalRideMinutes:w.sundayOptionalMinutes, optionalZone:'z1' };
-  }
-  return { sport:'rest' };
 }

@@ -133,7 +133,7 @@ describe('Ruhetag', () => {
 });
 
 describe('Radeinheit mit messbarem Soll', () => {
-  const soll = plan.weeks[0].saturdayMinutes;   // 120 min in Woche 1
+  const soll = plan.weeks[0].tage.sa.minutes;   // 120 min in Woche 1
 
   it('meldet eine ausgefallene Fahrt', () => {
     const row = tag(SA);
@@ -207,7 +207,7 @@ describe('Tagesgruppen', () => {
 });
 
 describe('Zonen einer Grundlagenfahrt', () => {
-  const soll = plan.weeks[0].saturdayMinutes;
+  const soll = plan.weeks[0].tage.sa.minutes;
 
   it('bestaetigt eine sauber gefahrene Z2-Einheit', () => {
     const row = tag(SA, [fahrt(soll)], { a1: zonen({ z1: 1200, z2: 6000 }) });
@@ -334,7 +334,7 @@ describe('Beinblock', () => {
 });
 
 describe('Mittwoch: Rumpf und Fahrt am selben Tag', () => {
-  const soll = plan.weeks[0].wednesdayMinutes;
+  const soll = plan.weeks[0].tage.mi.minutes;
 
   it('meldet die fehlende Fahrt nur, wenn eine geplant war', () => {
     const row = tag(MI);
@@ -359,7 +359,7 @@ describe('Mittwoch: Rumpf und Fahrt am selben Tag', () => {
    seitdem daneben. */
 describe('Fahrten eines Tages nacheinander', () => {
   const MI2 = dayFromIso('2026-08-26');            // Woche 2: Untergrenze 40 min
-  const soll = plan.weeks[1].wednesdayMinutes;
+  const soll = plan.weeks[1].tage.mi.minutes;
 
   const zwei = (min1, min2, z1, z2) => tag(MI2, [
     Object.assign(fahrt(min1), { id: 'h' }),

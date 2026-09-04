@@ -38,10 +38,42 @@ Beim Laden wird geprüft. Ist etwas falsch, zeigt die App eine Meldung mit dem
 beanstandeten Feld und **keine Zahlen** – lieber gar keine Vorgabe als eine
 falsche.
 
-Die Datei trägt eine `schemaVersion`; mit Fassung 3 des Trainingsplans steht sie
-auf 2. Ein älterer, lokal gespeicherter Plan wird deshalb abgelehnt statt halb
-weitergerechnet – im Tab „Plan“ auf „Auf Default zurücksetzen“, dann gilt wieder
-die Fassung aus dem Repo.
+### Aufbau einer Woche
+
+Jede Woche trägt ihre Nummer, ihre Phase, die Taktung des Rumpfzirkels und
+unter `tage` je Wochentag das, was an ihm von der Woche abhängt:
+
+```json
+{ "week": 1, "phase": 1,
+  "zirkel": { "workSeconds": 25, "restSeconds": 25, "rounds": 2 },
+  "tage": {
+    "di": { "minutes": 60, "legRounds": 0 },
+    "mi": { "minutes": 0, "extra": null },
+    "do": { "kind": "intervals", "title": "…", "zone": "z3", "reps": 4, … },
+    "sa": { "minutes": 120, "bloecke": null },
+    "so": { "optionalMinutes": 30, "legRounds": 2 }
+  } }
+```
+
+Montag und Freitag fehlen: an ihnen hängt nichts von der Woche ab – der Montag
+ist frei, der Freitag steht in `fridayOptional`. Ein Kürzel, das die Prüfung
+nicht kennt, wird beanstandet, damit ein hingeschriebenes `"mo"` nicht
+stillschweigend wirkungslos bleibt.
+
+### Schemafassung und Migration
+
+Die Datei trägt eine `schemaVersion`, aktuell **3**. Ein lokal gespeicherter
+Plan einer älteren Fassung wird beim Laden **gehoben**, nicht abgelehnt: die
+Umschreibung steht in `src/domain/migration.js` und läuft, bevor geprüft wird.
+Der gehobene Plan wird einmal zurückgeschrieben, damit er nicht bei jedem Start
+erneut wandern muss.
+
+Bis Fassung 2 nannten die Feldnamen den Wochentag (`tuesdayMinutes`,
+`saturdayBlocks`); der Donnerstag stand daneben schon als vollwertiges Objekt.
+Fassung 3 gibt jedem Tag dieselbe Form.
+
+Für eine Fassung, zu der es keinen Migrationsschritt gibt, bleibt es beim alten
+Verhalten: die Prüfung lehnt sie mit einer Zahl ab, statt Felder zu raten.
 
 ## Aufbau
 
@@ -52,7 +84,7 @@ die Fassung aus dem Repo.
 | `src/platform/` | Wake Lock, Sprachausgabe, Töne, Haptik – jede darf ausfallen |
 | `src/state/` | Signals |
 | `src/ui/` | Komponenten und die acht Bereiche |
-| `test/` | Gleichheitsnachweis gegen den Stand vor dem Umbau (Tag `vor-umbau`) |
+| `test/` | Prüfsummen über die Tagesstruktur, dazu Migration, Kalender, Abgleich |
 
 `TRAININGSPLAN.md` ist die fachliche Spezifikation. Bei Änderungen am Plan muss
 sie mitgezogen werden.
