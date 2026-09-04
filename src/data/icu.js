@@ -190,7 +190,12 @@ export function spurMitHoehe(streams){
   return raus;
 }
 
-function zahlenStrom(streams, typ){
+/* Ein Zahlenstrom als Array, NaN wo nichts gemessen wurde.
+
+   Exportiert, seit der Testbereich das Ergebnis des Tempotests aus der
+   Aufzeichnung holt: er braucht Leistung, Puls und Zeit derselben Fahrt, und
+   die Form des Streams zu kennen ist Sache dieser Datei und nicht seine. */
+export function zahlenStrom(streams, typ){
   const s = (Array.isArray(streams) ? streams : []).find(x => x && x.type === typ);
   return s && Array.isArray(s.data) ? s.data.map(v => (v == null ? NaN : Number(v))) : null;
 }

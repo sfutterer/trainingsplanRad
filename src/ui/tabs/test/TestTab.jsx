@@ -19,9 +19,15 @@
 
    Der Tempotest bekommt eine eigene Rolle. Aus seinen zwei mal sechs Minuten
    faellt die Leistung, auf die im Test gezielt wird; der Plan sagt
-   ausdruecklich "notieren", und notiert wurde sie bisher nirgends. Jetzt steht
-   ein Feld dafuer unter seinem Ablauf, und die Zahl steht sieben Tage spaeter
-   ueber dem Test.
+   ausdruecklich "notieren", und notiert wurde sie bisher nirgends.
+
+   Er steht deshalb dreifach in der Anleitung, und jedes Mal mit einer anderen
+   Frage: wie er gefahren wird (Schritt fuer Schritt aus plan.json, samt der
+   Entscheidung in der Pause), was dabei herauskam (aus der Aufzeichnung geholt
+   oder eingetippt) und was das fuer den Testtag bedeutet. Der letzte Teil ist
+   der, den es vorher nirgends gab: eine notierte Wattzahl ist keine Vorgabe,
+   solange nicht dasteht, dass genau sie das Ziel der zwanzig Minuten ist und
+   welche FTP daraus faellt, wenn sie haelt.
 
    Warum LTHR hier ein eigenes Feld hat und im Zonen-Tab nicht: das dortige
    Formular nimmt Ø-Watt, rechnet die FTP und laesst die LTHR von Hand
@@ -33,13 +39,16 @@ import { useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, testLog, testPrep, apiKey, settings,
          setThresholds, addTestEntry, setTestPrep } from '../../../state/store.js';
 import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
-         vorgewaehlterAblauf, testWerte, terminSchluessel, FTP_FAKTOR }
+         vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke,
+         testZiel, FTP_FAKTOR }
   from '../../../domain/test.js';
+import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds, remainingAfter } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
          WEEKDAY_NAMES } from '../../../domain/week.js';
-import { fetchWellness, putWellness } from '../../../data/icu.js';
+import { fetchWellness, putWellness, fetchActivities, fetchStreams,
+         zahlenStrom } from '../../../data/icu.js';
 import { bestaetige } from '../../../state/dialog.js';
 import { Segmented } from '../../components/Segmented.jsx';
 import { Buehne } from '../../components/Buehne.jsx';
@@ -68,6 +77,18 @@ function dauer(sec){
 function kurzDatum(d){
   return WEEKDAY_NAMES[d.getDay()].slice(0, 2) + ', ' +
     d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
+}
+
+/* Die Dauer eines Schritts, so wie der Plan sie nennt.
+
+   "15:00 min" waere fuer eine glatte Viertelstunde eine Ziffernwueste, und ein
+   Oeffner ueber 40 s laesst sich nicht als 0,67 Minuten hinschreiben - deshalb
+   drei Faelle statt einer Formel. */
+function schrittDauer(s){
+  const sek = s.seconds != null ? s.seconds : Math.round((s.minutes || 0) * 60);
+  if(sek < 60) return sek + ' s';
+  if(sek % 60 === 0) return (sek / 60) + ' min';
+  return klok(sek) + ' min';
 }
 
 /* ---------- Anleitung ---------- */
@@ -168,22 +189,174 @@ function GoNoGo({ tt, schluessel, haken, onHaken }){
   );
 }
 
+/* Ein Ablauf Schritt fuer Schritt: Dauer, Vorgabe und der Satz, der dazu
+   gehoert. Einmal geschrieben, vom Tempotest und vom Test benutzt - beide
+   stehen als Schrittliste in plan.json, und zwei Darstellungen derselben Liste
+   waeren zwei Gelegenheiten, sie auseinanderlaufen zu lassen. */
+function Schrittliste({ steps }){
+  return (
+    <ol class="schrittliste">
+      {steps.map((s, i) => (
+        <li key={i}>
+          <span class="schritt-kopf">
+            <span class="schritt-label">{s.label}</span>
+            <span class="schritt-wert">
+              {schrittDauer(s)}{s.effort ? ' · ' + s.effort : ''}
+            </span>
+          </span>
+          {s.note && <span class="schritt-note">{s.note}</span>}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/* Der Tempotest: wie er gefahren wird, was dabei herauskam, und wozu.
+
+   Er steht in der Anleitung an dieser Stelle, weil er der einzige Schritt des
+   Anlaufs mit einem Ergebnis ist. Die Schritte kommen aus plan.json - samt der
+   Entscheidung in der Pause, die den ganzen Sinn der Einheit traegt: Block 1
+   probiert ein Tempo, die Pause korrigiert es, Block 2 faehrt das korrigierte.
+   Nur dessen Ø-Watt zaehlt. */
+function TempotestKarte({ ablauf, prep, onNotiz, laden, kompakt }){
+  const [suche, setSuche] = useState(null);
+  const notiert = prep && prep.zielWatt > 0;
+
+  async function holen(){
+    setSuche({ phase: 'laedt' });
+    try {
+      const treffer = await laden(ablauf);
+      setSuche({ phase: 'fertig', ...treffer });
+    } catch(e){
+      setSuche({ phase: 'fehler', text: e.message });
+    }
+  }
+
+  function uebernehmen(b){
+    onNotiz({ zielWatt: b.watt, zielPuls: b.puls || null });
+    setSuche(null);
+  }
+
+  return (
+    <div class="card">
+      <div class="row"><span>Tempotest am {kurzDatum(ablauf.datum)}</span>
+        <b>{notiert ? prep.zielWatt + ' W notiert' : 'Ergebnis fehlt'}</b></div>
+      {/* Der Ablauf steht nur in der Anleitung. In der Ablaufansicht liegt er
+          schon als Schrittliste unter der Uhr - dort waere er ein zweites Mal
+          dieselbe Folge. */}
+      {!kompakt && <>
+        <p class="hint">
+          Die Einheit, aus der die Zielleistung für den Test fällt. Zwei Blöcke im
+          angestrebten Testtempo, dazwischen die Entscheidung, ob korrigiert wird –
+          gesteuert wird nach {ablauf.steering || 'Anstrengung'}.
+        </p>
+        <div class="listhead">Ablauf</div>
+        <Schrittliste steps={ablauf.steps} />
+        <div class="listhead">Ergebnis</div>
+      </>}
+      <p class="hint">
+        Maßgeblich ist der <b>zweite</b> Block: er fährt die korrigierte Leistung, und genau
+        die ist das Ziel im Test. Aus der Aufzeichnung geholt sucht die App die beiden
+        stärksten Sechs-Minuten-Fenster der Fahrt und nimmt das spätere – beide stehen
+        danach nebeneinander, damit die Zuordnung nachprüfbar bleibt.
+      </p>
+      <Zahlenfeld titel="Ø-Watt Block 2 (W)" wert={prep ? prep.zielWatt : null} min={1}
+        onWert={v => onNotiz({ zielWatt: v })} />
+      <Zahlenfeld titel="Ø-Puls Block 2 (bpm)" wert={prep ? prep.zielPuls : null} min={1}
+        onWert={v => onNotiz({ zielPuls: v })} />
+      <button class="btn block secondary" type="button"
+        disabled={!apiKey.value || (suche && suche.phase === 'laedt')}
+        onClick={holen}>
+        {suche && suche.phase === 'laedt' ? 'Wird gesucht …' : 'Aus der Aufzeichnung holen'}
+      </button>
+      {!apiKey.value && <p class="hint">
+        Ohne Zugang zu intervals.icu bleibt das Eintippen – die Zahl steht in der Auswertung
+        des Intervalls auf der Uhr.
+      </p>}
+      {suche && suche.phase === 'fehler' &&
+        <div class="meldung fehler"><b>{suche.text}</b></div>}
+      {suche && suche.phase === 'fertig' && (
+        <>
+          <div class="listhead">Gefunden in „{suche.act.name || suche.act.type}"</div>
+          {[['Block 1', suche.bloecke.erster], ['Block 2', suche.bloecke.zweiter]].map(([name, b]) => (
+            <div class="blockzeile" key={name}>
+              <span class="blockname">{name}</span>
+              <span class="blockwert">{b.watt} W{b.puls ? ' · ⌀ ' + b.puls + ' bpm' : ''}</span>
+              <span class="blockzeit">ab {klok(b.vonSek)}</span>
+              <button class="btn klein" type="button"
+                onClick={() => uebernehmen(b)}>Übernehmen</button>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* Was die notierte Zahl fuer den Testtag bedeutet.
+
+   Ohne diese Karte war die Zielleistung eine Notiz ohne Anschluss: sie stand
+   oben im Bereich und niemand sagte, dass genau sie die Vorgabe der zwanzig
+   Minuten ist. Die FTP daneben ist keine Vorhersage, sondern die Formel des
+   Plans auf das Ziel angewandt - haelt es, faellt genau diese Zahl heraus. */
+function ZielKarte({ ziel, termin }){
+  if(!termin) return null;
+  const datum = termin.datum.toLocaleDateString('de-DE');
+  if(!ziel){
+    return (
+      <div class="card">
+        <div class="row"><span>Ziel für den {datum}</span><b>steht noch aus</b></div>
+        <p class="hint">
+          Solange aus dem Tempotest keine Leistung notiert ist, gibt es für die 20 Minuten
+          keine Zahl, sondern nur die Anstrengung: ein Tempo, das sich 20 min halten ließe,
+          Sprechtest drei bis fünf Worte am Stück. Das ist ohne Leistungsmesser der normale
+          Fall – der Puls wird dabei mitgeschrieben und nicht angesteuert.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div class="card">
+      <div class="row"><span>Ziel für den {datum}</span><b>{ziel.watt} W</b></div>
+      <div class="formeln">
+        <div class="formel"><b>{ziel.watt} W über 20 min</b>
+          <span>Die Ø-Leistung von Block 2 des Tempotests – erste drei Minuten bewusst
+            darunter, danach auf die Ø-Leistung der Runde schauen und nicht auf den
+            Momentanwert.</span></div>
+        <div class="formel"><b>ergibt FTP {ziel.ftp} W</b>
+          <span>
+            {ziel.watt} × {String(FTP_FAKTOR).replace('.', ',')}, wenn das Ziel über die
+            vollen 20 min hält.
+            {ziel.gegenAlt != null
+              ? ' Gegenüber der eingetragenen FTP von ' + ziel.alteFtp + ' W sind das ' +
+                (ziel.gegenAlt >= 0 ? '+' : '−') + Math.abs(ziel.gegenAlt) + ' %.'
+              : ''}
+          </span></div>
+      </div>
+      {ziel.puls && <p class="hint">
+        Im Tempotest lag der Puls dabei bei ⌀ {ziel.puls} bpm. Das ist die Gegenprobe für
+        danach und keine Vorgabe: die LTHR entsteht erst aus dem Ø-Puls der 20 Minuten.
+      </p>}
+    </div>
+  );
+}
+
 /* Wie gefahren wird, in der Reihenfolge des Ablaufs. Die Saetze stammen aus
    den Schritten des Plans und nicht aus einem zweiten Text daneben - sonst
    stuenden die Anweisungen zweimal da und liefen auseinander. */
 function DurchfuehrungKarte({ p }){
   const t = p.thresholdTest;
   if(!t) return null;
-  const mitNote = (t.steps || []).filter(s => s.note);
   return (
     <div class="card">
-      <div class="row"><span>Durchführung</span>
+      <div class="row"><span>Der Test selbst</span>
         <b>{t.steering || 'fester Ablauf'}</b></div>
       <p class="hint">{p.texts.thresholdTestSummary}</p>
-      <div class="listhead">Worauf es in den Schritten ankommt</div>
-      <ul class="regelliste">
-        {mitNote.map((s, i) => <li key={i}><b>{s.short || s.label}:</b> {s.note}</li>)}
-      </ul>
+      <div class="listhead">Ablauf</div>
+      {/* Alle Schritte und nicht nur die mit einem Satz: die Karte soll den
+          Test vollstaendig beschreiben, und ein Ablauf mit Luecken ist keine
+          Beschreibung. */}
+      <Schrittliste steps={t.steps || []} />
       <div class="listhead">Damit der Retest vergleichbar bleibt</div>
       <p class="hint">{p.texts.thursdayTest}</p>
     </div>
@@ -212,7 +385,7 @@ function AuswertungsKarte({ th }){
 
 /* ---------- Ablauf ---------- */
 
-function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNotiz }){
+function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNotiz, laden }){
   const s = settings.value;
   const a = ablaeufe.find(x => x.id === gewaehlt) || ablaeufe[0];
   const uhr = useSchrittTimer({
@@ -295,23 +468,12 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
         </div>
       )}
 
-      {/* Der Tempotest hat als Einziger ein Ergebnis, das man mitnimmt. Das
-          Feld steht deshalb unter seinem Ablauf und nirgends sonst. */}
+      {/* Der Tempotest hat als Einziger ein Ergebnis, das man mitnimmt - und
+          gleich nach dem Abstellen steht man mit dem Telefon daneben. Deshalb
+          dieselbe Karte wie in der Anleitung, nur ohne den Ablauf: der steht
+          hier schon unter der Uhr. */}
       {a.tempo && (
-        <div class="card">
-          <div class="row"><span>Ergebnis des Tempotests</span>
-            <b>{prep && prep.zielWatt > 0 ? prep.zielWatt + ' W' : 'noch nichts notiert'}</b></div>
-          <Zahlenfeld titel="Ø-Watt Block 2 (W)" wert={prep ? prep.zielWatt : null} min={1}
-            onWert={v => onNotiz({ zielWatt: v })} />
-          <Zahlenfeld titel="Ø-Puls Block 2 (bpm)" wert={prep ? prep.zielPuls : null} min={1}
-            onWert={v => onNotiz({ zielPuls: v })} />
-          <p class="hint">
-            Das ist die Zahl, auf die im Test gezielt wird. Sie steht danach oben im Bereich
-            und am Testtag über der Uhr – aufgeschrieben statt erinnert, sieben Tage sind zu
-            lang. Der Puls wird mitgeschrieben und nicht angesteuert; die LTHR liefert erst
-            der Test.
-          </p>
-        </div>
+        <TempotestKarte ablauf={a} prep={prep} onNotiz={onNotiz} laden={laden} kompakt />
       )}
 
       <div class="card">
@@ -472,6 +634,43 @@ export function TestTab(){
 
   const [ablauf, setAblauf] = useState(() => vorgewaehlterAblauf(ablaeufe));
 
+  const tempo = ablaeufe.find(a => a.tempo) || null;
+  const ziel = testZiel(prep, th);
+
+  /* Das Ergebnis des Tempotests aus der Aufzeichnung holen.
+
+     Zwei Abrufe: die Fahrten des Tages, dann der Leistungsstrom der laengsten.
+     Die laengste und nicht die erste - wer den Anlauf abends faehrt und
+     morgens zum Baecker rollt, hat zwei Aufzeichnungen an diesem Tag, und die
+     kurze traegt keine Bloecke.
+
+     Die Fehlermeldungen nennen, was fehlt, und nicht nur dass etwas fehlte:
+     eine Fahrt ohne Leistungsmesser ist ein anderer Fall als ein Tag ohne
+     Fahrt, und im ersten hilft nur das Eintippen. */
+  async function ladeTempotest(a){
+    const key = apiKey.value;
+    const iso = isoDayLocal(a.datum);
+    const acts = await fetchActivities(key, iso, iso);
+    const fahrten = (Array.isArray(acts) ? acts : []).filter(x => isRide(x.type))
+      .sort((x, y) => (y.moving_time || y.elapsed_time || 0) - (x.moving_time || x.elapsed_time || 0));
+    if(!fahrten.length){
+      throw new Error('Für den ' + a.datum.toLocaleDateString('de-DE') +
+        ' liegt keine Radaufzeichnung vor.');
+    }
+    const streams = await fetchStreams(key, fahrten[0].id, 'watts,heartrate,time');
+    const bloecke = tempoBloecke({
+      watts: zahlenStrom(streams, 'watts'),
+      puls:  zahlenStrom(streams, 'heartrate'),
+      zeit:  zahlenStrom(streams, 'time'),
+      sekunden: a.blockSekunden
+    });
+    if(!bloecke){
+      throw new Error('„' + (fahrten[0].name || fahrten[0].type) + '" enthält keinen ' +
+        'Leistungsstrom oder ist zu kurz für zwei Blöcke. Ohne Watt bleibt das Eintippen.');
+    }
+    return { bloecke, act: fahrten[0] };
+  }
+
   /* Die Woche des Testtermins und nicht die heutige: die Baender im Ablauf
      sollen die des Tests sein, auch wenn man drei Tage vorher hineinsieht. */
   const w = termin ? Math.max(weekNumberFor(termin.datum, start), 1) : 1;
@@ -487,7 +686,7 @@ export function TestTab(){
         {umschalter}
         <Ablaufansicht p={p} th={th} w={w} ablaeufe={ablaeufe}
           gewaehlt={ablauf} setGewaehlt={setAblauf} prep={prep}
-          onNotiz={patch => setTestPrep(schluessel, patch)} />
+          onNotiz={patch => setTestPrep(schluessel, patch)} laden={ladeTempotest} />
       </>
     );
   }
@@ -514,6 +713,13 @@ export function TestTab(){
       <LageKarte termin={termin} phase={phase} tage={tage} prep={prep} />
       {phase === 'heute' && goNoGo}
       <AnlaufKarte tage={anlauf} intro={p.testTaper ? p.testTaper.intro : null} />
+      {/* Erst der Tempotest, dann was aus ihm folgt, dann der Test selbst -
+          das ist die Reihenfolge, in der die drei stattfinden. */}
+      {tempo && (
+        <TempotestKarte ablauf={tempo} prep={prep}
+          onNotiz={patch => setTestPrep(schluessel, patch)} laden={ladeTempotest} />
+      )}
+      <ZielKarte ziel={ziel} termin={termin} />
       <DurchfuehrungKarte p={p} />
       {phase !== 'heute' && goNoGo}
       <AuswertungsKarte th={th} />

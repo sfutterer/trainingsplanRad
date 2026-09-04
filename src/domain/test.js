@@ -22,7 +22,7 @@
    Rein: kein DOM, kein fetch, keine Uhr. */
 
 import { testWeeks, testDateFor, toMidnight, dayOffset, isoDayLocal, addDays } from './week.js';
-import { thursdayPlan } from './day.js';
+import { thursdayPlan, schrittSekunden } from './day.js';
 
 /* Alle Testtermine des Plans mit ihrem Datum. Abgeleitet aus den Testwochen,
    damit keine zweite Liste danebensteht. */
@@ -123,7 +123,12 @@ export function testAblaeufe(plan, termin, heute){
       note: [z.text, s.note].filter(Boolean).join(' '),
       datum: z.datum,
       heute: z.heute,
-      tempo: s.steps.some(x => /testtempo/i.test(x.effort || ''))
+      tempo: s.steps.some(x => /testtempo/i.test(x.effort || '')),
+      /* Wie lang ein Belastungsblock ist - gebraucht, um ihn in der
+         Aufzeichnung wiederzufinden. Aus den Schritten und nicht als Zahl
+         daneben: aendert plan.json die sechs Minuten, sucht die Auswertung
+         danach die richtige Fensterlaenge. */
+      blockSekunden: schrittSekunden(s.steps.find(x => x.type === 'work') || {})
     });
   }
   if(plan.thresholdTest && Array.isArray(plan.thresholdTest.steps)){
@@ -168,6 +173,111 @@ export function testWerte({ w20, hr20, w5, gewicht }){
     ftp: watt ? Math.round(watt * FTP_FAKTOR) : null,
     lthr: zahl(hr20),
     wkg: watt && gewicht > 0 ? Math.round(watt * FTP_FAKTOR / gewicht * 100) / 100 : null
+  };
+}
+
+/* ---- Das Ergebnis des Tempotests aus der Aufzeichnung ----
+
+   Der Plan verlangt, die Ø-Leistung von Block 2 zu notieren. Abtippen geht,
+   aber die Zahl steht in der Aufzeichnung, und wer sie von Hand aus der Uhr
+   liest, liest den Momentanwert oder den Schnitt der ganzen Fahrt.
+
+   Gesucht werden die beiden staerksten nicht ueberlappenden Fenster von
+   Blocklaenge. Das ist keine Mustererkennung, sondern die Form der Einheit:
+   15 min locker, 6 min hart, 6 min locker, 6 min hart, 10 min ausrollen - in
+   einer solchen Fahrt sind die beiden Bloecke die beiden staerksten Fenster,
+   und zwar mit Abstand. Welches davon Block 2 ist, entscheidet die Zeit und
+   nicht die Leistung: wurde nach unten korrigiert, ist Block 2 der schwaechere
+   der beiden, und genau seine Zahl ist die gesuchte.
+
+   Beide Bloecke werden zurueckgegeben und angezeigt. Die Zuordnung ist eine
+   Annahme, und eine Annahme, die man nicht nachpruefen kann, ist eine
+   Behauptung - mit beiden Zahlen und ihren Zeiten daneben sieht man in einer
+   Sekunde, ob sie stimmt.
+
+   Ohne Leistungsstrom gibt es nichts zu finden: der Puls hinkt bei sechs
+   Minuten hinterher, sein staerkstes Fenster liegt spaeter als der Block und
+   waere die falsche Antwort auf eine Frage nach Watt. */
+
+/* Takt der Aufzeichnung bestimmen, nicht annehmen - dieselbe Rechnung wie in
+   zoneSeconds. Der Median ist robust gegen einzelne Pausen. */
+function taktSekunden(zeit){
+  if(!Array.isArray(zeit) || zeit.length < 2) return null;
+  const d = [];
+  for(let i = 1; i < zeit.length; i++){
+    const dt = zeit[i] - zeit[i - 1];
+    if(dt > 0 && dt <= 60) d.push(dt);
+  }
+  if(!d.length) return null;
+  d.sort((a, b) => a - b);
+  return d[Math.floor(d.length / 2)];
+}
+
+function mittel(werte, von, bis){
+  let summe = 0, n = 0;
+  for(let i = von; i < bis; i++){
+    const v = werte[i];
+    if(Number.isFinite(v)){ summe += v; n += 1; }
+  }
+  return n ? summe / n : null;
+}
+
+export function tempoBloecke({ watts, puls, zeit, sekunden }){
+  if(!Array.isArray(watts) || !watts.length || !(sekunden > 0)) return null;
+  const takt = taktSekunden(zeit) || 1;
+  const fenster = Math.max(2, Math.round(sekunden / takt));
+  const n = watts.length;
+  if(n < fenster * 2) return null;
+
+  /* Praefixsummen: der gleitende Schnitt ueber ein paar tausend Messwerte darf
+     nicht quadratisch werden. Nicht gemessene Stellen zaehlen als null Watt -
+     im Freilauf sind sie das auch. */
+  const s = new Float64Array(n + 1);
+  for(let i = 0; i < n; i++) s[i + 1] = s[i] + (Number.isFinite(watts[i]) ? watts[i] : 0);
+  const schnitt = i => (s[i + fenster] - s[i]) / fenster;
+
+  let best = 0;
+  for(let i = 1; i + fenster <= n; i++) if(schnitt(i) > schnitt(best)) best = i;
+
+  let zweitbest = -1;
+  for(let i = 0; i + fenster <= n; i++){
+    if(i + fenster > best && i < best + fenster) continue;   // ueberlappt
+    if(zweitbest < 0 || schnitt(i) > schnitt(zweitbest)) zweitbest = i;
+  }
+  if(zweitbest < 0) return null;
+
+  const sek = i => (Array.isArray(zeit) && Number.isFinite(zeit[i]) ? zeit[i] : Math.round(i * takt));
+  const block = i => ({
+    watt: Math.round(schnitt(i)),
+    puls: Array.isArray(puls) ? (v => (v == null ? null : Math.round(v)))(mittel(puls, i, i + fenster)) : null,
+    vonSek: sek(i),
+    bisSek: sek(Math.min(i + fenster, n - 1))
+  });
+
+  const [frueh, spaet] = best < zweitbest ? [best, zweitbest] : [zweitbest, best];
+  return { erster: block(frueh), zweiter: block(spaet), fensterSekunden: fenster * takt };
+}
+
+/* Die Zahl, auf die im Test gezielt wird, und was daraus faellt.
+
+   Die FTP steht hier nicht als Vorhersage, sondern als Rechnung mit der Formel
+   des Plans: haelt das Ziel ueber die 20 Minuten, ist es der Ø-Wert, aus dem
+   sie entsteht. Vorher zu wissen, worauf der Test hinauslaeuft, ist kein
+   Selbstzweck - eine Zahl, die weit unter der bisherigen FTP liegt, ist am
+   Tag davor ein Hinweis und nicht erst danach. */
+export function testZiel(prep, thresholds){
+  const watt = prep && prep.zielWatt > 0 ? prep.zielWatt : null;
+  if(!watt) return null;
+  const ftp = Math.round(watt * FTP_FAKTOR);
+  const alt = thresholds && thresholds.ftp > 0 ? thresholds.ftp : null;
+  return {
+    watt,
+    puls: prep.zielPuls > 0 ? prep.zielPuls : null,
+    ftp,
+    /* Nur der Vergleich, keine Bewertung: ob ein Minus an der Form liegt oder
+       an einem zu vorsichtigen Anlauf, entscheidet der Test. */
+    gegenAlt: alt ? Math.round((ftp - alt) / alt * 100) : null,
+    alteFtp: alt
   };
 }
 

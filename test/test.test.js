@@ -15,7 +15,8 @@ import { createPlan } from '../src/domain/plan.js';
 import * as W from '../src/domain/week.js';
 import {
   testTermine, aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
-  vorgewaehlterAblauf, testWerte, terminSchluessel, FTP_FAKTOR
+  vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke, testZiel,
+  FTP_FAKTOR
 } from '../src/domain/test.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
@@ -160,6 +161,103 @@ describe('Werte aus dem Test', () => {
   it('nimmt Null und Unsinn als "nicht gemessen"', () => {
     const w = testWerte({ w20: 0, hr20: null, w5: undefined, gewicht: 0 });
     expect(w).toEqual({ w20:null, w5:null, hr20:null, weight:null, ftp:null, lthr:null, wkg:null });
+  });
+});
+
+/* Das Ergebnis des Tempotests aus der Aufzeichnung.
+
+   Die Einheit hat eine feste Form - locker, hart, locker, hart, locker -, und
+   in ihr sind die beiden Bloecke die beiden staerksten Fenster. Geprueft wird
+   der Fall, auf den es ankommt: Block 2 wurde nach unten korrigiert und ist
+   damit der schwaechere von beiden. Gesucht ist trotzdem er. */
+describe('Tempotest aus der Aufzeichnung', () => {
+  const BLOCK = 360;   // 6 min
+
+  /* Eine Fahrt bauen: je Sekunde ein Messwert, Abschnitte als [Sekunden, Watt]. */
+  function fahrt(abschnitte, pulsVersatz){
+    const watts = [], puls = [], zeit = [];
+    let t = 0;
+    for(const [sek, w] of abschnitte){
+      for(let i = 0; i < sek; i++){
+        watts.push(w);
+        puls.push(80 + w / 3 + (pulsVersatz || 0));
+        zeit.push(t++);
+      }
+    }
+    return { watts, puls, zeit, sekunden: BLOCK };
+  }
+
+  const anlauf = () => fahrt([
+    [900, 120],   // 15 min Einfahren
+    [BLOCK, 230], // Block 1 - zu schwer gefahren
+    [BLOCK, 110], // 6 min Pause
+    [BLOCK, 215], // Block 2 - korrigiert, schwaecher
+    [600, 100]    // 10 min Ausrollen
+  ]);
+
+  it('findet beide Bloecke und ordnet sie nach der Zeit', () => {
+    const b = tempoBloecke(anlauf());
+    expect(b.erster.watt).toBe(230);
+    expect(b.zweiter.watt).toBe(215);
+    expect(b.erster.vonSek).toBe(900);
+    expect(b.zweiter.vonSek).toBe(900 + 2 * BLOCK);
+    expect(b.fensterSekunden).toBe(BLOCK);
+  });
+
+  /* Der eigentliche Punkt: gesucht ist Block 2, nicht der beste Block. Wer
+     nach oben korrigiert hat, bekommt dieselbe Reihenfolge - beide Male
+     entscheidet die Zeit. */
+  it('nimmt auch bei Korrektur nach oben den spaeteren Block als zweiten', () => {
+    const b = tempoBloecke(fahrt([
+      [900, 120], [BLOCK, 200], [BLOCK, 110], [BLOCK, 225], [600, 100]
+    ]));
+    expect(b.erster.watt).toBe(200);
+    expect(b.zweiter.watt).toBe(225);
+  });
+
+  it('nimmt den Puls desselben Fensters mit', () => {
+    const b = tempoBloecke(anlauf());
+    expect(b.zweiter.puls).toBe(Math.round(80 + 215 / 3));
+  });
+
+  /* Ein Zwei-Sekunden-Takt darf das Fenster nicht halbieren. */
+  it('rechnet die Fensterlaenge aus dem Takt der Aufzeichnung', () => {
+    const roh = anlauf();
+    const jede2 = a => a.filter((_, i) => i % 2 === 0);
+    const b = tempoBloecke({ watts: jede2(roh.watts), puls: jede2(roh.puls),
+                             zeit: jede2(roh.zeit), sekunden: BLOCK });
+    expect(b.zweiter.watt).toBe(215);
+    expect(b.fensterSekunden).toBe(BLOCK);
+  });
+
+  it('schweigt ohne Leistungsstrom und bei zu kurzer Aufzeichnung', () => {
+    expect(tempoBloecke({ watts: null, sekunden: BLOCK })).toBe(null);
+    expect(tempoBloecke({ watts: [], sekunden: BLOCK })).toBe(null);
+    const kurz = fahrt([[300, 200]]);
+    expect(tempoBloecke(kurz)).toBe(null);
+    expect(tempoBloecke({ watts: anlauf().watts, sekunden: 0 })).toBe(null);
+  });
+});
+
+describe('Ziel fuer den Test', () => {
+  it('rechnet die FTP, die aus dem gehaltenen Ziel faellt', () => {
+    const z = testZiel({ zielWatt: 220, zielPuls: 158 }, { ftp: 200 });
+    expect(z.watt).toBe(220);
+    expect(z.puls).toBe(158);
+    expect(z.ftp).toBe(Math.round(220 * FTP_FAKTOR));
+    expect(z.alteFtp).toBe(200);
+    expect(z.gegenAlt).toBe(Math.round((209 - 200) / 200 * 100));
+  });
+
+  it('bleibt ohne notierte Leistung leer', () => {
+    expect(testZiel(null, { ftp: 200 })).toBe(null);
+    expect(testZiel({ zielWatt: 0 }, { ftp: 200 })).toBe(null);
+  });
+
+  it('kommt ohne bisherige FTP aus', () => {
+    const z = testZiel({ zielWatt: 220 }, { ftp: null });
+    expect(z.gegenAlt).toBe(null);
+    expect(z.puls).toBe(null);
   });
 });
 

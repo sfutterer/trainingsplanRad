@@ -68,10 +68,47 @@
 .row b.go{ color: var(--ok); }
 .row b.nogo{ color: var(--dev); }
 
-/* ---- Regeln und Formeln ---- */
-.regelliste{ margin: 6px 0 0; padding-left: 18px; }
-.regelliste li{ margin: 6px 0; font-size: 13.5px; line-height: 1.5; color: var(--on-surface-var); }
-.regelliste b{ color: var(--on-surface); }
+/* ---- Ablauf Schritt fuer Schritt ----
+
+   Dieselbe Form wie der Ablauf auf der Tageskarte: Bezeichnung links, Dauer
+   und Vorgabe rechts, der Satz aus dem Plan darunter. Wer beide Ansichten
+   kennt, soll nicht zweimal lesen lernen. */
+.schrittliste{ list-style: none; margin: 8px 0 0; padding: 0; }
+.schrittliste li{
+  padding: 8px 0 8px 12px; margin-bottom: 2px;
+  border-left: 2px solid var(--outline-2);
+}
+.schritt-kopf{
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px; flex-wrap: wrap;
+}
+.schritt-label{ font-size: 13.5px; font-weight: 700; }
+.schritt-wert{ font-size: 13.5px; color: var(--on-surface-var); text-align: right; }
+.schritt-note{
+  display: block; margin-top: 3px;
+  font-size: 12.5px; color: var(--muted); line-height: 1.45;
+}
+
+/* ---- Die beiden gefundenen Bloecke ----
+
+   Beide, nicht nur der gesuchte: welcher von ihnen Block 2 ist, ist eine
+   Annahme ueber die Aufzeichnung, und eine Annahme, die man nicht nachpruefen
+   kann, ist eine Behauptung. Mit Leistung, Puls und Startzeit nebeneinander
+   sieht man in einer Sekunde, ob die Zuordnung stimmt - und uebernimmt sonst
+   den anderen. */
+.blockzeile{
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 0; border-bottom: 1px solid var(--outline);
+}
+.blockzeile:last-of-type{ border-bottom: 0; }
+.blockname{ font-size: 13px; font-weight: 700; min-width: 62px; }
+.blockwert{ font-size: 14px; font-weight: 600; }
+.blockzeit{ font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.blockzeile .btn.klein{
+  margin-left: auto; min-height: 34px; padding: 0 12px;
+  font-size: 12.5px; border-radius: 17px;
+  background: var(--surface-3); color: var(--on-surface);
+}
 
 .formeln{ display: flex; flex-direction: column; gap: 8px; margin: 10px 0 4px; }
 .formel{
