@@ -8,14 +8,17 @@
 import { useState } from 'preact/hooks';
 import { plan, thresholds, startDate, week, testLog, interimLog, apiKey,
          setThresholds, addTestEntry, addInterimEntry } from '../../../state/store.js';
-import { fetchWellness, putWellness } from '../../../data/icu.js';
+import { fetchGewicht } from '../../../data/icu.js';
 import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag } from '../../../domain/week.js';
 import { hrBands, usesCoggan, zoneBand } from '../../../domain/zones.js';
-import { sprechtestBezug } from '../../../domain/test.js';
+import { sprechtestBezug, testWerte, baueTestEintrag, FTP_FAKTOR } from '../../../domain/test.js';
 import { zahl } from '../../../domain/zahlen.js';
-import { bestaetige } from '../../../state/dialog.js';
+/* Der Schreibvorgang samt Rueckfrage liegt in state/gewicht.js - der
+   Testbereich schreibt dasselbe. */
+import { gewichtSchreiben } from '../../../state/gewicht.js';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
 import { Verlaufsgraph } from '../../components/Verlaufsgraph.jsx';
+import { Testhistorie } from '../../components/Testhistorie.jsx';
 import { Zahlenfeld, Textfeld } from '../../components/Feld.jsx';
 import './zonen.css';
 
@@ -131,7 +134,7 @@ function TestFormular({ tagIso, vorschlag, onSpeichern, onAbbrechen }){
   return (
     <>
       <div class="row"><span>Test vom {dayFromIso(tagIso).toLocaleDateString('de-DE')}</span>
-        <b>{w20 > 0 ? 'FTP ' + Math.round(w20 * 0.95) + ' W' : 'Ø-Watt eintragen'}</b></div>
+        <b>{w20 > 0 ? 'FTP ' + Math.round(w20 * FTP_FAKTOR) + ' W' : 'Ø-Watt eintragen'}</b></div>
       <Zahlenfeld titel="Ø-Watt der 20 min" wert={w20} min={1} onWert={setW20} />
       {/* Seit Fassung 4 die Kadenz statt der 5-min-Leistung: die entsteht an
           einem anderen Tag und steht im Testbereich unter „VO2max-Referenz". */}
@@ -161,21 +164,17 @@ function SchwellenKarte(){
   const geaendert = f.ftp !== th.ftp || f.lthr !== th.lthr || f.hrmax !== th.hrmax;
 
   /* Das Gewicht steht meist schon in der Wellness - dann muss es niemand
-     abtippen und die beiden Quellen koennen nicht auseinanderlaufen. */
-  async function gewichtVorschlag(tagIso){
-    const key = apiKey.value;
-    if(!key) return null;
-    try {
-      const rows = await fetchWellness(key, tagIso, tagIso);
-      const r = (Array.isArray(rows) ? rows : []).find(x => x && x.weight > 0);
-      return r ? r.weight : null;
-    } catch(e){ return null; }
-  }
+     abtippen und die beiden Quellen koennen nicht auseinanderlaufen.
 
+     Still, wenn nichts dasteht: hier ist es ein Vorschlag und keine Antwort
+     auf eine Frage des Nutzers. Im Testbereich meldet derselbe Abruf einen
+     Fehlschlag, weil er dort auf Knopfdruck laeuft. */
   async function testOeffnen(){
     const tagIso = isoDayLocal(toMidnight(new Date()));
     setTest({ tagIso, vorschlag: null, bereit: false });
-    const vorschlag = await gewichtVorschlag(tagIso);
+    const vorschlag = apiKey.value
+      ? await fetchGewicht(apiKey.value, tagIso).catch(() => null)
+      : null;
     /* Nur uebernehmen, wenn das Formular noch fuer denselben Tag offen ist -
        sonst schriebe eine spaete Antwort in ein Formular, das der Nutzer
        inzwischen geschlossen hat. */
@@ -186,51 +185,42 @@ function SchwellenKarte(){
     const { tagIso, vorschlag } = test;
     setTest(null);
 
+    /* Dieselbe Rechnung wie im Testbereich, aus derselben Funktion. Bis zum
+       04.09.2026 stand hier Math.round(w20 * 0.95), waehrend FTP_FAKTOR zwei
+       Dateien weiter dieselbe Zahl trug - der Faktor liess sich nicht mehr an
+       einer Stelle aendern, und die Karte darunter nannte ihn ein drittes
+       Mal im Fliesstext. */
+    const werte = testWerte({ w20, kadenz, gewicht: kg });
+
     /* Ohne eingetragene FTP die aus dem Test gerechnete uebernehmen - eine
-       bereits gesetzte wird nicht ungefragt ueberschrieben. */
+       bereits gesetzte wird nicht ungefragt ueberschrieben. Anders als im
+       Testbereich, wo der Wert des Tages gerade gemessen wurde: hier tippt
+       jemand Zahlen ein, die er schon hat. */
     let ftp = f.ftp;
-    if(w20 > 0 && !ftp){
-      ftp = Math.round(w20 * 0.95);
+    if(werte.ftp != null && !ftp){
+      ftp = werte.ftp;
       setF({ ...f, ftp });
       await setThresholds({ ftp, lthr: f.lthr, hrmax: f.hrmax });
     }
-    await addTestEntry({
-      day: tagIso,
-      week: weekNumberFor(dayFromIso(tagIso), startDate.value),
-      w20: w20 > 0 ? w20 : null,
-      kadenz: kadenz > 0 ? kadenz : null,
-      ftp, lthr: f.lthr,
-      weight: kg > 0 ? kg : null,
-      conditions: bed,
-      /* Auch hier: unter welchem Ablauf der Wert entstand. Ein Eintrag ohne
-         Kennung liesse sich spaeter nicht mehr einordnen, und die Regel
-         "identischer Ablauf ueber alle Termine" nicht mehr pruefen. */
-      protokoll: plan.value.thresholdTest.id,
-      protokollFassung: plan.value.thresholdTest.fassung
-    });
+    /* Ein Eintrag, eine Gestalt - egal ueber welchen Bildschirm er entsteht.
+       Vorher wurde er hier und im Testbereich getrennt gebaut, mit
+       verschiedenen Feldern; im Verlauf standen dadurch zwei Sorten Eintrag
+       nebeneinander. */
+    await addTestEntry(baueTestEintrag({
+      tagIso, week: weekNumberFor(dayFromIso(tagIso), startDate.value),
+      werte, ftp, lthr: f.lthr, bedingungen: bed, plan: plan.value
+    }));
     setMeldung({ art:'ok', text:'Test gespeichert.' });
 
-    /* Der einzige Schreibvorgang der App, deshalb mit Rueckfrage - und nur,
-       wenn der Wert nicht ohnehin von dort kam. */
-    if(kg > 0 && apiKey.value && kg !== vorschlag){
-      const ja = await bestaetige({
-        titel: 'Gewicht nach intervals.icu schreiben?',
-        text: kg + ' kg für den ' + dayFromIso(tagIso).toLocaleDateString('de-DE') + '. '
-            + 'Das ist der einzige Wert, den diese App jemals dorthin schreibt – '
-            + 'alles andere wird nur gelesen.',
-        jaLabel: 'Schreiben'
-      });
-      if(!ja) return;
-      try {
-        await putWellness(apiKey.value, tagIso, { weight: kg });
-        setMeldung({ art:'ok', text:'Gewicht nach intervals.icu geschrieben.' });
-      } catch(e){
-        setMeldung({ art:'fehler', text:'Nicht geschrieben: ' + e.message + ' Der Test ist trotzdem gespeichert.' });
+    /* Nur schreiben, wenn der Wert nicht ohnehin von dort kam. */
+    if(kg !== vorschlag){
+      const g = await gewichtSchreiben(tagIso, kg);
+      if(g.art === 'ok') setMeldung({ art:'ok', text:'Gewicht nach intervals.icu geschrieben.' });
+      if(g.art === 'fehler'){
+        setMeldung({ art:'fehler', text:'Nicht geschrieben: ' + g.text + ' Der Test ist trotzdem gespeichert.' });
       }
     }
   }
-
-  const hist = testLog.value.slice().sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, 4);
 
   return (
     <div class="card">
@@ -253,21 +243,14 @@ function SchwellenKarte(){
         )}
 
       <p class="hint">
-        FTP = Ø-Watt der 20 min × 0,95, LTHR = Ø-Puls der 20 min. Dieselben Werte gehören in
+        FTP = Ø-Watt der 20 min × {String(FTP_FAKTOR).replace('.', ',')}, LTHR = Ø-Puls der 20 min.
+        Dieselben Werte gehören in
         intervals.icu unter Settings → Ride, Power Zones und HR Zones auf Coggan, Load Priority
         auf Power, FTP von automatisch auf manuell.
       </p>
       {meldung && <div class={'meldung ' + meldung.art}><b>{meldung.text}</b></div>}
       {testLog.value.length > 1 && <Verlauf eintraege={testLog.value} />}
-      {hist.length > 0 && <>
-        <div class="listhead">Testhistorie</div>
-        {hist.map((e, i) => (
-          <div class="listrow datum" key={i}>
-            <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
-            <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.weight ? ' · ' + e.weight + ' kg' : ''}{e.conditions ? ' · ' + e.conditions : ''}</span>
-          </div>
-        ))}
-      </>}
+      <Testhistorie eintraege={testLog.value} />
     </div>
   );
 }

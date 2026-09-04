@@ -18,6 +18,8 @@
 
    Rein: kein DOM, keine Uhr. */
 
+import { FTP_FAKTOR } from './test.js';
+
 export const T = {
 
   /* ---- Ruhetag und optionale Fahrten ---- */
@@ -126,10 +128,18 @@ export const T = {
     + (deutlich ? ' Dauerhaft deutlich mehr Umfang gehört in die Planprogression, '
                 + 'nicht in einzelne Fahrten.' : ''),
 
+  /* Der Faktor kommt aus test.js und steht nicht noch einmal als Ziffernfolge
+     im Satz: er stand bis zum 04.09.2026 an vier Stellen im Code, und drei
+     davon haetten eine Aenderung nicht mitbekommen.
+
+     Der Verweis auf den Tab „Heute" ist mit weg - den Tab gibt es seit dem
+     Umbau nicht mehr. Die Schwellenwerte stehen unter „Zonen", der Test hat
+     seinen eigenen Bereich mit einer Ergebnisansicht. */
   testtag:
-    'Testtag: Ø-Watt der 20 min notieren, FTP = Ø-Watt × 0,95, LTHR = Ø-Puls der 20 min. '
-    + 'Beides im Tab „Heute“ unter Schwellenwerte eintragen und in intervals.icu '
-    + 'übernehmen, danach Power Zones und HR Zones auf Coggan.',
+    'Testtag: Ø-Watt der 20 min notieren, FTP = Ø-Watt × '
+    + String(FTP_FAKTOR).replace('.', ',') + ', LTHR = Ø-Puls der 20 min. '
+    + 'Beides im Bereich „Schwellentest“ unter „Ergebnis“ eintragen und in '
+    + 'intervals.icu übernehmen, danach Power Zones und HR Zones auf Coggan.',
 
   /* ---- Die Fahrten eines Tages nacheinander ----
 

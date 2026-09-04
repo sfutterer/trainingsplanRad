@@ -372,3 +372,63 @@ export function sprechtestBezug(interimLog, testLog, z2){
 export function terminSchluessel(termin){
   return termin ? isoDayLocal(termin.datum) : null;
 }
+
+/* ---- Ein Testeintrag ----
+
+   Bis zum 04.09.2026 wurde er an zwei Stellen gebaut: im Testbereich und im
+   Zonen-Tab, mit verschiedenen Feldern und verschiedenen Rechnungen. Der
+   Zonen-Tab rechnete die FTP mit einem hart hingeschriebenen 0,95, waehrend
+   FTP_FAKTOR zwei Dateien weiter dieselbe Zahl trug - der Faktor liess sich
+   nicht mehr an einer Stelle aendern.
+
+   Zwei Eingabewege bleiben, und das ist richtig: der Testbereich fragt nach
+   dem, was am Testtag anfaellt (Ø-Watt, Ø-Puls, Kadenz, RPE, Gewicht,
+   Bedingungen), der Zonen-Tab nimmt Schwellenwerte entgegen, die von woanders
+   kommen, und haelt sie als Test fest. Was beide erzeugen, muss aber ein und
+   dieselbe Zeile im Protokoll sein - sonst stehen im Verlauf zwei Sorten
+   Eintrag nebeneinander, und der Vergleich zweier Tests haengt daran, ueber
+   welchen Bildschirm sie eingetragen wurden.
+
+   protokoll und protokollFassung wandern immer mit: der Trainingsplan
+   verlangt einen identischen Ablauf ueber alle Termine, und ohne Kennung
+   waere diese Regel nicht pruefbar. */
+export function baueTestEintrag({ tagIso, week, werte, ftp, lthr, bedingungen, plan }){
+  return {
+    day: tagIso,
+    week,
+    w20: werte.w20,
+    kadenz: werte.kadenz,
+    rpe: werte.rpe,
+    ftp: ftp ?? werte.ftp,
+    lthr: lthr ?? werte.lthr,
+    weight: werte.weight,
+    conditions: (bedingungen || '').trim(),
+    protokoll: plan.thresholdTest.id,
+    protokollFassung: plan.thresholdTest.fassung
+  };
+}
+
+/* Ob die Eintraege aus verschiedenen Testablaeufen stammen.
+
+   Der Trainingsplan verlangt ueber alle Termine denselben Ablauf. Zwei Werte
+   aus zwei Protokollen sind nicht vergleichbar, und ein Trendbild aus ihnen
+   ist stillschweigend falsch - deshalb geprueft und nicht nur zitiert. */
+export function gemischteProtokolle(testLog){
+  return new Set((testLog || []).map(e => (e && e.protokoll) || 'unbekannt')).size > 1;
+}
+
+/* ---- Welche Aufzeichnung gemeint ist ----
+
+   Die laengste Radfahrt des Tages, nicht die erste: wer den Anlauf abends
+   faehrt und morgens zum Baecker rollt, hat zwei Aufzeichnungen an diesem
+   Tag, und die kurze traegt keine Bloecke.
+
+   Steht hier und nicht in der Ansicht. Es ist eine fachliche Regel darueber,
+   welche Messung gilt - und sie stand bis zum 04.09.2026 zweimal im
+   Testbereich, einmal fuer den Tempotest und einmal fuer die
+   VO2max-Referenz. */
+export function laengsteFahrt(acts, istFahrt){
+  return (Array.isArray(acts) ? acts : [])
+    .filter(a => a && istFahrt(a.type))
+    .sort((x, y) => (y.moving_time || y.elapsed_time || 0) - (x.moving_time || x.elapsed_time || 0))[0] || null;
+}

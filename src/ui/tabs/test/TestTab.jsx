@@ -40,16 +40,20 @@ import { plan, thresholds, startDate, today, testLog, testPrep, apiKey, settings
          setThresholds, addTestEntry, setTestPrep } from '../../../state/store.js';
 import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
          vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke,
-         testZiel, vo2maxTermin, vo2maxBezug, FTP_FAKTOR, AUSBELASTET_RPE }
+         testZiel, vo2maxTermin, vo2maxBezug, baueTestEintrag, laengsteFahrt,
+         FTP_FAKTOR, AUSBELASTET_RPE }
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
          WEEKDAY_NAMES } from '../../../domain/week.js';
-import { fetchWellness, putWellness, fetchActivities, fetchStreams,
+import { fetchGewicht, fetchActivities, fetchStreams,
          zahlenStrom } from '../../../data/icu.js';
-import { bestaetige } from '../../../state/dialog.js';
+/* Der Schreibvorgang samt Rueckfrage liegt in state/gewicht.js - der
+   Zonen-Tab schreibt dasselbe, und das Versprechen "der einzige Wert, den
+   diese App jemals dorthin schreibt" darf nicht an zwei Stellen stehen. */
+import { gewichtSchreiben } from '../../../state/gewicht.js';
 import { Segmented } from '../../components/Segmented.jsx';
 import { Baustein } from '../training/Baustein.jsx';
 /* Ring, Vorschau und Zonenkarte teilt sich dieser Bereich mit dem
@@ -57,6 +61,7 @@ import { Baustein } from '../training/Baustein.jsx';
 import { Schrittbuehne, Schrittvorschau, Zonenkarte } from '../../components/Schrittansicht.jsx';
 import { mmss, dauerText, schrittDauer } from '../../../domain/zeit.js';
 import { Zahlenfeld, Textfeld, Auswahlfeld } from '../../components/Feld.jsx';
+import { Testhistorie } from '../../components/Testhistorie.jsx';
 import { useSchrittTimer } from '../../components/useSchrittTimer.js';
 import { zahl } from '../../../domain/zahlen.js';
 import '../../components/timer.css';
@@ -537,9 +542,8 @@ function ErgebnisAnsicht({ p, th, termin }){
     const key = apiKey.value;
     if(!key){ setMeldung({ art:'fehler', text:'Kein Zugang zu intervals.icu hinterlegt.' }); return; }
     try {
-      const rows = await fetchWellness(key, tagIso, tagIso);
-      const r = (Array.isArray(rows) ? rows : []).find(x => x && x.weight > 0);
-      if(r) setF(x => ({ ...x, kg: r.weight }));
+      const kg = await fetchGewicht(key, tagIso);
+      if(kg) setF(x => ({ ...x, kg }));
       else setMeldung({ art:'fehler', text:'Für heute steht dort kein Gewicht.' });
     } catch(e){ setMeldung({ art:'fehler', text:'Nicht abrufbar: ' + e.message }); }
   }
@@ -550,20 +554,10 @@ function ErgebnisAnsicht({ p, th, termin }){
       lthr:  werte.lthr != null ? werte.lthr : th.lthr,
       hrmax: th.hrmax
     };
-    await addTestEntry({
-      day: tagIso,
-      week: weekNumberFor(dayFromIso(tagIso), startDate.value),
-      w20: werte.w20, kadenz: werte.kadenz, rpe: werte.rpe,
-      ftp: neu.ftp, lthr: neu.lthr,
-      weight: werte.weight,
-      conditions: f.bed.trim(),
-      /* Unter welchem Ablauf der Wert entstand. Der Trainingsplan verlangt
-         einen identischen Ablauf ueber alle drei Termine - ohne diese Kennung
-         waere die Regel nicht pruefbar, und zwei Werte aus zwei Protokollen
-         stuenden stillschweigend in derselben Linie. */
-      protokoll: p.thresholdTest.id,
-      protokollFassung: p.thresholdTest.fassung
-    });
+    await addTestEntry(baueTestEintrag({
+      tagIso, week: weekNumberFor(dayFromIso(tagIso), startDate.value),
+      werte, ftp: neu.ftp, lthr: neu.lthr, bedingungen: f.bed, plan: p
+    }));
     /* Anders als im Zonen-Tab werden beide Werte uebernommen und nicht nur die
        FTP, wenn noch keine dastand. Ein Test, dessen LTHR man danach von Hand
        nachtragen muss, hat den halben Zweck verfehlt - und der Rueckweg steht
@@ -572,24 +566,12 @@ function ErgebnisAnsicht({ p, th, termin }){
     setMeldung({ art:'ok', text:'Test gespeichert. FTP ' + (neu.ftp || '–') +
       ' W, LTHR ' + (neu.lthr || '–') + ' bpm – die Zonen rechnen ab sofort damit.' });
 
-    if(werte.weight > 0 && apiKey.value){
-      const ja = await bestaetige({
-        titel: 'Gewicht nach intervals.icu schreiben?',
-        text: werte.weight + ' kg für den ' + dayFromIso(tagIso).toLocaleDateString('de-DE') + '. '
-            + 'Das ist der einzige Wert, den diese App jemals dorthin schreibt – '
-            + 'alles andere wird nur gelesen.',
-        jaLabel: 'Schreiben'
-      });
-      if(!ja) return;
-      try { await putWellness(apiKey.value, tagIso, { weight: werte.weight }); }
-      catch(e){ setMeldung({ art:'fehler', text:'Gewicht nicht geschrieben: ' + e.message +
-        ' Der Test ist trotzdem gespeichert.' }); }
+    const g = await gewichtSchreiben(tagIso, werte.weight);
+    if(g.art === 'fehler'){
+      setMeldung({ art:'fehler', text:'Gewicht nicht geschrieben: ' + g.text +
+        ' Der Test ist trotzdem gespeichert.' });
     }
   }
-
-  const hist = testLog.value.slice().sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, 4);
-  const protokolle = new Set(testLog.value.map(e => e.protokoll || 'unbekannt'));
-  const gemischt = protokolle.size > 1;
 
   return (
     <>
@@ -642,32 +624,9 @@ function ErgebnisAnsicht({ p, th, termin }){
         {meldung && <div class={'meldung ' + meldung.art}><b>{meldung.text}</b></div>}
       </div>
 
-      {hist.length > 0 && (
+      {testLog.value.length > 0 && (
         <div class="card">
-          <div class="row"><span>Testhistorie</span><b>{testLog.value.length} Einträge</b></div>
-          {/* Die Bedingungen stehen seit dem 04.09.2026 mit in der Zeile. Sie
-              wurden seit jeher erhoben - der Trainingsplan verlangt sie
-              ausdruecklich und fuehrt eine eigene Spalte dafuer - und in der
-              ganzen App nirgends gelesen: conditions hatte keinen Leser,
-              derselbe Befund wie beim RPE-Verlauf. Bei drei Tests im Plan
-              haengt der Vergleich zweier Werte an genau dieser Zeile: 6 Grad
-              und Gegenwind gegen 22 Grad und Windstille sind keine zwei
-              Formzustaende. */}
-          {hist.map((e, i) => (
-            <div class="listrow datum" key={i}>
-              <span>{e.day}{e.week ? ' · W' + e.week : ''}</span>
-              <span>FTP {e.ftp || '–'} W · LTHR {e.lthr || '–'} bpm{e.w20 ? ' · 20 min ' + e.w20 + ' W' : ''}{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}{e.rpe ? ' · RPE ' + e.rpe : ''}{e.conditions ? ' · ' + e.conditions : ''}</span>
-            </div>
-          ))}
-          {/* Die Regel des Trainingsplans, hier nachgeprueft statt nur
-              zitiert: zwei Tests unter verschiedenen Ablaeufen sind nicht
-              vergleichbar, und ein Trendbild aus ihnen ist stillschweigend
-              falsch. */}
-          {gemischt && <p class="hint warn">
-            Die Einträge stammen aus verschiedenen Testabläufen. Der Trainingsplan verlangt
-            über alle Termine denselben Ablauf – die Werte sind untereinander nicht
-            vergleichbar.
-          </p>}
+          <Testhistorie eintraege={testLog.value} mitKopf />
           <p class="hint">Der Verlauf über alle Tests steht unter „Zonen“ und in der Analyse.</p>
         </div>
       )}
@@ -706,70 +665,61 @@ export function TestTab(){
     return eintrag && eintrag.ftp > 0 ? eintrag.ftp : (th.ftp > 0 ? th.ftp : null);
   })();
 
-  /* Das Ergebnis des Tempotests aus der Aufzeichnung holen.
+  /* Die Leistungsbloecke einer Aufzeichnung holen - einmal fuer den
+     Tempotest, einmal fuer die VO2max-Referenz.
 
-     Zwei Abrufe: die Fahrten des Tages, dann der Leistungsstrom der laengsten.
-     Die laengste und nicht die erste - wer den Anlauf abends faehrt und
-     morgens zum Baecker rollt, hat zwei Aufzeichnungen an diesem Tag, und die
-     kurze traegt keine Bloecke.
+     Beide standen bis zum 04.09.2026 als eigene Funktion da und
+     unterschieden sich in drei Zeilen von neunzehn: der Fensterlaenge,
+     welcher der beiden Bloecke gilt, und einem halben Satz in der
+     Fehlermeldung. Die uebrigen sechzehn - Fahrten des Tages holen, die
+     laengste nehmen, Streams laden, Fenster rechnen - waren Zeichen fuer
+     Zeichen dieselben.
 
-     Die Fehlermeldungen nennen, was fehlt, und nicht nur dass etwas fehlte:
-     eine Fahrt ohne Leistungsmesser ist ein anderer Fall als ein Tag ohne
-     Fahrt, und im ersten hilft nur das Eintippen. */
-  async function ladeTempotest(a){
+     Die Fehlermeldungen nennen weiterhin, was fehlt, und nicht nur dass
+     etwas fehlte: eine Fahrt ohne Leistungsmesser ist ein anderer Fall als
+     ein Tag ohne Fahrt, und im ersten hilft nur das Eintippen. "zuKurz"
+     traegt den Unterschied - beim Tempotest kann die Fahrt auch schlicht zu
+     kurz fuer zwei Bloecke sein. */
+  async function ladeBloecke({ datum, sekunden, zuKurz }){
     const key = apiKey.value;
-    const iso = isoDayLocal(a.datum);
-    const acts = await fetchActivities(key, iso, iso);
-    const fahrten = (Array.isArray(acts) ? acts : []).filter(x => isRide(x.type))
-      .sort((x, y) => (y.moving_time || y.elapsed_time || 0) - (x.moving_time || x.elapsed_time || 0));
-    if(!fahrten.length){
-      throw new Error('Für den ' + a.datum.toLocaleDateString('de-DE') +
+    const iso = isoDayLocal(datum);
+    const fahrt = laengsteFahrt(await fetchActivities(key, iso, iso), isRide);
+    if(!fahrt){
+      throw new Error('Für den ' + datum.toLocaleDateString('de-DE') +
         ' liegt keine Radaufzeichnung vor.');
     }
-    const streams = await fetchStreams(key, fahrten[0].id, 'watts,heartrate,time');
+    const streams = await fetchStreams(key, fahrt.id, 'watts,heartrate,time');
     const bloecke = tempoBloecke({
       watts: zahlenStrom(streams, 'watts'),
       puls:  zahlenStrom(streams, 'heartrate'),
       zeit:  zahlenStrom(streams, 'time'),
-      sekunden: a.blockSekunden
+      sekunden
     });
     if(!bloecke){
-      throw new Error('„' + (fahrten[0].name || fahrten[0].type) + '" enthält keinen ' +
-        'Leistungsstrom oder ist zu kurz für zwei Blöcke. Ohne Watt bleibt das Eintippen.');
+      throw new Error('„' + (fahrt.name || fahrt.type) + '" enthält keinen ' +
+        'Leistungsstrom' + (zuKurz ? ' oder ist zu kurz für zwei Blöcke' : '') +
+        '. Ohne Watt bleibt das Eintippen.');
     }
-    return { bloecke, act: fahrten[0] };
+    return { bloecke, act: fahrt };
   }
 
-  /* Dieselbe Fensterrechnung, nur mit einem Fenster: die VO2max-Referenz ist
-     der eine Maximalversuch der Einheit, und der ist ihr staerkstes Fenster.
-     Die Zuordnung ist hier eindeutig - anders als beim Tempotest gibt es
-     keinen zweiten Block, mit dem er zu verwechseln waere. */
+  /* Der Tempotest: beide Bloecke werden gezeigt, massgeblich ist der zweite. */
+  function ladeTempotest(a){
+    return ladeBloecke({ datum: a.datum, sekunden: a.blockSekunden, zuKurz: true });
+  }
+
+  /* Die VO2max-Referenz: dieselbe Fensterrechnung, aber nur ein Fenster
+     zaehlt. Der eine Maximalversuch der Einheit ist die haerteste Stelle der
+     Fahrt - deshalb das staerkste Fenster und nicht das spaetere. Eine
+     Verwechslung wie beim Tempotest gibt es hier nicht, es gibt keinen
+     zweiten Block. */
   async function ladeVo2max(t){
-    const key = apiKey.value;
-    const iso = isoDayLocal(t.datum);
-    const acts = await fetchActivities(key, iso, iso);
-    const fahrten = (Array.isArray(acts) ? acts : []).filter(x => isRide(x.type))
-      .sort((x, y) => (y.moving_time || y.elapsed_time || 0) - (x.moving_time || x.elapsed_time || 0));
-    if(!fahrten.length){
-      throw new Error('Für den ' + t.datum.toLocaleDateString('de-DE') +
-        ' liegt keine Radaufzeichnung vor.');
-    }
-    const streams = await fetchStreams(key, fahrten[0].id, 'watts,heartrate,time');
-    const max = (t.variante.steps || []).find(s => s.type === 'work');
-    const bloecke = tempoBloecke({
-      watts: zahlenStrom(streams, 'watts'),
-      puls:  zahlenStrom(streams, 'heartrate'),
-      zeit:  zahlenStrom(streams, 'time'),
+    const max = (t.variante.steps || []).find(x => x.type === 'work');
+    const { bloecke, act } = await ladeBloecke({
+      datum: t.datum,
       sekunden: max ? Math.round((max.minutes || 0) * 60) : 300
     });
-    if(!bloecke){
-      throw new Error('„' + (fahrten[0].name || fahrten[0].type) + '" enthält keinen ' +
-        'Leistungsstrom. Ohne Watt bleibt das Eintippen.');
-    }
-    /* Das staerkste Fenster, nicht das spaetere: hier zaehlt der eine
-       Maximalversuch, und der ist die haerteste Stelle der Fahrt. */
-    const b = [bloecke.erster, bloecke.zweiter].sort((x, y) => y.watt - x.watt)[0];
-    return { block: b, act: fahrten[0] };
+    return { block: [bloecke.erster, bloecke.zweiter].sort((x, y) => y.watt - x.watt)[0], act };
   }
 
   /* Die Woche des Testtermins und nicht die heutige: die Baender im Ablauf

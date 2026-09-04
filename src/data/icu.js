@@ -55,6 +55,19 @@ export function fetchWellness(key, fromIso, toIso){
   return icuFetch('/athlete/0/wellness?oldest=' + fromIso + '&newest=' + toIso, key);
 }
 
+/* Das Gewicht eines Tages, oder null.
+
+   Stand bis zum 04.09.2026 zweimal in der Oberflaeche - im Testbereich und im
+   Zonen-Tab -, beide Male mit derselben Abfrage und derselben Suche nach dem
+   ersten Eintrag mit einem Gewicht, nur mit verschiedener Fehlerbehandlung.
+   Die Abfrage gehoert hierher; ob ein fehlendes Gewicht eine Meldung wert ist,
+   entscheidet weiterhin der Aufrufer. */
+export async function fetchGewicht(key, tagIso){
+  const rows = await fetchWellness(key, tagIso, tagIso);
+  const r = (Array.isArray(rows) ? rows : []).find(x => x && x.weight > 0);
+  return r ? r.weight : null;
+}
+
 /* Der einzige schreibende Aufruf der App.
 
    Gewicht am Testtag gehoert laut Trainingsplan in die Wellness - sonst sind

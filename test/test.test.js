@@ -17,7 +17,8 @@ import {
   testTermine, aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
   vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke, testZiel,
   vo2maxTermin, vo2maxBezug, VO2MAX_GRENZE, FTP_FAKTOR,
-  sprechtestBezug, SPRECHTEST_ABSTAND, AUSBELASTET_RPE
+  sprechtestBezug, SPRECHTEST_ABSTAND, AUSBELASTET_RPE,
+  baueTestEintrag, gemischteProtokolle, laengsteFahrt
 } from '../src/domain/test.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
@@ -364,5 +365,94 @@ describe('Schluessel der Notizen', () => {
   it('ist das Datum des Termins', () => {
     expect(terminSchluessel({ datum: W.dayFromIso('2026-09-10') })).toBe('2026-09-10');
     expect(terminSchluessel(null)).toBe(null);
+  });
+});
+
+/* ---- Was aus zwei Formularen dieselbe Zeile macht ----
+
+   Der Testbereich und der Zonen-Tab bauten ihren Protokolleintrag bis zum
+   04.09.2026 getrennt, mit verschiedenen Feldern und verschiedenen
+   Rechnungen - der Zonen-Tab mit einem hart hingeschriebenen 0,95 statt
+   FTP_FAKTOR. Zwei Eingabewege bleiben, eine Zeile im Protokoll. */
+describe('Testeintrag', () => {
+  const werte = testWerte({ w20: 200, hr20: 165, kadenz: 88, rpe: 9, gewicht: 74.5 });
+  const basis = { tagIso: '2026-09-10', week: 4, werte, bedingungen: '  18 Grad, Windstille  ',
+                  plan };
+
+  it('traegt die gerechneten Werte, wenn keine vorgegeben sind', () => {
+    const e = baueTestEintrag(basis);
+    expect(e.ftp).toBe(Math.round(200 * FTP_FAKTOR));
+    expect(e.lthr).toBe(165);
+    expect(e.w20).toBe(200);
+    expect(e.kadenz).toBe(88);
+    expect(e.rpe).toBe(9);
+    expect(e.weight).toBe(74.5);
+  });
+
+  /* Der Zonen-Tab uebergibt die Zahlen aus seinen Feldern - dort ist die FTP
+     schon eingetragen und soll nicht ungefragt ueberschrieben werden. */
+  it('laesst vorgegebene Werte stehen', () => {
+    const e = baueTestEintrag({ ...basis, ftp: 205, lthr: 160 });
+    expect([e.ftp, e.lthr]).toEqual([205, 160]);
+  });
+
+  it('trimmt die Bedingungen und traegt sie mit', () => {
+    expect(baueTestEintrag(basis).conditions).toBe('18 Grad, Windstille');
+    expect(baueTestEintrag({ ...basis, bedingungen: null }).conditions).toBe('');
+  });
+
+  /* Ohne Kennung waere die Regel "identischer Ablauf ueber alle Termine"
+     nicht mehr pruefbar - egal ueber welchen Bildschirm der Wert kam. */
+  it('traegt Protokollkennung und Fassung immer mit', () => {
+    const e = baueTestEintrag(basis);
+    expect(e.protokoll).toBe(json.thresholdTest.id);
+    expect(e.protokollFassung).toBe(json.thresholdTest.fassung);
+  });
+
+  it('erkennt gemischte Protokolle', () => {
+    expect(gemischteProtokolle([])).toBe(false);
+    expect(gemischteProtokolle([{ protokoll: 'a' }, { protokoll: 'a' }])).toBe(false);
+    expect(gemischteProtokolle([{ protokoll: 'a' }, { protokoll: 'b' }])).toBe(true);
+    /* Ein Eintrag von vor der Kennung zaehlt als eigenes Protokoll - er ist
+       genau das, was sich nicht einordnen laesst. */
+    expect(gemischteProtokolle([{ protokoll: 'a' }, {}])).toBe(true);
+  });
+});
+
+/* Die laengste Fahrt des Tages, nicht die erste: wer den Anlauf abends faehrt
+   und morgens zum Baecker rollt, hat zwei Aufzeichnungen an diesem Tag. */
+describe('laengsteFahrt', () => {
+  const istFahrt = t => /ride/i.test(t || '');
+
+  it('nimmt die laengste Radfahrt', () => {
+    const a = laengsteFahrt([
+      { id: 1, type: 'Ride', moving_time: 900 },
+      { id: 2, type: 'Ride', moving_time: 4200 },
+      { id: 3, type: 'Ride', moving_time: 1200 }
+    ], istFahrt);
+    expect(a.id).toBe(2);
+  });
+
+  it('uebergeht alles, was keine Fahrt ist', () => {
+    const a = laengsteFahrt([
+      { id: 1, type: 'WeightTraining', moving_time: 9000 },
+      { id: 2, type: 'Ride', moving_time: 600 }
+    ], istFahrt);
+    expect(a.id).toBe(2);
+  });
+
+  /* elapsed_time, wo moving_time fehlt - manche Aufzeichnungen tragen nur das. */
+  it('faellt auf elapsed_time zurueck', () => {
+    const a = laengsteFahrt([
+      { id: 1, type: 'Ride', elapsed_time: 5000 },
+      { id: 2, type: 'Ride', moving_time: 600 }
+    ], istFahrt);
+    expect(a.id).toBe(1);
+  });
+
+  it('liefert null ohne Fahrt', () => {
+    expect(laengsteFahrt([], istFahrt)).toBe(null);
+    expect(laengsteFahrt(null, istFahrt)).toBe(null);
+    expect(laengsteFahrt([{ type: 'Run', moving_time: 100 }], istFahrt)).toBe(null);
   });
 });
