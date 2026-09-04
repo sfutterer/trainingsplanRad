@@ -27,7 +27,6 @@
 
    Ruhetage behalten den gedaempften Titel - kein Farbcode, sondern eine
    Zuruecknahme des Gewichts an einem Tag ohne Vorgabe. */
-.type-rest .daytitle, .type-restopt .daytitle{ color: var(--muted); font-weight: 600; }
 
 /* Das Zeichen der Einheitsart vor dem Titel.
 

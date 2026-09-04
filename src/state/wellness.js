@@ -22,7 +22,7 @@ import { wellnessSerie } from '../domain/wellness.js';
 
 /* Drei Wochen statt einer: das Gate nimmt sich daraus die letzten sieben Tage,
    der Gewichtstrend braucht mehr Punkte, um eine Steigung zu tragen. */
-export const WELLNESS_TAGE = 21;
+const WELLNESS_TAGE = 21;
 
 export const wellness = signal(null);
 

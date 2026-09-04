@@ -48,13 +48,19 @@ export function createPlan(json){
      also hatte dieselbe Zone je nach Anzeige eine andere Farbe, und die
      Fassung aus plan.json folgte dem Dunkelmodus nicht. Welche Farbe eine
      Zone traegt, ist Darstellung und keine Trainingsvorgabe; sie steht jetzt
-     nur noch in theme.css, nachgeschlagen in ui/zonenfarbe.js. */
+     nur noch in theme.css, nachgeschlagen in zonenFarbe() aus
+     ui/components/Zonenliste.jsx. */
   const zoneKeys  = hrTransition.map(b => b.key);
   const zoneLabel = {};
   for(const b of hrTransition) zoneLabel[b.key] = b.label;
 
   return {
     raw: json,
+    /* Wie der Plan sich selbst nennt ("Fassung 4"). Stand bis zum 04.09.2026
+       in der Datei, ohne dass irgendetwas ihn las - und ausgerechnet unter
+       "Aktiver Plan" stand daneben die Schemafassung, also eine ganz andere
+       Zahl unter demselben Wort. */
+    name: json.planName,
     weekCount: weeks.length,
     recoveryWeeks: json.recoveryWeeks.slice(),
     volumeCapPercent: json.weeklyVolumeCapPercent,

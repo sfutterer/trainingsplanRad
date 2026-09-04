@@ -63,13 +63,26 @@
    Woche 5 hat ungleiche Bloecke - 5 min maximal, dann viermal 4 min -, und
    "5x 5 min" waere dort die falsche Begruendung. Die Wochenangaben haben
    ihre Laenge behalten und nur ihre Pruefsumme geaendert: 65 und 55 sind
-   gleich viele Zeichen. */
+   gleich viele Zeichen.
+
+   Neu gesetzt am 04.09.2026: die Mittwochskarte nennt die Beinblock-Regel mit
+   den Worten des Plans. texts.legWednesdayNote stand seit jeher in
+   plan.json, wurde von der Pruefung als Pflicht erzwungen und von nichts
+   gelesen - der Code baute daneben eine kuerzere Fassung nach ("Kein
+   Beinblock."), die den zweiten Satz der Regel unterschlug: ein ausgefallener
+   Sonntag wird nicht auf den Mittwoch nachgeholt.
+
+   Betroffen sind genau 15 der 126 Tage, und sie liessen sich vor dem
+   Neusetzen einzeln benennen: alle Mittwoche ausser den dreien, die der
+   Testanlauf ohnehin durch die Oeffner ersetzt (09.09., 21.10., 02.12.).
+   Kein einziger Sollwert hat sich geaendert - der Vergleich lief ueber
+   dieselbe Ausgabe mit und ohne die Aenderung. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { createPlan } from '../src/domain/plan.js';
-import { planValidate } from '../src/domain/schema.js';
+import { planValidate, PV_TEXT_KEYS } from '../src/domain/schema.js';
 import * as W from '../src/domain/week.js';
 import * as Z from '../src/domain/zones.js';
 import * as C from '../src/domain/core.js';
@@ -201,7 +214,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: 'b5b959710c288bdf', len: 47956 });
+      .toEqual({ hash: 'df963acd11a739a6', len: 50071 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -224,7 +237,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + D.buildDayInfo(plan, th, date, start).detail);
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: 'a2fa0bf48f7746aa', len: 40941 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '252b92df47b304f1', len: 43056 });
   });
 });
 
@@ -638,5 +651,81 @@ describe('Intervalltimer im Anlauf', () => {
   it('bleibt an gewoehnlichen Tagen beim Donnerstag der Woche', () => {
     const montag = W.addDays(testTag, -3);
     expect(S.intervalDefaults(plan, 4, start, montag).mode).toBe('test');
+  });
+});
+
+/* Ein Textbaustein, den die Pruefung als Pflicht erzwingt und den niemand
+   liest, ist die schlechteste von drei Moeglichkeiten: er muss gepflegt
+   werden, er kann veralten, und niemand merkt es. Am 04.09.2026 traf das auf
+   drei der 33 Pflichttexte zu - "Kadenzpyramide" beschrieb eine
+   Trainingsanweisung, die kein Nutzer je zu sehen bekam.
+
+   Der Test liest den Quelltext und nicht die Ausgabe: ein Text kann in einem
+   Zweig stehen, den der ausgelieferte Plan nie erreicht (thursdayNoTimer gilt
+   nur in Phase 3), und waere ueber die Tageskarten allein nicht auffindbar. */
+describe('Pflichttexte', () => {
+  const quellen = (function sammle(dir, out = []){
+    for(const name of fs.readdirSync(dir)){
+      const p = dir + '/' + name;
+      if(fs.statSync(p).isDirectory()) sammle(p, out);
+      else if(/\.jsx?$/.test(name)) out.push(fs.readFileSync(p, 'utf8'));
+    }
+    return out;
+  })(new URL('../src', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'))
+    .filter(t => !t.includes('const PV_TEXT_KEYS'));
+
+  it('jeder Pflichttext hat mindestens einen Leser im Quelltext', () => {
+    const ohne = PV_TEXT_KEYS.filter(k =>
+      !quellen.some(t => t.includes('texts.' + k) || t.includes('T.' + k)));
+    expect(ohne).toEqual([]);
+  });
+
+  it('jeder Pflichttext steht in plan.json', () => {
+    expect(PV_TEXT_KEYS.filter(k => typeof json.texts[k] !== 'string')).toEqual([]);
+  });
+
+  /* Anders herum ebenso: ein Text in der Datei, den die Pruefung nicht kennt,
+     faellt bei einem Tippfehler im Schluessel stillschweigend durch. */
+  it('kennt keinen Text in plan.json, der nicht Pflicht ist', () => {
+    expect(Object.keys(json.texts).filter(k => PV_TEXT_KEYS.indexOf(k) < 0)).toEqual([]);
+  });
+});
+
+/* Die beiden Mittwochstexte, die bis zum 04.09.2026 keinen Leser hatten.
+
+   Der Test steht hier und nicht nur in den Pruefsummen: die Kadenzpyramide
+   haengt als Hinweis an der Einheit, und Hinweise gehen in `detail` nicht
+   ein. Ohne diese Zusicherung liesse sie sich wieder abhaengen, ohne dass
+   etwas faellt - genau der Zustand, aus dem sie gerade kommt. */
+describe('Mittwoch', () => {
+  /* Ein Mittwoch mit Fahrt, ausserhalb jedes Testanlaufs: Woche 2 faehrt
+     40 min, und der naechste Test liegt in Woche 4. */
+  const mittwoch = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.dayFromIso('2026-08-26'), start);
+  /* Und einer ohne Fahrt: Woche 1. Der Zirkel steht dort allein. */
+  const ohneFahrt = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.dayFromIso('2026-08-19'), start);
+
+  it('nennt die Kadenzpyramide an der Fahrt', () => {
+    const fahrt = mittwoch.einheiten.find(e => e.art === 'z2');
+    expect(fahrt.hinweise).toContain(json.texts.cadencePyramid);
+  });
+
+  it('nennt die Beinblock-Regel am Zirkel', () => {
+    const zirkel = mittwoch.einheiten.find(e => e.art === 'rumpf');
+    expect(zirkel.hinweise).toContain(json.texts.legWednesdayNote);
+  });
+
+  /* Der Satz stand vorher zweimal da: als "Kein Beinblock." im Code und als
+     laengere Regel in der Datei. Jetzt nur noch aus der Datei. */
+  it('baut die Regel nicht mehr im Code nach', () => {
+    expect(mittwoch.detail).not.toContain('Kein Beinblock.');
+    expect(mittwoch.detail).toContain(json.texts.legWednesdayNote);
+  });
+
+  /* Ohne Fahrt steht der Zirkel allein - die Regel haengt an ihm und darf
+     dort nicht wegfallen. */
+  it('nennt die Beinblock-Regel auch am Mittwoch ohne Fahrt', () => {
+    expect(ohneFahrt.einheiten.length).toBe(1);
+    expect(ohneFahrt.hinweise).toContain(json.texts.legWednesdayNote);
+    expect(ohneFahrt.hinweise).toContain(json.texts.wednesdayNoRide);
   });
 });

@@ -13,7 +13,7 @@
 import { zahl } from './zahlen.js';
 import { T } from './texte.js';
 
-export const LAST = {
+const LAST = {
   gegenViel: 55, gegenEtwas: 35,      // Prozent der Strecke gegen den Wind
   hmViel: 10, hmEtwas: 6,             // Hoehenmeter je Kilometer
   wegViel: 25,                        // Prozent unbefestigt

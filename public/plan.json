@@ -681,7 +681,6 @@
     "intervalRecoveryWeek": "Erholungswoche – reduzierter Umfang, kein Z5.",
     "elevationShort": "Ersetzen statt addieren: eine flache Einheit gegen eine hügelige mit ähnlicher Zeit tauschen, Kadenz nicht unter 70 rpm – passende Übersetzung ist die wirksamere Lösung als Disziplin am Berg.",
     "cadencePyramid": "Kadenzpyramide als Teil des Einfahrens am Mittwoch, alle ein bis zwei Wochen: 30 s je 90 / 100 / 110 / 120 / 110 / 100 / 90 rpm im leichten Gang, Puls bleibt in Z1/Z2, nicht im Sattel hüpfen. Kostet 3,5 min.",
-    "volumeCap": "Die Wochensumme Rad ist eine Obergrenze, kein Sollwert. Wird sie überschritten, wird in der Folgewoche gekürzt, nicht kompensiert. Das ersetzt die Ramp-Rate als Absicherung, solange die CTL unter 20 liegt.",
-    "mobilityScope": "Beweglichkeit, Koordination und Knochenreiz stehen neben dem Radplan, nicht darin: geringe mechanische Belastung, kaum Interferenz mit Kraft- oder Ausdauererholung. Seit Fassung 3 ausdrücklich kein Teil der Opferreihenfolge – der Block kostet keine Erholung und hat keinen Grund, zuerst zu fallen."
+    "volumeCap": "Die Wochensumme Rad ist eine Obergrenze, kein Sollwert. Wird sie überschritten, wird in der Folgewoche gekürzt, nicht kompensiert. Das ersetzt die Ramp-Rate als Absicherung, solange die CTL unter 20 liegt."
   }
 }

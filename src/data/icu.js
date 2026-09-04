@@ -4,10 +4,10 @@
 
 import { holen, ZEITGRENZE } from './netz.js';
 
-export const ICU_BASE = 'https://intervals.icu/api/v1';
+const ICU_BASE = 'https://intervals.icu/api/v1';
 
 /* Nur die Felder, die der Abgleich braucht - die Activity hat 183. */
-export const ICU_FIELDS = [
+const ICU_FIELDS = [
   'id','start_date_local','type','name','moving_time','elapsed_time',
   'distance','average_heartrate','max_heartrate','has_heartrate',
   'icu_training_load','icu_intensity','icu_recording_time',
@@ -23,7 +23,7 @@ function authHeader(key){
   return 'Basic ' + btoa('API_KEY:' + key);
 }
 
-export async function icuFetch(path, key){
+async function icuFetch(path, key){
   let res;
   try {
     res = await holen(ICU_BASE + path, {

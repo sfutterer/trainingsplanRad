@@ -25,12 +25,12 @@ export const KEYS = {
   gelesen:    'meldungen-gelesen'
 };
 
-export const CORE_LOG_MAX = 80;
+const CORE_LOG_MAX = 80;
 
 /* Mehr Fahrten sieht man nicht zweimal an, und der Platz in localStorage ist
    die einzige Kopie der Protokolle - der Zwischenspeicher darf ihn nicht
    auffressen. */
-export const UNTERGRUND_MAX = 40;
+const UNTERGRUND_MAX = 40;
 
 /* Gelesene Meldungen: gespeichert wird nur die Kennung, nicht der Text. Eine
    Meldung entsteht jedes Mal neu aus Plan, Wellness und Aufzeichnungen - der

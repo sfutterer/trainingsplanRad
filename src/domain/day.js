@@ -322,10 +322,25 @@ function schrittZiel(plan, th, s, week){
    Deshalb wird ab dem Planbeginn durchgezaehlt - dieselbe Rechnung, aus der
    auch die Wochennummer entsteht. */
 export function isCoordinationDay(plan, date, startDate){
+  return koordinationsRest(plan, date, startDate) === 0;
+}
+
+/* Wie weit der heutige Tag vom Takt entfernt ist: 0 heisst "heute dran", n-1
+   heisst "morgen wieder".
+
+   Steht hier und nicht in der Ansicht. Die Koordinationskarte hat denselben
+   Rest bis hierher selbst gerechnet - samt einer eigenen Fassung von
+   dayOffset daneben -, und damit lag die Frage "ist heute Koordinationstag?"
+   an zwei Stellen mit zwei Rechnungen. Sie muessen dieselbe Antwort geben:
+   die Tageskarte haengt den Block an, die Karte sagt, ob er ansteht.
+
+   null, wo sich nichts rechnen laesst - ohne Startdatum oder ohne Takt in der
+   Datei. Die Ansicht sagt das dann und behauptet keinen Rhythmus. */
+export function koordinationsRest(plan, date, startDate){
   const n = plan.coordination?.everyNthDay;
-  if(!(n > 0)) return false;
+  if(!(n > 0) || !date || !startDate) return null;
   const tage = dayOffset(date, startDate);
-  return (((tage % n) + n) % n) === 0;
+  return (((tage % n) + n) % n);
 }
 
 /* Defensiv gelesen: die beiden Bloecke sind spaeter in plan.json gekommen und
@@ -448,16 +463,23 @@ function beinEinheit(c, runden, nachsatz, zeit){
    erst Donnerstag frueh schaut, kann den Tag nur noch absagen. Die Art des
    Donnerstags haengt dran, weil sie entscheidet, was ein rotes Gate ueberhaupt
    bedeutet - ein Test wird verschoben, ein Intervalltag heruntergestuft, ein
-   Z2-Tag gekuerzt. */
+   Z2-Tag gekuerzt.
+
+   "Kein Beinblock" stand bis zum 04.09.2026 als deutscher Satz in dieser
+   Datei, obwohl plan.json ihn unter texts.legWednesdayNote fuehrt - dort
+   ausfuehrlicher, samt der Regel, dass ein ausgefallener Sonntag nicht auf
+   den Mittwoch nachgeholt wird. Der Text stand also in der Datei und wurde
+   nirgends gelesen, waehrend der Code eine kuerzere Fassung davon
+   nachbaute. Jetzt gilt der Plantext, und der Nachsatz am Block nennt nur
+   noch die Tageszeit. */
 function mittwoch(c){
   const { plan, th, week, phase, exCount, T, z2 } = c;
   const dur = c.w.wednesdayMinutes;
   const rounds = plan.circuit.wednesdayRounds;
   const rumpf = `Abends Rumpf-Zirkel verkürzt: ${rounds} Runden à ${exCount} Übungen ` +
     `(${coreWorkSeconds(plan, week)} s Belastung / ${coreRestSeconds(plan, week)} s Pause), ` +
-    `ca. ${coreMinutes(plan, week, rounds)} min. Kein Beinblock.`;
-  const zirkel = circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (verkürzt)',
-    'Abends. Kein Beinblock.');
+    `ca. ${coreMinutes(plan, week, rounds)} min. ${T.legWednesdayNote}`;
+  const zirkel = circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (verkürzt)', 'Abends.');
 
   /* Der Zirkel als eigene Einheit und nicht als letzte Zeile im Ablauf der
      Fahrt. Genau dieser Fall war der Anlass des Umbaus: unter einer Karte mit
@@ -471,6 +493,7 @@ function mittwoch(c){
       { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
     ],
     bloecke: [zirkel],
+    hinweise: [T.legWednesdayNote],
     timer: TIMER_RUMPF
   });
 
@@ -502,8 +525,14 @@ function mittwoch(c){
         wert:`${ablauf} · ca. ${minutenText(sek)}`, hinweis: extra.note });
     }
 
+    /* Die Kadenzpyramide gehoert an das Einfahren dieser Fahrt - so steht sie
+       im Plan ("als Teil des Einfahrens am Mittwoch, alle ein bis zwei
+       Wochen"). Bis zum 04.09.2026 stand sie in plan.json und wurde von
+       nirgendwo gelesen: ein Textbaustein, den die Planpruefung als Pflicht
+       erzwang und den kein Nutzer je zu sehen bekam. */
     info.einheiten = [
-      einheit({ art:'z2', titel:'Rad – kurzes Z2 (Arbeitsweg)', kennzahlen, bloecke }),
+      einheit({ art:'z2', titel:'Rad – kurzes Z2 (Arbeitsweg)', kennzahlen, bloecke,
+                hinweise: [T.cadencePyramid] }),
       zirkelEinheit
     ];
   } else {
@@ -513,7 +542,11 @@ function mittwoch(c){
       art:'rumpf', titel:'Rumpf/Oberkörper-Stabilität',
       kennzahlen: zirkelEinheit.kennzahlen,
       bloecke: zirkelEinheit.bloecke,
-      hinweise: [T.wednesdayNoRide],
+      /* Die Beinblock-Regel gilt auch am Mittwoch ohne Fahrt - sie haengt am
+         Zirkel und nicht am Rad. Sie hier zu vergessen hiesse, den Hinweis
+         genau an den Tagen fallen zu lassen, an denen der Zirkel allein
+         dasteht. */
+      hinweise: [T.wednesdayNoRide, ...zirkelEinheit.hinweise],
       timer: TIMER_RUMPF
     })];
   }

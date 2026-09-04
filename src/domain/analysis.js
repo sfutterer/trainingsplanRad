@@ -88,7 +88,7 @@ export function pct(part, whole){
    Intensitaet. Die prueft der Zonenabschnitt weiter unten, und nur der darf eine
    zu harte Fahrt herabsetzen. Mehr Umfang allein bleibt "eingehalten". */
 export const DUR_TOL_SHORT = 0.15;
-export const DUR_TOL_LONG  = 0.35;
+const DUR_TOL_LONG  = 0.35;
 
 /* Setzt den Status herab und zieht das Badge mit. Ohne das behielte eine
    Einheit mit passender Dauer das Badge "erfuellt", obwohl die Zonenpruefung

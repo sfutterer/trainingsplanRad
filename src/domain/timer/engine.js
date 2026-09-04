@@ -15,7 +15,7 @@
    Takt 250 ms statt 1000: kostet nichts und laesst den letzten Piepser nicht
    bis zu einer Sekunde zu spaet kommen. */
 
-export const TICK_MS = 250;
+const TICK_MS = 250;
 
 export function createTimer({ now = () => Date.now(), setInterval: si = setInterval,
                               clearInterval: ci = clearInterval } = {}){

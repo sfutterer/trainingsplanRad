@@ -213,7 +213,6 @@ export function TrainingTab(){
       else { l.finished = false; persist(); }
       logRef.current = null;
     }
-    timer.reset(buildCircuitSequence(p, cfg));
     timer.reset();
     meldeTimer('zirkel', false);
     tickState(x => x + 1);

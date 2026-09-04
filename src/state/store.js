@@ -37,7 +37,17 @@ export const testPrep    = signal({});
 /* Welche Variante an einem Tag gilt: ISO-Tag auf Kennung, 'regel' fuer die
    ausdrueckliche Abwahl, kein Eintrag fuer unentschieden. */
 export const varianten   = signal({});
-export const settings    = signal({ voice:true, keepAwake:true, showIllu:true, mapStyle:'atlas' });
+/* Die Voreinstellungen stehen einmal da und nicht zweimal.
+
+   Bis hierher trug das Signal eine Fassung ohne `theme` und boot() eine
+   zweite mit - wer die App vor dem Ende von boot() ansah, bekam ein
+   undefiniertes Thema. Zwei Voreinstellungen fuer dieselbe Sache laufen
+   auseinander, und diese beiden waren es schon. */
+export const SETTINGS_DEFAULT = Object.freeze({
+  voice: true, keepAwake: true, showIllu: true, theme: 'system', mapStyle: 'atlas'
+});
+
+export const settings    = signal({ ...SETTINGS_DEFAULT });
 export const tab         = signal('plan');
 export const ready       = signal(false);
 
@@ -89,7 +99,7 @@ export async function boot(){
   interimLog.value = await store.interimLog();
   testPrep.value   = await store.testPrep();
   varianten.value  = await store.varianten();
-  settings.value   = Object.assign({ voice:true, keepAwake:true, showIllu:true, theme:'system', mapStyle:'atlas' }, await store.settings());
+  settings.value   = Object.assign({}, SETTINGS_DEFAULT, await store.settings());
   theme.value      = settings.value.theme;
 
   platform.setKeepAwake(settings.value.keepAwake);

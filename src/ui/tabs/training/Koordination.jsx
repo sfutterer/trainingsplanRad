@@ -29,25 +29,19 @@
    keine der App. */
 
 import { plan, today, startDate } from '../../../state/store.js';
-import { toMidnight } from '../../../domain/week.js';
+import { koordinationsRest } from '../../../domain/day.js';
 import { Baustein } from './Baustein.jsx';
 import { useKoerperablauf } from './Koerperablauf.jsx';
-
-/* Ganze Tage zwischen zwei Mitternachten. Gerundet statt abgeschnitten: in den
-   Umstellungsnaechten liegen 23 oder 25 Stunden zwischen zwei Mitternachten,
-   abschneiden ergaebe dort einen Tag zu wenig. */
-function tageSeit(von, bis){
-  return Math.round((toMidnight(bis) - toMidnight(von)) / 86400000);
-}
 
 export function Koordination({ onOpen }){
   const c = plan.value.coordination;
   const uebungen = c.exercises;
   const rhythmus = Math.max(1, c.everyNthDay);
 
-  const start = startDate.value;
-  const tage = start ? tageSeit(start, today.value) : null;
-  const rest = tage == null ? null : ((tage % rhythmus) + rhythmus) % rhythmus;
+  /* Der Rest kommt aus der Domaene und wird hier nicht ein zweites Mal
+     gerechnet: die Tageskarte haengt den Block an denselben Takt, und zwei
+     Rechnungen fuer dieselbe Frage geben irgendwann zwei Antworten. */
+  const rest = koordinationsRest(plan.value, today.value, startDate.value);
   const istHeute = rest === 0;
   const inTagen = rest == null ? null : (rest === 0 ? 0 : rhythmus - rest);
 

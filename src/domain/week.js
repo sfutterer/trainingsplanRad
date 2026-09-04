@@ -13,7 +13,7 @@
 
 export const WEEKDAY_NAMES = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 export const WEEKDAY_SHORT = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-export const MONTH_NAMES = ['Januar','Februar','März','April','Mai','Juni','Juli','August',
+const MONTH_NAMES = ['Januar','Februar','März','April','Mai','Juni','Juli','August',
                             'September','Oktober','November','Dezember'];
 
 /* Lokaler Kalendertag als YYYY-MM-DD. toISOString() waere falsch: es rechnet

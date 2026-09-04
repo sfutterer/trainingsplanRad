@@ -13,7 +13,7 @@ import { signal } from '@preact/signals';
 
 export const meldung = signal(null);   // { text, nr }
 
-export const MELDUNG_MS = 6000;
+const MELDUNG_MS = 6000;
 
 let uhr = null, nr = 0;
 

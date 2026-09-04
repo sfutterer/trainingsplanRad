@@ -253,7 +253,17 @@ function pvBodyBlock(err, b, feld){
 }
 
 /* Pflichttexte. Ein fehlender Textbaustein wuerde sonst als "undefined" in einer
-   Tageskarte landen - unauffaellig genug, um lange uebersehen zu werden. */
+   Tageskarte landen - unauffaellig genug, um lange uebersehen zu werden.
+
+   Pflicht heisst: die App liest ihn. Am 04.09.2026 standen drei Schluessel in
+   dieser Liste, die niemand las - erzwungene Pflege ohne Leser, das
+   Schlechteste aus beiden Welten. Zwei davon sind jetzt angeschlossen
+   (legWednesdayNote am Mittwochszirkel, cadencePyramid am Einfahren der
+   Mittwochsfahrt), der dritte ist aus der Datei geflogen: mobilityScope sagte
+   dasselbe wie mobilityFlow.scope und boneStimulus.placement zusammen.
+
+   Wer hier einen Schluessel ergaenzt, muss ihn auch lesen. Der Test
+   "jeder Pflichttext hat einen Leser" in test/domain.test.js haelt das fest. */
 const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMinimum',
   'wednesdayEasyDefault','wednesdayEasyPhase3','wednesdayNoRide','thursdayTest',
   'thursdayBaseDay','thursdayNoTimer','thursdayIntervalTail','saturdayRecovery','saturdayPureZ2',
@@ -261,7 +271,9 @@ const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMin
   'legPerSideNote','legAbortSigns',
   'legProgression','legWednesdayNote','legTuesdayNote','coreAbortRule','zoneNoteTransition',
   'zoneNoteCoggan','thresholdTestSummary','intervalRollingStart','intervalRecoveryWeek',
-  'elevationShort','cadencePyramid','volumeCap','mobilityScope'];
+  'elevationShort','cadencePyramid','volumeCap'];
+
+export { PV_TEXT_KEYS };
 
 /* Die Schluessel der obersten Ebene, die es geben darf.
 
@@ -301,6 +313,12 @@ export function planValidate(p){
                'Erlaubt sind: ' + PV_TOP_KEYS.join(', ') + '.');
     }
   }
+
+  /* planName stand bis zum 04.09.2026 in der Liste der erlaubten Schluessel
+     und wurde nicht geprueft - erlaubt, aber egal. Er steht jetzt unter
+     "Aktiver Plan" in den Einstellungen und ist damit Pflicht: ein Plan ohne
+     Namen liesse sich dort nicht von einem anderen unterscheiden. */
+  pvStr(err, p.planName, 'planName');
 
   /* Bis Fassung 2 stand hier recoveryEveryNthWeek und die App rechnete
      week % n === 0. Der 2:1-Rhythmus ab Woche 5 laesst sich so nicht abbilden -

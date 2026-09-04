@@ -295,10 +295,16 @@ export function EinstellungenTab(){
       </Gruppe>
 
       <Gruppe titel="Trainingsplan">
+        {/* Der Name des Plans steht jetzt dabei. Ohne ihn stand hier
+            „Fassung 2" – die Schemafassung –, waehrend der Plan selbst sich
+            „Fassung 4" nennt: zwei Zahlen unter demselben Wort, und die
+            sichtbare war die, die den Nutzer nicht interessiert. */}
         <Zeile titel="Aktiver Plan"
-          wert={(eigen ? 'eigener Plan' : 'Default aus dem Repo') + ' · ' + plan.value.weekCount + ' Wochen · Fassung ' + PLAN_SCHEMA_VERSION}
+          wert={(plan.value.name || 'ohne Namen') + ' · ' + plan.value.weekCount + ' Wochen'}
           hilfe={
             <>
+              <p>Herkunft: {eigen ? 'eigener Plan von diesem Gerät' : 'Default aus dem Repo'}.
+                 Dateiformat: Schemafassung {PLAN_SCHEMA_VERSION}.</p>
               <p>Der Plan im Repo ist der Default. Ein importierter Plan wird auf dem Gerät gespeichert
                  und gilt ab sofort.</p>
               <p>Beim Import wird geprüft: passt etwas nicht, bleibt der laufende Plan stehen und die

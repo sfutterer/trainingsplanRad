@@ -35,7 +35,7 @@
    starten koennen - eine PWA, die auf accounts.google.com wartet, bevor sie
    den Trainingsplan zeigt, waere auf dem Rad wertlos. Und wer sich nie
    anmeldet, laedt es nie. */
-export const GSI_URL = 'https://accounts.google.com/gsi/client';
+const GSI_URL = 'https://accounts.google.com/gsi/client';
 
 export class AnmeldeError extends Error {
   constructor(titel, zeilen){
@@ -86,7 +86,7 @@ export function clientId(){
 
 let laden = null;
 
-export function ladeGoogle(){
+function ladeGoogle(){
   if(laden) return laden;
   laden = new Promise((fertig, fehler) => {
     if(typeof document === 'undefined'){

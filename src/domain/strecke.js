@@ -195,7 +195,7 @@ export function zeichenGruppen(abschnitte){
    Naht zweier Abschnitte, deckt keiner von beiden genug davon ab, und ein
    Stueck mitten in der Strecke blieb unerkannt. */
 
-export const DOPPEL_TOLERANZ = 30;      // Meter Abstand zwischen zwei Durchfahrten
+const DOPPEL_TOLERANZ = 30;      // Meter Abstand zwischen zwei Durchfahrten
 export const DOPPEL_TRENNUNG = 200;     // Meter Fahrweg, die dazwischen liegen muessen
 const RICHTUNG_GLEICH = 60;             // Grad: bis dahin dieselbe Richtung
 const RICHTUNG_GEGEN = 120;             // Grad: darueber Gegenrichtung
@@ -363,7 +363,7 @@ export function streckenBilanz(abschnitte){
 /* Toleranz zwischen Spur und Weg. GPS liegt in der Stadt gut 10 m daneben,
    parallele Wege stehen oft 15 m auseinander - darueber wird die Zuordnung
    geraten, und dann lieber nichts sagen. */
-export const WEG_TOLERANZ = 22;
+const WEG_TOLERANZ = 22;
 
 const UNBEFESTIGT = /^(unpaved|gravel|fine_gravel|compacted|ground|dirt|earth|grass|sand|mud|pebblestone|rock|woodchips|clay)/;
 const BEFESTIGT   = /^(asphalt|paved|concrete|paving_stones|sett|cobblestone|metal|wood|chipseal|bricks|grass_paver)/;

@@ -11,7 +11,7 @@
 import { planValidate, PLAN_SCHEMA_VERSION } from '../domain/schema.js';
 import { createPlan } from '../domain/plan.js';
 
-export const PLAN_URL = 'plan.json';
+const PLAN_URL = 'plan.json';
 
 export class PlanError extends Error {
   constructor(titel, zeilen){

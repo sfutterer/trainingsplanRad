@@ -1,16 +1,3 @@
-.antag{ border-left: 4px solid var(--outline); }
-.antag.ok{ border-left-color: var(--ok); }
-.antag.dev{ border-left-color: var(--dev); }
-.antag.miss{ border-left-color: var(--miss); }
-.antag.extra{ border-left-color: var(--extra); }
-
-.anhead{ display:flex; justify-content:space-between; gap:10px; font-size:12px;
-  color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
-.anbadge{ font-weight:700; }
-.antitle{ font-size:16px; font-weight:700; margin-bottom:4px; }
-.ansoll{ font-size:13px; color:var(--muted); margin-bottom:6px; }
-.anist{ font-size:13.5px; margin-bottom:2px; }
-
 .annote{ font-size:13.5px; line-height:1.5; margin-top:8px; padding:8px 10px;
   border-radius:var(--radius-s); background:var(--surface-2); color:var(--on-surface-var); }
 .annote.good{ background:var(--ok-bg); }
@@ -21,11 +8,6 @@
   background:var(--surface-3); }
 .zbar span{ display:block; height:100%; }
 .zleg{ font-size:12px; color:var(--muted); }
-
-.chips{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
-.chip{ background:var(--surface-2); border-radius:var(--radius-s); padding:10px 12px;
-  font-size:12px; color:var(--muted); line-height:1.35; }
-.chip b{ display:block; font-size:17px; color:var(--on-surface); margin-bottom:2px; }
 
 /* ---- Trainingsliste ---- */
 /* Der Umschalter steht ganz oben, ueber der ersten Karte - also ohne den
