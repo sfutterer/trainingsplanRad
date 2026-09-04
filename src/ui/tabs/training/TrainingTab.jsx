@@ -30,8 +30,7 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, week, settings, coreLog, saveCoreLog, today, startDate } from '../../../state/store.js';
-import { meldeTimer, laufendeTimer } from '../../../state/timerState.js';
-import { createTimer } from '../../../domain/timer/engine.js';
+import { laufendeTimer } from '../../../state/timerState.js';
 import { buildCircuitSequence } from '../../../domain/timer/sequences.js';
 import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
          repShort } from '../../../domain/core.js';
@@ -41,10 +40,13 @@ import { Segmented } from '../../components/Segmented.jsx';
 import { Zahlenfeld } from '../../components/Feld.jsx';
 import { Baustein, Uebungsliste } from './Baustein.jsx';
 import { Buehne } from '../../components/Buehne.jsx';
+/* Uhr, Countdown-Piepser und Abmeldung teilt sich der Zirkel mit den uebrigen
+   Timern - siehe useTimerBasis.js. */
+import { useTimerBasis } from '../../components/useTimerBasis.js';
 import { Beinblock } from './Beinblock.jsx';
 import { Beweglichkeit } from './Beweglichkeit.jsx';
 import { Koordination } from './Koordination.jsx';
-import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
+import { speak, beep, vibrate, cancelSpeech } from '../../../platform/index.js';
 import '../../components/timer.css';
 import './training.css';
 
@@ -71,14 +73,12 @@ export function TrainingTab(){
     };
   }
   const [cfg, setCfg] = useState(vorgabe);
-  const [, tickState] = useState(0);
   const [dialogEx, setDialogEx] = useState(null);
   const [segment, setSegment] = useState('core');
-  const timerRef = useRef(null);
   const logRef = useRef(null);
 
-  if(!timerRef.current) timerRef.current = createTimer();
-  const timer = timerRef.current;
+  const { timer, zeichnen, melden, starten: basisStart } =
+    useTimerBasis({ kennung: 'zirkel', label: 'Zirkel', segment: 'core' });
 
   /* Protokoll: der Timer weiss genau, was lief - intervals.icu speichert bei
      Krafteinheiten nur Dauer und Puls, keine Uebung und keinen Satz. */
@@ -107,7 +107,7 @@ export function TrainingTab(){
   useEffect(() => {
     const ab = [];
     ab.push(timer.on('step', ({ step, index }) => {
-      tickState(x => x + 1);
+      zeichnen();
       const naechste = timer.sequence[index + 1];
       if(step.type === 'prep'){
         const erste = p.circuit.exercises[0];
@@ -136,19 +136,13 @@ export function TrainingTab(){
         beep(880, 300); beep(1046, 300, 200);
         speak('Training abgeschlossen. Gut gemacht!', s.voice);
         if(logRef.current){ logRef.current.finished = true; persist(); logRef.current = null; }
-        meldeTimer('zirkel', false);
+        melden(false);
         vibrate([60, 40, 60]);
         /* Der Zirkel ist das Aufwaermen des Beinblocks - wer ihn beendet, will
            dorthin. An jedem Tag gleich: welcher Tag wofuer vorgesehen ist,
            weiss der Nutzer selbst. */
         setSegment('leg');
       }
-    }));
-    ab.push(timer.on('tick', ({ secondsLeft, sekundenwechsel }) => {
-      tickState(x => x + 1);
-      if(!sekundenwechsel) return;
-      if(secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
-      meldeTimer('zirkel', true, { label:'Zirkel', segment:'core', sek: secondsLeft });
     }));
     ab.push(timer.on('leave', ({ step, restSeconds }) => {
       const l = logRef.current;
@@ -164,21 +158,13 @@ export function TrainingTab(){
       persist();
     }));
     return () => { ab.forEach(f => f()); };
-    /* timer steht bewusst nicht in der Liste: er lebt in einem useRef und ist
-       fuer die Lebensdauer der Komponente derselbe. In der Liste wuerde der
-       Linter zufrieden sein, ohne dass sich etwas aendert - nur laesst sich
-       dann nicht mehr lesen, dass die Anmeldung an der Stimme haengt und an
-       sonst nichts. */
+    /* Nur die Stimme steht in der Liste: timer, melden und zeichnen sind fuer
+       die Lebensdauer der Komponente dieselben. In der Liste waere der Linter
+       zufrieden, ohne dass sich etwas aendert - nur laesst sich dann nicht
+       mehr lesen, dass die Anmeldung an der Stimme haengt und an sonst
+       nichts. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice]);
-
-  /* Anhalten und abmelden nur beim Aushaengen - so wie es die drei anderen
-     Bausteine schon halten. Stuende es im Aufraeumteil darueber, beendete
-     jeder Wechsel der Stimme den laufenden Zirkel: die Abhaengigkeit dort ist
-     s.voice, und die Einstellung dazu liegt in einem Bereich, der offen
-     bleiben kann, waehrend die Uhr laeuft. */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => () => { timer.reset(); meldeTimer('zirkel', false); }, []);
 
   /* Die Vorgaben haengen an Woche und Wochentag, und beide koennen sich
      aendern, waehrend die App offen ist - eine PWA laeuft ueber Nacht weiter,
@@ -194,16 +180,11 @@ export function TrainingTab(){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [w, dow]);
 
+  /* Der Protokolleintrag entsteht genau dann, wenn die Folge neu geladen
+     wird - deshalb haengt logStart am Bauen der Folge und nicht am Start:
+     Fortsetzen nach einer Pause darf keinen zweiten Eintrag anlegen. */
   function starten(){
-    primeSpeech();
-    ensureWakeLock();
-    if(!timer.running && (timer.index === -1 || (timer.step && timer.step.type === 'done'))){
-      timer.load(buildCircuitSequence(p, cfg));
-      logStart();
-    }
-    timer.toggle();
-    meldeTimer('zirkel', timer.running, { label:'Zirkel', segment:'core', sek: timer.secondsLeft() });
-    tickState(x => x + 1);
+    basisStart(() => { logStart(); return buildCircuitSequence(p, cfg); });
   }
   function abbrechen(){
     cancelSpeech();
@@ -214,21 +195,21 @@ export function TrainingTab(){
       logRef.current = null;
     }
     timer.reset();
-    meldeTimer('zirkel', false);
-    tickState(x => x + 1);
+    melden(false);
+    zeichnen();
   }
   function weiter(){
     timer.skip();
-    meldeTimer('zirkel', timer.running, { label:'Zirkel', segment:'core', sek: timer.secondsLeft() });
-    tickState(x => x + 1);
+    melden(timer.running);
+    zeichnen();
   }
   /* Zurueck meldet dem Protokoll nichts: die Engine haelt an und blaettert
      stumm, der wiederholte Satz zaehlt einmal. */
   function zurueck(){
     cancelSpeech();
     timer.back();
-    meldeTimer('zirkel', false);
-    tickState(x => x + 1);
+    melden(false);
+    zeichnen();
   }
 
   const step = timer.step;

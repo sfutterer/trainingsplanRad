@@ -19,15 +19,15 @@
    auf die man gewartet hat. Die Flags halten jede Ansage einmalig, sie werden
    bei jedem Schrittwechsel zurueckgesetzt. */
 
-import { useEffect, useRef, useState } from 'preact/hooks';
-import { createTimer } from '../../domain/timer/engine.js';
+import { useEffect, useRef } from 'preact/hooks';
 import { meldeTimer } from '../../state/timerState.js';
-import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech }
-  from '../../platform/index.js';
+import { speak, beep, vibrate, cancelSpeech } from '../../platform/index.js';
+/* Uhr, Countdown-Piepser und Abmeldung teilt sich diese Anbindung mit den
+   drei Timern im Trainings-Tab - siehe useTimerBasis.js. Hier bleibt, was
+   diese Uhr ausmacht: die Ansagen. */
+import { useTimerBasis } from './useTimerBasis.js';
 
 export function useSchrittTimer({ kennung, voice, sequenz }){
-  const [, neu] = useState(0);
-  const timerRef = useRef(null);
   const flags = useRef({ half:false, minute:false, zehn:false });
 
   /* Die Folge kommt bei jedem Zeichnen neu herein, die Anmeldung an der Uhr
@@ -36,10 +36,11 @@ export function useSchrittTimer({ kennung, voice, sequenz }){
   const bauen = useRef(sequenz);
   bauen.current = sequenz;
 
-  if(!timerRef.current) timerRef.current = createTimer();
-  const timer = timerRef.current;
-
-  const zeichnen = () => neu(x => x + 1);
+  /* Ohne label: diese Uhr meldet keinen Streifen. Intervalltimer und
+     Testbereich liegen in eigenen Bereichen, und ein Streifen im
+     Trainings-Tab verwiese auf einen Bildschirm, den er nicht oeffnen kann. */
+  const basis = useTimerBasis({ kennung });
+  const { timer, zeichnen } = basis;
 
   useEffect(() => {
     const ab = [];
@@ -69,9 +70,9 @@ export function useSchrittTimer({ kennung, voice, sequenz }){
         meldeTimer(kennung, false);
       }
     }));
-    ab.push(timer.on('tick', ({ step, secondsLeft, sekundenwechsel }) => {
-      zeichnen();
-      if(sekundenwechsel && secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
+    /* Nur die Ansagen: neu zeichnen und der Countdown-Piepser stehen in
+       useTimerBasis. */
+    ab.push(timer.on('tick', ({ step, secondsLeft }) => {
       const f = flags.current;
       if(step.type === 'work'){
         const half = Math.floor(step.duration / 2);
@@ -95,30 +96,16 @@ export function useSchrittTimer({ kennung, voice, sequenz }){
       }
     }));
     return () => { ab.forEach(f => f()); };
-    /* timer und kennung stehen bewusst nicht in der Liste: der eine lebt in
-       einem useRef und ist fuer die Lebensdauer der Komponente derselbe, die
-       andere ist eine Zeichenkette aus dem Aufruf. In der Liste waere der
-       Linter zufrieden, ohne dass sich etwas aendert - nur laesst sich dann
-       nicht mehr lesen, dass die Anmeldung an der Stimme haengt und an sonst
+    /* timer, kennung und zeichnen stehen bewusst nicht in der Liste: die
+       ersten beiden sind fuer die Lebensdauer der Komponente dieselben,
+       zeichnen setzt nur einen Zaehler. In der Liste waere der Linter
+       zufrieden, ohne dass sich etwas aendert - nur laesst sich dann nicht
+       mehr lesen, dass die Anmeldung an der Stimme haengt und an sonst
        nichts. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voice]);
 
-  /* Anhalten und abmelden nur beim Aushaengen. Im Aufraeumteil darueber
-     beendete jeder Wechsel der Stimme die laufende Einheit - mitten auf dem
-     Rad, ohne dass ein Knopf dafuer gedrueckt worden waere. */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => () => { timer.reset(); meldeTimer(kennung, false); }, []);
-
-  function starten(){
-    primeSpeech(); ensureWakeLock();
-    if(!timer.running && (timer.index === -1 || (timer.step && timer.step.type === 'done'))){
-      timer.load(bauen.current());
-    }
-    timer.toggle();
-    meldeTimer(kennung, timer.running);
-    zeichnen();
-  }
+  const starten = () => basis.starten(() => bauen.current());
   function beenden(){ cancelSpeech(); timer.reset(); meldeTimer(kennung, false); zeichnen(); }
   function weiter(){ timer.skip(); meldeTimer(kennung, timer.running); zeichnen(); }
   /* Zurueck haelt an und blaettert stumm - wie im Rumpfzirkel. Wer im

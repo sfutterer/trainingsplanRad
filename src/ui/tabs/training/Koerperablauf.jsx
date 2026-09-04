@@ -27,12 +27,13 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { settings } from '../../../state/store.js';
-import { meldeTimer } from '../../../state/timerState.js';
-import { createTimer } from '../../../domain/timer/engine.js';
 import { buildHoldSequence } from '../../../domain/timer/sequences.js';
 import { zeitDosis } from '../../../domain/koerper.js';
 import { Uebungsliste } from './Baustein.jsx';
 import { Buehne } from '../../components/Buehne.jsx';
+/* Uhr, Countdown-Piepser und Abmeldung teilt sich dieser Ablauf mit den
+   uebrigen Timern - siehe useTimerBasis.js. */
+import { useTimerBasis } from '../../components/useTimerBasis.js';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
 /* Satz und Seite in einer Zeile - beides nur, wenn es mehr als eines gibt.
@@ -52,10 +53,8 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
   const s = settings.value;
   /* -1 heisst: kein Ablauf, nur die Liste. */
   const [schritt, setSchritt] = useState(-1);
-  const [, tickState] = useState(0);
-  const timerRef = useRef(null);
-  if(!timerRef.current) timerRef.current = createTimer();
-  const timer = timerRef.current;
+  const { timer, zeichnen, melden, starten: basisStart } =
+    useTimerBasis({ kennung: timerId, label, segment });
 
   const laufend = schritt >= 0 && schritt < uebungen.length;
   const aktuelle = laufend ? uebungen[schritt] : uebungen[0];
@@ -71,7 +70,7 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
   useEffect(() => {
     const ab = [];
     ab.push(timer.on('step', ({ step, index }) => {
-      tickState(x => x + 1);
+      zeichnen();
       if(step.type === 'hold'){
         if(index === 0){
           beep(880, 180);
@@ -82,7 +81,7 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
              Schritt schon betreten, die Restzeit steht damit auf voller
              Dauer - ein Tipp auf den Ring loest sie aus. */
           timer.pause();
-          meldeTimer(timerId, false);
+          melden(false);
           beep(440, 180);
           vibrate(40);
           speak((step.seite ? 'Seite wechseln.' : 'Kurz sammeln.')
@@ -94,22 +93,15 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
         vibrate([60, 40, 60]);
         const n = naechsteRef.current;
         speak('Übung geschafft.' + (n ? ' Weiter drücken für: ' + n.name + '.' : ' Der Ablauf ist durch.'), s.voice);
-        meldeTimer(timerId, false);
+        melden(false);
       }
     }));
-    ab.push(timer.on('tick', ({ secondsLeft, sekundenwechsel }) => {
-      tickState(x => x + 1);
-      if(!sekundenwechsel) return;
-      if(secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
-      meldeTimer(timerId, true, { label, segment, sek: secondsLeft });
-    }));
     return () => { ab.forEach(f => f()); };
-    /* timer, label und segment stehen bewusst nicht in der Liste: timer lebt
-       in einem useRef und ist fuer die Lebensdauer der Komponente derselbe,
-       label und segment kommen als feste Zeichenketten vom Aufrufer. In der
-       Liste waere der Linter zufrieden, ohne dass sich etwas aendert - nur
-       laesst sich dann nicht mehr lesen, dass die Anmeldung an der Stimme
-       haengt und am Namen des Timers. */
+    /* timer, melden und zeichnen stehen bewusst nicht in der Liste: sie sind
+       fuer die Lebensdauer der Komponente dieselben. In der Liste waere der
+       Linter zufrieden, ohne dass sich etwas aendert - nur laesst sich dann
+       nicht mehr lesen, dass die Anmeldung an der Stimme haengt und am Namen
+       des Timers. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice, timerId]);
 
@@ -124,25 +116,14 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
   const laufendeUebung = laufend ? aktuelle.key : null;
   useEffect(() => {
     timer.reset(laufend && zeit ? buildHoldSequence(aktuelle) : []);
-    meldeTimer(timerId, false);
-    tickState(x => x + 1);
+    melden(false);
+    zeichnen();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schritt, laufendeUebung]);
 
-  /* Nur beim Aushaengen: die Uhr anhalten und abmelden. */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => () => { timer.reset(); meldeTimer(timerId, false); }, [timerId]);
-
   function starten(){
     if(!zeit) return;
-    primeSpeech();
-    ensureWakeLock();
-    if(!timer.running && (timer.index === -1 || (timer.step && timer.step.type === 'done'))){
-      timer.load(buildHoldSequence(aktuelle));
-    }
-    timer.toggle();
-    meldeTimer(timerId, timer.running, { label, segment, sek: timer.secondsLeft() });
-    tickState(x => x + 1);
+    basisStart(() => buildHoldSequence(aktuelle));
   }
 
   /* Blaettern haelt immer auch die Ansage an: sonst spricht die App noch ueber

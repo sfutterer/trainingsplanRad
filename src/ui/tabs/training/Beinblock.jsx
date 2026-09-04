@@ -24,8 +24,6 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, week, settings, coreLog, saveCoreLog, today } from '../../../state/store.js';
-import { meldeTimer } from '../../../state/timerState.js';
-import { createTimer } from '../../../domain/timer/engine.js';
 import { buildLegRestSequence } from '../../../domain/timer/sequences.js';
 import { legDose, legRoundsForDay, legRepText, legRepMin, legDoneRounds, legAborts,
          sorenessLevels, sorenessLevel, legSkipped, rundenText } from '../../../domain/core.js';
@@ -33,6 +31,9 @@ import { isoDayLocal } from '../../../domain/week.js';
 import { Baustein } from './Baustein.jsx';
 import { Segmented } from '../../components/Segmented.jsx';
 import { Buehne } from '../../components/Buehne.jsx';
+/* Uhr, Countdown-Piepser und Abmeldung teilt sich dieser Block mit den
+   uebrigen Timern - siehe useTimerBasis.js. */
+import { useTimerBasis } from '../../components/useTimerBasis.js';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
 export function Beinblock({ eintrag, onOpen }){
@@ -64,10 +65,8 @@ export function Beinblock({ eintrag, onOpen }){
   const [zelle, setZelle] = useState(-1);
   const [pauseLaeuft, setPauseLaeuft] = useState(false);
   const [wert, setWert] = useState(0);
-  const [, tickState] = useState(0);
-  const timerRef = useRef(null);
-  if(!timerRef.current) timerRef.current = createTimer();
-  const timer = timerRef.current;
+  const { timer, zeichnen, melden } =
+    useTimerBasis({ kennung: 'beinblock', label: 'Beinblock', segment: 'leg' });
 
   const laufend = zelle >= 0 && zelle < zellen;
   const runde = laufend ? Math.floor(zelle / uebungen.length) + 1 : 0;
@@ -106,7 +105,7 @@ export function Beinblock({ eintrag, onOpen }){
   useEffect(() => {
     const ab = [];
     ab.push(timer.on('step', ({ step }) => {
-      tickState(x => x + 1);
+      zeichnen();
       if(step.type === 'rest'){
         beep(440, 180);
         const n = naechsteRef.current;
@@ -115,22 +114,16 @@ export function Beinblock({ eintrag, onOpen }){
         beep(880, 220);
         vibrate(40);
         setPauseLaeuft(false);
-        meldeTimer('beinblock', false);
+        melden(false);
         setZelle(z => z + 1);
       }
     }));
-    ab.push(timer.on('tick', ({ secondsLeft, sekundenwechsel }) => {
-      tickState(x => x + 1);
-      if(!sekundenwechsel) return;
-      if(secondsLeft <= 3 && secondsLeft > 0) beep(500, 120);
-      meldeTimer('beinblock', true, { label:'Beinblock', segment:'leg', sek: secondsLeft });
-    }));
     return () => { ab.forEach(f => f()); };
-    /* timer steht bewusst nicht in der Liste: er lebt in einem useRef und ist
-       fuer die Lebensdauer der Komponente derselbe. In der Liste wuerde der
-       Linter zufrieden sein, ohne dass sich etwas aendert - nur laesst sich
-       dann nicht mehr lesen, dass die Anmeldung an der Stimme haengt und an
-       sonst nichts. */
+    /* Nur die Stimme steht in der Liste: timer, melden und zeichnen sind fuer
+       die Lebensdauer der Komponente dieselben. In der Liste waere der Linter
+       zufrieden, ohne dass sich etwas aendert - nur laesst sich dann nicht
+       mehr lesen, dass die Anmeldung an der Stimme haengt und an sonst
+       nichts. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.voice]);
 
@@ -149,15 +142,11 @@ export function Beinblock({ eintrag, onOpen }){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zelle]);
 
-  /* Nur beim Aushaengen: die Uhr anhalten und abmelden. */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => () => { timer.reset(); meldeTimer('beinblock', false); }, []);
-
   function beenden(){
     cancelSpeech();
     timer.reset([]);
     setPauseLaeuft(false);
-    meldeTimer('beinblock', false);
+    melden(false);
     setZelle(-1);
   }
 
@@ -183,14 +172,14 @@ export function Beinblock({ eintrag, onOpen }){
     timer.load(buildLegRestSequence(pauseSek, rundenwechsel ? 'Rundenpause' : 'Pause'));
     timer.start();
     setPauseLaeuft(true);
-    meldeTimer('beinblock', true, { label:'Beinblock', segment:'leg', sek: pauseSek });
-    tickState(x => x + 1);
+    melden(true, pauseSek);
+    zeichnen();
   }
 
   function pauseTaste(){
     timer.toggle();
-    meldeTimer('beinblock', timer.running, { label:'Beinblock', segment:'leg', sek: timer.secondsLeft() });
-    tickState(x => x + 1);
+    melden(timer.running);
+    zeichnen();
   }
 
   /* Blaettern haelt immer auch Uhr und Ansage an - sonst laeuft die Pause der
@@ -199,7 +188,7 @@ export function Beinblock({ eintrag, onOpen }){
     cancelSpeech();
     timer.reset([]);
     setPauseLaeuft(false);
-    meldeTimer('beinblock', false);
+    melden(false);
     setZelle(ziel < 0 || ziel >= zellen ? -1 : ziel);
   }
 
