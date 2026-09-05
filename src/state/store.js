@@ -43,7 +43,7 @@ export const varianten   = signal({});
    zweite mit - wer die App vor dem Ende von boot() ansah, bekam ein
    undefiniertes Thema. Zwei Voreinstellungen fuer dieselbe Sache laufen
    auseinander, und diese beiden waren es schon. */
-export const SETTINGS_DEFAULT = Object.freeze({
+const SETTINGS_DEFAULT = Object.freeze({
   voice: true, keepAwake: true, showIllu: true, theme: 'system', mapStyle: 'atlas'
 });
 
