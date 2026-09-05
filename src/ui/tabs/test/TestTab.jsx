@@ -197,6 +197,47 @@ function Schrittliste({ steps }){
   );
 }
 
+/* Eine Zahl aus der Aufzeichnung holen - zweimal dieselbe Bewegung.
+
+   Tempotest und VO2max-Referenz suchen beide in einer Fahrt bei intervals.icu
+   nach dem besten Fenster und bieten das Gefundene zur Uebernahme an. Was sie
+   suchen, ist verschieden; wie sie dabei aussehen, war es nicht: derselbe
+   Zustand mit den drei Phasen, derselbe Knopf, dieselbe Fehlerzeile.
+
+   Der Zustand ist bewusst null, solange nichts gesucht wurde, und wird nach
+   der Uebernahme wieder null - die gefundenen Bloecke stehen dann nicht mehr
+   unter einem Feld, in dem die uebernommene Zahl schon steht. */
+function useAufzeichnung(laden){
+  const [suche, setSuche] = useState(null);
+
+  async function holen(){
+    setSuche({ phase: 'laedt' });
+    try { setSuche({ phase: 'fertig', ...(await laden()) }); }
+    catch(e){ setSuche({ phase: 'fehler', text: e.message }); }
+  }
+
+  return { suche, holen, verwerfen: () => setSuche(null) };
+}
+
+/* Der Knopf dazu. Ohne Zugang zu intervals.icu bleibt er tot - das Eintippen
+   steht daneben und ist kein Notbehelf, sondern der Regelweg fuer alle, die
+   die App ohne Konto benutzen. */
+function HolenKnopf({ suche, onHolen }){
+  const laedt = suche && suche.phase === 'laedt';
+  return (
+    <button class="btn block secondary" type="button"
+      disabled={!apiKey.value || laedt} onClick={onHolen}>
+      {laedt ? 'Wird gesucht …' : 'Aus der Aufzeichnung holen'}
+    </button>
+  );
+}
+
+function Suchfehler({ suche }){
+  return suche && suche.phase === 'fehler'
+    ? <div class="meldung fehler"><b>{suche.text}</b></div>
+    : null;
+}
+
 /* Der Tempotest: wie er gefahren wird, was dabei herauskam, und wozu.
 
    Er steht in der Anleitung an dieser Stelle, weil er der einzige Schritt des
@@ -205,22 +246,12 @@ function Schrittliste({ steps }){
    probiert ein Tempo, die Pause korrigiert es, Block 2 faehrt das korrigierte.
    Nur dessen Ø-Watt zaehlt. */
 function TempotestKarte({ ablauf, prep, onNotiz, laden, kompakt }){
-  const [suche, setSuche] = useState(null);
+  const { suche, holen, verwerfen } = useAufzeichnung(() => laden(ablauf));
   const notiert = prep && prep.zielWatt > 0;
-
-  async function holen(){
-    setSuche({ phase: 'laedt' });
-    try {
-      const treffer = await laden(ablauf);
-      setSuche({ phase: 'fertig', ...treffer });
-    } catch(e){
-      setSuche({ phase: 'fehler', text: e.message });
-    }
-  }
 
   function uebernehmen(b){
     onNotiz({ zielWatt: b.watt, zielPuls: b.puls || null });
-    setSuche(null);
+    verwerfen();
   }
 
   return (
@@ -250,17 +281,12 @@ function TempotestKarte({ ablauf, prep, onNotiz, laden, kompakt }){
         onWert={v => onNotiz({ zielWatt: v })} />
       <Zahlenfeld titel="Ø-Puls Block 2 (bpm)" wert={prep ? prep.zielPuls : null} min={1}
         onWert={v => onNotiz({ zielPuls: v })} />
-      <button class="btn block secondary" type="button"
-        disabled={!apiKey.value || (suche && suche.phase === 'laedt')}
-        onClick={holen}>
-        {suche && suche.phase === 'laedt' ? 'Wird gesucht …' : 'Aus der Aufzeichnung holen'}
-      </button>
+      <HolenKnopf suche={suche} onHolen={holen} />
       {!apiKey.value && <p class="hint">
         Ohne Zugang zu intervals.icu bleibt das Eintippen – die Zahl steht in der Auswertung
         des Intervalls auf der Uhr.
       </p>}
-      {suche && suche.phase === 'fehler' &&
-        <div class="meldung fehler"><b>{suche.text}</b></div>}
+      <Suchfehler suche={suche} />
       {suche && suche.phase === 'fertig' && (
         <>
           <div class="listhead">Gefunden in „{suche.act.name || suche.act.type}"</div>
@@ -291,16 +317,10 @@ function TempotestKarte({ ablauf, prep, onNotiz, laden, kompakt }){
    ersten Test und nicht zu den Retests, ohne dass irgendwo "der erste Test"
    steht. */
 function Vo2maxKarte({ termin, prep, onNotiz, ftp, laden }){
-  const [suche, setSuche] = useState(null);
+  const { suche, holen, verwerfen } = useAufzeichnung(() => laden(termin));
   if(!termin) return null;
   const wert = prep && prep.vo2max5 > 0 ? prep.vo2max5 : null;
   const bezug = vo2maxBezug(wert, ftp);
-
-  async function holen(){
-    setSuche({ phase: 'laedt' });
-    try { setSuche({ phase: 'fertig', ...(await laden(termin)) }); }
-    catch(e){ setSuche({ phase: 'fehler', text: e.message }); }
-  }
 
   return (
     <div class="card">
@@ -315,19 +335,15 @@ function Vo2maxKarte({ termin, prep, onNotiz, ftp, laden }){
       </p>
       <Zahlenfeld titel="Ø-Watt der 5 min (W)" wert={wert} min={1}
         onWert={v => onNotiz({ vo2max5: v })} />
-      <button class="btn block secondary" type="button"
-        disabled={!apiKey.value || (suche && suche.phase === 'laedt')}
-        onClick={holen}>
-        {suche && suche.phase === 'laedt' ? 'Wird gesucht …' : 'Aus der Aufzeichnung holen'}
-      </button>
-      {suche && suche.phase === 'fehler' && <div class="meldung fehler"><b>{suche.text}</b></div>}
+      <HolenKnopf suche={suche} onHolen={holen} />
+      <Suchfehler suche={suche} />
       {suche && suche.phase === 'fertig' && (
         <div class="blockzeile">
           <span class="blockname">Bestes 5-min-Fenster</span>
           <span class="blockwert">{suche.block.watt} W{suche.block.puls ? ' · ⌀ ' + suche.block.puls + ' bpm' : ''}</span>
           <span class="blockzeit">ab {mmss(suche.block.vonSek)}</span>
           <button class="btn klein" type="button"
-            onClick={() => { onNotiz({ vo2max5: suche.block.watt }); setSuche(null); }}>Übernehmen</button>
+            onClick={() => { onNotiz({ vo2max5: suche.block.watt }); verwerfen(); }}>Übernehmen</button>
         </div>
       )}
       {/* Die Gegenprobe des Trainingsplans. Sie ist der einzige Zweck des
