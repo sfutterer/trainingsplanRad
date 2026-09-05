@@ -6,16 +6,11 @@
    Sicherung ausser dieser. */
 
 import { KEYS } from './storage.js';
+import { Meldefehler } from './fehler.js';
 
 const EXPORT_VERSION = 1;
 
-export class SicherungError extends Error {
-  constructor(titel, zeilen){
-    super(titel);
-    this.titel = titel;
-    this.zeilen = zeilen || [];
-  }
-}
+class SicherungError extends Meldefehler {}
 
 export async function exportAll(store){
   const daten = {};

@@ -29,6 +29,8 @@
    Abruf gegen die userinfo-Schnittstelle, gaebe dasselbe zurueck und liefe
    ohne Backend auf dieselbe ungepruefte Zusicherung hinaus. */
 
+import { Meldefehler } from './fehler.js';
+
 /* Das Skript wird nachgeladen und nicht in index.html eingebunden.
 
    Zwei Gruende: es kommt von einem fremden Server, und die App muss offline
@@ -37,13 +39,7 @@
    anmeldet, laedt es nie. */
 const GSI_URL = 'https://accounts.google.com/gsi/client';
 
-export class AnmeldeError extends Error {
-  constructor(titel, zeilen){
-    super(titel);
-    this.titel = titel;
-    this.zeilen = zeilen || [];
-  }
-}
+export class AnmeldeError extends Meldefehler {}
 
 /* Die Client-ID dieses Projekts, offen im Quelltext.
 

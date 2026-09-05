@@ -11,16 +11,11 @@
 import { planValidate, PLAN_SCHEMA_VERSION } from '../domain/schema.js';
 import { createPlan } from '../domain/plan.js';
 import { migriere } from '../domain/migration.js';
+import { Meldefehler } from './fehler.js';
 
 const PLAN_URL = 'plan.json';
 
-export class PlanError extends Error {
-  constructor(titel, zeilen){
-    super(titel);
-    this.titel = titel;
-    this.zeilen = zeilen || [];
-  }
-}
+export class PlanError extends Meldefehler {}
 
 /* Trennt Pruefen von Laden, damit der Import in der Oberflaeche dieselbe
    Pruefung benutzt wie der Start.
