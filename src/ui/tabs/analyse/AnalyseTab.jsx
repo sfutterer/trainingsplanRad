@@ -32,7 +32,7 @@ import { plan, thresholds, startDate, apiKey, coreLog, testLog, interimLog,
          today, varianten } from '../../../state/store.js';
 import { fetchActivities } from '../../../data/icu.js';
 import { streckenFazit } from '../../../domain/fazit.js';
-import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
+import { isoDayLocal, toMidnight, tagUndDatum } from '../../../domain/week.js';
 import { compareDay, weekTotals, buildReport, fmtMin, pct,
          tagesGruppen } from '../../../domain/analysis.js';
 import { T } from '../../../domain/texte.js';
@@ -119,7 +119,7 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
             return (
               <button class="trtagknopf" key={tag} onClick={() => onWaehlen(tag)}>
                 <span class="trtagkopf">
-                  <span class="trtagname">{WEEKDAY_NAMES[d.getDay()]}, {d.toLocaleDateString('de-DE')}</span>
+                  <span class="trtagname">{tagUndDatum(d)}</span>
                   <span class="trtagwert">{eckwerte(tagesActs)}</span>
                   <span class="trpfeil"><Icon name="weiter" /></span>
                 </span>
@@ -235,7 +235,7 @@ function Tagesanalyse({ tag, acts, onZurueck }){
         <button class="zurueck" aria-label="Zurück zur Liste" onClick={onZurueck}>
           <Icon name="zurueck" />
         </button>
-        <h2>{WEEKDAY_NAMES[datum.getDay()]}, {datum.toLocaleDateString('de-DE')}</h2>
+        <h2>{tagUndDatum(datum)}</h2>
       </div>
 
       <div class="card">

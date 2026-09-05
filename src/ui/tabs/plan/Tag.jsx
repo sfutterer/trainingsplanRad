@@ -32,7 +32,7 @@
 import { useEffect } from 'preact/hooks';
 import { plan, apiKey, today, setVariante } from '../../../state/store.js';
 import { VARIANTE_REGEL } from '../../../domain/day.js';
-import { isoDayLocal, toMidnight, WEEKDAY_NAMES } from '../../../domain/week.js';
+import { isoDayLocal, toMidnight, tagUndMonat, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { wellnessMassnahmen } from '../../../domain/wellness.js';
 import { wellness, ladeWellness } from '../../../state/wellness.js';
 import { gotoTab } from '../../../state/navigation.js';
@@ -247,10 +247,6 @@ function Einheitszeile({ e }){
       {rechts && <span class="tageinheit-wert">{rechts}</span>}
     </span>
   );
-}
-
-function tagUndMonat(d){
-  return d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
 }
 
 /* Der Kopf einer Tageskarte, zwei Zeilen: oben wann, unten was.

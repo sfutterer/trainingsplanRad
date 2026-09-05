@@ -21,14 +21,14 @@
 import { apiKey } from './store.js';
 import { putWellness } from '../data/icu.js';
 import { bestaetige } from './dialog.js';
-import { dayFromIso } from '../domain/week.js';
+import { dayFromIso, datumText } from '../domain/week.js';
 
 export async function gewichtSchreiben(tagIso, kg){
   if(!(kg > 0) || !apiKey.value) return { art: 'abgelehnt' };
 
   const ja = await bestaetige({
     titel: 'Gewicht nach intervals.icu schreiben?',
-    text: kg + ' kg für den ' + dayFromIso(tagIso).toLocaleDateString('de-DE') + '. '
+    text: kg + ' kg für den ' + datumText(dayFromIso(tagIso)) + '. '
         + 'Das ist der einzige Wert, den diese App jemals dorthin schreibt – '
         + 'alles andere wird nur gelesen.',
     jaLabel: 'Schreiben'

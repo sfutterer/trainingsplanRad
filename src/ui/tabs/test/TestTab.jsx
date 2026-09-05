@@ -47,7 +47,7 @@ import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
-         WEEKDAY_NAMES } from '../../../domain/week.js';
+         WEEKDAY_NAMES, datumText, tagUndMonat } from '../../../domain/week.js';
 import { fetchGewicht, fetchActivities, fetchStreams,
          zahlenStrom } from '../../../data/icu.js';
 /* Der Schreibvorgang samt Rueckfrage liegt in state/gewicht.js - der
@@ -74,8 +74,7 @@ const ANSICHTEN = [
 ];
 
 function kurzDatum(d){
-  return WEEKDAY_NAMES[d.getDay()].slice(0, 2) + ', ' +
-    d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
+  return WEEKDAY_NAMES[d.getDay()].slice(0, 2) + ', ' + tagUndMonat(d);
 }
 
 /* ---------- Anleitung ---------- */
@@ -95,7 +94,7 @@ function LageKarte({ termin, phase, tage, prep }){
     <div class="card">
       <div class="row"><span>Schwellentest</span>
         <b>{termin
-          ? termin.datum.toLocaleDateString('de-DE') + ' · Woche ' + termin.week
+          ? datumText(termin.datum) + ' · Woche ' + termin.week
           : 'kein Termin'}</b></div>
       {termin && phase !== 'heute' && phase !== 'vorbei' && (
         <div class="row"><span>{tage > 0 ? 'Noch' : 'Vergangen'}</span>
@@ -360,7 +359,7 @@ function Vo2maxKarte({ termin, prep, onNotiz, ftp, laden }){
    Plans auf das Ziel angewandt - haelt es, faellt genau diese Zahl heraus. */
 function ZielKarte({ ziel, termin }){
   if(!termin) return null;
-  const datum = termin.datum.toLocaleDateString('de-DE');
+  const datum = datumText(termin.datum);
   if(!ziel){
     return (
       <div class="card">
@@ -577,7 +576,7 @@ function ErgebnisAnsicht({ p, th, termin }){
     <>
       <div class="card">
         <div class="row"><span>Ergebnis eintragen</span>
-          <b>{termin ? termin.datum.toLocaleDateString('de-DE') : 'ohne Termin'}</b></div>
+          <b>{termin ? datumText(termin.datum) : 'ohne Termin'}</b></div>
         {/* Die gerechneten Zahlen stehen schon da, waehrend man tippt - so
             sieht man vor dem Speichern, was daraus wird. */}
         <div class="ergebnis">
@@ -685,7 +684,7 @@ export function TestTab(){
     const iso = isoDayLocal(datum);
     const fahrt = laengsteFahrt(await fetchActivities(key, iso, iso), isRide);
     if(!fahrt){
-      throw new Error('Für den ' + datum.toLocaleDateString('de-DE') +
+      throw new Error('Für den ' + datumText(datum) +
         ' liegt keine Radaufzeichnung vor.');
     }
     const streams = await fetchStreams(key, fahrt.id, 'watts,heartrate,time');

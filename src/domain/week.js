@@ -180,6 +180,36 @@ export function kurzTag(iso){
   return s.length === 10 ? s.slice(8, 10) + '.' + s.slice(5, 7) + '.' : s;
 }
 
+/* ---- Datum als Text ----
+
+   Drei Formen, und bis hierher stand jede mehrfach in der Oberflaeche:
+   "15.8.2026" an neun Stellen, "Samstag, 15.8.2026" an vier, "15.08." an
+   drei - jedes Mal toLocaleDateString('de-DE') von Hand, teils mit den
+   Optionen daneben. Hier ist die Stelle dafuer, wie schon fuer kurzTag und
+   monthLabel: der Kalender.
+
+     datumText    15.8.2026            Wo das Datum allein steht.
+     tagUndDatum  Samstag, 15.8.2026   Wo der Wochentag mitentscheidet - im
+                                       Tagesueberblick und in der Analyse.
+     tagUndMonat  15.08.               Wo das Jahr keinen Platz hat und auch
+                                       nichts entscheidet: Wochenspanne,
+                                       Tageskarte, Testtermin.
+
+   Das Jahr ist in den ersten beiden bewusst nicht auf vier Stellen gepolstert
+   und der Tag nicht auf zwei: das ist die deutsche Schreibweise, die der
+   Browser liefert, und sie stand vorher schon ueberall so. */
+export function datumText(d){
+  return d.toLocaleDateString('de-DE');
+}
+
+export function tagUndDatum(d){
+  return WEEKDAY_NAMES[d.getDay()] + ', ' + datumText(d);
+}
+
+export function tagUndMonat(d){
+  return d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
+}
+
 /* Der erste Tag der Trainingswoche, in der ein Datum liegt.
 
    Abgeleitet aus dem Startdatum statt auf Samstag festgenagelt. Beide Wege

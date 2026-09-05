@@ -10,7 +10,7 @@ import { plan, planJson, planSource, settings, setSettings, apiKey, setApiKey,
          mapKey, setMapKey, startDate, setStartDate, store, applyPlanOverride,
          resetPlanToDefault, coreLog, testLog, interimLog, PLAN_START_DEFAULT } from '../../../state/store.js';
 import { THEMES } from '../../../state/theme.js';
-import { isoDayLocal, toMidnight, dayFromIso, WEEKDAY_NAMES } from '../../../domain/week.js';
+import { isoDayLocal, toMidnight, dayFromIso, datumText, WEEKDAY_NAMES } from '../../../domain/week.js';
 import { exportAll, importAll, exportFilename, benenne } from '../../../data/exportImport.js';
 import { downloadJson, waehleDatei, requestPersistentStorage } from '../../../platform/index.js';
 import { bestaetige } from '../../../state/dialog.js';
@@ -253,7 +253,7 @@ export function EinstellungenTab(){
 
       <Gruppe titel="Training">
         <Zeile titel="Beginn Woche 1"
-          wert={sd.toLocaleDateString('de-DE') + ' · ' + WEEKDAY_NAMES[sd.getDay()] + (sdPasst ? '' : ' — verschiebt den Samstag')}
+          wert={datumText(sd) + ' · ' + WEEKDAY_NAMES[sd.getDay()] + (sdPasst ? '' : ' — verschiebt den Samstag')}
           hilfe={
             <>
               <p>Aus dem Startdatum ergibt sich jede Wochennummer und damit jede Vorgabe.</p>
@@ -280,7 +280,7 @@ export function EinstellungenTab(){
         {!sdPasst && (
           <div class="szeile-eingabe">
             <button class="btn block" onClick={() => setStartDate(dayFromIso(PLAN_START_DEFAULT))}>
-              Auf {dayFromIso(PLAN_START_DEFAULT).toLocaleDateString('de-DE')} setzen (Samstag)
+              Auf {datumText(dayFromIso(PLAN_START_DEFAULT))} setzen (Samstag)
             </button>
           </div>
         )}

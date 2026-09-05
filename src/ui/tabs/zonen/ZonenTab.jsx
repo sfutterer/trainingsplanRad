@@ -9,7 +9,8 @@ import { useState } from 'preact/hooks';
 import { plan, thresholds, startDate, week, testLog, interimLog, apiKey,
          setThresholds, addTestEntry, addInterimEntry } from '../../../state/store.js';
 import { fetchGewicht } from '../../../data/icu.js';
-import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag } from '../../../domain/week.js';
+import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag,
+         datumText } from '../../../domain/week.js';
 import { hrBands, usesCoggan, zoneBand } from '../../../domain/zones.js';
 import { sprechtestBezug, testWerte, baueTestEintrag, FTP_FAKTOR } from '../../../domain/test.js';
 import { zahl } from '../../../domain/zahlen.js';
@@ -133,7 +134,7 @@ function TestFormular({ tagIso, vorschlag, onSpeichern, onAbbrechen }){
 
   return (
     <>
-      <div class="row"><span>Test vom {dayFromIso(tagIso).toLocaleDateString('de-DE')}</span>
+      <div class="row"><span>Test vom {datumText(dayFromIso(tagIso))}</span>
         <b>{w20 > 0 ? 'FTP ' + Math.round(w20 * FTP_FAKTOR) + ' W' : 'Ø-Watt eintragen'}</b></div>
       <Zahlenfeld titel="Ø-Watt der 20 min" wert={w20} min={1} onWert={setW20} />
       {/* Seit Fassung 4 die Kadenz statt der 5-min-Leistung: die entsteht an
@@ -319,7 +320,7 @@ function ErhebungsKarte(){
         <p class={'hint ' + (bezug.zuHoch ? 'warn' : 'good')}>
           Ø Sprechtest-Puls {bezug.schnitt} bpm aus {bezug.anzahl}{' '}
           {bezug.anzahl === 1 ? 'Erhebung' : 'Erhebungen'}
-          {bezug.seit ? ' seit dem Test vom ' + dayFromIso(bezug.seit).toLocaleDateString('de-DE') : ''},
+          {bezug.seit ? ' seit dem Test vom ' + datumText(dayFromIso(bezug.seit)) : ''},
           Z2-Obergrenze {bezug.max} bpm.{' '}
           {bezug.zuHoch
             ? 'Mehr als ' + bezug.abstand + ' bpm darunter – Z2 gehört nach unten begrenzt. '

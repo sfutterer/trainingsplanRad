@@ -33,7 +33,8 @@ import { plan, thresholds, startDate, today, week, varianten } from '../../../st
 import { buildDayInfo } from '../../../domain/day.js';
 import { isoDayLocal, toMidnight, dayFromIso, addDays, phaseName,
          isWinterBlock, isRecoveryWeek, isTestWeek, testWeeks, testDateFor,
-         trainingWeekDays, trainingWeekStart, weekNumberFor } from '../../../domain/week.js';
+         trainingWeekDays, trainingWeekStart, weekNumberFor,
+         datumText, tagUndMonat } from '../../../domain/week.js';
 import { usesCoggan } from '../../../domain/zones.js';
 import { useWellness, Tagesinhalt, Tageskopf } from './Tag.jsx';
 import { Monatsansicht } from './Monatsansicht.jsx';
@@ -60,7 +61,7 @@ function naechsterTest(p, heute, start){
     const tage = Math.round((d - toMidnight(heute)) / 86400000);
     if(tage < 0) continue;
     if(tage === 0) return 'Heute ist Schwellentest (Woche ' + w + '). Danach FTP und LTHR unten eintragen.';
-    if(tage <= vorlauf) return 'Nächster Schwellentest: ' + d.toLocaleDateString('de-DE') +
+    if(tage <= vorlauf) return 'Nächster Schwellentest: ' + datumText(d) +
       ' (Woche ' + w + '), in ' + tage + (tage === 1 ? ' Tag' : ' Tagen') +
       '. Der Testanlauf läuft – die Vorgabe steht auf der jeweiligen Tageskarte.';
     return null;
@@ -100,7 +101,7 @@ function StatusKarte(){
           <div class="row"><span>Pulszonen</span><b>
             {usesCoggan(p, th, w) ? 'Coggan aus LTHR ' + th.lthr + ' bpm' : 'Übergangsbänder (bis zum Test)'}
           </b></div>
-          <div class="row"><span>Beginn Woche 1</span><b>{start.toLocaleDateString('de-DE')}</b></div>
+          <div class="row"><span>Beginn Woche 1</span><b>{datumText(start)}</b></div>
           {hinweise.map((h, i) => <p class="hint" key={i}>{h}</p>)}
         </div>
       )}
@@ -142,8 +143,7 @@ function Wochenansicht({ anker, setzeAnker, serie }){
   const nummer = Math.max(weekNumberFor(anker, start), 1);
   const inDieserWoche = isoDayLocal(trainingWeekStart(heute, start)) === isoDayLocal(tage[0]);
 
-  const spanne = tage[0].toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) +
-    '–' + tage[6].toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
+  const spanne = tagUndMonat(tage[0]) + '–' + tagUndMonat(tage[6]);
 
   return (
     <>

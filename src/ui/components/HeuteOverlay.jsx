@@ -29,7 +29,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { plan, thresholds, startDate, today } from '../../state/store.js';
 import { meldungen, meldungenVerwerfen } from '../../state/meldungen.js';
 import { buildDayInfo } from '../../domain/day.js';
-import { WEEKDAY_NAMES, dayFromIso } from '../../domain/week.js';
+import { tagUndDatum, dayFromIso } from '../../domain/week.js';
 import { Sheet, ZUG_ERKANNT } from './Sheet.jsx';
 import { bewegungsarm } from '../../platform/index.js';
 
@@ -54,8 +54,7 @@ const AUSFAHRT = 180;
    kuerzer, stuende dort aber neben der Art "Heute" - zweimal dasselbe Wort in
    einer Zeile. */
 function datumText(iso){
-  const d = dayFromIso(iso);
-  return WEEKDAY_NAMES[d.getDay()] + ', ' + d.toLocaleDateString('de-DE');
+  return tagUndDatum(dayFromIso(iso));
 }
 
 /* Eine Meldung und die Geste, die sie loswird.
@@ -191,7 +190,7 @@ function Tagesueberblick(){
   return (
     <>
       <div class="heute-kopf">
-        <span>{WEEKDAY_NAMES[d.getDay()]}, {d.toLocaleDateString('de-DE')}</span>
+        <span>{tagUndDatum(d)}</span>
         <span>Woche {info.week}{info.winter ? '' : ' / ' + plan.value.weekCount}</span>
       </div>
       <h3 class={'type-' + info.type}>{info.title}</h3>
