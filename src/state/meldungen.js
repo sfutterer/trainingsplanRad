@@ -30,6 +30,19 @@ import { ladeWellness, wellness } from './wellness.js';
 export const meldungen = signal([]);
 export const meldungsZahl = computed(() => meldungen.value.length);
 
+/* Die Rueckschau der letzten Tage, so wie die Glocke sie ohnehin rechnet.
+
+   Sie steht hier und nicht nur in ladeMeldungen, weil der Plan dieselbe Frage
+   stellt: die eingeklappte Zeile ueber den zurueckliegenden Tagen der Woche
+   sagt, wie viele davon erledigt sind. Ein zweiter Abruf derselben
+   Aufzeichnungen waere dieselbe Antwort ein zweites Mal - und ohne Schluessel
+   bliebe er ohnehin leer.
+
+   null heisst "nicht bekannt" und nicht "nichts erledigt": ohne
+   intervals.icu-Schluessel oder nach einem gescheiterten Abruf sagt der Plan
+   dazu lieber nichts. */
+export const tagesrueckschau = signal(null);
+
 /* Einmal aus dem Speicher geholt und danach hier gefuehrt. Ein Profilwechsel
    laedt die Seite neu, der Zwischenspeicher kann also nicht zum falschen
    Bestand gehoeren. */
@@ -71,6 +84,8 @@ export async function ladeMeldungen(){
     key ? ladeWellness() : Promise.resolve(null),
     key ? rueckschau(key, heute).catch(() => null) : Promise.resolve(null)
   ]);
+
+  tagesrueckschau.value = rows;
 
   const alle = baueMeldungen({ plan: p, th, heute, startDate: startDate.value,
                                serie: serie || wellness.value, rows,

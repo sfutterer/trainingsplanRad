@@ -25,12 +25,16 @@
    selbst ist dabei nicht das Problem, sondern erwuenscht - sie ist der Grund,
    warum die Woche ueberhaupt als Block dasteht.
 
-   Zwei Aenderungen dagegen, beide hier:
+   Drei Aenderungen dagegen, alle hier:
 
      Der Kopf ist von 206 px auf 64 px geschrumpft. Der Wechsel Woche/Monat
      sitzt jetzt in der Blaetterleiste (siehe KalenderNavi), die Statuskarte
      steht unter den Tagen statt darueber. Zugeklappt sagte sie ohnehin nur die
      Wochennummer - dieselbe Zahl, die als Titel in der Blaetterleiste steht.
+
+     Die zurueckliegenden Tage der laufenden Woche stehen als eine Zeile da
+     statt als fuenf Karten - siehe Rueckblick weiter unten. Aus den 425 px
+     werden 66, und die Zeile sagt dabei mehr, als die Karten sagten.
 
      Enthaelt die gezeigte Woche den heutigen Tag, holt die Ansicht ihn beim
      Aufschlagen an den oberen Rand. Ohne Bewegung: es ist kein Sprung, den man
@@ -52,14 +56,16 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, week, varianten } from '../../../state/store.js';
 import { buildDayInfo } from '../../../domain/day.js';
+import { tagesrueckschau } from '../../../state/meldungen.js';
 import { isoDayLocal, toMidnight, dayFromIso, addDays, phaseName,
          isWinterBlock, isRecoveryWeek, isTestWeek, testWeeks, testDateFor,
          trainingWeekDays, trainingWeekStart, weekNumberFor,
-         datumText, tagUndMonat } from '../../../domain/week.js';
+         datumText, tagUndMonat, WEEKDAY_SHORT } from '../../../domain/week.js';
 import { usesCoggan } from '../../../domain/zones.js';
-import { useWellness, Tagesinhalt, Tageskopf } from './Tag.jsx';
+import { useWellness, Tagesinhalt, Tageskopf, tagesArten } from './Tag.jsx';
 import { Monatsansicht } from './Monatsansicht.jsx';
 import { KalenderNavi } from './KalenderNavi.jsx';
+import { Einheitssymbol } from '../../components/Einheitssymbol.jsx';
 import './plan.css';
 
 /* Der Knopf rechts in der Blaetterleiste nennt immer die jeweils andere
@@ -148,6 +154,98 @@ function Wochenzeile({ datum, info, istHeute, offen, umschalten, serie, karte })
   );
 }
 
+/* Wie viele der zurueckliegenden Tage ihre Vorgabe erfuellt haben.
+
+   Gezaehlt wird nur, was eine Vorgabe hatte: ein Ruhetag ist nichts, was man
+   erledigt, und "4 von 6" mit zwei Ruhetagen darin waere eine Zahl, die zu
+   schlecht aussieht. "extra" - eine Fahrt am Ruhetag - zaehlt aus demselben
+   Grund nicht mit: sie stand nicht im Plan.
+
+   Ohne Rueckschau (kein Schluessel, Abruf gescheitert) kommt null heraus und
+   die Zeile schweigt dazu. Eine Null waere eine Behauptung ueber Tage, ueber
+   die nichts bekannt ist. */
+function erledigtStand(tage, infos, status){
+  if(!status) return null;
+  let geplant = 0, erledigt = 0;
+  tage.forEach((d, i) => {
+    const info = infos[i];
+    if(info.vorStart || info.type === 'rest' || info.type === 'restopt') return;
+    const s = status[isoDayLocal(d)];
+    if(!s) return;
+    geplant++;
+    if(s === 'ok') erledigt++;
+  });
+  return geplant ? { geplant, erledigt } : null;
+}
+
+/* Die Rueckschau als Nachschlagewerk nach Tag. null bleibt null - siehe
+   tagesrueckschau in state/meldungen.js. */
+function statusNachTag(rueckschau){
+  if(!rueckschau) return null;
+  const raus = {};
+  for(const r of rueckschau){ if(r && r.date) raus[isoDayLocal(r.date)] = r.status; }
+  return raus;
+}
+
+/* Die zurueckliegenden Tage der laufenden Woche als eine Zeile.
+
+   An einem Samstag lagen hier fuenf ganze Tageskarten, rund 425 px, die man
+   jeden Tag aufs Neue durchscrollte, um beim heutigen anzukommen. Sie
+   wegzulassen kam nicht in Frage: die Woche ist der Block, in dem geplant
+   wird, und eine Woche, die am Mittwoch anfaengt, ist keine.
+
+   Also zusammengefasst statt weggenommen - und die Zusammenfassung beantwortet
+   dabei eine Frage, die fuenf zugeklappte Karten nicht beantworteten: wie viel
+   von der Woche schon hinter einem liegt. Jeder Tag steht mit Kuerzel und dem
+   Zeichen seiner Einheitsart da, erledigte in der Bestaetigungsfarbe,
+   verpasste in der Warnfarbe.
+
+   Ein Tipp klappt die Tage wieder als volle Karten aus, jede einzeln weiter
+   auf- und zuklappbar wie zuvor. Die Zeile bleibt dabei stehen: sie ist der
+   Weg zurueck.
+
+   Nur in der laufenden Woche. In einer vergangenen gibt es keinen heutigen
+   Tag, den man schuetzen muesste, und alle sieben Tage sind gleich viel wert.
+
+   Der Knopf traegt kein aria-expanded und ist trotzdem eines: die Tage stehen
+   als Geschwister darunter und nicht in ihm - aria-controls waere die richtige
+   Verbindung, braeuchte aber sieben Kennungen fuer eine Liste, die ohnehin
+   direkt darauf folgt. aria-expanded allein, ohne Bezug, verspricht der
+   Sprachausgabe einen Inhalt, den sie im Knopf sucht und nicht findet. */
+function Rueckblick({ tage, infos, status, stand, offen, umschalten, karte }){
+  const spanne = WEEKDAY_SHORT[tage[0].getDay()] +
+    (tage.length > 1 ? '–' + WEEKDAY_SHORT[tage[tage.length - 1].getDay()] : '');
+
+  return (
+    <div class="card rueckblick" ref={karte}>
+      <button class="rueckzeile" type="button" onClick={umschalten}>
+        <span class="dayzeile-oben">
+          <span class="tagname">Zurückliegend · {spanne}</span>
+          <span class="tagmarke">
+            {stand ? stand.erledigt + ' von ' + stand.geplant + ' erledigt' : ''}
+          </span>
+        </span>
+        <span class="rucktage">
+          {tage.map((d, i) => {
+            const iso = isoDayLocal(d);
+            const s = status ? status[iso] : null;
+            return (
+              <span class={'rucktag' + (s ? ' st-' + s : '')} key={iso}>
+                <b>{WEEKDAY_SHORT[d.getDay()]}</b>
+                <span class="ruckarten">
+                  {!infos[i].vorStart && tagesArten(infos[i]).map(a =>
+                    <Einheitssymbol art={a} klasse="rucksym" key={a} />)}
+                </span>
+              </span>
+            );
+          })}
+        </span>
+        <span class={'chevron' + (offen ? ' auf' : '')} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
 function Wochenansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsicht }){
   const p = plan.value, th = thresholds.value, start = startDate.value;
   const heute = toMidnight(today.value);
@@ -159,18 +257,44 @@ function Wochenansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsicht }){
   const [offen, setOffen] = useState(() => []);
   const umschalten = iso => setOffen(o => o.includes(iso) ? o.filter(x => x !== iso) : o.concat(iso));
 
+  /* Aufgeklappt bleibt der Rueckblick, bis man ihn zuklappt. Er gehoert
+     ohnehin nur zur laufenden Woche - in jeder anderen steht er gar nicht. */
+  const [rueckOffen, setRueckOffen] = useState(false);
+
   const tage = trainingWeekDays(anker, start);
   const nummer = Math.max(weekNumberFor(anker, start), 1);
   const inDieserWoche = isoDayLocal(trainingWeekStart(heute, start)) === isoDayLocal(tage[0]);
 
   const spanne = tagUndMonat(tage[0]) + '–' + tagUndMonat(tage[6]);
 
+  const infos = tage.map(d => buildDayInfo(p, th, d, start, varianten.value));
+
+  /* Die Tage vor heute stehen zusammengefasst - aber nur in der laufenden
+     Woche, und nur wenn es welche gibt. Am ersten Tag der Woche ist der
+     heutige schon der erste, und eine Zeile ueber null Tage waere ein Knopf
+     ohne Inhalt. */
+  const heuteIndex = inDieserWoche ? tage.findIndex(d => isoDayLocal(d) === heuteIso) : -1;
+  const zurueck = heuteIndex > 0 ? tage.slice(0, heuteIndex) : [];
+  const status = statusNachTag(tagesrueckschau.value);
+  const stand = zurueck.length
+    ? erledigtStand(zurueck, infos.slice(0, heuteIndex), status) : null;
+  /* Zugeklappt faengt die Liste beim heutigen Tag an, aufgeklappt und in jeder
+     anderen Woche bei ihrem ersten. */
+  const abIndex = zurueck.length && !rueckOffen ? heuteIndex : 0;
+
   /* Der Sprung an den Anfang der Woche.
 
-     Das ist der heutige Tag, wenn er in der gezeigten Woche liegt, sonst deren
-     erster Tag. Zwei Faelle, ein Weg: die Woche faengt oben an. In eine fremde
-     Woche mitten hinein zu scrollen waere genau die Bewegung, die hier gerade
-     abgeschafft wird.
+     Ziel ist das erste, was von der Woche zaehlt: der zugeklappte Rueckblick,
+     wenn es einen gibt - er ist die Vergangenheit in 66 px, und darunter steht
+     sofort der heutige Tag. Ohne ihn der heutige Tag selbst, und in einer
+     fremden Woche deren erster: in eine Woche mitten hinein zu scrollen waere
+     genau die Bewegung, die hier abgeschafft wird.
+
+     Der Rueckblick als Ziel und nicht der heutige Tag darunter: sonst
+     verschwaende der Sprung genau die Zeile, die sagt, wie viel von der Woche
+     hinter einem liegt - und um die 66 px, die sie kostet, ginge es dann auch
+     nicht mehr. Aufgeklappt faellt das Ziel wieder auf den heutigen Tag, sonst
+     landete man vor sechs Karten, die man sich gerade angesehen hat.
 
      Der Sprung haengt an der gezeigten Woche und nicht am Aufbau der Ansicht:
      er soll auch dann kommen, wenn man aus der Woche davor zurueckblaettert
@@ -182,6 +306,7 @@ function Wochenansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsicht }){
      die klebende Blaetterleiste. */
   const zielKarte = useRef(null);
   const wochenIso = isoDayLocal(tage[0]);
+  const zielIstRueckblick = zurueck.length > 0 && !rueckOffen;
   const zielIso = inDieserWoche ? heuteIso : wochenIso;
   useEffect(() => {
     if(zielKarte.current) zielKarte.current.scrollIntoView({ block: 'start' });
@@ -200,13 +325,20 @@ function Wochenansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsicht }){
           ansichtLabel={ansichtLabel} onAnsicht={onAnsicht} />
       </div>
 
-      {tage.map(d => {
+      {zurueck.length > 0 && (
+        <Rueckblick tage={zurueck} infos={infos.slice(0, heuteIndex)}
+          status={status} stand={stand} offen={rueckOffen}
+          karte={zielIstRueckblick ? zielKarte : undefined}
+          umschalten={() => setRueckOffen(o => !o)} />
+      )}
+
+      {tage.slice(abIndex).map((d, i) => {
         const iso = isoDayLocal(d);
         const istHeute = iso === heuteIso;
         return (
-          <Wochenzeile key={iso} datum={d} info={buildDayInfo(p, th, d, start, varianten.value)}
+          <Wochenzeile key={iso} datum={d} info={infos[abIndex + i]}
             istHeute={istHeute} offen={offen.includes(iso)}
-            karte={iso === zielIso ? zielKarte : undefined}
+            karte={!zielIstRueckblick && iso === zielIso ? zielKarte : undefined}
             umschalten={() => umschalten(iso)} serie={serie} />
         );
       })}

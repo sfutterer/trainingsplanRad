@@ -144,6 +144,52 @@ button.dayzeile:active{ background: var(--surface-2); }
 .tagname{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tagmarke{ flex: none; }
 
+/* ---- Die Zeile ueber die zurueckliegenden Tage ----
+
+   Dieselbe Bauform wie Tages- und Statuskarte: die Karte gibt ihre
+   Innenabstaende an den Knopf weiter, damit die Trefferflaeche von Kante zu
+   Kante reicht. Die obere Zeile teilt sich Klassen mit der Tageskopfzeile -
+   sie sagt dasselbe an derselben Stelle, nur ueber mehrere Tage.
+
+   Die Tagesfelder tragen keine eigene Flaeche: sieben getoente Kacheln
+   nebeneinander waren im Monatsraster schon zu viel, und hier stehen sie
+   direkt ueber der heutigen Karte. Die Farbe steckt im Kuerzel, das Zeichen
+   der Einheitsart behaelt seine eigene - sonst waere aus zwei Angaben eine
+   geworden. */
+
+.card.rueckblick{ padding: 0; overflow: hidden; }
+.rueckzeile{
+  display: flex; flex-direction: column; gap: 6px;
+  width: 100%; min-height: 56px;
+  padding: 10px 44px 10px 18px;
+  position: relative;
+  border: 0; background: none; color: inherit; text-align: left;
+  font: inherit; cursor: pointer;
+}
+.rueckzeile:active{ background: var(--surface-2); }
+
+/* Bis zu sechs Tage in einer Reihe. Gleich breit, damit die Kuerzel
+   untereinander stehen wie im Monatsraster - eine Reihe, in der Mo neben Di
+   verrutscht, weil der eine Tag zwei Zeichen traegt, liest sich nicht im
+   Vorbeigehen. */
+.rucktage{ display: flex; gap: 4px; }
+.rucktag{
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 11px; letter-spacing: .04em; color: var(--muted);
+}
+.rucktag b{ font-weight: 700; }
+/* Dieselben drei Farben wie in der Analyse: erfuellt, abgewichen, ausgefallen.
+   "extra" - eine Fahrt am Ruhetag - bleibt neutral, sie stand nicht im Plan
+   und ist deshalb weder eingehalten noch verpasst. */
+.rucktag.st-ok b{ color: var(--ok); }
+.rucktag.st-dev b{ color: var(--dev); }
+.rucktag.st-miss b{ color: var(--miss); }
+/* Ein Tag ohne Vorgabe traegt kein Zeichen. Die Zeile bleibt trotzdem gleich
+   hoch, sonst huepfte die Reihe an jedem Ruhetag. */
+.ruckarten{ display: flex; align-items: center; gap: 1px; height: 14px; }
+.esym.rucksym{ width: 14px; height: 14px; }
+
 /* Zwei Striche als Pfeil, gedreht - ein Zeichen aus der Schrift saesse in
    jeder Schriftart woanders. */
 .chevron{
@@ -273,10 +319,11 @@ button.dayzeile:active{ background: var(--surface-2); }
   padding: 6px 8px;
   position: sticky; top: 0; z-index: 20;
 }
-/* Sprungziel des heutigen Tages: die klebende Blaetterleiste (6 + 40 + 6 px)
-   plus der uebliche Kartenabstand - darunter taucht die Karte auf und nicht
-   dahinter. Aendert sich die Hoehe der Leiste, aendert sich diese Zahl mit. */
-.card.day{ scroll-margin-top: 64px; }
+/* Sprungziel des heutigen Tages beziehungsweise des Rueckblicks: die klebende
+   Blaetterleiste (6 + 40 + 6 px) plus der uebliche Kartenabstand - darunter
+   taucht die Karte auf und nicht dahinter. Aendert sich die Hoehe der Leiste,
+   aendert sich diese Zahl mit. */
+.card.day, .card.rueckblick{ scroll-margin-top: 64px; }
 
 .kalnavi{ display: flex; align-items: center; gap: 2px; }
 /* In dieser Zeile duerfen die Pfeile enger sein als die 48er-Regel: sie teilen
