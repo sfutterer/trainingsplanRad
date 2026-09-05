@@ -256,7 +256,28 @@ button.dayzeile:active{ background: var(--surface-2); }
 
 /* ---- Navigation ueber Wochen und Monate ---- */
 
-.card.kalnavi-karte{ padding: 6px 8px; }
+/* Die Leiste der Wochenansicht bleibt beim Scrollen oben stehen.
+
+   Sie traegt die einzige Angabe, die auf keiner Karte darunter steht - welche
+   Woche das hier ist -, und die Pfeile: wer unten am Sonntag angekommen ist,
+   blaettert weiter, ohne erst zurueckzuwischen.
+
+   Nur hier und nicht im Monat: dort steckt dieselbe Leiste in einer Karte mit
+   dem Raster, und die haette klebend den halben Bildschirm belegt.
+
+   top: 0 heisst der obere Rand von .content und damit die Kante unter der
+   App-Leiste - die steht ausserhalb des scrollenden Bereichs. z-index unter
+   der App-Leiste (30) und unter der Navigationsleiste (40): die beiden
+   gehoeren dem Rahmen, diese hier nur dem Inhalt. */
+.card.kalnavi-karte{
+  padding: 6px 8px;
+  position: sticky; top: 0; z-index: 20;
+}
+/* Sprungziel des heutigen Tages: die klebende Blaetterleiste (6 + 40 + 6 px)
+   plus der uebliche Kartenabstand - darunter taucht die Karte auf und nicht
+   dahinter. Aendert sich die Hoehe der Leiste, aendert sich diese Zahl mit. */
+.card.day{ scroll-margin-top: 64px; }
+
 .kalnavi{ display: flex; align-items: center; gap: 2px; }
 /* In dieser Zeile duerfen die Pfeile enger sein als die 48er-Regel: sie teilen
    sich den Platz mit Titel und Heute-Feld, und das Ziel bleibt bequem tippbar. */
@@ -265,23 +286,33 @@ button.dayzeile:active{ background: var(--surface-2); }
   flex: 1; min-width: 0; text-align: center;
   display: flex; flex-direction: column; line-height: 1.25;
 }
-.kalnavi-titel b{ font-size: 16px; white-space: nowrap; }
+/* Der laengste Titel ist "September 2026" und braucht 123 px. Passt er auf
+   einem schmalen Geraet trotzdem nicht, kuerzt ihn der Punktabschluss - ohne
+   die Zeile waere er unter den Pfeil daneben gelaufen. */
+.kalnavi-titel b{
+  font-size: 16px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
 .kalnavi-titel span{ font-size: 12px; color: var(--muted); }
-/* "Heute" sitzt in einem festen Feld links neben den Pfeilen; rechts spiegelt
-   ein unsichtbarer Zwilling desselben Knopfs die Breite, damit der Titel mittig
-   bleibt. Beide Felder stehen immer im Layout - ob der Knopf sichtbar ist oder
-   nicht, aendert weder die Kartenhoehe noch die Lage der Pfeile. Frueher stand
-   er am Zeilenende und rueckte beim Erscheinen auf die Stelle des Weiter-Pfeils;
-   die spaetere Fassung in einer eigenen Zeile liess die Karte beim Blaettern
-   springen. */
-.kalnavi-heute{ flex: 0 0 auto; display: flex; }
-.kalnavi-heute.leer, .kalnavi-heute.spiegel{ visibility: hidden; }
-.kalnavi-heute .heute-sprung{
+/* Links "Heute", rechts der Wechsel zwischen Woche und Monat, dazwischen
+   Pfeile und Titel.
+
+   Beide Seitenfelder sind gleich breit und fest: sonst rueckte der Titel,
+   sobald "Heute" verschwindet oder der rechte Knopf von "Monat" auf "Woche"
+   wechselt - und die Pfeile lagen beim Blaettern nicht mehr an derselben
+   Stelle. Rechts stand dafuer frueher ein unsichtbarer Zwilling des
+   Heute-Knopfs; seit der Ansichtswechsel dort sitzt, traegt das Feld etwas.
+
+   Die Breite ist die des breitesten der drei Knoepfe ("Woche", 56 px) und
+   keinen Punkt breiter: jedes Pixel hier fehlt dem Titel in der Mitte, und der
+   laengste - "September 2026" - braucht 123 von den 127, die uebrigbleiben. */
+.kalnavi-seite{ flex: 0 0 56px; display: flex; }
+.kalnavi-seite.rechts{ justify-content: flex-end; }
+.kalnavi-seite.leer{ visibility: hidden; }
+.kalnavi-knopf{
   min-height: 30px; padding: 0 10px;
   font-size: 11.5px; font-weight: 600; border-radius: 15px; white-space: nowrap;
 }
-
-.segmented.ansichtwahl{ margin-bottom: 12px; }
 
 /* ---- Monatsraster ---- */
 

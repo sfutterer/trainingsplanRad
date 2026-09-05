@@ -40,7 +40,7 @@ function langesDatum(d){
     d.toLocaleDateString('de-DE', { day:'2-digit', month:'long', year:'numeric' });
 }
 
-export function Monatsansicht({ anker, setzeAnker, serie }){
+export function Monatsansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsicht }){
   const p = plan.value, th = thresholds.value, start = startDate.value;
   const heute = toMidnight(today.value);
   const heuteIso = isoDayLocal(heute);
@@ -70,7 +70,8 @@ export function Monatsansicht({ anker, setzeAnker, serie }){
           onZurueck={() => blaettern(-1)}
           onVor={() => blaettern(1)}
           onHeute={() => setzeAnker(heute)}
-          heuteVersteckt={gleicherMonat(monat, heute)} />
+          heuteVersteckt={gleicherMonat(monat, heute)}
+          ansichtLabel={ansichtLabel} onAnsicht={onAnsicht} />
 
         <div class="kalkopf" aria-hidden="true">
           {koepfe.map(k => <span key={k}>{k}</span>)}

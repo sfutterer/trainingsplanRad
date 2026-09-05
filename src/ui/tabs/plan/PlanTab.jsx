@@ -17,18 +17,39 @@
    war das Zuklappen des einen beim Oeffnen des anderen genau die Bewegung, die
    man nicht wollte.
 
-   Die Statuskarte ganz oben ist zugeklappt voreingestellt und zeigt dann nur
-   noch, in welcher Woche man steht. Phase, Zonenherkunft und Startdatum
-   aendern sich innerhalb einer Woche nicht - man liest sie einmal und danach
-   nie wieder, und bis dahin schoben sie zusammen mit den Hinweisen die erste
-   Tageskarte fast aus dem Bild. Sie stehen weiter da, aber einen Tipp weit.
+   ---- Der Weg zum heutigen Tag ----
+
+   An einem Samstag standen bis zum 05.09.2026 gut 600 px ueber der heutigen
+   Karte: 206 px Kopf und fuenf zurueckliegende Tage. Man musste sich in den
+   eigenen Tag hineinscrollen, und zwar jeden Tag aufs Neue. Die Wochentrennung
+   selbst ist dabei nicht das Problem, sondern erwuenscht - sie ist der Grund,
+   warum die Woche ueberhaupt als Block dasteht.
+
+   Zwei Aenderungen dagegen, beide hier:
+
+     Der Kopf ist von 206 px auf 64 px geschrumpft. Der Wechsel Woche/Monat
+     sitzt jetzt in der Blaetterleiste (siehe KalenderNavi), die Statuskarte
+     steht unter den Tagen statt darueber. Zugeklappt sagte sie ohnehin nur die
+     Wochennummer - dieselbe Zahl, die als Titel in der Blaetterleiste steht.
+
+     Enthaelt die gezeigte Woche den heutigen Tag, holt die Ansicht ihn beim
+     Aufschlagen an den oberen Rand. Ohne Bewegung: es ist kein Sprung, den man
+     mit den Augen verfolgt, sondern die Stelle, an der die Ansicht anfaengt.
+     Wer nach oben wischt, ist sofort wieder am Wochenanfang.
+
+   Die Blaetterleiste klebt dabei oben fest. Sie traegt die einzige Angabe, die
+   sich nicht aus den Karten darunter ergibt - welche Woche das hier ist -, und
+   sie traegt die Pfeile: wer unten am Sonntag angekommen ist, blaettert
+   weiter, ohne erst zurueckzuwischen. Dass sie ueberhaupt kleben kann, hat
+   app.css moeglich gemacht: der Rahmen war bis dahin so hoch wie sein Inhalt,
+   und gescrollt wurde das Dokument.
 
    Der heutige Tag bekommt keinen Klappknopf, sondern eine feste Kopfzeile. Ein
    Knopf, der nichts tut, oder ein deaktivierter Knopf ueber einem sichtbaren
    Inhalt waere ein Bedienelement ohne Bedienung; die uebrigen Tage sind
    dagegen echte <button> mit aria-expanded. */
 
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, week, varianten } from '../../../state/store.js';
 import { buildDayInfo } from '../../../domain/day.js';
 import { isoDayLocal, toMidnight, dayFromIso, addDays, phaseName,
@@ -38,14 +59,13 @@ import { isoDayLocal, toMidnight, dayFromIso, addDays, phaseName,
 import { usesCoggan } from '../../../domain/zones.js';
 import { useWellness, Tagesinhalt, Tageskopf } from './Tag.jsx';
 import { Monatsansicht } from './Monatsansicht.jsx';
-import { Segmented } from '../../components/Segmented.jsx';
 import { KalenderNavi } from './KalenderNavi.jsx';
 import './plan.css';
 
-const ANSICHTEN = [
-  { id: 'woche', label: 'Woche' },
-  { id: 'monat', label: 'Monat' }
-];
+/* Der Knopf rechts in der Blaetterleiste nennt immer die jeweils andere
+   Ansicht - er ist ein Ziel, kein Zustand. */
+const ANDERE_ANSICHT = { woche: 'monat', monat: 'woche' };
+const ANSICHT_NAME = { woche: 'Woche', monat: 'Monat' };
 
 /* Die Ankuendigung des naechsten Tests.
 
@@ -109,9 +129,9 @@ function StatusKarte(){
   );
 }
 
-function Wochenzeile({ datum, info, istHeute, offen, umschalten, serie }){
+function Wochenzeile({ datum, info, istHeute, offen, umschalten, serie, karte }){
   return (
-    <div class={'card day type-' + info.type + (istHeute ? ' heute' : '')}>
+    <div class={'card day type-' + info.type + (istHeute ? ' heute' : '')} ref={karte}>
       {istHeute
         ? <div class="dayzeile fest"><Tageskopf datum={datum} info={info} istHeute /></div>
         : <button class="dayzeile" type="button" aria-expanded={offen ? 'true' : 'false'}
@@ -128,7 +148,7 @@ function Wochenzeile({ datum, info, istHeute, offen, umschalten, serie }){
   );
 }
 
-function Wochenansicht({ anker, setzeAnker, serie }){
+function Wochenansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsicht }){
   const p = plan.value, th = thresholds.value, start = startDate.value;
   const heute = toMidnight(today.value);
   const heuteIso = isoDayLocal(heute);
@@ -145,6 +165,28 @@ function Wochenansicht({ anker, setzeAnker, serie }){
 
   const spanne = tagUndMonat(tage[0]) + '–' + tagUndMonat(tage[6]);
 
+  /* Der Sprung an den Anfang der Woche.
+
+     Das ist der heutige Tag, wenn er in der gezeigten Woche liegt, sonst deren
+     erster Tag. Zwei Faelle, ein Weg: die Woche faengt oben an. In eine fremde
+     Woche mitten hinein zu scrollen waere genau die Bewegung, die hier gerade
+     abgeschafft wird.
+
+     Der Sprung haengt an der gezeigten Woche und nicht am Aufbau der Ansicht:
+     er soll auch dann kommen, wenn man aus der Woche davor zurueckblaettert
+     oder "Heute" antippt.
+
+     Ohne Bewegung, weil es keine ist, die man mit den Augen verfolgt, sondern
+     die Stelle, an der die Ansicht anfaengt. Wohin genau, sagt das
+     scroll-margin-top in plan.css - sonst schoebe der Sprung die Karte unter
+     die klebende Blaetterleiste. */
+  const zielKarte = useRef(null);
+  const wochenIso = isoDayLocal(tage[0]);
+  const zielIso = inDieserWoche ? heuteIso : wochenIso;
+  useEffect(() => {
+    if(zielKarte.current) zielKarte.current.scrollIntoView({ block: 'start' });
+  }, [wochenIso]);
+
   return (
     <>
       <div class="card kalnavi-karte">
@@ -154,14 +196,17 @@ function Wochenansicht({ anker, setzeAnker, serie }){
           onZurueck={() => setzeAnker(addDays(tage[0], -7))}
           onVor={() => setzeAnker(addDays(tage[0], 7))}
           onHeute={() => setzeAnker(heute)}
-          heuteVersteckt={inDieserWoche} />
+          heuteVersteckt={inDieserWoche}
+          ansichtLabel={ansichtLabel} onAnsicht={onAnsicht} />
       </div>
 
       {tage.map(d => {
         const iso = isoDayLocal(d);
+        const istHeute = iso === heuteIso;
         return (
           <Wochenzeile key={iso} datum={d} info={buildDayInfo(p, th, d, start, varianten.value)}
-            istHeute={iso === heuteIso} offen={offen.includes(iso)}
+            istHeute={istHeute} offen={offen.includes(iso)}
+            karte={iso === zielIso ? zielKarte : undefined}
             umschalten={() => umschalten(iso)} serie={serie} />
         );
       })}
@@ -176,16 +221,16 @@ export function PlanTab(){
   const setzeAnker = d => setAnkerIso(isoDayLocal(d));
   const serie = useWellness();
 
+  const andere = ANDERE_ANSICHT[ansicht];
+  const wechsel = { ansichtLabel: ANSICHT_NAME[andere], onAnsicht: () => setAnsicht(andere) };
+
   return (
     <>
-      <StatusKarte />
-
-      <Segmented ziele={ANSICHTEN} aktiv={ansicht} onWaehlen={setAnsicht}
-        klasse="ansichtwahl" label="Ansicht" />
-
       {ansicht === 'woche'
-        ? <Wochenansicht anker={anker} setzeAnker={setzeAnker} serie={serie} />
-        : <Monatsansicht anker={anker} setzeAnker={setzeAnker} serie={serie} />}
+        ? <Wochenansicht anker={anker} setzeAnker={setzeAnker} serie={serie} {...wechsel} />
+        : <Monatsansicht anker={anker} setzeAnker={setzeAnker} serie={serie} {...wechsel} />}
+
+      <StatusKarte />
     </>
   );
 }

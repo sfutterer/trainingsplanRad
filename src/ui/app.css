@@ -3,16 +3,31 @@
    Kein Header. Auf Android traegt die Navigation den Ort, nicht eine
    Titelleiste - und der Platz gehoert dem Inhalt. */
 
-#app{ min-height: 100dvh; }
+/* Der Rahmen ist genau einen Bildschirm hoch, gescrollt wird darin.
+
+   Bis zum 05.09.2026 stand hier min-height, und damit wuchs der Rahmen mit
+   seinem Inhalt: .content lief nie ueber, das overflow-y darunter blieb ohne
+   Wirkung, und gescrollt wurde in Wahrheit das Dokument. Zwei Stellen im Code
+   glaubten trotzdem an den inneren Bereich und taten seitdem nichts - die
+   Erhebung der App-Leiste beim Scrollen (App.jsx) und der Sprung nach oben
+   beim Wechsel des Bereichs (navigation.js). Die klebende Blaetterleiste im
+   Plan war die dritte, die daran gescheitert waere.
+
+   Ein Flex-Kind schrumpft ohne min-height:0 nicht unter seinen Inhalt - ohne
+   die Zeile waere .content wieder so hoch wie sein Inhalt und der Rahmen
+   liefe ueber den Bildschirmrand hinaus. */
+
+#app{ height: 100dvh; }
 
 .shell{
-  min-height: 100dvh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
 .content{
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding:
     8px

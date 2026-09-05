@@ -168,15 +168,21 @@ export function App(){
     const c = document.querySelector('.content');
     if(!c) return;
     const auf = () => setErhoben(c.scrollTop > 4);
+    /* Einmal von Hand, weil der Wechsel des Bereichs den Inhalt nach oben
+       setzt (navigation.js) - und zwar bevor der neue Bereich gezeichnet ist.
+       Steht der Bereich danach schon auf 0, kommt kein Scroll-Ereignis mehr,
+       und die Leiste bliebe erhoben ueber einem Inhalt, der ganz oben steht. */
+    auf();
     c.addEventListener('scroll', auf, { passive: true });
     return () => c.removeEventListener('scroll', auf);
-    /* ready.value ist Absicht und keine ueberfluessige Abhaengigkeit: .content
-       gibt es erst, wenn der Plan geladen ist. Der Linter kennt Signals nicht
-       und haelt jeden Zugriff ausserhalb der Komponente fuer unveraenderlich -
-       hier faellt aber genau dieser Wert von false auf true, und erst danach
-       findet querySelector etwas. */
+    /* ready.value und tab.value sind Absicht und keine ueberfluessigen
+       Abhaengigkeiten: .content gibt es erst, wenn der Plan geladen ist, und
+       bei jedem Wechsel des Bereichs muss oben neu nachgesehen werden. Der
+       Linter kennt Signals nicht und haelt jeden Zugriff ausserhalb der
+       Komponente fuer unveraenderlich - hier fallen aber genau diese beiden
+       Werte um. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready.value]);
+  }, [ready.value, tab.value]);
 
   if(planError.value){
     const e = planError.value;
