@@ -234,6 +234,18 @@ function rideKennzahlen(plan, th, week, minutes, zone){
   return out;
 }
 
+/* Die Eckwerte des Zirkels, wie sie ueber jedem Zirkel stehen - Mittwoch
+   verkuerzt, Sonntag voll. Dieselben drei Zeilen in derselben Reihenfolge:
+   wie lange, wie viel, in welchem Takt. Sie standen an beiden Tagen einzeln
+   da und mussten dabei gleich bleiben. */
+function circuitKennzahlen(plan, week, rounds, exCount){
+  return [
+    { label:'Dauer',  wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min' },
+    { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
+    { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
+  ];
+}
+
 function circuitBlock(plan, week, rounds, label, nachsatz){
   const ex = plan.circuit.exercises.length;
   return {
@@ -486,11 +498,7 @@ function mittwoch(c){
      als eine von drei Ablaufzeilen und wurde uebersehen. */
   const zirkelEinheit = einheit({
     art:'rumpf', titel:'Rumpf-Zirkel (verkürzt)', zeit:'abends',
-    kennzahlen: [
-      { label:'Dauer',  wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min' },
-      { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
-      { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
-    ],
+    kennzahlen: circuitKennzahlen(plan, week, rounds, exCount),
     bloecke: [zirkel],
     hinweise: [T.legWednesdayNote],
     timer: TIMER_RUMPF
@@ -766,11 +774,7 @@ function sonntag(c){
   }
   einheiten.push(einheit({
     art:'rumpf', titel:'Rumpf-Zirkel (voll)',
-    kennzahlen: [
-      { label:'Dauer',  wert:'ca. ' + coreMinutes(plan, week, rounds) + ' min' },
-      { label:'Umfang', wert:`${rounds} Runden à ${exCount} Übungen` },
-      { label:'Takt',   wert:`${coreWorkSeconds(plan, week)} s / ${coreRestSeconds(plan, week)} s` }
-    ],
+    kennzahlen: circuitKennzahlen(plan, week, rounds, exCount),
     bloecke: [circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (voll)', T.sundayLegOrder)],
     timer: TIMER_RUMPF
   }));
