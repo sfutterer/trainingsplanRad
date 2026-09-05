@@ -141,6 +141,20 @@ export function vibrate(pattern){
   try { navigator.vibrate && navigator.vibrate(pattern); } catch(e){}
 }
 
+/* ---- Bewegung sparen ----
+
+   Wer "Bewegung reduzieren" eingestellt hat, bekommt keine Ausfahrt: Sheet und
+   Meldungskarte verschwinden dann sofort statt hinauszufahren.
+
+   Stand bis hierher zweimal wortgleich in der Oberflaeche - im Sheet und in
+   der Meldungskarte der Glocke. Eine Systemeinstellung abzufragen ist
+   Browserfaehigkeit und kein Bereichswissen, und matchMedia gibt es nicht
+   ueberall: in einer eingebetteten Umgebung und im Test fehlt es, und dort
+   soll die Antwort "nein" sein und keine Ausnahme. */
+export function bewegungsarm(){
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 /* ---- Dauerhafter Speicher ----
    Bittet den Browser, localStorage nicht bei Platzmangel zu raeumen. Kein
    Ersatz fuer die Sicherung, aber billig zu haben. */

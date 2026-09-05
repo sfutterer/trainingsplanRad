@@ -30,7 +30,8 @@ import { plan, thresholds, startDate, today } from '../../state/store.js';
 import { meldungen, meldungenVerwerfen } from '../../state/meldungen.js';
 import { buildDayInfo } from '../../domain/day.js';
 import { WEEKDAY_NAMES, dayFromIso } from '../../domain/week.js';
-import { Sheet } from './Sheet.jsx';
+import { Sheet, ZUG_ERKANNT } from './Sheet.jsx';
+import { bewegungsarm } from '../../platform/index.js';
 
 /* Woher die Meldung kommt, in einem Wort. Der Titel darunter sagt, was sie
    heisst - zusammen ergeben sie die Zeile, die man ueberfliegt. */
@@ -40,9 +41,6 @@ const ART = {
   ziel:     'Verpasst'
 };
 
-/* Ab hier ist die Bewegung ein Zug und kein Tipper - dieselbe Zahl wie im
-   Sheet, die Hand macht zwischen den Achsen keinen Unterschied. */
-const ERKANNT = 8;
 /* Losgelassen wird verworfen, wenn die Karte weit genug links steht - oder
    wenn sie schnell genug unterwegs war. Das Wegmass als Anteil der Breite,
    damit die Geste auf dem Telefon dieselbe ist wie auf dem breiten Sheet. */
@@ -51,9 +49,6 @@ const SCHNELL = 0.6;
 /* Dauer der Ausfahrt. Lang genug, dass man sieht, wohin die Meldung geht,
    kurz genug, dass niemand auf sie wartet. */
 const AUSFAHRT = 180;
-
-const ruhig = () =>
-  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* Immer der ausgeschriebene Tag, auch bei der heutigen Meldung. "heute" waere
    kuerzer, stuende dort aber neben der Art "Heute" - zweimal dasselbe Wort in
@@ -106,8 +101,8 @@ function Nachricht({ m, onWeg }){
     if(!z.zieht){
       /* Senkrecht ueber die Schwelle heisst: das war Scrollen oder der Zug am
          Sheet - diese Karte ist dann raus. */
-      if(Math.abs(dy) > ERKANNT && Math.abs(dy) >= Math.abs(dx)){ zug.current = null; return; }
-      if(dx > -ERKANNT) return;
+      if(Math.abs(dy) > ZUG_ERKANNT && Math.abs(dy) >= Math.abs(dx)){ zug.current = null; return; }
+      if(dx > -ZUG_ERKANNT) return;
       z.zieht = true;
       /* Ab hier zaehlt der Weg neu, damit die Karte nicht um die
          Erkennungsschwelle springt. */
@@ -136,7 +131,7 @@ function Nachricht({ m, onWeg }){
     const tempo = -z.dx / Math.max(1, e.timeStamp - z.t);
     if(-z.dx < breite * SCHWELLE && tempo < SCHNELL){ stelle(0, true); return; }
 
-    if(ruhig()){ onWeg(m.id); return; }
+    if(bewegungsarm()){ onWeg(m.id); return; }
 
     /* Erst hinausfahren, dann verwerfen. Verschwaende die Karte mitten in der
        Bewegung, saehe die Geste aus wie ein Aussetzer. */

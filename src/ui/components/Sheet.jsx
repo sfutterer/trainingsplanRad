@@ -26,10 +26,15 @@
 
 import { useEffect, useRef } from 'preact/hooks';
 import { useOverlay } from './useOverlay.js';
+import { bewegungsarm } from '../../platform/index.js';
 
 /* Ab hier ist die Bewegung ein Zug und kein Tipper. Kleiner waere jeder
-   Wackler beim Antippen schon ein halbes Wegwischen. */
-const ERKANNT = 8;
+   Wackler beim Antippen schon ein halbes Wegwischen.
+
+   Ausgefuehrt, weil die Meldungskarte der Glocke dieselbe Zahl braucht: die
+   Hand macht zwischen den Achsen keinen Unterschied, und zwei Zahlen, die
+   zusammenbleiben muessen, sind besser eine. */
+export const ZUG_ERKANNT = 8;
 /* Losgelassen wird geschlossen, wenn das Sheet weit genug unten steht - oder
    wenn es schnell genug unterwegs war. Das kurze, schnelle Wischen ist die
    haeufigere der beiden Bewegungen und darf nicht an einem Wegmass scheitern. */
@@ -41,9 +46,6 @@ const AUSFAHRT = 200;
 /* Deckkraft des Schleiers bei ruhendem Sheet - dieselbe Zahl wie der
    Ausgangswert von --schleier in timer.css. */
 const SCHLEIER = 0.55;
-
-const ruhig = () =>
-  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function Sheet({ onClose, label, labelledBy, children }){
   const box = useRef(null);
@@ -88,7 +90,7 @@ export function Sheet({ onClose, label, labelledBy, children }){
     const dy = e.clientY - z.y;
     if(!z.zieht){
       /* Nach oben ist kein Anfang eines Wegwischens - das ist Scrollen. */
-      if(dy < ERKANNT){ if(dy < -ERKANNT) zug.current = null; return; }
+      if(dy < ZUG_ERKANNT){ if(dy < -ZUG_ERKANNT) zug.current = null; return; }
       /* Aus dem gescrollten Inhalt heraus zieht nur der Griff. Sonst waere
          jedes Zurueckscrollen an den Anfang der Anleitung ein halbes
          Schliessen. */
@@ -115,7 +117,7 @@ export function Sheet({ onClose, label, labelledBy, children }){
     const tempo = z.dy / Math.max(1, e.timeStamp - z.t);
     if(z.dy < SCHWELLE && tempo < SCHNELL){ stelle(0, true); return; }
 
-    if(ruhig()){ schliessen.current(); return; }
+    if(bewegungsarm()){ schliessen.current(); return; }
 
     /* Erst hinausfahren, dann schliessen. Verschwaende das Sheet mitten in der
        Bewegung, saehe die Geste aus wie ein Aussetzer. */
