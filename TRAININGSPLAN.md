@@ -10,18 +10,22 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 4, Stand 04.09.2026.** Änderung gegenüber Fassung 3 an genau einer Stelle:
-> **Der 5-Minuten-All-out entfällt aus dem Schwellentest.** Der Test besteht ab sofort
-> nur noch aus dem 20-Minuten-Abschnitt. Die VO2max-Referenzleistung wird stattdessen
-> als erste Wiederholung der ersten Intervalleinheit erhoben. Alles andere aus
-> Fassung 3 bleibt unverändert.
+> **Fassung 5, Stand 09.09.2026.** Änderung gegenüber Fassung 4 an genau einer Stelle:
+> **Der Erhaltungsreiz in Phase 3 wird aufgewertet und verlegt.** Statt 6 × 30 s am
+> Mittwoch stehen in Woche 11 und 12 nun **3 × 3 min bei 108–115 % FTP, eingebettet in
+> die Z2-Einheit am Donnerstag.** Der Mittwoch ist damit wieder eine reine Z2-Fahrt.
+> Alles andere aus Fassung 4 bleibt unverändert.
+>
+> Fassung 4 (04.09.2026) brachte: 5-Minuten-All-out aus dem Schwellentest gestrichen,
+> VO2max-Referenz auf Do 17.09. verlegt, Testdauer 65 → 55 min.
 >
 > Fassung 3 (30.08.2026) brachte: 2:1-Rhythmus ab Woche 5, Wochenumfang als Obergrenze
 > statt als Sollwert, verbindlicher Testanlauf zum 10.09., zweite Beineinheit ab
 > Phase 3, Ernährungs-Zieldaten als eigener Abschnitt. Der Plan endet mit Woche 16 —
 > danach wird ein neuer Plan geschrieben.
 >
-> Begründungen der Änderungen in Abschnitt 9 (Fassung 3) und Abschnitt 9a (Fassung 4).
+> Begründungen der Änderungen in Abschnitt 9 (Fassung 3), 9a (Fassung 4) und
+> 9b (Fassung 5).
 
 ---
 
@@ -178,8 +182,9 @@ Qualitätstag Donnerstag. Irgendein Tag muss der leichteste sein — das ist die
 Unteres bis mittleres Z2, nicht am Sprechtest-Limit.
 
 **Ausnahme Phase 3 (Woche 11–12):** Dort ist der Donnerstag selbst eine Z2-Einheit und
-braucht keine Schonung davor. Der Mittwoch wächst auf 60 min und trägt zusätzlich den
-Erhaltungsreiz (siehe Abschnitt 2).
+braucht keine Schonung davor. Der Mittwoch wächst auf 60 min — **reines Z2, ohne
+Zusatzreiz.** Der Erhaltungsreiz hängt seit Fassung 5 am Donnerstag, nicht mehr am
+Mittwoch (Begründung in Abschnitt 9b).
 
 **Zusammenhängend statt aufgeteilt.** Eine gestreckte Hinfahrt schlägt zwei kürzere
 Fahrten deutlich: der mitochondriale Reiz braucht die Dauer am Stück, zwei mal 30 min
@@ -342,6 +347,7 @@ der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band
 | Mi Z2 kurz | Sprechtest, bewusst darunter | — |
 | Do Intervalle (ab W5) | **Watt** | HF nur am Intervallende |
 | Do Intervalle (bis W4) | Atmung, HF ab Minute 3 | — |
+| Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **Watt** für die 3 × 3 min | HF nur am Intervallende |
 | Do Schwelle (Phase 4) | **Watt** | HF sollte in Z4 einpendeln |
 | Sa Basis | HF Z2 + Sprechtest | Decoupling nach der Fahrt |
 | Sa Blöcke | Watt 80–88 % FTP | HF steigt langsam, ist normal |
@@ -435,8 +441,8 @@ Geschwindigkeitsschätzungen ohne Aussagewert und werden nicht mehr angezeigt.
 | 8 | 2 | 90 | 40 | 5×4 min Z5 → 63 | 165, reines Z2 | 40 | 3 Rd × 35 s / 20 s → 23 |
 | 9 | 2 | 90 | 40 | 5×4 min Z5 → 63 | 175 **+ 2×12 min Z3** | 40 | 3 Rd × 40 s / 20 s → 25 |
 | **10** Erh. | 2 | 50 | 30 | **Retest → 55** | 100, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
-| 11 | 3 | 90 | **60** | **70 min Z2** | 170, reines Z2 | 40 | 3 Rd × 40 s / 20 s → 25 |
-| 12 | 3 | 90 | **60** | **75 min Z2** | 180 **+ 2×12 min Z3** | 40 | 3 Rd × 40 s / 20 s → 25 |
+| 11 | 3 | 90 | **60** | **70 min Z2 + 3×3 min Z5** | 170, reines Z2 | 40 | 3 Rd × 40 s / 20 s → 25 |
+| 12 | 3 | 90 | **60** | **75 min Z2 + 3×3 min Z5** | 180 **+ 2×12 min Z3** | 40 | 3 Rd × 40 s / 20 s → 25 |
 | **13** Erh. | 3 | 50 | 30 | 55 min Z2 | 105, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
 | 14 | 4 | 90 | 40 | 3×10 min Z4 → 67 | 175, reines Z2 | 40 | 3 Rd × 40 s / 20 s → 25 |
 | 15 | 4 | 90 | 40 | 3×12 min Z4 → 73 | 185, reines Z2 | 40 | 3 Rd × 40 s / 20 s → 25 |
@@ -486,7 +492,7 @@ Belastung und Pause.
 | 2 | 6, 8, 9 | **5 × 4 min**, 4 min Pause, 108–115 % FTP | VO2max |
 | 2 | 7 | 4 × 3 min bei ~95 % FTP | Erholungswoche, kein Z5 |
 | 2 | 10 | Retest | FTP + LTHR |
-| 3 | 11–12 | 70–75 min Z2 | dritter Grundlagentag |
+| 3 | 11–12 | 70–75 min Z2, darin **3 × 3 min bei 108–115 % FTP**, 3 min Pause | dritter Grundlagentag + Erhaltungsreiz VO2max |
 | 3 | 13 | 55 min Z2 | Erholungswoche |
 | 4 | 14–15 | 3 × 10–12 min bei 90–95 % FTP, 5 min Pause | Schwelle |
 | 4 | 16 | Retest | FTP + LTHR |
@@ -498,11 +504,37 @@ bei 5** — die Progression läuft über die Leistung, nicht über mehr Wiederho
 Wiederholung, deshalb folgen nur noch 4 × 4 min. Details und Begründung in Abschnitt 2a.
 Wird der Referenzwert nicht erhoben, gilt die reguläre Struktur 5 × 4 min.
 
-**Erhaltungsreiz Phase 3 (Woche 11 und 12):** An den Mittwoch wird **6 × 30 s zügig mit
-30 s lockerem Rollen** angehängt, insgesamt knapp 6 min. Grund: Phase 3 enthält sonst
-drei Wochen ohne jeden harten Reiz, und die VO2max bildet sich von allen Größen am
-schnellsten zurück. Der Mittwoch ist in Phase 3 nicht mehr der Schontag vor dem
-Qualitätstag, weil es keinen gibt. In der Erholungswoche 13 entfällt der Reiz.
+**Erhaltungsreiz Phase 3 (Woche 11 und 12):** In die Z2-Einheit am Donnerstag werden
+**3 × 3 min bei 108–115 % FTP mit je 3 min lockerer Pause** eingebettet, insgesamt
+15 min. Grund: Phase 3 enthält sonst drei Wochen ohne jeden harten Reiz, und die VO2max
+bildet sich von allen Größen am schnellsten zurück. In der Erholungswoche 13 entfällt
+der Reiz.
+
+**Lage im Verlauf der Einheit:** nach mindestens 20 min Z2, nicht direkt nach dem
+Einfahren, und mit mindestens 15 min lockerem Ausrollen danach. Der Rest der Einheit
+bleibt Z2 nach Sprechtest.
+
+**Die Wochensumme ändert sich dadurch nicht** — die 15 min liegen *innerhalb* der 70
+bzw. 75 min. Das ist ein Nebeneffekt der Verlegung: in Fassung 4 hingen die 6 min am
+Mittwoch außerhalb der Summe und tauchten im Umfangsdeckel nicht auf.
+
+**Warum am Donnerstag statt am Mittwoch:** Der Mittwoch ist eine Pendelfahrt mit Gepäck,
+zu fester Uhrzeit, im Berufsverkehr, in Woche 11–12 im Dunkeln und in der Kälte. Das ist
+die schlechteste denkbare Umgebung für einen Intensitätsreiz — und der Ankunftspuffer
+aus Abschnitt 1 wird dadurch aufgezehrt. Der Donnerstag ist die einzige freie
+Wochentagsfahrt: Strecke, Uhrzeit und Abbruch liegen vollständig in eigener Hand.
+
+**Warum 3 × 3 min und nicht 6 × 30 s:** Sauerstoffaufnahme braucht rund zwei Minuten bis
+zum Vollausschlag. 30-Sekunden-Antritte sind ein neuromuskulärer und anaerober Reiz,
+kein VO2max-Reiz — sie erhalten nicht, was in Phase 2 aufgebaut wurde. Drei Minuten
+liefern etwa eine Minute nutzbare Zeit nahe VO2max je Wiederholung, in Summe rund 9 min
+harte Zeit pro Woche. Das ist etwa ein Drittel der Phase-2-Dosis (20 min) und liegt
+damit im Bereich, in dem Erhalt funktioniert: Intensität halten, Umfang darf fallen.
+
+**Verschiebt sich der Donnerstag** (Wetter, Dunkelheit, Abschnitt 4.11), wandert der
+Erhaltungsreiz mit in die Einheit, in die der Donnerstag verlegt wird — bei Verlegung
+auf den Samstag in die zweite Hälfte der Ausfahrt. Der Samstag ist dann kein sauberer
+Z2-Tag mehr und **das Decoupling der Woche fällt als Kennzahl aus.**
 
 **Samstag:** Basis Z2. **Z3-Blöcke nur in den Wochen 6, 9 und 12** — jeweils die zweite
 Belastungswoche eines 2:1-Paars, und nicht in Phase 4, wo der Donnerstag bereits die
@@ -1019,8 +1051,9 @@ Muss es so laufen: Beinblock weglassen, Zirkel machen.
 | **C2** | Ersatzlos streichen | **Völlig in Ordnung** |
 | **C3** | Auf Freitag schieben | Nur in Phase 1 und 3 |
 
-In Phase 3 zusätzlich beachten: der Erhaltungsreiz (6 × 30 s) hängt am Mittwoch und
-wandert mit.
+Seit Fassung 5 hängt der Erhaltungsreiz am **Donnerstag**, nicht mehr am Mittwoch. Ein
+ausgefallener Mittwoch kostet in Phase 3 also nur Umfang, keinen Reiz. Fällt dagegen der
+Donnerstag aus, siehe Abschnitt 4.8.
 
 ### 4.6 Beide Bürotage weg
 
@@ -1040,8 +1073,13 @@ Die Z2-Summe sinkt um rund 40 min. **Nicht kompensieren.**
 
 ### 4.8 Donnerstag fällt ganz aus
 
-- **Phase 1 und 3:** streichen.
+- **Phase 1:** streichen.
 - **Phase 2 und 4:** auf Freitag, lange Ausfahrt der Folgewoche auf Sonntag.
+- **Phase 3 (Woche 11–12, seit Fassung 5):** Der Z2-Umfang wird gestrichen, **die
+  3 × 3 min nicht.** Sie sind der einzige harte Reiz der Woche und wandern in die
+  zweite Hälfte der Samstagsausfahrt. Fallen sie zwei Wochen hintereinander aus, ist
+  Phase 3 faktisch reizfrei — dann in Woche 12 nachziehen, auch wenn der Umfang darunter
+  bleibt. In Woche 13 wird nichts nachgeholt.
 - Alternativ die Intervalle in die Samstagsausfahrt integrieren. Dann ist der Samstag
   kein sauberer Z2-Tag mehr und **das Decoupling der Woche fällt als Kennzahl aus**.
 
@@ -1101,7 +1139,8 @@ Der Code steht auf Fassung 2. Folgendes muss nachgezogen werden:
 3. **Phasengrenzen neu:** 1–4, 5–10, 11–13, 14–16.
 4. **Testwochen neu:** 4, 10, 16. `thursdayPlan()` entsprechend anpassen.
 5. **Samstag-Blöcke in Woche 6, 9, 12** (feste Liste statt Formel).
-6. **Erhaltungsreiz** an der Mittwochskarte in Woche 11 und 12 anzeigen.
+6. **Erhaltungsreiz** an der **Donnerstagskarte** in Woche 11 und 12 anzeigen
+   (bis Fassung 4 stand er an der Mittwochskarte).
 7. **Zweite Beineinheit** an der Dienstagskarte in Woche 11, 12, 14, 15.
 8. **Umfangsdeckel** in der Analyse: Warnung, wenn die Wochensumme den Planwert um mehr
    als 10 % überschreitet. Das ist neu — bisher gab es nur eine Warnung nach unten.
@@ -1110,57 +1149,29 @@ Der Code steht auf Fassung 2. Folgendes muss nachgezogen werden:
 10. **Testanlauf** aus Abschnitt 2a als Hinweis ab 10 Tagen vor dem Testtermin, inklusive
     Go/No-Go-Liste am Testmorgen.
 
-Neu mit Fassung 4 — **umgesetzt am 04.09.2026**:
+Neu mit Fassung 4:
 
-11. ✅ **Schwellentest-Ablauf im Timer:** All-out-Segment entfernt, Pause davor von
-    10 auf 5 min gekürzt. Sequenz: 20 min Einfahren (mit 3 × 1 min zügig), 5 min
-    locker, 20 min Test, 10 min Ausrollen. Gesamtdauer 55 min. Der Sollwert der
-    Testtage führt entsprechend 20 statt 25 harte Minuten — mit 25 hätte die
-    Auswertung einen sauber gefahrenen Test als zu kurz gemeldet.
-12. ✅ **Woche 5 als Variante, nicht als Sonderfall.** Der `thursday` der Woche 5
-    trägt in `plan.json` neben dem Regelfall eine benannte `variante` mit eigener
-    Schrittfolge. Auf der Donnerstagskarte stehen zwei Knöpfe; die Wahl wird
-    gespeichert und gilt für Tageskarte, Intervall-Timer und Auswertung. Drei
-    Zustände sind unterscheidbar: unentschieden, gewählt, ausdrücklich abgewählt.
-13. ✅ **Wochenwerte 245 / 375 / 260 / 265** — nicht eingetragen, sondern gerechnet:
-    `weekPlanMinutes` rechnet den Donnerstag der Woche 5 mit der Variante. Der
-    Umfangsdeckel folgt automatisch (270 / 413 / 286 / 292).
-14. ✅ **Testhistorie:** „Ø-Watt 5 min" durch „Ø-Kadenz" ersetzt, in beiden
-    Eingabeformularen. Die VO2max-Referenz hat im Testbereich eine eigene Karte
-    samt Import aus der Aufzeichnung und der 118-%-Gegenprobe; sie hängt am Test
-    davor und nicht am Kalender.
-15. ✅ **Ablaufgleichheit prüfbar gemacht.** `thresholdTest` trägt eine Kennung und
-    eine Fassungsnummer, die in jeden Eintrag der Testhistorie wandert. Stammen
-    zwei Einträge aus verschiedenen Abläufen, sagt die Historie das — die Regel
-    aus Abschnitt 2a steht damit nicht nur im Dokument.
-16. ✅ **RPE der letzten 5 min** ist als Feld im Testergebnis nachgetragen. Unter 9
-    steht dort, dass nicht ausbelastet wurde und die FTP eher zu niedrig ist —
-    das einzige Feld des Tests, das etwas über die Güte des Messwerts sagt.
-17. ✅ **Sprechtest-Puls gegen die Z2-Obergrenze** zählt nur noch die Erhebungen
-    seit dem letzten Test. Davor galten die Übergangsbänder; ein Schnitt über
-    beide Zeiträume verglich Werte aus zwei Zonenmodellen gegen das neuere von
-    ihnen. Damit ist Punkt 6 der Checkliste nach dem Test in der App gerechnet
-    und nicht nur im Dokument genannt.
-18. ✅ **RPE je Einheit entfällt** — am 04.09.2026 erst sichtbar gemacht, am selben
-    Tag gestrichen. Es hatte keinen Auftrag: Empfinden verlangt dieser Plan an zwei
-    Stellen, und beide sind woanders verankert — das RPE der letzten fünf Testminuten
-    als Güteprüfung (Punkt 16) und der Sprechtest als oberste Instanz für Z2,
-    erhoben als Puls. Auch Coggan braucht es nicht: dort sind FTP und LTHR die
-    Eingaben, und die RPE-Spalte der Zonentabelle ist beschreibend — sie sagt, wie
-    sich eine Zone anfühlen soll, damit man sie ohne Messgerät findet. Dazu kam ein
-    Fehler in der Reihe selbst: Z2-Fahrt und Intervalltag lagen in einer Kurve, ohne
-    dass die Einheit mitgespeichert wurde — ein Ausschlag nach oben hieß dort nicht
-    „schlechte Form", sondern „das war ein Donnerstag".
-19. ✅ **Die Notiz steht am Wert.** Sie war nur auf der Eingabekarte zu sehen, und dort
-    nur in den letzten vier Einträgen — also gerade nicht bei dem alten Ausreißer, zu
-    dem man sie sucht. Sie erscheint jetzt am angetippten Punkt der Sprechtest-Kurve.
-    Ihr Platzhalter nennt nur noch, was die App nicht selbst herleitet: Wind und Strecke
-    rechnet das Fazit aus der Aufzeichnung genauer aus, als man sie tippen kann.
-20. ✅ **Bedingungen des Tests bekommen einen Leser.** Das Feld wurde seit jeher erhoben —
-    dieser Abschnitt verlangt es und führt eine eigene Spalte dafür — und in der ganzen
-    App nirgends angezeigt. Es steht jetzt in beiden Testhistorien. Bei drei Tests im
-    Plan hängt der Vergleich zweier Werte an dieser Zeile: 6 Grad und Gegenwind gegen
-    22 Grad und Windstille sind keine zwei Formzustände.
+11. **Schwellentest-Ablauf im Timer:** All-out-Segment und die 10 min Pause danach
+    entfernen. Neue Sequenz: 20 min Einfahren (mit 3 × 1 min zügig), 5 min locker,
+    20 min Test, 10 min Ausrollen. Gesamtdauer 55 statt 65 min.
+12. **Woche 5 als Sonderfall im Intervall-Timer:** 5 min maximal, 5 min locker,
+    danach 4 × 4 min. Ab Woche 6 wieder die Regelstruktur. Am besten als Schalter
+    „VO2max-Referenz erheben" an der Donnerstagskarte, weil der Wert optional ist.
+13. **Wochenwerte für Woche 4, 5, 10 und 16** in `plan.json` auf die geänderten
+    Summen aus Abschnitt 2 setzen (245 / 375 / 260 / 265).
+14. **Testhistorie:** Spalte „Ø-Watt 5 min" aus der Tabelle nehmen, durch „Ø-Kadenz"
+    ersetzen. Die VO2max-Referenz bekommt eine eigene, kleine Tabelle.
+
+Neu mit Fassung 5:
+
+15. **Woche 11 und 12 im Intervall-Timer:** neue Sequenz 20 min Z2, dann
+    3 × (3 min bei 108–115 % FTP / 3 min Pause), dann Rest der Einheit Z2, mindestens
+    15 min. Gesamtdauer 70 bzw. 75 min — die Wochensummen 430 und 445 bleiben
+    unverändert, die 15 min liegen innerhalb der Einheit.
+16. **Erhaltungsreiz von der Mittwochs- auf die Donnerstagskarte** verschieben
+    (siehe Punkt 6). Die Mittwochskarte in Woche 11 und 12 zeigt wieder reines Z2.
+17. **Zonenanzeige im Timer:** Der Erhaltungsreiz nutzt dieselbe Watt-Vorgabe wie die
+    Phase-2-Intervalle (108–115 % FTP). Kein eigener Zonensatz nötig.
 
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.
@@ -1204,7 +1215,7 @@ Seit 23.08.2026 stehen alle Plandaten in `plan.json` neben `index.html`.
 | `intervals-icu-api-key` | API-Key für intervals.icu, nur auf dem Gerät |
 | `core-session-log` | Protokoll der Rumpfeinheiten, JSON-Array, max. 80 Einträge |
 | `test-history` | Testhistorie |
-| `interim-log` | Sprechtest-Puls und Notiz. Alte Einträge tragen noch ein `rpe`; es wird nicht mehr gelesen |
+| `interim-log` | Sprechtest-Puls und RPE der Übergangszeit |
 
 ### Protokoll der Rumpfeinheiten
 
@@ -1395,6 +1406,9 @@ Punkte, die dann zu klären sind — hier nur als Merkposten, ohne Festlegung:
 - Zieltermin und Zielereignis
 - Höhenmeter als eigenständige Progression
 - Lange Ausfahrten jenseits von drei Stunden
+- **Zweiter Qualitätstag pro Woche.** In diesem Plan bewusst nicht enthalten, weil bei
+  CTL um 10 die Erholungsfähigkeit die Grenze ist, nicht die Trainingstheorie. Liegt die
+  CTL nach Woche 16 bei 30 oder darüber, ist die Frage neu zu stellen (siehe 9b)
 
 ---
 
@@ -1472,6 +1486,62 @@ Eine einzige inhaltliche Entscheidung, mit ihren Folgeanpassungen.
 - **Die Go/No-Go-Liste** und die Verschiebungsregel.
 - **Die Einordnung des ersten Testwerts als Untergrenze.** Von den drei dort genannten
   Faktoren fällt keiner durch diese Änderung weg.
+
+---
+
+## 9b. Änderungen gegenüber Fassung 4
+
+Eine einzige inhaltliche Entscheidung, mit ihren Folgeanpassungen.
+
+### Anlass
+
+Anlass war die Prüfung der verbreiteten Kritik, reines Zone-2-Training bringe Anfängern
+und Amateuren wenig. Die Kritik trifft den Plan als Ganzes **nicht** — er hat in Phase 1,
+2 und 4 jeweils einen Qualitätstag und ist nach Einheiten gezählt ein 80/20-Modell. Sie
+trifft aber **eine** Stelle exakt: Phase 3.
+
+Zeit oberhalb Z2, gemessen an der Wochensumme, Stand Fassung 4:
+
+| Woche | Zeit > Z2 | Anteil |
+|---|---|---|
+| 5 | ~21 min (Z5) | 5,6 % |
+| 6 | 20 min Z5 + 24 min Z3 | 11,2 % |
+| 8 | 20 min Z5 | 5,0 % |
+| **11** | **3 min** | **0,7 %** |
+| 12 | 3 min + 24 min Z3 | 6,1 % |
+| **13** | **0 min** | **0 %** |
+| 15 | 36 min Z4 | 8,4 % |
+
+Woche 11 und 13 waren faktisch reine Z2-Wochen. Genau der Zustand, den die Kritik meint.
+
+### Die Änderung
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **Erhaltungsreiz Phase 3: 6 × 30 s → 3 × 3 min bei 108–115 % FTP**, 3 min Pause | 30-Sekunden-Antritte sind ein neuromuskulärer und anaerober Reiz. Die Sauerstoffaufnahme braucht rund zwei Minuten bis zum Vollausschlag — sie erreichen VO2max nie und erhalten deshalb nicht, was Phase 2 aufgebaut hat. 3 min liefern etwa 1 min nutzbare Zeit nahe VO2max je Wiederholung |
+| 2 | **Verlegt vom Mittwoch auf den Donnerstag**, eingebettet in die Z2-Einheit | Der Mittwoch ist Pendelfahrt mit Gepäck, zu fester Uhrzeit, im Berufsverkehr, in Woche 11–12 im Dunkeln und in der Kälte. Der Ankunftspuffer aus Abschnitt 1 ist Teil des Trainings und wird von einem Intensitätsreiz aufgezehrt. Der Donnerstag ist die einzige freie Wochentagsfahrt |
+| 3 | **Mittwoch Woche 11–12 wieder reines Z2**, weiterhin 60 min | Der Umfang bleibt, der Reiz geht. Wochensummen unverändert |
+| 4 | **Dosis: 9 min harte Zeit pro Woche** statt 3 min | Etwa ein Drittel der Phase-2-Dosis (20 min). Erhalt braucht deutlich weniger Reiz als Aufbau, solange die **Intensität** gehalten wird — dieselbe Logik wie bei der Erhaltungsdosis des Beinblocks in Phase 4 |
+| 5 | **Abschnitt 4.8 ergänzt:** fällt der Donnerstag in Phase 3 aus, wandern die 3 × 3 min in die Samstagsausfahrt, der Z2-Umfang wird gestrichen | In Fassung 4 war der Donnerstag in Phase 3 verzichtbar. Jetzt trägt er den einzigen harten Reiz der Woche |
+| 6 | **Wochensummen unverändert** (430 / 445) | Die 15 min liegen innerhalb der 70 bzw. 75 min. Nebeneffekt: in Fassung 4 hingen die 6 min außerhalb der Summe und tauchten im Umfangsdeckel nicht auf — das ist jetzt sauber |
+
+Anteil oberhalb Z2 nach dieser Änderung: Woche 11 **2,1 %**, Woche 12 **7,4 %**.
+Woche 13 bleibt bei 0 % — sie ist eine Erholungswoche, das ist Absicht.
+
+### Bewusst **nicht** geändert
+
+- **Ein Qualitätstag pro Woche in Phase 1, 2 und 4.** Die Begrenzung ist bei CTL um 10
+  nicht die Trainingstheorie, sondern die Erholungsfähigkeit. Sobald die CTL Richtung 30
+  läuft, ist ein zweiter Qualitätstag erneut zu prüfen — als Merkposten für Abschnitt 8,
+  nicht als Änderung in dieser Fassung.
+- **Woche 13 bleibt reizfrei.** Eine Erholungswoche mit Intensität ist keine
+  Erholungswoche.
+- **Die Z3-Blöcke am Samstag in Woche 6, 9, 12.** Sie bleiben, wo sie sind.
+- **Phase 1, Woche 1–3 mit Z3-Tempo.** Nach polarisierter Logik wäre das Grauzone. Die
+  Wochen sind gefahren, rückwirkend zu ändern bringt nichts — dieselbe Begründung wie in
+  Abschnitt 9 für den Einstiegssprung.
+- **Der gesamte Testanlauf und der Test am 10.09.** Diese Fassung entsteht am Vorabend
+  des Tests und lässt alles unberührt, was Woche 4 betrifft.
 
 ---
 
