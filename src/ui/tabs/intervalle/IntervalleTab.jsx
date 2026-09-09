@@ -1,8 +1,15 @@
 /* Der Intervall-Timer: einer von zwei Timern, die auf dem Rad bedient werden.
 
-   Zwei Betriebsarten, die der Plan vorgibt und die man hier nicht waehlt:
-   Intervalle mit einstellbaren Zeiten, und in Phase 3 gar keine - dort ist der
-   Donnerstag ein Grundlagentag, und ein Timer haette nichts zu zaehlen.
+   Drei Betriebsarten, die der Plan vorgibt und die man hier nicht waehlt:
+   Intervalle mit einstellbaren Zeiten, eine feste Folge aus plan.json, und in
+   der Erholungswoche der Phase 3 gar keine - dort ist der Donnerstag ein
+   reiner Grundlagentag, und ein Timer haette nichts zu zaehlen.
+
+   Die feste Folge deckt seit Fassung 5 zwei Faelle ab: die gewaehlte Variante
+   eines Tages und den Donnerstag, dessen Regelfall selbst eine Folge ist. In
+   Woche 11 und 12 ist das ein Grundlagentag mit eingebettetem Reiz - 25 min
+   Z2, 3 x 3 min bei 108-115 % FTP, dann der Rest der Einheit wieder Z2. Ein
+   Aufbau, den die Einstellkarte nicht abbilden kann und nicht abbilden soll.
 
    Der Schwellentest war bis zum 03.09.2026 die dritte. Er ist es nicht mehr:
    derselbe Ablauf lief hier ohne die Anleitung, ohne das Go/No-Go und ohne die
@@ -36,11 +43,12 @@
    unter der Buehne: waehrend der Einheit schaut man auf die Uhr, die Vorgabe
    liest man einmal vorher.
 
-   In Phase 3 gibt es keine Buehne. Der Donnerstag ist dort ein
-   Grundlagentag - eine Uhr haette nichts zu zaehlen, und die Folge, die sie
-   zaehlen sollte, gab es auch nie: der Aufbau der Vorschau lief in diesen
-   Wochen in einen Fehler, weil ohne Intervalle auch keine Einstellungen
-   dastehen, aus denen sich eine Folge bauen liesse. */
+   An einem reinen Z2-Donnerstag gibt es keine Buehne - eine Uhr haette nichts
+   zu zaehlen, und die Folge, die sie zaehlen sollte, gab es auch nie: der
+   Aufbau der Vorschau lief dort in einen Fehler, weil ohne Intervalle auch
+   keine Einstellungen dastehen, aus denen sich eine Folge bauen liesse. Bis
+   Fassung 4 traf das die ganze Phase 3; seit Fassung 5 nur noch ihre
+   Erholungswoche. */
 
 import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, week, settings, startDate, today, varianten } from '../../../state/store.js';
@@ -78,16 +86,20 @@ export function IntervalleTab(){
      Testbereich - siehe die Weiche weiter unten. */
   const anlauf = vorgabe.mode === 'steps' ? vorgabe.anlauf : null;
   const zumTest = testmodus || !!anlauf;
-  /* Die gewaehlte Variante eines Tages laeuft hier und nicht im Testbereich:
-     sie ist eine Intervalleinheit, nur mit einem ungleichen ersten Block. Wie
-     der Anlauf steht sie als feste Folge in plan.json - der Maximalversuch
-     laesst sich nicht auf 4,5 Minuten zurechtlegen, ohne etwas anderes zu
-     messen. */
-  const variante = vorgabe.mode === 'steps' ? (vorgabe.variante || null) : null;
+  /* Eine feste Folge aus plan.json laeuft hier und nicht im Testbereich.
+
+     Zwei Faelle, die sich hier gleich verhalten: die gewaehlte Variante eines
+     Tages - eine Intervalleinheit mit einem ungleichen ersten Block - und
+     seit Fassung 5 der Donnerstag, dessen Regelfall selbst eine Folge ist
+     (Phase 3: Z2, darin 3 x 3 min, dann wieder Z2). Beide sind Einheiten des
+     Plans und keine Ersatzeinheiten des Tests, und beide lassen sich nicht
+     verstellen: der Maximalversuch nicht, weil er der Messwert ist, der
+     eingebettete Reiz nicht, weil er sonst kein Erhaltungsreiz mehr waere. */
+  const folge = vorgabe.mode === 'steps' ? (vorgabe.variante || vorgabe.feste || null) : null;
 
   function sequenz(){
     if(nurZ2 || zumTest) return [];
-    if(variante) return buildStepSequence(p, th, w, vorgabe.steps);
+    if(folge) return buildStepSequence(p, th, w, vorgabe.steps);
     return buildIntervalSequence(p, th, w, cfg);
   }
 
@@ -150,18 +162,18 @@ export function IntervalleTab(){
   /* Kopf, Status und Hinweise der beiden verbliebenen Betriebsarten an einer
      Stelle - im Baugeruest darunter unterscheiden sie sich nur noch darin, ob
      es eine Buehne und Einstellungen gibt. */
-  const titel = variante ? variante.title.replace('Rad – ', '')
+  const titel = folge ? folge.title.replace('Rad – ', '')
     : nurZ2 ? 'Grundlagentag' : vorgabe.plan.title.replace('Rad – ', '');
 
   const kopfmeta = nurZ2 ? vorgabe.plan.minutes + ' min' : dauerText(totalSeconds(vorschau));
 
-  const status = variante
-    ? 'Woche ' + w + ' · ' + (variante.steering || 'feste Folge')
+  const status = folge
+    ? 'Woche ' + w + ' · ' + (folge.steering || 'feste Folge')
     : nurZ2
     ? 'Woche ' + w + ' · ' + vorgabe.plan.minutes + ' min ' + zoneText(p, th, 'z2', w) + ' am Stück'
     : 'Woche ' + w + ' · ' + cfg.reps + '× ' + cfg.workMin + ' min ' + zoneText(p, th, cfg.zoneKey, w);
 
-  const hinweise = variante ? [variante.note].filter(Boolean)
+  const hinweise = folge ? [folge.note].filter(Boolean)
     : nurZ2 ? [p.texts.thursdayNoTimer]
     : [p.texts.intervalRollingStart + (isRecoveryWeek(p, w) ? ' ' + p.texts.intervalRecoveryWeek : '')];
 
@@ -176,8 +188,8 @@ export function IntervalleTab(){
       )}
       hinweise={hinweise}
       schluss={
-        variante
-          ? <p class="hint">Der Ablauf steht fest und lässt sich nicht verstellen – der Maximalversuch ist der Messwert dieser Einheit, und eine Messung, die sich zurechtlegen lässt, ist keine.</p>
+        folge
+          ? <p class="hint">{p.texts.timerFesteFolge}</p>
           : nurZ2 ? null : (
           <div class="card">
             <div class="row"><span>Einstellungen</span><b>anpassbar</b></div>

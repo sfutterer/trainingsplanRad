@@ -108,10 +108,46 @@ function pvThursday(err, t, feld, zonen){
     }
   } else if(t.kind === 'z2' || t.kind === 'test'){
     pvNum(err, t.minutes, feld + '.minutes', {min:0});
+  } else if(t.kind === 'steps'){
+    pvSteps(err, t.steps, feld + '.steps', zonen);
+    if(Array.isArray(t.steps) && !t.steps.some(s => s && s.type === 'work')){
+      err.push(feld + '.steps enthält keinen Schritt vom Typ "work" – dann ist es kein ' +
+               'Ablauf, sondern eine Fahrt, und die steht als kind "z2" da.');
+    }
+    if(t.steering != null) pvStr(err, t.steering, feld + '.steering');
+    if(t.note != null) pvStr(err, t.note, feld + '.note');
+    if(t.art != null) pvArt(err, t.art, feld + '.art');
+    /* Die Dauer wird aus den Schritten gerechnet. Stuende sie daneben, waeren
+       es zwei Zahlen fuer dieselbe Sache, und die Wochensumme haenge an der
+       gepflegten statt an der gefahrenen. */
+    if(t.minutes != null){
+      err.push(feld + '.minutes steht bei kind "steps" nicht – die Dauer ergibt sich aus den Schritten.');
+    }
   } else {
-    err.push(feld + '.kind ist "' + t.kind + '" – erlaubt sind "intervals", "z2" und "test".');
+    err.push(feld + '.kind ist "' + t.kind +
+             '" – erlaubt sind "intervals", "z2", "steps" und "test".');
   }
   if(t.variante != null) pvVariante(err, t.variante, feld + '.variante', zonen);
+}
+
+/* Die Einheitsart, unter der ein Tag in Plan und Analyse steht.
+
+   Sie stand bis Fassung 4 fest im Code: eine Schrittfolge war immer ein
+   Intervalltag. Der Donnerstag der Wochen 11 und 12 ist aber eine
+   Grundlagenfahrt mit einem eingebetteten Reiz - 9 von 70 Minuten -, und ein
+   rotes Intervallzeichen im Monatsraster behauptet dort einen Qualitaetstag,
+   den der Trainingsplan gerade nicht vorsieht.
+
+   Die Liste steht hier und nicht in der Anzeige: welche Arten es gibt, ist
+   eine Aussage ueber den Plan. Wie sie aussehen, entscheidet
+   ui/components/Einheitssymbol.jsx. */
+const PV_ARTEN = ['z2', 'lang', 'intervalle', 'test'];
+
+function pvArt(err, art, feld){
+  if(PV_ARTEN.indexOf(art) < 0){
+    err.push(feld + ' ist "' + art + '" – erlaubt sind ' +
+             PV_ARTEN.map(a => '"' + a + '"').join(', ') + '.');
+  }
 }
 
 /* Die zweite zulaessige Form eines Tages.
@@ -133,18 +169,34 @@ function pvVariante(err, v, feld, zonen){
   pvSteps(err, v.steps, feld + '.steps', zonen);
 }
 
-/* Eine Schrittfolge fuer den Timer: Schwellentest und Anlaufeinheiten.
-   "z12" ist der Einfahrbereich Z1-Z2 und deshalb zusaetzlich erlaubt. */
+/* Eine Schrittfolge fuer den Timer: Schwellentest, Anlaufeinheiten und seit
+   Fassung 5 jeder Tag, dessen Regelfall in der Datei als Folge steht.
+   "z12" ist der Einfahrbereich Z1-Z2 und deshalb zusaetzlich erlaubt.
+
+   "ride" kam mit dem Erhaltungsreiz der Phase 3 dazu: die Z2-Abschnitte vor
+   und nach den 3 x 3 min sind weder Einfahren noch Belastung noch Pause. Als
+   "warm" haetten sie in der Mitte der Einheit "Einfahren" angesagt, als
+   "cool" davor "Alle Intervalle geschafft" - beides sind Saetze ueber die
+   Stelle im Ablauf, und die stimmte nicht mehr. */
+const PV_STEP_TYPES = ['warm', 'ride', 'work', 'rest', 'cool'];
+
 function pvSteps(err, steps, feld, zonen){
   if(!pvArr(err, steps, feld, 1)) return;
   steps.forEach((s, i) => {
     const f = feld + '[' + i + ']';
     if(!pvObj(err, s, f)) return;
-    if(['warm','work','rest','cool'].indexOf(s.type) < 0){
-      err.push(f + '.type ist "' + s.type + '" – erlaubt sind "warm", "work", "rest" und "cool".');
+    if(PV_STEP_TYPES.indexOf(s.type) < 0){
+      err.push(f + '.type ist "' + s.type + '" – erlaubt sind ' +
+               PV_STEP_TYPES.map(t => '"' + t + '"').join(', ') + '.');
     }
     pvStr(err, s.label, f + '.label');
     pvStr(err, s.short, f + '.short');
+    /* Was die Stimme beim Beginn des Schritts sagt. Ohne Angabe gilt der Satz
+       der Schrittart. Die Ansage stand bis Fassung 4 ausschliesslich im Code,
+       also entschied der Typ eines Schritts ueber seinen Wortlaut - eine
+       Folge, die die Datei frei zusammensetzen darf, kann so nicht auch
+       bestimmen, was zu ihr gesagt wird. */
+    if(s.say != null) pvStr(err, s.say, f + '.say');
     /* effort ersetzt in der Anzeige das Pulsband. Wo die Anstrengung die
        Steuergroesse ist, waere ein bpm-Bereich als Vorgabe falsch - beim
        Schwellentest sogar zirkulaer, denn er erzeugt die LTHR erst. */
@@ -337,7 +389,7 @@ const PV_TEXT_KEYS = ['wellnessRule','mondayRest','tuesdayCommute','wednesdayMin
   'legPerSideNote','legAbortSigns',
   'legProgression','legWednesdayNote','legTuesdayNote','coreAbortRule','zoneNoteTransition',
   'zoneNoteCoggan','thresholdTestSummary','intervalRollingStart','intervalRecoveryWeek',
-  'elevationShort','cadencePyramid','volumeCap'];
+  'elevationShort','cadencePyramid','volumeCap','timerFesteFolge'];
 
 export { PV_TEXT_KEYS };
 

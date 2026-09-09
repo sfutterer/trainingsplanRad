@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "planName": "Trainingsplan Radfahren – Fassung 4",
+  "planName": "Trainingsplan Radfahren – Fassung 5",
 
   "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
@@ -80,7 +80,7 @@
           "frage": "Den 5-Minuten-Referenzwert heute erheben?",
           "ergebnis": "vo2max5",
           "steering": "5 min alles geben, danach 108–115 % FTP",
-          "note": "Der Maximalversuch ist selbst ein VO2max-Reiz und zählt als erste Wiederholung – deshalb folgen nur noch vier statt fünf. Der Wert ist Kür: wird er nicht erhoben, gilt die Regelstruktur 5 × 4 min.",
+          "note": "Der Maximalversuch ist selbst ein VO2max-Reiz und zählt als erste Wiederholung – deshalb folgen nur noch vier statt fünf. Der Wert ist Kür: wird er nicht erhoben, gilt die Regelstruktur 5 × 4 min. Der Ablauf steht deshalb fest: eine Messung, die sich zurechtlegen lässt, ist keine.",
           "steps": [
             {"type": "warm", "label": "Einfahren", "short": "Einfahren", "minutes": 15, "zone": "z12"},
             {"type": "work", "label": "5 min maximal", "short": "5 min maximal", "minutes": 5, "zone": "z5", "rep": 1, "reps": 1, "effort": "alles geben", "note": "Die VO2max-Referenzleistung. Gleichmäßig alles geben, nicht antreten und einbrechen – der Ø-Wert der fünf Minuten zählt. Der Puls ist hier Ergebnis und keine Vorgabe."},
@@ -142,13 +142,90 @@
       "tuesdayMinutes": 90, "wednesdayMinutes": 60, "saturdayMinutes": 170, "sundayOptionalMinutes": 40,
       "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
       "tuesdayLegRounds": 2,
-      "wednesdayExtra": {
-        "label": "Erhaltungsreiz",
-        "reps": 6, "workSeconds": 30, "restSeconds": 30,
-        "effort": "zügig", "restEffort": "locker rollen",
-        "note": "An die Mittwochsfahrt angehängt. Phase 3 hat keinen harten Reiz, und die VO2max bildet sich von allen Größen am schnellsten zurück. Der Mittwoch ist hier nicht mehr der Schontag vor dem Qualitätstag, weil es keinen gibt."
+      "wednesdayExtra": null,
+      "thursday": {
+        "kind": "steps",
+        "title": "Rad – Grundlagenausdauer + Erhaltungsreiz",
+        "zone": "z2",
+        "art": "z2",
+        "steering": "Sprechtest für den Z2-Anteil, Watt für die 3 × 3 min",
+        "note": "Der Reiz liegt bewusst nicht am Anfang der Einheit: erst mindestens 20 min Z2, danach mindestens 15 min lockeres Ausrollen. Er hängt seit Fassung 5 am Donnerstag und nicht mehr am Mittwoch – der Mittwoch ist Pendelfahrt mit Gepäck, zu fester Uhrzeit, im Berufsverkehr und in diesen Wochen im Dunkeln; der Donnerstag ist die einzige freie Wochentagsfahrt. Fällt er aus, wandern die drei Blöcke in die zweite Hälfte der Samstagsausfahrt, der Z2-Umfang entfällt – dann ist der Samstag kein sauberer Z2-Tag mehr und das Decoupling der Woche fällt als Kennzahl aus.",
+        "steps": [
+          {
+            "type": "warm",
+            "label": "Einfahren",
+            "short": "Einfahren",
+            "minutes": 10,
+            "zone": "z12"
+          },
+          {
+            "type": "ride",
+            "label": "Grundlage Z2",
+            "short": "Grundlage",
+            "minutes": 25,
+            "zone": "z2",
+            "note": "Nach Sprechtest, unteres bis mittleres Z2. Der Reiz kommt erst danach."
+          },
+          {
+            "type": "work",
+            "label": "Erhaltungsreiz 1 / 3",
+            "short": "Reiz 1/3",
+            "minutes": 3,
+            "zone": "z5",
+            "rep": 1,
+            "reps": 3,
+            "effort": "108–115 % FTP",
+            "note": "Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max. Der Puls ist erst am Blockende aussagekräftig – gesteuert wird über die Leistung."
+          },
+          {
+            "type": "rest",
+            "label": "Erholung",
+            "short": "Erholung 1/2",
+            "minutes": 3,
+            "zone": "z1",
+            "rep": 1,
+            "reps": 3
+          },
+          {
+            "type": "work",
+            "label": "Erhaltungsreiz 2 / 3",
+            "short": "Reiz 2/3",
+            "minutes": 3,
+            "zone": "z5",
+            "rep": 2,
+            "reps": 3,
+            "effort": "108–115 % FTP"
+          },
+          {
+            "type": "rest",
+            "label": "Erholung",
+            "short": "Erholung 2/2",
+            "minutes": 3,
+            "zone": "z1",
+            "rep": 2,
+            "reps": 3
+          },
+          {
+            "type": "work",
+            "label": "Erhaltungsreiz 3 / 3",
+            "short": "Reiz 3/3",
+            "minutes": 3,
+            "zone": "z5",
+            "rep": 3,
+            "reps": 3,
+            "effort": "108–115 % FTP"
+          },
+          {
+            "type": "ride",
+            "label": "Grundlage Z2 bis zum Ende",
+            "short": "Grundlage",
+            "minutes": 20,
+            "zone": "z2",
+            "say": "Reiz erledigt. Der Rest der Einheit ist Grundlage – locker und gleichmäßig.",
+            "note": "Der Rest der Einheit bleibt Z2 nach Sprechtest."
+          }
+        ]
       },
-      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 70},
       "saturdayBlocks": null
     },
     {
@@ -156,13 +233,90 @@
       "tuesdayMinutes": 90, "wednesdayMinutes": 60, "saturdayMinutes": 180, "sundayOptionalMinutes": 40,
       "coreWorkSeconds": 40, "coreRestSeconds": 20, "coreRounds": 3, "legRounds": 3,
       "tuesdayLegRounds": 2,
-      "wednesdayExtra": {
-        "label": "Erhaltungsreiz",
-        "reps": 6, "workSeconds": 30, "restSeconds": 30,
-        "effort": "zügig", "restEffort": "locker rollen",
-        "note": "An die Mittwochsfahrt angehängt. Phase 3 hat keinen harten Reiz, und die VO2max bildet sich von allen Größen am schnellsten zurück. Der Mittwoch ist hier nicht mehr der Schontag vor dem Qualitätstag, weil es keinen gibt."
+      "wednesdayExtra": null,
+      "thursday": {
+        "kind": "steps",
+        "title": "Rad – Grundlagenausdauer + Erhaltungsreiz",
+        "zone": "z2",
+        "art": "z2",
+        "steering": "Sprechtest für den Z2-Anteil, Watt für die 3 × 3 min",
+        "note": "Der Reiz liegt bewusst nicht am Anfang der Einheit: erst mindestens 20 min Z2, danach mindestens 15 min lockeres Ausrollen. Er hängt seit Fassung 5 am Donnerstag und nicht mehr am Mittwoch – der Mittwoch ist Pendelfahrt mit Gepäck, zu fester Uhrzeit, im Berufsverkehr und in diesen Wochen im Dunkeln; der Donnerstag ist die einzige freie Wochentagsfahrt. Fällt er aus, wandern die drei Blöcke in die zweite Hälfte der Samstagsausfahrt, der Z2-Umfang entfällt – dann ist der Samstag kein sauberer Z2-Tag mehr und das Decoupling der Woche fällt als Kennzahl aus.",
+        "steps": [
+          {
+            "type": "warm",
+            "label": "Einfahren",
+            "short": "Einfahren",
+            "minutes": 10,
+            "zone": "z12"
+          },
+          {
+            "type": "ride",
+            "label": "Grundlage Z2",
+            "short": "Grundlage",
+            "minutes": 25,
+            "zone": "z2",
+            "note": "Nach Sprechtest, unteres bis mittleres Z2. Der Reiz kommt erst danach."
+          },
+          {
+            "type": "work",
+            "label": "Erhaltungsreiz 1 / 3",
+            "short": "Reiz 1/3",
+            "minutes": 3,
+            "zone": "z5",
+            "rep": 1,
+            "reps": 3,
+            "effort": "108–115 % FTP",
+            "note": "Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max. Der Puls ist erst am Blockende aussagekräftig – gesteuert wird über die Leistung."
+          },
+          {
+            "type": "rest",
+            "label": "Erholung",
+            "short": "Erholung 1/2",
+            "minutes": 3,
+            "zone": "z1",
+            "rep": 1,
+            "reps": 3
+          },
+          {
+            "type": "work",
+            "label": "Erhaltungsreiz 2 / 3",
+            "short": "Reiz 2/3",
+            "minutes": 3,
+            "zone": "z5",
+            "rep": 2,
+            "reps": 3,
+            "effort": "108–115 % FTP"
+          },
+          {
+            "type": "rest",
+            "label": "Erholung",
+            "short": "Erholung 2/2",
+            "minutes": 3,
+            "zone": "z1",
+            "rep": 2,
+            "reps": 3
+          },
+          {
+            "type": "work",
+            "label": "Erhaltungsreiz 3 / 3",
+            "short": "Reiz 3/3",
+            "minutes": 3,
+            "zone": "z5",
+            "rep": 3,
+            "reps": 3,
+            "effort": "108–115 % FTP"
+          },
+          {
+            "type": "ride",
+            "label": "Grundlage Z2 bis zum Ende",
+            "short": "Grundlage",
+            "minutes": 25,
+            "zone": "z2",
+            "say": "Reiz erledigt. Der Rest der Einheit ist Grundlage – locker und gleichmäßig.",
+            "note": "Der Rest der Einheit bleibt Z2 nach Sprechtest."
+          }
+        ]
       },
-      "thursday": {"kind": "z2", "title": "Rad – Grundlagenausdauer (dritter Z2-Tag)", "zone": "z2", "minutes": 75},
       "saturdayBlocks": {"reps": 2, "minutes": 12, "restMinutes": 8}
     },
     {
@@ -655,11 +809,11 @@
     "tuesdayCommute": "Arbeitsweg, verlängerte Strecke – gesteuert wird über die Zeit, nicht über die Distanz. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich bleiben. Die Verlängerung hat seit Fassung 3 eine Obergrenze: lieber den Planwert treffen als im Zweifel länger.",
     "wednesdayMinimum": "Die Zeit ist eine Untergrenze für den Tag, aber die Wochensumme deckelt trotzdem.",
     "wednesdayEasyDefault": "Bewusst der lockerste Fahrtag der Woche: unteres bis mittleres Z2, nicht am Sprechtest-Limit. Der Donnerstag ist der Qualitätstag.",
-    "wednesdayEasyPhase3": "In Phase 3 ist der Donnerstag selbst ein Z2-Tag – der Mittwoch darf deshalb länger sein und trägt den Erhaltungsreiz.",
+    "wednesdayEasyPhase3": "In Phase 3 ist der Donnerstag selbst ein Z2-Tag – der Mittwoch darf deshalb länger sein. Reines Z2: was in Woche 11 und 12 an Reiz dazukommt, hängt am Donnerstag.",
     "wednesdayNoRide": "Keine Mittwochsfahrt in dieser Woche.",
     "thursdayTest": "55 min: 20 min Einfahren mit 3× 1 min zügig, 5 min locker rollen, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95, LTHR = Ø-Puls der 20 min. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad, gleicher Reifendruck – sonst ist der Retest nicht vergleichbar.",
-    "thursdayBaseDay": "Phase 3 hat keine harten Intervalle – dieser Tag ist der dritte Grundlagentag der Woche.",
-    "thursdayNoTimer": "In Phase 3 gibt es keine harten Intervalle – der Timer ist an diesem Tag nicht nötig.",
+    "thursdayBaseDay": "Ein Grundlagentag ohne harten Reiz. Gefahren wird nach Sprechtest, nicht am oberen Z2-Rand.",
+    "thursdayNoTimer": "Ein Grundlagentag ohne Blöcke – der Timer ist an diesem Tag nicht nötig.",
     "thursdayIntervalTail": "Die letzte Wiederholung soll die härteste sein.",
     "saturdayRecovery": "Erholungswoche: komplett locker, keine Blöcke",
     "saturdayPureZ2": "Reines Z2 – keine Blöcke. Das ist der Regelfall; Blöcke gibt es nur in Woche 6, 9 und 12.",
@@ -681,6 +835,7 @@
     "intervalRecoveryWeek": "Erholungswoche – reduzierter Umfang, kein Z5.",
     "elevationShort": "Ersetzen statt addieren: eine flache Einheit gegen eine hügelige mit ähnlicher Zeit tauschen, Kadenz nicht unter 70 rpm – passende Übersetzung ist die wirksamere Lösung als Disziplin am Berg.",
     "cadencePyramid": "Kadenzpyramide als Teil des Einfahrens am Mittwoch, alle ein bis zwei Wochen: 30 s je 90 / 100 / 110 / 120 / 110 / 100 / 90 rpm im leichten Gang, Puls bleibt in Z1/Z2, nicht im Sattel hüpfen. Kostet 3,5 min.",
-    "volumeCap": "Die Wochensumme Rad ist eine Obergrenze, kein Sollwert. Wird sie überschritten, wird in der Folgewoche gekürzt, nicht kompensiert. Das ersetzt die Ramp-Rate als Absicherung, solange die CTL unter 20 liegt."
+    "volumeCap": "Die Wochensumme Rad ist eine Obergrenze, kein Sollwert. Wird sie überschritten, wird in der Folgewoche gekürzt, nicht kompensiert. Das ersetzt die Ramp-Rate als Absicherung, solange die CTL unter 20 liegt.",
+    "timerFesteFolge": "Der Ablauf steht fest und lässt sich nicht verstellen – er kommt aus dem Plan und nicht aus den Eingabefeldern."
   }
 }

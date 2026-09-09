@@ -94,7 +94,7 @@ const DOKU_3 = {
     + 'di.minutes und di.legRounds: Arbeitsweg und die zweite Beineinheit am '
     + 'Abend. mi.minutes und mi.extra: die kurze Fahrt und ein daran '
     + 'haengender Reiz. do: der Qualitaetstag als vollstaendiges Objekt, '
-    + 'siehe variante. sa.minutes und sa.bloecke: die lange Ausfahrt und die '
+    + 'siehe variante und schrittfolge. sa.minutes und sa.bloecke: die lange Ausfahrt und die '
     + 'Z3-Bloecke darin. so.optionalMinutes und so.legRounds: die optionale '
     + 'Fahrt davor und die Runden des Beinblocks. Ein Kuerzel, das hier nicht '
     + 'steht, wird beanstandet - sonst schriebe jemand "mo" hin und wunderte '
@@ -110,7 +110,32 @@ const DOKU_3 = {
     + 'Der Regelfall bleibt daneben unveraendert stehen - gewaehlt wird in '
     + 'der App, und die Wahl wird gespeichert. Die Wochensumme rechnet mit '
     + 'der Variante, weil der Trainingsplan sie so nennt; die zwei Minuten '
-    + 'Unterschied liegen unter der Aufloesung des Umfangsdeckels.',
+    + 'Unterschied liegen unter der Aufloesung des Umfangsdeckels. Nicht zu '
+    + 'verwechseln mit kind "steps": die Variante ist eine zweite Form, ueber '
+    + 'die entschieden wird, eine Schrittfolge unter kind ist der Regelfall '
+    + 'selbst.',
+  /* Die beiden Eintraege beschreiben die aktuelle Schemafassung und nicht die
+     alte Form. Sie stehen trotzdem hier und nicht in der Datei: ein
+     migrierter Plan kann beides genauso, und ein Dokumentationsblock, der
+     eine Faehigkeit verschweigt, ist eine Anleitung zum Nichtbenutzen. */
+  schrittfolge: 'Ein tage.do mit kind "steps" traegt seinen Ablauf als '
+    + 'Schrittliste statt als drei Zahlen. Gebraucht, sobald ein Tag mehr ist '
+    + 'als Einfahren, n gleiche Bloecke und Ausrollen - im ausgelieferten Plan '
+    + 'der Donnerstag der Wochen 11 und 12: Z2, darin drei Reize, danach '
+    + 'wieder Z2. Die Schritte sind dieselben wie im Schwellentest und im '
+    + 'Testanlauf; type "ride" kam dafuer dazu und meint einen Abschnitt, der '
+    + 'weder Einfahren noch Belastung noch Pause ist. Die Dauer wird aus den '
+    + 'Schritten gerechnet und darf deshalb nicht daneben stehen. Optional: '
+    + 'steering (ersetzt die Zielzone auf der Karte), note (Hinweis unter der '
+    + 'Einheit) und art (das Einheitszeichen in Plan und Analyse - ohne '
+    + 'Angabe gilt "intervalle").',
+  ansage: 'Ein Schritt darf mit say sagen, was die Stimme zu ihm sagt. Ohne '
+    + 'Angabe gilt der Satz seiner Art. Bis Fassung 4 entschied allein die Art '
+    + 'ueber den Wortlaut - das reicht, solange eine Folge aus Einfahren, '
+    + 'Belastung, Pause und Ausrollen besteht, und stimmt nicht mehr, sobald '
+    + 'die Datei Abschnitte frei zusammensetzt: "Alle Intervalle geschafft" '
+    + 'gehoert an das Ende einer Einheit und nicht vor den eingebetteten Reiz '
+    + 'der Phase 3.',
   wiederholungenInWeeks: 'Das tage.do-Objekt steht in mehreren Wochen '
     + 'woertlich gleich da. Das ist Absicht und kein Copy-Paste-Rest: jede '
     + 'Woche bleibt fuer sich lesbar, und nichts kann sich gegeneinander '

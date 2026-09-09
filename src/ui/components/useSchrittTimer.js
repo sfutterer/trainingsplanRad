@@ -48,27 +48,47 @@ export function useSchrittTimer({ kennung, voice, sequenz }){
       flags.current = { half:false, minute:false, zehn:false };
       zeichnen();
       const naechster = timer.sequence[index + 1];
+      /* Erst der Satz, dann die Ansage - und ein Schritt aus plan.json darf
+         seinen eigenen mitbringen.
+
+         Bis Fassung 4 entschied die Schrittart ueber den Wortlaut, und das
+         ging so lange gut, wie eine Folge nur aus Einfahren, Belastung, Pause
+         und Ausrollen bestand. Sobald die Datei Abschnitte frei
+         zusammensetzt, stimmt der feste Satz nicht mehr: "Alle Intervalle
+         geschafft" gehoert an das Ende einer Einheit und nicht vor den
+         eingebetteten Reiz der Phase 3. Wer die Folge schreibt, schreibt
+         deshalb auch, was zu ihr gesagt wird - `say` am Schritt. */
+      let satz = null;
       if(step.type === 'prep'){
-        speak('Bereit machen. Gleich geht es los mit ' + (naechster ? naechster.label : 'dem Einfahren') + '.', voice);
+        satz = 'Bereit machen. Gleich geht es los mit ' + (naechster ? naechster.label : 'dem Einfahren') + '.';
       }
       else if(step.type === 'work'){
         beep(880, 180); vibrate(40);
         /* Wiederholung und Gesamtzahl mitsagen: auf dem Rad schaut man nicht
            auf den Bildschirm, um zu wissen, die wievielte gerade laeuft. */
         const wo = step.reps > 1 ? 'Intervall ' + step.rep + ' von ' + step.reps : step.label;
-        speak(wo + '. Los!', voice);
+        satz = wo + '. Los!';
       }
       else if(step.type === 'rest'){
         beep(440, 180);
-        speak('Erholung. Locker rollen in ' + (step.zone && step.zone.key ? step.zone.key.toUpperCase() : 'Zone 1') + '.', voice);
+        satz = 'Erholung. Locker rollen in ' + (step.zone && step.zone.key ? step.zone.key.toUpperCase() : 'Zone 1') + '.';
       }
-      else if(step.type === 'warm'){ speak('Einfahren. Locker und gleichmäßig, Zone 1 bis 2.', voice); }
-      else if(step.type === 'cool'){ beep(440, 180); speak('Alle Intervalle geschafft. Jetzt locker ausrollen.', voice); }
+      else if(step.type === 'warm'){ satz = 'Einfahren. Locker und gleichmäßig, Zone 1 bis 2.'; }
+      /* Ein Abschnitt, der weder Einfahren noch Belastung noch Pause ist: die
+         Grundlagenteile um einen eingebetteten Reiz herum. Die Beschriftung
+         aus der Datei sagt, welcher es ist - "Grundlage Z2" vor dem Block
+         heisst etwas anderes als danach. */
+      else if(step.type === 'ride'){
+        satz = step.label + '. Gleichmäßig in ' +
+               (step.zone && step.zone.key ? step.zone.key.toUpperCase() : 'Zone 2') + '.';
+      }
+      else if(step.type === 'cool'){ beep(440, 180); satz = 'Alle Intervalle geschafft. Jetzt locker ausrollen.'; }
       else if(step.type === 'done'){
         beep(880, 300); beep(1046, 300, 200); vibrate([60, 40, 60]);
-        speak('Einheit abgeschlossen. Stark gemacht!', voice);
+        satz = 'Einheit abgeschlossen. Stark gemacht!';
         meldeTimer(kennung, false);
       }
+      if(step.say || satz) speak(step.say || satz, voice);
     }));
     /* Nur die Ansagen: neu zeichnen und der Countdown-Piepser stehen in
        useTimerBasis. */
@@ -86,12 +106,18 @@ export function useSchrittTimer({ kennung, voice, sequenz }){
       if(step.type === 'rest' && !f.minute && step.duration > 90 && secondsLeft <= 30){
         f.minute = true; speak('Noch 30 Sekunden Erholung. Bereit machen.', voice);
       }
-      if(!f.zehn && (step.type === 'rest' || step.type === 'prep' || step.type === 'warm') && secondsLeft <= 10){
+      /* Die Vorwarnung vor der Belastung gilt auch fuer den Grundlagenteil
+         davor: in Phase 3 haengen die 3 x 3 min hinter 25 min Z2, und wer sie
+         erst mit dem Piepser bemerkt, faehrt die erste halbe Minute im
+         Sitzen. */
+      if(!f.zehn && (step.type === 'rest' || step.type === 'prep' ||
+                     step.type === 'warm' || step.type === 'ride') && secondsLeft <= 10){
         f.zehn = true;
         const naechster = timer.sequence[timer.index + 1];
         if(naechster && naechster.type === 'work') speak('Gleich ' + naechster.label + '.', voice);
       }
-      if((step.type === 'warm' || step.type === 'cool') && !f.minute && step.duration > 120 && secondsLeft <= 60){
+      if((step.type === 'warm' || step.type === 'cool' || step.type === 'ride') &&
+         !f.minute && step.duration > 120 && secondsLeft <= 60){
         f.minute = true; speak('Noch eine Minute.', voice);
       }
     }));

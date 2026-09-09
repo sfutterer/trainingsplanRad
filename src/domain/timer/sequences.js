@@ -73,7 +73,7 @@ export function buildStepSequence(plan, th, week, steps){
        stehen, die nicht angesteuert werden soll. */
     const zone = s.effort ? { ...Zn(s.zone), label: s.effort } : Zn(s.zone);
     seq.push({ type:s.type, label:s.label, short:s.short, duration: schrittSekunden(s),
-               zone, rep:s.rep, reps:s.reps, note:s.note });
+               zone, rep:s.rep, reps:s.reps, note:s.note, say:s.say });
   }
   seq.push({ type:'done', label:'Fertig!', short:'Fertig', duration:0, zone:Zn('z1') });
   return seq;
@@ -135,6 +135,11 @@ export function intervalDefaults(plan, week, startDate, heute, wahlen){
   const t = thursdayPlan(plan, week);
   if(t.kind === 'test') return { mode:'test', plan:t };
   if(t.kind === 'z2')   return { mode:'z2',   plan:t };
+  /* Ein Tag, dessen Regelfall als Folge in der Datei steht - kein Ersatz und
+     keine Wahl, sondern das, was heute ansteht. Wie die Variante laeuft er
+     hier und nicht im Testbereich, und wie sie laesst er sich nicht
+     verstellen: was in plan.json als Ablauf steht, ist der Ablauf. */
+  if(t.kind === 'steps') return { mode:'steps', feste: t, steps: t.steps };
   return {
     mode:'intervals', plan:t,
     warmMin: plan.interval.warmupMinutes,

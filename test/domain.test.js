@@ -76,7 +76,34 @@
    Neusetzen einzeln benennen: alle Mittwoche ausser den dreien, die der
    Testanlauf ohnehin durch die Oeffner ersetzt (09.09., 21.10., 02.12.).
    Kein einziger Sollwert hat sich geaendert - der Vergleich lief ueber
-   dieselbe Ausgabe mit und ohne die Aenderung. */
+   dieselbe Ausgabe mit und ohne die Aenderung.
+
+   Neu gesetzt am 09.09.2026 auf Fassung 5 des Trainingsplans: der
+   Erhaltungsreiz der Phase 3 wird von 6 x 30 s am Mittwoch zu 3 x 3 min bei
+   108-115 % FTP, eingebettet in die Z2-Einheit am Donnerstag.
+
+   Betroffen sind genau acht der 126 Tage, und sie liessen sich vor dem
+   Neusetzen einzeln benennen:
+
+   - 29.10. und 05.11., die Donnerstage der Wochen 11 und 12: aus einer
+     Grundlagenfahrt wird eine Schrittfolge mit eingebettetem Reiz. Sie
+     tragen jetzt einen Sollwert mit harter Zeit (9 min) und einen Knopf in
+     den Intervalltimer.
+   - 28.10. und 04.11., die Mittwoche derselben Wochen: der Reiz ist weg,
+     die Fahrt bleibt bei 60 min.
+   - 11.11. und 12.11., Mittwoch und Donnerstag der Erholungswoche 13: nur
+     die beiden Plantexte, die die Verlegung nennen. Die Woche selbst
+     bleibt reizfrei, das ist Absicht.
+   - 10.12. und 17.12., die beiden Z2-Donnerstage des Winterblocks: derselbe
+     Plantext. Er behauptete dort schon vorher etwas ueber Phase 3, in der
+     der Winterblock gar nicht liegt.
+
+   Die uebrigen 118 Tage sind Zeichen fuer Zeichen dieselben geblieben, die
+   Wochenangaben aendern sich in genau zwei Zeilen (Woche 11 und 12, deren
+   thursday jetzt die Schritte statt dreier Zahlen traegt). Kein
+   Wochenumfang und kein Umfangsdeckel hat sich geaendert - die 15 min des
+   Reizes liegen innerhalb der 70 bzw. 75 min, und genau das prueft die
+   Kennzahl "Wochenumfaenge Rad" weiter unten unveraendert nach. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -191,12 +218,22 @@ describe('plan.json', () => {
     expect(planValidate(k).join(' ')).toContain('aufsteigen');
   });
 
-  /* Der Erhaltungsreiz haengt an der Mittwochsfahrt. Steht er in einer Woche
-     ohne Fahrt, gibt es nichts, woran er haengen koennte - und die Karte
-     zeigte ihn trotzdem an. */
+  /* Ein an die Mittwochsfahrt gehaengter Reiz braucht eine Mittwochsfahrt.
+     Steht er in einer Woche ohne Fahrt, gibt es nichts, woran er haengen
+     koennte - und die Karte zeigte ihn trotzdem an.
+
+     Der Reiz steht seit Fassung 5 in keiner Woche mehr; er ist an den
+     Donnerstag gewandert. Die Pruefung bleibt: mi.extra ist eine Form, die
+     die Datei anbieten darf, und eine Form ohne Pruefung ist eine Falle fuer
+     den, der sie das naechste Mal benutzt. Der Reiz wird deshalb hier
+     gebaut und nicht mehr aus einer Woche geholt. */
   it('meldet einen Erhaltungsreiz ohne Mittwochsfahrt', () => {
     const k = structuredClone(json);
-    k.weeks[0].tage.mi.extra = structuredClone(k.weeks[10].tage.mi.extra);
+    k.weeks[0].tage.mi.extra = {
+      label:'Erhaltungsreiz', reps:6, workSeconds:30, restSeconds:30,
+      effort:'zügig', restEffort:'locker rollen', note:'An die Mittwochsfahrt angehängt.'
+    };
+    expect(k.weeks[0].tage.mi.minutes).toBe(0);
     expect(planValidate(k).join(' ')).toContain('mi.extra');
   });
 
@@ -224,11 +261,11 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: 'e4e9efdba6397a64', len: 12261 });
+      .toEqual({ hash: 'e8d1cf03c128d27d', len: 16049 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '4c8e153a04b057ea', len: 181789 });
+      .toEqual({ hash: '9840a8459c9d6d60', len: 183481 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -252,7 +289,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '96c97d23a3f1fdac', len: 162652 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '41435f055f2e697d', len: 164188 });
   });
 });
 
@@ -314,12 +351,40 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
     expect([C.tuesdayLegRounds(plan, 11), C.tuesdayLegRounds(plan, 14)]).toEqual([2, 1]);
   });
 
-  it('Erhaltungsreiz am Mittwoch nur in Woche 11 und 12', () => {
+  /* Fassung 5, Abschnitt 9b: der Erhaltungsreiz haengt am Donnerstag und
+     nicht mehr am Mittwoch. Beide Haelften stehen hier, weil eine allein die
+     Verlegung nicht nachweist - ein Reiz an beiden Tagen waere die doppelte
+     Dosis, ein Reiz an keinem der beiden die reizfreie Phase 3, die Abschnitt
+     9b gerade abschafft. */
+  it('kein Reiz mehr am Mittwoch', () => {
     const mit = [];
     for(let w = 1; w <= 16; w++){
       if(plan.weeks[W.weekIndex(plan, w)].tage.mi.extra) mit.push(w);
     }
+    expect(mit).toEqual([]);
+  });
+
+  it('Erhaltungsreiz am Donnerstag der Woche 11 und 12: 3 × 3 min', () => {
+    const mit = [];
+    for(let w = 1; w <= 16; w++){
+      const t = D.thursdayPlan(plan, w);
+      if(t.kind === 'steps') mit.push(w);
+    }
     expect(mit).toEqual([11, 12]);
+
+    for(const w of mit){
+      const t = D.thursdayPlan(plan, w);
+      const hart = t.steps.filter(s => s.type === 'work');
+      expect(hart.map(s => s.minutes)).toEqual([3, 3, 3]);
+      expect(hart.every(s => s.zone === 'z5' && s.effort === '108–115 % FTP')).toBe(true);
+      /* Die Pausen dazwischen, nicht danach: 3 x 3 min Belastung und 2 x 3 min
+         Pause sind die 15 min, die der Trainingsplan nennt. */
+      expect(D.schritteMinuten(t.steps.filter(s => s.type === 'work' || s.type === 'rest')))
+        .toBe(15);
+    }
+    /* Die 15 min liegen innerhalb der Einheit - deshalb bleiben 70 und 75. */
+    expect([D.thursdayPlan(plan, 11).minutes, D.thursdayPlan(plan, 12).minutes])
+      .toEqual([70, 75]);
   });
 
   it('Z2 der Uebergangsfassung ist 128 bis 142 bpm', () => {

@@ -60,6 +60,37 @@ ist frei, der Freitag steht in `fridayOptional`. Ein Kürzel, das die Prüfung
 nicht kennt, wird beanstandet, damit ein hingeschriebenes `"mo"` nicht
 stillschweigend wirkungslos bleibt.
 
+### Der Donnerstag: vier Formen
+
+`tage.do.kind` sagt, was der Qualitätstag ist. `"z2"` und `"test"` nennen ihre
+Dauer, `"intervals"` seine drei Zahlen (`reps`, `workMinutes`, `restMinutes`).
+
+Für alles, was sich damit nicht schreiben lässt, gibt es `"steps"` – der Ablauf
+als Schrittliste, wie ihn der Schwellentest schon immer hatte:
+
+```json
+"do": { "kind": "steps", "title": "…", "zone": "z2", "art": "z2",
+        "steering": "Sprechtest für den Z2-Anteil, Watt für die 3 × 3 min",
+        "steps": [
+          { "type": "warm",  "label": "Einfahren",    "short": "…", "minutes": 10, "zone": "z12" },
+          { "type": "ride",  "label": "Grundlage Z2", "short": "…", "minutes": 25, "zone": "z2" },
+          { "type": "work",  "label": "Erhaltungsreiz 1 / 3", "short": "…",
+            "minutes": 3, "zone": "z5", "rep": 1, "reps": 3, "effort": "108–115 % FTP" },
+          …
+        ] }
+```
+
+Ein Schritt ist `warm`, `ride`, `work`, `rest` oder `cool` und trägt entweder
+`minutes` oder `seconds`. `effort` ersetzt auf der Karte und im Ring das
+Pulsband – für alles, was nach Watt oder nach Anstrengung gefahren wird. `say`
+ersetzt, was die Sprachausgabe zu diesem Schritt sagt; ohne Angabe gilt der
+Satz seiner Art. Die Dauer des Tages wird aus den Schritten gerechnet und darf
+deshalb nicht daneben stehen; `art` bestimmt das Einheitszeichen in Plan und
+Analyse und steht ohne Angabe auf `"intervalle"`.
+
+Damit braucht ein Tag mit eingebetteten Blöcken, ungleichen Wiederholungen oder
+gemischten Zonen keine Codeänderung mehr – nur einen Eintrag in dieser Datei.
+
 ### Schemafassung und Migration
 
 Die Datei trägt eine `schemaVersion`, aktuell **3**. Ein lokal gespeicherter

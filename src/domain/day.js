@@ -79,6 +79,20 @@ export function thursdayPlan(plan, week){
   if(t.kind === 'z2'){
     return { kind:'z2', phase, zone: t.zone, minutes: t.minutes, title: t.title };
   }
+  /* Ein Tag, dessen Regelfall als Schrittfolge in der Datei steht.
+
+     Bis Fassung 4 gab es Schrittfolgen nur dort, wo etwas den geplanten Tag
+     ersetzte: im Schwellentest, im Testanlauf und in der Variante der Woche 5.
+     Der Erhaltungsreiz der Phase 3 ist nichts davon - er ist der geplante Tag,
+     nur mit einem Aufbau, den die drei Zahlen reps/workMinutes/restMinutes
+     nicht fassen: 25 min Z2, dann 3 x 3 min hart, dann der Rest der Einheit
+     wieder Z2. Als "intervals" haette die Karte eine 70-min-Intervalleinheit
+     behauptet, als "z2" waere der einzige harte Reiz der Woche verschwunden. */
+  if(t.kind === 'steps'){
+    return { kind:'steps', phase, zone: t.zone, title: t.title, steps: t.steps,
+             art: t.art || null, steering: t.steering || null, note: t.note || null,
+             minutes: schritteMinuten(t.steps) };
+  }
   return {
     kind:'intervals', phase, zone: t.zone,
     reps: t.reps, workMin: t.workMinutes, restMin: t.restMinutes,
@@ -571,11 +585,20 @@ function mittwoch(c){
 }
 
 /* Donnerstag ist der Qualitaetstag - und je nach Woche ein Schwellentest, ein
-   dritter Grundlagentag oder Intervalle. */
+   dritter Grundlagentag, Intervalle oder eine Folge aus der Datei. */
 function donnerstag(c){
   const { plan, th, week, T, z2 } = c;
   const t = thursdayPlan(plan, week);
   let info;
+
+  /* Die Schrittfolge baut ihre Karte selbst - dieselbe Funktion, die den
+     Testanlauf baut, nur mit dem Intervalltimer statt dem Testbereich unter
+     dem Knopf: eine Folge, die im Plan steht, gehoert nicht zum Test. */
+  if(t.kind === 'steps'){
+    info = schrittTag(c, t, TIMER_INTERVALLE);
+    info.wellness = { rolle:'entscheidung', donnerstag: t.kind };
+    return info;
+  }
 
   if(t.kind === 'test'){
     /* Der Schwellentest ist im Typ ein Intervalltag - die Ansicht behandelt
@@ -839,15 +862,24 @@ function schrittTag(c, sess, timer){
   const cad = sess.steering ? null : cadenceText(plan, zone, week);
   if(cad) kennzahlen.push({ label:'Trittfrequenz', wert: cad });
 
+  /* Die Art steht in der Datei, wo der Tag sie nennt.
+
+     Voreinstellung bleibt der Intervalltag: das ist, was eine Schrittfolge in
+     den ersten vier Fassungen immer war, und der Testanlauf sagt sie nicht.
+     Der Donnerstag der Phase 3 sagt sie - er ist eine Grundlagenfahrt mit
+     eingebettetem Reiz und traegt deshalb das Zeichen der Grundlagenfahrt. */
+  const art = sess.art || 'intervalle';
+
   return {
-    type:'interval', art:'intervalle', title: sess.title,
+    type: art === 'intervalle' || art === 'test' ? 'interval' : 'ride',
+    art, title: sess.title,
     /* Die Anlaufeinheiten gehoeren zum Test und stehen deshalb im Testbereich:
        dort laeuft ihr Ablauf neben der Anleitung, und das Ergebnis des
        Tempoblocks - die Wattzahl, auf die im Test gezielt wird - wird gleich
        dort notiert. Der Intervalltimer kennt sie weiterhin, er ist nur nicht
        mehr die Stelle, an die die Tageskarte fuehrt. */
     einheiten: [einheit({
-      art:'intervalle', titel: sess.title, kennzahlen, bloecke,
+      art, titel: sess.title, kennzahlen, bloecke,
       hinweise: sess.note ? [sess.note] : [],
       timer
     })],

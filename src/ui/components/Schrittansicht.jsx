@@ -26,8 +26,8 @@ import { remainingAfter } from '../../domain/timer/sequences.js';
 /* Die Farbe eines Schritts.
 
    Belastung in Z5 traegt die harte Farbe, jede andere Belastung die mittlere;
-   das Einfahren ist das einzige Blau, weil es das einzige ist, bei dem man
-   noch nichts leistet und trotzdem faehrt. Alles Uebrige - Pause, Ausrollen,
+   Einfahren und Grundlagenteil sind das einzige Blau, weil man dort noch
+   nichts leistet und trotzdem faehrt. Alles Uebrige - Pause, Ausrollen,
    Bereitmachen, Fertig - ist gedaempft.
 
    Nicht als Tabelle nach step.type: Z5 und Z4 sind derselbe Typ und tragen
@@ -37,10 +37,15 @@ function schrittFarbe(step){
   if(step.type === 'work'){
     return step.zone && step.zone.key === 'z5' ? 'var(--hard)' : 'var(--rest)';
   }
-  return step.type === 'warm' ? 'var(--work)' : 'var(--prep)';
+  return step.type === 'warm' || step.type === 'ride' ? 'var(--work)' : 'var(--prep)';
 }
 
-const PHASEN = { warm:'Einfahren', rest:'Erholung', cool:'Ausrollen', done:'Fertig' };
+/* "Fahrt" ist die Ueberschrift der Abschnitte, die weder Einfahren noch
+   Belastung noch Pause sind - der Grundlagenteil um einen eingebetteten Reiz
+   herum. Was fuer einer es ist, steht darunter als Beschriftung aus der
+   Datei; hier oben steht nur, dass gerade gefahren und nicht gedrueckt wird. */
+const PHASEN = { warm:'Einfahren', ride:'Fahrt', rest:'Erholung',
+                 cool:'Ausrollen', done:'Fertig' };
 
 /* Die Ueberschrift ueber der Zahl im Ring.
 

@@ -1149,29 +1149,94 @@ Der Code steht auf Fassung 2. Folgendes muss nachgezogen werden:
 10. **Testanlauf** aus Abschnitt 2a als Hinweis ab 10 Tagen vor dem Testtermin, inklusive
     Go/No-Go-Liste am Testmorgen.
 
-Neu mit Fassung 4:
+Neu mit Fassung 4 — **umgesetzt am 04.09.2026**:
 
-11. **Schwellentest-Ablauf im Timer:** All-out-Segment und die 10 min Pause danach
-    entfernen. Neue Sequenz: 20 min Einfahren (mit 3 × 1 min zügig), 5 min locker,
-    20 min Test, 10 min Ausrollen. Gesamtdauer 55 statt 65 min.
-12. **Woche 5 als Sonderfall im Intervall-Timer:** 5 min maximal, 5 min locker,
-    danach 4 × 4 min. Ab Woche 6 wieder die Regelstruktur. Am besten als Schalter
-    „VO2max-Referenz erheben" an der Donnerstagskarte, weil der Wert optional ist.
-13. **Wochenwerte für Woche 4, 5, 10 und 16** in `plan.json` auf die geänderten
-    Summen aus Abschnitt 2 setzen (245 / 375 / 260 / 265).
-14. **Testhistorie:** Spalte „Ø-Watt 5 min" aus der Tabelle nehmen, durch „Ø-Kadenz"
-    ersetzen. Die VO2max-Referenz bekommt eine eigene, kleine Tabelle.
+11. ✅ **Schwellentest-Ablauf im Timer:** All-out-Segment entfernt, Pause davor von
+    10 auf 5 min gekürzt. Sequenz: 20 min Einfahren (mit 3 × 1 min zügig), 5 min
+    locker, 20 min Test, 10 min Ausrollen. Gesamtdauer 55 min. Der Sollwert der
+    Testtage führt entsprechend 20 statt 25 harte Minuten — mit 25 hätte die
+    Auswertung einen sauber gefahrenen Test als zu kurz gemeldet.
+12. ✅ **Woche 5 als Variante, nicht als Sonderfall.** Der `thursday` der Woche 5
+    trägt in `plan.json` neben dem Regelfall eine benannte `variante` mit eigener
+    Schrittfolge. Auf der Donnerstagskarte stehen zwei Knöpfe; die Wahl wird
+    gespeichert und gilt für Tageskarte, Intervall-Timer und Auswertung. Drei
+    Zustände sind unterscheidbar: unentschieden, gewählt, ausdrücklich abgewählt.
+13. ✅ **Wochenwerte 245 / 375 / 260 / 265** — nicht eingetragen, sondern gerechnet:
+    `weekPlanMinutes` rechnet den Donnerstag der Woche 5 mit der Variante. Der
+    Umfangsdeckel folgt automatisch (270 / 413 / 286 / 292).
+14. ✅ **Testhistorie:** „Ø-Watt 5 min" durch „Ø-Kadenz" ersetzt, in beiden
+    Eingabeformularen. Die VO2max-Referenz hat im Testbereich eine eigene Karte
+    samt Import aus der Aufzeichnung und der 118-%-Gegenprobe; sie hängt am Test
+    davor und nicht am Kalender.
+15. ✅ **Ablaufgleichheit prüfbar gemacht.** `thresholdTest` trägt eine Kennung und
+    eine Fassungsnummer, die in jeden Eintrag der Testhistorie wandert. Stammen
+    zwei Einträge aus verschiedenen Abläufen, sagt die Historie das — die Regel
+    aus Abschnitt 2a steht damit nicht nur im Dokument.
+16. ✅ **RPE der letzten 5 min** ist als Feld im Testergebnis nachgetragen. Unter 9
+    steht dort, dass nicht ausbelastet wurde und die FTP eher zu niedrig ist —
+    das einzige Feld des Tests, das etwas über die Güte des Messwerts sagt.
+17. ✅ **Sprechtest-Puls gegen die Z2-Obergrenze** zählt nur noch die Erhebungen
+    seit dem letzten Test. Davor galten die Übergangsbänder; ein Schnitt über
+    beide Zeiträume verglich Werte aus zwei Zonenmodellen gegen das neuere von
+    ihnen. Damit ist Punkt 6 der Checkliste nach dem Test in der App gerechnet
+    und nicht nur im Dokument genannt.
+18. ✅ **RPE je Einheit entfällt** — am 04.09.2026 erst sichtbar gemacht, am selben
+    Tag gestrichen. Es hatte keinen Auftrag: Empfinden verlangt dieser Plan an zwei
+    Stellen, und beide sind woanders verankert — das RPE der letzten fünf Testminuten
+    als Güteprüfung (Punkt 16) und der Sprechtest als oberste Instanz für Z2,
+    erhoben als Puls. Auch Coggan braucht es nicht: dort sind FTP und LTHR die
+    Eingaben, und die RPE-Spalte der Zonentabelle ist beschreibend — sie sagt, wie
+    sich eine Zone anfühlen soll, damit man sie ohne Messgerät findet. Dazu kam ein
+    Fehler in der Reihe selbst: Z2-Fahrt und Intervalltag lagen in einer Kurve, ohne
+    dass die Einheit mitgespeichert wurde — ein Ausschlag nach oben hieß dort nicht
+    „schlechte Form", sondern „das war ein Donnerstag".
+19. ✅ **Die Notiz steht am Wert.** Sie war nur auf der Eingabekarte zu sehen, und dort
+    nur in den letzten vier Einträgen — also gerade nicht bei dem alten Ausreißer, zu
+    dem man sie sucht. Sie erscheint jetzt am angetippten Punkt der Sprechtest-Kurve.
+    Ihr Platzhalter nennt nur noch, was die App nicht selbst herleitet: Wind und Strecke
+    rechnet das Fazit aus der Aufzeichnung genauer aus, als man sie tippen kann.
+20. ✅ **Bedingungen des Tests bekommen einen Leser.** Das Feld wurde seit jeher erhoben —
+    dieser Abschnitt verlangt es und führt eine eigene Spalte dafür — und in der ganzen
+    App nirgends angezeigt. Es steht jetzt in beiden Testhistorien. Bei drei Tests im
+    Plan hängt der Vergleich zweier Werte an dieser Zeile: 6 Grad und Gegenwind gegen
+    22 Grad und Windstille sind keine zwei Formzustände.
 
-Neu mit Fassung 5:
+Neu mit Fassung 5 — **umgesetzt am 09.09.2026**:
 
-15. **Woche 11 und 12 im Intervall-Timer:** neue Sequenz 20 min Z2, dann
-    3 × (3 min bei 108–115 % FTP / 3 min Pause), dann Rest der Einheit Z2, mindestens
-    15 min. Gesamtdauer 70 bzw. 75 min — die Wochensummen 430 und 445 bleiben
-    unverändert, die 15 min liegen innerhalb der Einheit.
-16. **Erhaltungsreiz von der Mittwochs- auf die Donnerstagskarte** verschieben
-    (siehe Punkt 6). Die Mittwochskarte in Woche 11 und 12 zeigt wieder reines Z2.
-17. **Zonenanzeige im Timer:** Der Erhaltungsreiz nutzt dieselbe Watt-Vorgabe wie die
-    Phase-2-Intervalle (108–115 % FTP). Kein eigener Zonensatz nötig.
+21. ✅ **Woche 11 und 12 im Intervall-Timer.** Nicht als Sonderfall im Code, sondern als
+    neue Form in `plan.json`: `tage.do.kind: "steps"` trägt den Ablauf als Schrittliste
+    statt als drei Zahlen. Die Folge lautet 10 min Einfahren, 25 min Z2, 3 × (3 min bei
+    108–115 % FTP / 3 min Pause), dann 20 bzw. 25 min Z2 bis zum Ende — 70 und 75 min.
+    Die Wochensummen 430 und 445 bleiben unverändert, weil die 15 min innerhalb der
+    Einheit liegen; die Kennzahl „Wochenumfänge Rad" prüft das unverändert nach.
+22. ✅ **Erhaltungsreiz von der Mittwochs- auf die Donnerstagskarte.** `mi.extra` steht
+    in Woche 11 und 12 auf `null`, der Reiz hängt an den drei `work`-Schritten des
+    Donnerstags. Die Form `mi.extra` bleibt in der Datei zulässig und geprüft — sie ist
+    nicht falsch geworden, sie wird nur nicht mehr gebraucht.
+23. ✅ **Zonenanzeige im Timer:** kein eigener Zonensatz. Die drei Blöcke tragen `effort:
+    "108–115 % FTP"`, und das ersetzt auf Karte und Ring das Pulsband — dieselbe Regel
+    wie beim Schwellentest und beim Testanlauf, und dieselbe wie in der Steuergrößen-
+    Tabelle in Abschnitt 6: Watt für die 3 × 3 min, HF nur am Intervallende.
+
+Drei Dinge kamen dabei in die App, die der Plan nicht verlangt hat und die die nächste
+Fassung ohne Codeänderung nutzen kann:
+
+- **Schritttyp `ride`** — ein Abschnitt, der weder Einfahren noch Belastung noch Pause
+  ist. Ohne ihn hätte der Grundlagenteil vor dem Reiz „Einfahren" angesagt und der
+  danach „Alle Intervalle geschafft"; beides sind Sätze über die Stelle im Ablauf, und
+  die stimmte nicht mehr.
+- **`say` am Schritt** — was die Sprachausgabe zu ihm sagt. Bis Fassung 4 entschied
+  allein die Schrittart über den Wortlaut. Wer die Folge schreibt, schreibt jetzt auch,
+  was zu ihr gesagt wird.
+- **`art` am Tag** — das Einheitszeichen in Plan und Analyse. Eine Schrittfolge war bis
+  hierher immer ein Intervalltag; der Donnerstag der Phase 3 ist eine Grundlagenfahrt
+  mit 9 von 70 harten Minuten und trägt deshalb das grüne Rad.
+
+**Eine Folge davon, die im Plan so nicht steht:** der Sollwert dieses Donnerstags nennt
+Z5 als Zielzone und 9 min harte Zeit, weil die Auswertung genau daran misst, ob der Reiz
+gefahren wurde. Der Preis ist, dass die Z2-Prüfungen dieses Tages — Decoupling und
+Sprechtest-Anteil — entfallen, wie an jedem Intervalltag. Der saubere Z2-Tag der Woche
+bleibt der Samstag.
 
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.
@@ -1215,7 +1280,7 @@ Seit 23.08.2026 stehen alle Plandaten in `plan.json` neben `index.html`.
 | `intervals-icu-api-key` | API-Key für intervals.icu, nur auf dem Gerät |
 | `core-session-log` | Protokoll der Rumpfeinheiten, JSON-Array, max. 80 Einträge |
 | `test-history` | Testhistorie |
-| `interim-log` | Sprechtest-Puls und RPE der Übergangszeit |
+| `interim-log` | Sprechtest-Puls und Notiz. Alte Einträge tragen noch ein `rpe`; es wird nicht mehr gelesen |
 
 ### Protokoll der Rumpfeinheiten
 
