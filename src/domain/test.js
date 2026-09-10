@@ -22,7 +22,7 @@
    Rein: kein DOM, kein fetch, keine Uhr. */
 
 import { testWeeks, testDateFor, thursdayDateFor, toMidnight, dayOffset,
-         isoDayLocal, addDays } from './week.js';
+         isoDayLocal, dayFromIso, weekNumberFor, addDays } from './week.js';
 import { thursdayPlan, thursdayVariante, schrittSekunden } from './day.js';
 
 /* Alle Testtermine des Plans mit ihrem Datum. Abgeleitet aus den Testwochen,
@@ -381,13 +381,18 @@ export function terminSchluessel(termin){
    FTP_FAKTOR zwei Dateien weiter dieselbe Zahl trug - der Faktor liess sich
    nicht mehr an einer Stelle aendern.
 
-   Zwei Eingabewege bleiben, und das ist richtig: der Testbereich fragt nach
-   dem, was am Testtag anfaellt (Ø-Watt, Ø-Puls, Kadenz, RPE, Gewicht,
-   Bedingungen), der Zonen-Tab nimmt Schwellenwerte entgegen, die von woanders
-   kommen, und haelt sie als Test fest. Was beide erzeugen, muss aber ein und
-   dieselbe Zeile im Protokoll sein - sonst stehen im Verlauf zwei Sorten
-   Eintrag nebeneinander, und der Vergleich zweier Tests haengt daran, ueber
-   welchen Bildschirm sie eingetragen wurden.
+   Seit dem 10.09.2026 gibt es nur noch einen Eingabeweg - die Ergebnisansicht
+   des Testbereichs. Der Zonen-Tab nahm bis dahin ebenfalls Testeintraege
+   entgegen, fragte dabei aber weniger und legte Zeilen ohne LTHR und ohne RPE
+   ins selbe Protokoll.
+
+   hr20 steht seither neben lthr, obwohl die beiden meist dieselbe Zahl tragen.
+   Sie sind es nicht immer: lthr ist der Wert, der gilt, und faellt auf den
+   bisherigen Schwellenwert zurueck, wenn im Test kein Puls aufgezeichnet
+   wurde. hr20 ist gemessen oder gar nicht da. Ohne die Unterscheidung zeigt
+   das Formular beim spaeteren Nachschlagen einen Ø-Puls an, den nie jemand
+   gefahren ist. Aeltere Eintraege haben das Feld nicht; dort bleibt lthr die
+   beste Auskunft.
 
    protokoll und protokollFassung wandern immer mit: der Trainingsplan
    verlangt einen identischen Ablauf ueber alle Termine, und ohne Kennung
@@ -397,6 +402,7 @@ export function baueTestEintrag({ tagIso, week, werte, ftp, lthr, bedingungen, p
     day: tagIso,
     week,
     w20: werte.w20,
+    hr20: werte.hr20,
     kadenz: werte.kadenz,
     rpe: werte.rpe,
     ftp: ftp ?? werte.ftp,
@@ -406,6 +412,82 @@ export function baueTestEintrag({ tagIso, week, werte, ftp, lthr, bedingungen, p
     protokoll: plan.thresholdTest.id,
     protokollFassung: plan.thresholdTest.fassung
   };
+}
+
+/* ---- Welche Termine die Ergebnisansicht anbietet ----
+
+   Die Ansicht zeigte bis zum 10.09.2026 ein leeres Formular und sonst nichts.
+   Was eingetragen war, stand nur in der Historienzeile darunter, und wer nach
+   dem Speichern zurueckkam, fand ein Formular vor, das aussah wie vor dem
+   Test. Ein Messwert, den man nicht nachschlagen kann, ist eine Notiz auf
+   einem Zettel.
+
+   Angeboten wird deshalb jeder Tag, an dem ein Test steht oder stand:
+
+     die Termine des Plans   auch die kuenftigen - sie sind der Grund, aus dem
+                             der Bereich ueberhaupt existiert
+     jeder Tag im Protokoll  auch einer, den der Plan nicht kennt: faellt das
+                             Go/No-Go durch, wird der Test verschoben, und das
+                             gefahrene Datum ist dann ein anderes
+     heute                   damit ein verschobener Test ueberhaupt erst
+                             eingetragen werden kann
+
+   Sortiert nach Datum, mit dem Eintrag daran, wenn es einen gibt. */
+export function ergebnisTermine(plan, startDate, testLog, heute){
+  const nachTag = new Map();
+  const merke = (tagIso, datum, week, geplant) => {
+    if(!nachTag.has(tagIso)) nachTag.set(tagIso, { tagIso, datum, week, geplant, eintrag: null });
+    return nachTag.get(tagIso);
+  };
+
+  testTermine(plan, startDate).forEach(t => merke(isoDayLocal(t.datum), t.datum, t.week, true));
+
+  (testLog || []).forEach(e => {
+    if(!e || !e.day) return;
+    const datum = dayFromIso(e.day);
+    const eintragsWoche = e.week || (startDate ? weekNumberFor(datum, startDate) : null);
+    merke(e.day, datum, eintragsWoche, false).eintrag = e;
+  });
+
+  if(heute){
+    const h = toMidnight(heute);
+    merke(isoDayLocal(h), h, startDate ? weekNumberFor(h, startDate) : null, false);
+  }
+
+  return [...nachTag.values()].sort((a, b) => (a.tagIso < b.tagIso ? -1 : 1));
+}
+
+/* Welcher Termin beim Oeffnen dasteht.
+
+   Heute geht vor: wer die Ansicht am Testtag oder am Tag danach oeffnet, will
+   eintragen und nicht blaettern. Sonst der Termin, um den es gerade geht -
+   dieselbe Antwort, die auch der Kopf der Anleitung gibt. Bleibt beides ohne
+   Treffer, der zuletzt gefahrene Test; ganz zum Schluss der letzte Termin
+   ueberhaupt, damit die Ansicht nie ohne Auswahl dasteht. */
+export function vorgewaehlterErgebnistag(termine, termin, heute){
+  if(!termine || !termine.length) return null;
+  const hat = tag => tag && termine.some(t => t.tagIso === tag);
+
+  const heuteIso = heute ? isoDayLocal(toMidnight(heute)) : null;
+  if(hat(heuteIso)) return heuteIso;
+
+  const desTermins = terminSchluessel(termin);
+  if(hat(desTermins)) return desTermins;
+
+  const mitEintrag = termine.filter(t => t.eintrag);
+  return mitEintrag.length
+    ? mitEintrag[mitEintrag.length - 1].tagIso
+    : termine[termine.length - 1].tagIso;
+}
+
+/* Ob dieser Test der juengste im Protokoll ist.
+
+   Nur dann duerfen seine Zahlen die Schwellenwerte setzen. Sobald man
+   zurueckblaettern kann, ist das keine Selbstverstaendlichkeit mehr: eine
+   Korrektur am ersten Test wuerde sonst die Baender auf den Stand von vor
+   acht Wochen zuruecksetzen, und zwar still. */
+export function istJuengsterTest(testLog, tagIso){
+  return !(testLog || []).some(e => e && e.day && e.day > tagIso);
 }
 
 /* Ob die Eintraege aus verschiedenen Testablaeufen stammen.

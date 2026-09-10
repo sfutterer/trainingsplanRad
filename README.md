@@ -250,6 +250,20 @@ nicht, aus der alle Pulsbänder entstehen. Der Zonen-Tab korrigiert seither nur
 noch FTP, LTHR und HFmax; eine getippte Korrektur ist keine Messung und landet
 nicht in der Testhistorie.
 
+Diese eine Stelle zeigt auch, was schon eingetragen ist. Oben steht die Wahl des
+Termins – jeder Termin des Plans, dazu jeder Tag, an dem tatsächlich ein Test
+steht, dazu heute –, darunter dessen Zahlen. Ein gespeicherter Test kommt
+vollständig in die Felder zurück und lässt sich berichtigen; gespeichert wird
+**ein Eintrag je Tag**, eine Korrektur ersetzt ihn also, statt eine zweite Zeile
+für denselben Tag anzulegen. Die Schwellenwerte setzt dabei nur der jüngste Test:
+eine Korrektur am ersten Termin darf das Zonenmodell nicht acht Wochen
+zurückwerfen.
+
+Der gefahrene Tag zählt, nicht der geplante. Fällt das Go/No-Go durch, wird der
+Test verschoben – deshalb steht „heute“ immer zur Wahl, und ein Eintrag an einem
+Tag, den der Plan nicht als Testtermin kennt, taucht in der Liste auf wie jeder
+andere.
+
 Ein Donnerstag darf daneben eine **Variante** tragen – eine zweite zulässige Form
 desselben Tages, über die am Tag selbst entschieden wird. Im ausgelieferten Plan
 ist das die VO2max-Referenz in Woche 5: fünf Minuten maximal als erste

@@ -18,7 +18,8 @@ import {
   vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke, testZiel,
   vo2maxTermin, vo2maxBezug, VO2MAX_GRENZE, FTP_FAKTOR,
   sprechtestBezug, SPRECHTEST_ABSTAND, AUSBELASTET_RPE,
-  baueTestEintrag, gemischteProtokolle, laengsteFahrt
+  baueTestEintrag, gemischteProtokolle, laengsteFahrt,
+  ergebnisTermine, vorgewaehlterErgebnistag, istJuengsterTest
 } from '../src/domain/test.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
@@ -368,12 +369,12 @@ describe('Schluessel der Notizen', () => {
   });
 });
 
-/* ---- Was aus zwei Formularen dieselbe Zeile macht ----
+/* ---- Die Zeile im Protokoll ----
 
    Der Testbereich und der Zonen-Tab bauten ihren Protokolleintrag bis zum
    04.09.2026 getrennt, mit verschiedenen Feldern und verschiedenen
    Rechnungen - der Zonen-Tab mit einem hart hingeschriebenen 0,95 statt
-   FTP_FAKTOR. Zwei Eingabewege bleiben, eine Zeile im Protokoll. */
+   FTP_FAKTOR. Seit dem 10.09.2026 gibt es nur noch einen Eingabeweg. */
 describe('Testeintrag', () => {
   const werte = testWerte({ w20: 200, hr20: 165, kadenz: 88, rpe: 9, gewicht: 74.5 });
   const basis = { tagIso: '2026-09-10', week: 4, werte, bedingungen: '  18 Grad, Windstille  ',
@@ -389,11 +390,24 @@ describe('Testeintrag', () => {
     expect(e.weight).toBe(74.5);
   });
 
-  /* Der Zonen-Tab uebergibt die Zahlen aus seinen Feldern - dort ist die FTP
-     schon eingetragen und soll nicht ungefragt ueberschrieben werden. */
+  /* Vorgegebene Werte gewinnen: die Ergebnisansicht reicht die Schwellenwerte
+     herein, die tatsaechlich gelten sollen - ohne aufgezeichneten Puls ist das
+     die bisherige LTHR und nicht null. */
   it('laesst vorgegebene Werte stehen', () => {
     const e = baueTestEintrag({ ...basis, ftp: 205, lthr: 160 });
     expect([e.ftp, e.lthr]).toEqual([205, 160]);
+  });
+
+  /* hr20 neben lthr: lthr ist der Wert, der gilt, hr20 der gemessene. Faellt
+     lthr auf den alten Schwellenwert zurueck, darf das Formular beim
+     Nachschlagen keinen Ø-Puls zeigen, den nie jemand gefahren ist. */
+  it('haelt den gemessenen Ø-Puls getrennt von der geltenden LTHR fest', () => {
+    expect(baueTestEintrag(basis).hr20).toBe(165);
+
+    const ohnePuls = testWerte({ w20: 200, gewicht: 74.5 });
+    const e = baueTestEintrag({ ...basis, werte: ohnePuls, lthr: 158 });
+    expect(e.lthr).toBe(158);
+    expect(e.hr20).toBe(null);
   });
 
   it('trimmt die Bedingungen und traegt sie mit', () => {
@@ -454,5 +468,107 @@ describe('laengsteFahrt', () => {
     expect(laengsteFahrt([], istFahrt)).toBe(null);
     expect(laengsteFahrt(null, istFahrt)).toBe(null);
     expect(laengsteFahrt([{ type: 'Run', moving_time: 100 }], istFahrt)).toBe(null);
+  });
+});
+
+/* ---- Welche Termine die Ergebnisansicht anbietet ----
+
+   Die Ansicht zeigte bis zum 10.09.2026 ein leeres Formular und sonst nichts:
+   ein gespeicherter Test war danach nirgends mehr nachzuschlagen, und wer
+   zurueckwollte, konnte es nicht. Geprueft wird hier, dass die Liste
+   vollstaendig ist - Plantermine, gefahrene Tage und heute - und dass die
+   Vorauswahl den Tag trifft, mit dem man die Ansicht oeffnet. */
+describe('Termine der Ergebnisansicht', () => {
+  const erster = testTag(4);
+  const ersterIso = W.isoDayLocal(erster);
+
+  it('bietet jeden Termin des Plans an, auch die kuenftigen', () => {
+    const t = ergebnisTermine(plan, START, [], erster);
+    for(const termin of testTermine(plan, START)){
+      expect(t.some(x => x.tagIso === W.isoDayLocal(termin.datum))).toBe(true);
+    }
+    expect(t.every(x => x.eintrag === null)).toBe(true);
+  });
+
+  it('haengt den Eintrag an seinen Tag', () => {
+    const e = { day: ersterIso, week: 4, ftp: 210 };
+    const t = ergebnisTermine(plan, START, [e], erster);
+    expect(t.find(x => x.tagIso === ersterIso).eintrag).toBe(e);
+  });
+
+  /* Faellt das Go/No-Go durch, wird verschoben - der gefahrene Tag ist dann
+     keiner aus dem Plan und muss trotzdem auffindbar bleiben. */
+  it('nimmt einen gefahrenen Tag auf, den der Plan nicht kennt', () => {
+    const verschoben = W.isoDayLocal(W.addDays(erster, 7));
+    const t = ergebnisTermine(plan, START, [{ day: verschoben, ftp: 210 }], erster);
+    const x = t.find(y => y.tagIso === verschoben);
+    expect(x).toBeTruthy();
+    expect(x.geplant).toBe(false);
+    /* Ohne mitgespeicherte Woche wird sie aus dem Datum gerechnet, damit die
+       Zeile im Protokoll nicht ohne Wochennummer dasteht. */
+    expect(x.week).toBe(W.weekNumberFor(W.dayFromIso(verschoben), START));
+  });
+
+  it('bietet heute an, damit ein verschobener Test eintragbar bleibt', () => {
+    const heute = W.addDays(erster, 3);
+    const t = ergebnisTermine(plan, START, [], heute);
+    expect(t.some(x => x.tagIso === W.isoDayLocal(heute))).toBe(true);
+  });
+
+  it('fuehrt jeden Tag nur einmal und sortiert nach Datum', () => {
+    const t = ergebnisTermine(plan, START, [{ day: ersterIso, ftp: 210 }], erster);
+    expect(new Set(t.map(x => x.tagIso)).size).toBe(t.length);
+    expect(t.map(x => x.tagIso)).toEqual(t.map(x => x.tagIso).slice().sort());
+  });
+
+  describe('Vorauswahl', () => {
+    const termin = { datum: erster };
+
+    it('nimmt heute, wenn heute in der Liste steht', () => {
+      const t = ergebnisTermine(plan, START, [], erster);
+      expect(vorgewaehlterErgebnistag(t, termin, erster)).toBe(ersterIso);
+    });
+
+    /* Am Tag danach traegt man ein - aktuellerTermin haelt den Termin dafuer
+       einen Tag lang fest, und die Vorauswahl folgt ihm. */
+    it('nimmt sonst den Termin, um den es gerade geht', () => {
+      const danach = W.addDays(erster, 1);
+      const t = ergebnisTermine(plan, START, [], danach);
+      expect(vorgewaehlterErgebnistag(t, termin, danach)).toBe(W.isoDayLocal(danach));
+      /* Ohne heute in der Liste bleibt der Termin selbst uebrig. */
+      const ohneHeute = t.filter(x => x.tagIso !== W.isoDayLocal(danach));
+      expect(vorgewaehlterErgebnistag(ohneHeute, termin, danach)).toBe(ersterIso);
+    });
+
+    it('faellt auf den zuletzt gefahrenen Test zurueck', () => {
+      const t = ergebnisTermine(plan, START, [{ day: ersterIso, ftp: 210 }], null);
+      expect(vorgewaehlterErgebnistag(t, null, null)).toBe(ersterIso);
+    });
+
+    it('bleibt ohne Termine leer statt zu raten', () => {
+      expect(vorgewaehlterErgebnistag([], termin, erster)).toBe(null);
+      expect(vorgewaehlterErgebnistag(null, termin, erster)).toBe(null);
+    });
+  });
+
+  /* Nur der juengste Test setzt die Baender. Eine Korrektur am ersten Termin
+     duerfte das Zonenmodell nicht acht Wochen zurueckwerfen. */
+  describe('Welcher Test die Schwellenwerte traegt', () => {
+    const log = [{ day: '2026-09-10' }, { day: '2026-10-22' }];
+
+    it('erkennt den juengsten', () => {
+      expect(istJuengsterTest(log, '2026-10-22')).toBe(true);
+      expect(istJuengsterTest(log, '2026-09-10')).toBe(false);
+    });
+
+    it('zaehlt einen noch nicht gespeicherten Tag mit', () => {
+      expect(istJuengsterTest(log, '2026-12-03')).toBe(true);
+      expect(istJuengsterTest(log, '2026-08-01')).toBe(false);
+    });
+
+    it('nimmt den ersten Test ohne Protokoll an', () => {
+      expect(istJuengsterTest([], '2026-09-10')).toBe(true);
+      expect(istJuengsterTest(null, '2026-09-10')).toBe(true);
+    });
   });
 });

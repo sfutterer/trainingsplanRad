@@ -41,13 +41,13 @@
    korrigieren. Das ist etwas anderes als einen Test einzutragen - eine
    Korrektur ist keine Messung und gehoert nicht in die Testhistorie. */
 
-import { Fragment } from 'preact';
 import { useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, testLog, testPrep, apiKey, settings,
-         setThresholds, addTestEntry, setTestPrep } from '../../../state/store.js';
+         setThresholds, saveTestEntry, setTestPrep } from '../../../state/store.js';
 import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
          vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke,
          testZiel, vo2maxTermin, vo2maxBezug, baueTestEintrag, laengsteFahrt,
+         ergebnisTermine, vorgewaehlterErgebnistag, istJuengsterTest,
          FTP_FAKTOR, AUSBELASTET_RPE }
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
@@ -547,17 +547,42 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
 
 /* ---------- Ergebnis ---------- */
 
-const LEERES_ERGEBNIS = { w20:null, hr20:null, kadenz:null, rpe:null, kg:null, bed:'' };
+/* Was in den Feldern steht, wenn ein Termin geoeffnet wird.
 
-function ErgebnisAnsicht({ p, th, termin }){
-  const [f, setF] = useState(LEERES_ERGEBNIS);
+   Ein gespeicherter Test kommt vollstaendig zurueck - nur so ist er
+   nachschlagbar, und nur so laesst sich ein Zahlendreher berichtigen, ohne
+   alles neu zu tippen. Der Ø-Puls kommt aus hr20, faellt aber auf lthr
+   zurueck: Eintraege von vor dem 10.09.2026 kennen hr20 nicht. */
+function ausEintrag(e){
+  if(!e) return { w20:null, hr20:null, kadenz:null, rpe:null, kg:null, bed:'' };
+  return {
+    w20:    e.w20 ?? null,
+    hr20:   e.hr20 ?? e.lthr ?? null,
+    kadenz: e.kadenz ?? null,
+    rpe:    e.rpe ?? null,
+    kg:     e.weight ?? null,
+    bed:    e.conditions || ''
+  };
+}
+
+/* Das Formular eines einzelnen Termins.
+
+   Eigene Komponente, damit der Terminwechsel ueber den Schluessel laufen kann:
+   Zahlenfeld haelt waehrend der Eingabe einen Rohtext, damit "1," unter den
+   Fingern nicht zur 1 wird, und dieser Rohtext ueberlebt jedes Setzen von
+   aussen. Ein Formular, das beim Blaettern nur neue Werte hineingereicht
+   bekaeme, zeigte weiter die Zahlen des vorigen Termins. */
+function Ergebnisformular({ p, th, ziel }){
+  const [f, setF] = useState(() => ausEintrag(ziel.eintrag));
   const [meldung, setMeldung] = useState(null);
-  /* Zaehlt die gespeicherten Tests dieser Sitzung und dient als Schluessel der
-     Feldgruppe. Grund steht bei setF(LEERES_ERGEBNIS) in speichern(). */
-  const [runde, setRunde] = useState(0);
   const werte = testWerte({ w20:f.w20, hr20:f.hr20, kadenz:f.kadenz, rpe:f.rpe, gewicht:f.kg });
-  const tagIso = isoDayLocal(toMidnight(today.value));
   const bereit = werte.ftp != null || werte.lthr != null;
+  const tagIso = ziel.tagIso;
+
+  /* Ein alter Test darf die Baender nicht mehr setzen - sonst wirft eine
+     Korrektur am ersten Termin das ganze Zonenmodell acht Wochen zurueck,
+     und zwar ohne dass es jemand merkt. */
+  const juengster = istJuengsterTest(testLog.value, tagIso);
 
   /* Das Gewicht steht meist schon in der Wellness - dann muss es niemand
      abtippen und die beiden Quellen koennen nicht auseinanderlaufen. */
@@ -567,7 +592,7 @@ function ErgebnisAnsicht({ p, th, termin }){
     try {
       const kg = await fetchGewicht(key, tagIso);
       if(kg) setF(x => ({ ...x, kg }));
-      else setMeldung({ art:'fehler', text:'Für heute steht dort kein Gewicht.' });
+      else setMeldung({ art:'fehler', text:'Für den ' + datumText(ziel.datum) + ' steht dort kein Gewicht.' });
     } catch(e){ setMeldung({ art:'fehler', text:'Nicht abrufbar: ' + e.message }); }
   }
 
@@ -577,91 +602,128 @@ function ErgebnisAnsicht({ p, th, termin }){
       lthr:  werte.lthr != null ? werte.lthr : th.lthr,
       hrmax: th.hrmax
     };
-    await addTestEntry(baueTestEintrag({
-      tagIso, week: weekNumberFor(dayFromIso(tagIso), startDate.value),
+    /* Ersetzt einen Eintrag desselben Tages, statt einen zweiten anzulegen -
+       siehe saveTestEntry. */
+    await saveTestEntry(baueTestEintrag({
+      tagIso, week: ziel.week ?? weekNumberFor(dayFromIso(tagIso), startDate.value),
       werte, ftp: neu.ftp, lthr: neu.lthr, bedingungen: f.bed, plan: p
     }));
-    /* Beide Werte werden uebernommen und nicht nur die FTP, wenn noch keine
-       dastand. Ein Test, dessen LTHR man danach von Hand nachtragen muss, hat
-       den halben Zweck verfehlt - und der Rueckweg steht offen: unter Zonen
-       lassen sich beide Zahlen jederzeit korrigieren. */
-    await setThresholds(neu);
-    setMeldung({ art:'ok', text:'Test gespeichert. FTP ' + (neu.ftp || '–') +
-      ' W, LTHR ' + (neu.lthr || '–') + ' bpm – die Zonen rechnen ab sofort damit.' });
 
-    /* Die Felder leeren.
-
-       Sie blieben bis zum 10.09.2026 stehen, und die Meldung war das einzige,
-       was sich nach dem Speichern aenderte - ein zweiter Tipp auf den Knopf
-       schrieb denselben Test ein zweites Mal in die Historie. Was gespeichert
-       wurde, steht darunter in der Testhistorie und ist dort auch die
-       Bestaetigung, dass es angekommen ist.
-
-       Der Zaehler im Schluessel setzt die Felder wirklich neu. Zahlenfeld haelt
-       waehrend der Eingabe einen Rohtext, damit "1," unter den Fingern nicht
-       zur 1 wird - und dieser Rohtext ueberlebt ein Leeren von aussen. Ohne
-       den Wechsel des Schluessels staenden die alten Zahlen weiter in den
-       Feldern, waehrend der Speichern-Knopf grau ist: die Anzeige haette dann
-       behauptet, es sei noch etwas einzutragen. */
-    setF(LEERES_ERGEBNIS);
-    setRunde(r => r + 1);
+    if(juengster){
+      /* Beide Werte werden uebernommen und nicht nur die FTP, wenn noch keine
+         dastand. Ein Test, dessen LTHR man danach von Hand nachtragen muss,
+         hat den halben Zweck verfehlt - und der Rueckweg steht offen: unter
+         Zonen lassen sich beide Zahlen jederzeit korrigieren. */
+      await setThresholds(neu);
+      setMeldung({ art:'ok', text:'Gespeichert. FTP ' + (neu.ftp || '–') +
+        ' W, LTHR ' + (neu.lthr || '–') + ' bpm – die Zonen rechnen ab sofort damit.' });
+    } else {
+      setMeldung({ art:'ok', text:'Gespeichert. Die Schwellenwerte bleiben stehen: ' +
+        'es gibt einen neueren Test, und der trägt die Zonen.' });
+    }
   }
+
+  return (
+    <div class="card">
+      <div class="row"><span>{ziel.eintrag ? 'Ergebnis' : 'Ergebnis eintragen'}</span>
+        <b>{datumText(ziel.datum)}{ziel.week ? ' · Woche ' + ziel.week : ''}</b></div>
+      {/* Die gerechneten Zahlen stehen schon da, waehrend man tippt - so
+          sieht man vor dem Speichern, was daraus wird. */}
+      <div class="ergebnis">
+        <div class="ergwert"><b>{werte.ftp != null ? werte.ftp + ' W' : '–'}</b><span>FTP</span></div>
+        <div class="ergwert"><b>{werte.lthr != null ? werte.lthr + ' bpm' : '–'}</b><span>LTHR</span></div>
+        <div class="ergwert"><b>{werte.wkg != null ? zahl(werte.wkg, 2) : '–'}</b><span>W/kg</span></div>
+      </div>
+      <Zahlenfeld titel="Ø-Watt der 20 min" wert={f.w20} min={1}
+        onWert={v => setF({ ...f, w20: v })} />
+      <Zahlenfeld titel="Ø-Puls der 20 min (bpm)" wert={f.hr20} min={1}
+        onWert={v => setF({ ...f, hr20: v })} />
+      {/* Kadenz statt der 5-min-Leistung: die entsteht seit Fassung 4 an
+          einem anderen Tag und steht in ihrer eigenen Karte. Die Kadenz
+          gehoert dagegen zum Test - zwei Tests bei 78 und bei 92 U/min sind
+          nicht dasselbe. */}
+      <Zahlenfeld titel="Ø-Kadenz der 20 min (U/min)" wert={f.kadenz} min={1}
+        onWert={v => setF({ ...f, kadenz: v })} />
+      {/* Das einzige Feld, das etwas ueber die Guete des Messwerts sagt.
+          Der Trainingsplan verlangt es ausdruecklich: RPE der letzten fuenf
+          Minuten, unter 9 heisst nicht ausbelastet. */}
+      <Zahlenfeld titel="RPE der letzten 5 min (1–10)" wert={f.rpe} min={1} max={10}
+        onWert={v => setF({ ...f, rpe: v })} />
+      {werte.ausbelastet === false && (
+        <p class="hint warn">
+          Unter {AUSBELASTET_RPE} heißt: nicht ausbelastet. Dann ist die FTP eher zu niedrig –
+          gemessen wurde nicht die Schwelle, sondern die Bereitschaft, an sie heranzugehen.
+          Der Wert gilt trotzdem als Untergrenze; die eFTP und die VO2max-Referenz bleiben
+          die Gegenproben.
+        </p>
+      )}
+      <Zahlenfeld titel="Gewicht (kg)" wert={f.kg} min={1} dezimal schritt="0.1"
+        onWert={v => setF({ ...f, kg: v })} />
+      <Textfeld titel="Bedingungen" wert={f.bed} onWert={v => setF({ ...f, bed: v })}
+        platzhalter="Temperatur, Wind, Strecke, Rad" />
+      <div class="buttons">
+        <button class="btn" disabled={!bereit} onClick={speichern}>
+          {ziel.eintrag ? 'Ändern' : 'Speichern'}</button>
+        <button class="btn secondary" disabled={!apiKey.value} onClick={gewichtHolen}>Gewicht holen</button>
+      </div>
+      {ziel.eintrag
+        ? <p class="hint">
+            Dieser Test ist gespeichert; die Felder zeigen, was darin steht. Wer etwas
+            berichtigt, ersetzt den Eintrag – es entsteht keine zweite Zeile für denselben Tag.
+            {juengster ? '' : ' Die Schwellenwerte bleiben dabei unberührt, weil ein neuerer Test vorliegt.'}
+          </p>
+        : <p class="hint">
+            Ø-Watt und Ø-Puls stehen in der Aufzeichnung als Werte des 20-min-Intervalls. Ohne
+            Leistungsmesser genügt der Puls – die LTHR allein trägt die Pulsbänder, die
+            Wattzonen bleiben dann leer. Das Gewicht kommt über „Gewicht holen“ aus der
+            Wellness von intervals.icu, wo es die Waage über Garmin hinterlegt hat; geschrieben
+            wird dorthin nichts.
+          </p>}
+      {meldung && <div class={'meldung ' + meldung.art}><b>{meldung.text}</b></div>}
+    </div>
+  );
+}
+
+/* Die Ergebnisansicht: erst welcher Termin, dann dessen Zahlen.
+
+   Die Terminwahl steht oben und nicht unten. Sie beantwortet die Frage, mit
+   der man herkommt - "was kam beim letzten Test heraus" ist genauso oft der
+   Grund wie "ich will eintragen", und bis zum 10.09.2026 beantwortete diese
+   Ansicht nur die zweite. */
+function ErgebnisAnsicht({ p, th, termin, start }){
+  const termine = ergebnisTermine(p, start, testLog.value, today.value);
+  const [tag, setTag] = useState(() => vorgewaehlterErgebnistag(termine, termin, today.value));
+
+  /* Faellt der gemerkte Tag weg - etwa weil der Plan gewechselt hat -, gilt
+     wieder die Vorauswahl. Kein Zustand, der auf ein Datum zeigt, das es
+     nicht mehr gibt. */
+  const ziel = termine.find(t => t.tagIso === tag)
+    || termine.find(t => t.tagIso === vorgewaehlterErgebnistag(termine, termin, today.value));
+
+  if(!ziel) return <div class="card"><p class="hint">Dieser Plan sieht keinen Schwellentest vor.</p></div>;
+
+  const heuteIso = isoDayLocal(toMidnight(today.value));
+  const optionen = termine.map(t => ({
+    id: t.tagIso,
+    label: datumText(t.datum)
+      + (t.week ? ' · W' + t.week : '')
+      + (t.eintrag ? ' · eingetragen' : (t.tagIso === heuteIso ? ' · heute' : ' · offen'))
+  }));
 
   return (
     <>
       <div class="card">
-        <div class="row"><span>Ergebnis eintragen</span>
-          <b>{termin ? datumText(termin.datum) : 'ohne Termin'}</b></div>
-        {/* Die gerechneten Zahlen stehen schon da, waehrend man tippt - so
-            sieht man vor dem Speichern, was daraus wird. */}
-        <div class="ergebnis">
-          <div class="ergwert"><b>{werte.ftp != null ? werte.ftp + ' W' : '–'}</b><span>FTP</span></div>
-          <div class="ergwert"><b>{werte.lthr != null ? werte.lthr + ' bpm' : '–'}</b><span>LTHR</span></div>
-          <div class="ergwert"><b>{werte.wkg != null ? zahl(werte.wkg, 2) : '–'}</b><span>W/kg</span></div>
-        </div>
-        <Fragment key={runde}>
-          <Zahlenfeld titel="Ø-Watt der 20 min" wert={f.w20} min={1}
-            onWert={v => setF({ ...f, w20: v })} />
-          <Zahlenfeld titel="Ø-Puls der 20 min (bpm)" wert={f.hr20} min={1}
-            onWert={v => setF({ ...f, hr20: v })} />
-          {/* Kadenz statt der 5-min-Leistung: die entsteht seit Fassung 4 an
-              einem anderen Tag und steht in ihrer eigenen Karte. Die Kadenz
-              gehoert dagegen zum Test - zwei Tests bei 78 und bei 92 U/min sind
-              nicht dasselbe. */}
-          <Zahlenfeld titel="Ø-Kadenz der 20 min (U/min)" wert={f.kadenz} min={1}
-            onWert={v => setF({ ...f, kadenz: v })} />
-          {/* Das einzige Feld, das etwas ueber die Guete des Messwerts sagt.
-              Der Trainingsplan verlangt es ausdruecklich: RPE der letzten fuenf
-              Minuten, unter 9 heisst nicht ausbelastet. */}
-          <Zahlenfeld titel="RPE der letzten 5 min (1–10)" wert={f.rpe} min={1} max={10}
-            onWert={v => setF({ ...f, rpe: v })} />
-          {werte.ausbelastet === false && (
-            <p class="hint warn">
-              Unter {AUSBELASTET_RPE} heißt: nicht ausbelastet. Dann ist die FTP eher zu niedrig –
-              gemessen wurde nicht die Schwelle, sondern die Bereitschaft, an sie heranzugehen.
-              Der Wert gilt trotzdem als Untergrenze; die eFTP und die VO2max-Referenz bleiben
-              die Gegenproben.
-            </p>
-          )}
-          <Zahlenfeld titel="Gewicht (kg)" wert={f.kg} min={1} dezimal schritt="0.1"
-            onWert={v => setF({ ...f, kg: v })} />
-          <Textfeld titel="Bedingungen" wert={f.bed} onWert={v => setF({ ...f, bed: v })}
-            platzhalter="Temperatur, Wind, Strecke, Rad" />
-        </Fragment>
-        <div class="buttons">
-          <button class="btn" disabled={!bereit} onClick={speichern}>Speichern</button>
-          <button class="btn secondary" disabled={!apiKey.value} onClick={gewichtHolen}>Gewicht holen</button>
-        </div>
+        <div class="row"><span>Testtermin</span>
+          <b>{termine.filter(t => t.eintrag).length} von {termine.length} eingetragen</b></div>
+        <Auswahlfeld titel="Termin" wert={ziel.tagIso} onWert={setTag} optionen={optionen} />
         <p class="hint">
-          Ø-Watt und Ø-Puls stehen in der Aufzeichnung als Werte des 20-min-Intervalls. Ohne
-          Leistungsmesser genügt der Puls – die LTHR allein trägt die Pulsbänder, die
-          Wattzonen bleiben dann leer. Das Gewicht kommt über „Gewicht holen“ aus der
-          Wellness von intervals.icu, wo es die Waage über Garmin hinterlegt hat; geschrieben
-          wird dorthin nichts. Gespeichert wird hier – „Zonen &amp; Schwellenwerte“ ist zum
-          Korrigieren da, nicht zum Eintragen.
+          Jeder Termin des Plans, dazu jeder Tag, an dem tatsächlich ein Test steht – ein
+          verschobener Test wird unter dem Tag eingetragen, an dem er gefahren wurde, und nicht
+          unter dem, an dem er geplant war.
         </p>
-        {meldung && <div class={'meldung ' + meldung.art}><b>{meldung.text}</b></div>}
       </div>
+
+      <Ergebnisformular key={ziel.tagIso} p={p} th={th} ziel={ziel} />
 
       {testLog.value.length > 0 && (
         <div class="card">
@@ -785,7 +847,7 @@ export function TestTab(){
     return (
       <>
         {umschalter}
-        <ErgebnisAnsicht p={p} th={th} termin={termin} />
+        <ErgebnisAnsicht p={p} th={th} termin={termin} start={start} />
       </>
     );
   }

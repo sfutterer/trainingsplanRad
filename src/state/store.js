@@ -160,8 +160,23 @@ export async function saveCoreLog(list){
   await store.setCoreLog(coreLog.value);
 }
 
-export async function addTestEntry(entry){
-  testLog.value = testLog.value.concat([entry]);
+/* Ein Test je Tag, und die Liste nach Datum sortiert.
+
+   Hiess bis zum 10.09.2026 addTestEntry und haengte blind an. Solange das
+   Formular nach dem Speichern leer stehenblieb, fiel das nicht auf; seit die
+   Ergebnisansicht einen gespeicherten Test wieder anzeigt und aendern laesst,
+   waere jede Korrektur eine zweite Zeile fuer denselben Tag geworden - zwei
+   Werte fuer eine Messung, und der Verlauf haette beide gezeichnet.
+
+   Sortiert wird beim Schreiben und nicht beim Lesen: das Protokoll wird auf
+   die letzten Eintraege gekuerzt, und "die letzten" heisst nur dann die
+   juengsten, wenn die Reihenfolge stimmt. Ein nachgetragener alter Test haette
+   sonst den neuesten aus der Liste geschoben. */
+export async function saveTestEntry(entry){
+  testLog.value = testLog.value
+    .filter(e => !e || e.day !== entry.day)
+    .concat([entry])
+    .sort((a, b) => (a.day < b.day ? -1 : 1));
   await store.setTestLog(testLog.value);
 }
 
