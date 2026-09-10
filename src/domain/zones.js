@@ -25,6 +25,34 @@ export function usesCoggan(plan, th, week){
   return week >= plan.cogganFromWeek && hasLthr(th);
 }
 
+/* Warum gerade diese Baender gelten.
+
+   usesCoggan beantwortet die Frage mit ja oder nein, und genau daran ist die
+   Anzeige bis zum 10.09.2026 gescheitert: wer am Testtag seine LTHR eintrug,
+   sah die Pulsbaender unveraendert stehen und keinen Grund dafuer. Die
+   Wattzonen wechselten dagegen sofort - sie haengen an der FTP und an keiner
+   Woche -, also sah die Karte halb umgeschaltet aus. Der naechstliegende
+   Schluss war, die Zahlen stuenden fest im Code.
+
+   Zwei Gruende halten die Uebergangsbaender, und sie sind verschieden:
+
+     'kein-test'   es gibt keine LTHR. Ohne Messung gibt es nichts zu rechnen.
+     'zu-frueh'    die LTHR steht, die Woche ist noch nicht so weit. So
+                   verlangt es der Plan: der Test misst die Baender des
+                   Folgeblocks, nicht die der laufenden Woche.
+
+   abWoche und abWeek/abDatum liegen bei, damit die Anzeige "ab Woche 5" mit
+   einem Datum belegen kann - eine Wochennummer allein beantwortet "wann?"
+   nicht. */
+export function zonenGrund(plan, th, week){
+  if(usesCoggan(plan, th, week)) return { coggan: true, grund: 'coggan', abWoche: null };
+  return {
+    coggan: false,
+    grund: hasLthr(th) ? 'zu-frueh' : 'kein-test',
+    abWoche: hasLthr(th) ? plan.cogganFromWeek : null
+  };
+}
+
 export function hrBands(plan, th, week){
   return usesCoggan(plan, th, week) ? cogganHrBands(plan, th.lthr) : plan.hrTransition;
 }

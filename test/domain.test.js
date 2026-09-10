@@ -811,3 +811,48 @@ describe('Mittwoch', () => {
     expect(ohneFahrt.hinweise).toContain(json.texts.wednesdayNoRide);
   });
 });
+
+/* ---- Warum gerade diese Zonen gelten ----
+
+   Die Zonenkarte zeigte bis zum 10.09.2026 nur das Ergebnis. Wer am Testtag
+   seine LTHR eintrug, sah die Pulsbaender unveraendert stehen, waehrend die
+   Wattzonen aus der frisch gemessenen FTP sofort erschienen - und schloss
+   daraus, die Zahlen stuenden fest im Code. Der Grund ist jetzt eine eigene
+   Auskunft und wird hier geprueft, nicht nur angezeigt. */
+describe('Grund fuer das Zonenmodell', () => {
+  const mitTest = { ftp: 212, lthr: 163, hrmax: 187 };
+  const ab = plan.cogganFromWeek;
+
+  it('nennt Coggan, sobald LTHR und Woche zusammenkommen', () => {
+    const g = Z.zonenGrund(plan, mitTest, ab);
+    expect(g).toEqual({ coggan: true, grund: 'coggan', abWoche: null });
+    expect(Z.hrBands(plan, mitTest, ab)).not.toBe(plan.hrTransition);
+  });
+
+  /* Der Fall, der die Frage ausgeloest hat: gemessen ist, gerechnet wird
+     spaeter. Der Test misst die Baender des Folgeblocks. */
+  it('unterscheidet "zu frueh" von "kein Test"', () => {
+    const frueh = Z.zonenGrund(plan, mitTest, ab - 1);
+    expect(frueh.coggan).toBe(false);
+    expect(frueh.grund).toBe('zu-frueh');
+    expect(frueh.abWoche).toBe(ab);
+
+    const ohne = Z.zonenGrund(plan, Z.NO_THRESHOLDS, ab + 3);
+    expect(ohne.grund).toBe('kein-test');
+    /* Ohne Messung gibt es kein Datum zu nennen - es faengt nie von selbst an. */
+    expect(ohne.abWoche).toBe(null);
+  });
+
+  it('haelt in beiden Faellen die Uebergangsbaender', () => {
+    expect(Z.hrBands(plan, mitTest, ab - 1)).toBe(plan.hrTransition);
+    expect(Z.hrBands(plan, Z.NO_THRESHOLDS, ab + 3)).toBe(plan.hrTransition);
+  });
+
+  /* "Ab Woche 5" beantwortet "wann?" nicht, solange man nachzaehlen muss. */
+  it('belegt die Wochennummer mit einem Datum', () => {
+    expect(W.weekStartFor(1, start).getTime()).toBe(start.getTime());
+    expect(W.weekNumberFor(W.weekStartFor(ab, start), start)).toBe(ab);
+    /* Der erste Tag der Woche und nicht irgendeiner darin. */
+    expect(W.weekNumberFor(W.addDays(W.weekStartFor(ab, start), -1), start)).toBe(ab - 1);
+  });
+});

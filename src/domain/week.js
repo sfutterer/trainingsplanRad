@@ -228,6 +228,15 @@ export function trainingWeekDays(date, startDate){
   return out;
 }
 
+/* Der erste Tag einer Wochennummer - die Umkehrung von weekNumberFor.
+
+   Gebraucht, wo eine Regel an einer Wochennummer haengt und die Anzeige sagen
+   soll, ab wann sie greift. "Ab Woche 5" beantwortet die Frage "wann denn?"
+   nicht, solange man dafuer nachzaehlen muss. */
+export function weekStartFor(week, startDate){
+  return addDays(toMidnight(startDate), (week - 1) * 7);
+}
+
 export function startOfMonth(date){
   const x = toMidnight(date);
   x.setDate(1);

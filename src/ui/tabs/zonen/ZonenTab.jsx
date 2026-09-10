@@ -22,9 +22,9 @@ import { useState } from 'preact/hooks';
 import { plan, thresholds, week, testLog, interimLog, startDate,
          setThresholds, addInterimEntry } from '../../../state/store.js';
 import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag,
-         datumText } from '../../../domain/week.js';
+         datumText, weekStartFor } from '../../../domain/week.js';
 import { gotoTab } from '../../../state/navigation.js';
-import { hrBands, usesCoggan, zoneBand } from '../../../domain/zones.js';
+import { hrBands, zonenGrund, zoneBand } from '../../../domain/zones.js';
 import { sprechtestBezug, FTP_FAKTOR } from '../../../domain/test.js';
 import { zahl } from '../../../domain/zahlen.js';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
@@ -33,10 +33,21 @@ import { Testhistorie } from '../../components/Testhistorie.jsx';
 import { Zahlenfeld, Textfeld } from '../../components/Feld.jsx';
 import './zonen.css';
 
+/* Die Zonen und - seit dem 10.09.2026 - der Grund, aus dem gerade diese
+   gelten.
+
+   Die Karte zeigte nur das Ergebnis. Wer am Testtag seine LTHR eintrug, sah
+   die Pulsbaender unveraendert stehen, waehrend die Wattzonen aus der frisch
+   gemessenen FTP sofort erschienen - die haengen an keiner Woche. Eine Karte,
+   die halb umschaltet und nichts dazu sagt, laesst genau einen Schluss zu:
+   die Zahlen stehen fest im Code. Sie stehen in plan.json, und was fehlte,
+   war der Satz, ab wann damit gerechnet wird. */
 function ZonenKarte(){
-  const p = plan.value, th = thresholds.value, w = week.value;
+  const p = plan.value, th = thresholds.value, w = week.value, start = startDate.value;
   const bands = hrBands(p, th, w);
-  const coggan = usesCoggan(p, th, w);
+  const { coggan, grund, abWoche } = zonenGrund(p, th, w);
+  const abDatum = abWoche && start ? weekStartFor(abWoche, start) : null;
+
   return (
     <div class="card">
       <div class="row"><span>Zonenmodell</span><b>
@@ -44,7 +55,30 @@ function ZonenKarte(){
                 : 'Übergangsbänder, Arbeitsannahme'}
       </b></div>
       <Zonenliste bands={bands} plan={p} thresholds={th} mitWatt />
+
+      {grund === 'zu-frueh' && (
+        <p class="hint good">
+          Die gemessene LTHR steht ({th.lthr} bpm) und ist nicht verloren – gerechnet wird mit
+          ihr ab Woche {abWoche}
+          {abDatum ? ', also ab ' + datumText(abDatum) : ''}. Bis dahin gelten die
+          Übergangsbänder. So verlangt es der Plan: der Test misst die Bänder des
+          <b> Folgeblocks</b>, nicht die der laufenden Woche.
+          {th.ftp > 0 ? ' Die Wattzonen stehen schon jetzt daneben – sie hängen an der FTP und an keiner Woche.' : ''}
+        </p>
+      )}
+      {grund === 'kein-test' && w >= p.cogganFromWeek && (
+        <p class="hint warn">
+          Ab Woche {p.cogganFromWeek} wäre Coggan vorgesehen, es fehlt aber die LTHR. Solange kein
+          Test eingetragen ist, laufen die Übergangsbänder weiter – die App rechnet nicht mit
+          Zonen, die nicht gemessen wurden.
+        </p>
+      )}
+
       <p class="hint">{coggan ? p.texts.zoneNoteCoggan : p.texts.zoneNoteTransition}</p>
+      <p class="hint">
+        Keine dieser Zahlen steht im Code: die Übergangsbänder und die Coggan-Prozentsätze
+        stehen in <b>plan.json</b>, die LTHR und die FTP kommen aus dem Schwellentest.
+      </p>
     </div>
   );
 }

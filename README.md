@@ -264,6 +264,27 @@ Test verschoben – deshalb steht „heute“ immer zur Wahl, und ein Eintrag an
 Tag, den der Plan nicht als Testtermin kennt, taucht in der Liste auf wie jeder
 andere.
 
+## Woher die Zonen kommen
+
+Keine Zonengrenze steht im Code. Die **Übergangsbänder** (bpm, absolut) und die
+**Coggan-Prozentsätze** stehen in `plan.json` unter `heartRateZones`, die
+Wattzonen als Faktoren unter `powerZones`; LTHR und FTP kommen aus dem
+Schwellentest.
+
+Welches Modell gilt, entscheidet `usesCoggan`: ab `heartRateZones.cogganFromWeek`
+(im ausgelieferten Plan **Woche 5**) **und** nur, wenn eine LTHR eingetragen ist.
+Beides muss zutreffen – ohne Messung rechnet die App nicht mit Zonen, die es
+nicht gibt, und vor der Grenzwoche gelten die Übergangsbänder, weil der Test die
+Bänder des **Folgeblocks** misst und nicht die der laufenden Woche.
+
+Das führte zu einem Missverständnis, das die Karte jetzt selbst ausräumt: wer den
+Test am Donnerstag der Woche 4 einträgt, sieht die Pulsbänder unverändert stehen,
+während die Wattzonen aus der frisch gemessenen FTP sofort erscheinen – die
+hängen an keiner Woche. Eine Karte, die halb umschaltet und nichts dazu sagt,
+sieht aus wie hartcodierte Zahlen. `zonenGrund` unterscheidet deshalb „zu früh“
+(LTHR liegt vor, Woche noch nicht erreicht – mit Datum, ab dem gerechnet wird)
+von „kein Test“ (es fehlt die Messung), und die Karte schreibt beides hin.
+
 Ein Donnerstag darf daneben eine **Variante** tragen – eine zweite zulässige Form
 desselben Tages, über die am Tag selbst entschieden wird. Im ausgelieferten Plan
 ist das die VO2max-Referenz in Woche 5: fünf Minuten maximal als erste
