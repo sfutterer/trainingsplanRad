@@ -9,6 +9,68 @@
 
 export const NO_THRESHOLDS = { ftp: null, lthr: null, hrmax: null };
 
+/* ---- Woher ein Schwellenwert kommt ----
+
+   Die drei Zahlen entstehen auf zwei Wegen, und die App wusste bis zum
+   10.09.2026 nicht, welcher es war. Die Zonenkarte behauptete deshalb "aus
+   Test übernommen", sobald ueberhaupt eine LTHR dastand - auch bei einer, die
+   jemand von Hand eingetippt hatte. Umgekehrt nannte der Hinweis eine
+   getippte Zahl "die gemessene LTHR". Zwei Saetze, die dasselbe Feld
+   verschieden erklaeren, und beide koennen falsch sein.
+
+   Der Unterschied ist keiner der Anzeige. Ein Messwert ist an einem Tag unter
+   einem Protokoll entstanden und ist mit dem naechsten Test vergleichbar; eine
+   getippte Zahl ist eine Annahme, eine Korrektur oder ein Wert von woanders.
+   Beide gelten gleich - gerechnet wird mit dem, was zuletzt gesetzt wurde -,
+   aber wer die Baender einordnen will, muss sehen, was er vor sich hat.
+
+   Die Herkunft haengt an jedem Wert einzeln, nicht am Satz: HFmax misst kein
+   Schwellentest, die Zahl ist also praktisch immer von Hand, waehrend FTP und
+   LTHR daneben gemessen sein koennen.
+
+     { art: 'test', tag: '2026-09-10' }   im Test dieses Tages gemessen
+     { art: 'hand' }                      von Hand eingetragen
+     null / fehlt                         nicht gesetzt oder nicht vermerkt
+
+   Nicht vermerkt heisst nicht vermerkt: Schwellenwerte, die vor dieser
+   Aenderung gespeichert wurden, tragen keine Herkunft, und die Anzeige rate
+   nicht - sie schweigt darueber, bis der Wert das naechste Mal gesetzt wird. */
+
+export const SCHWELLEN_FELDER = ['ftp', 'lthr', 'hrmax'];
+
+export function quelleVon(th, feld){
+  const q = th && th.quellen && th.quellen[feld];
+  return q && q.art ? q : null;
+}
+
+function mitQuellen(neu, quellen){
+  return { ftp: neu.ftp ?? null, lthr: neu.lthr ?? null, hrmax: neu.hrmax ?? null, quellen };
+}
+
+/* Nach einem Test. Gemessen ist, was der Test hergab - und zwar auch dann,
+   wenn dieselbe Zahl schon dastand: eine Wiederholungsmessung ist eine
+   Messung. Was der Test nicht misst, behaelt seine bisherige Herkunft; sonst
+   truege eine mitgereichte HFmax nach jedem Test den Stempel "gemessen". */
+export function schwellenAusTest(alt, neu, gemessen, tag){
+  const quellen = { ...(alt && alt.quellen) };
+  for(const f of SCHWELLEN_FELDER){
+    if(neu[f] == null){ quellen[f] = null; continue; }
+    if(gemessen && gemessen[f]) quellen[f] = { art: 'test', tag };
+  }
+  return mitQuellen(neu, quellen);
+}
+
+/* Von Hand. Markiert wird, was sich geaendert hat - wer nur die HFmax
+   nachtraegt, soll damit nicht die gemessene FTP zu einer getippten machen. */
+export function schwellenVonHand(alt, neu){
+  const quellen = { ...(alt && alt.quellen) };
+  for(const f of SCHWELLEN_FELDER){
+    if(neu[f] == null){ quellen[f] = null; continue; }
+    if(!alt || alt[f] !== neu[f]) quellen[f] = { art: 'hand' };
+  }
+  return mitQuellen(neu, quellen);
+}
+
 function hasLthr(th){ return !!(th && th.lthr > 0); }
 function hasFtp(th){  return !!(th && th.ftp  > 0); }
 
@@ -45,11 +107,16 @@ export function usesCoggan(plan, th, week){
    einem Datum belegen kann - eine Wochennummer allein beantwortet "wann?"
    nicht. */
 export function zonenGrund(plan, th, week){
-  if(usesCoggan(plan, th, week)) return { coggan: true, grund: 'coggan', abWoche: null };
+  /* Die Herkunft der LTHR gehoert dazu: sie ist die Zahl, aus der die Baender
+     entstehen, und ob sie gemessen oder getippt ist, aendert nichts an der
+     Rechnung, aber alles an ihrer Belastbarkeit. */
+  const quelle = quelleVon(th, 'lthr');
+  if(usesCoggan(plan, th, week)) return { coggan: true, grund: 'coggan', abWoche: null, quelle };
   return {
     coggan: false,
     grund: hasLthr(th) ? 'zu-frueh' : 'kein-test',
-    abWoche: hasLthr(th) ? plan.cogganFromWeek : null
+    abWoche: hasLthr(th) ? plan.cogganFromWeek : null,
+    quelle
   };
 }
 

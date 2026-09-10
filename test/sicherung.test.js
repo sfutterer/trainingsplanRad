@@ -68,7 +68,7 @@ describe('Sicherung einspielen', () => {
     }
     /* Und ueber die Repos gelesen, nicht nur als Zeichenkette verglichen. */
     expect(await ziel.startDate()).toBe('2026-08-15');
-    expect(await ziel.thresholds()).toEqual({ ftp:230, lthr:160, hrmax:186 });
+    expect(await ziel.thresholds()).toEqual({ ftp:230, lthr:160, hrmax:186, quellen:{} });
     expect(await ziel.coreLog()).toHaveLength(1);
     expect(await ziel.testLog()).toHaveLength(1);
     expect(await ziel.interimLog()).toHaveLength(1);

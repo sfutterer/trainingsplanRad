@@ -105,7 +105,7 @@ describe('Profiladapter', () => {
     const repos = createRepos(a);
 
     await repos.setThresholds({ ftp:230, lthr:160, hrmax:186 });
-    expect(await repos.thresholds()).toEqual({ ftp:230, lthr:160, hrmax:186 });
+    expect(await repos.thresholds()).toEqual({ ftp:230, lthr:160, hrmax:186, quellen:{} });
     expect(await basis.get(praefixFuer(ANNA.id) + KEYS.thresholds)).toBeTruthy();
     expect(await basis.get(KEYS.thresholds)).toBe(null);
   });

@@ -825,8 +825,21 @@ describe('Grund fuer das Zonenmodell', () => {
 
   it('nennt Coggan, sobald LTHR und Woche zusammenkommen', () => {
     const g = Z.zonenGrund(plan, mitTest, ab);
-    expect(g).toEqual({ coggan: true, grund: 'coggan', abWoche: null });
+    expect(g).toEqual({ coggan: true, grund: 'coggan', abWoche: null, quelle: null });
     expect(Z.hrBands(plan, mitTest, ab)).not.toBe(plan.hrTransition);
+  });
+
+  /* Die Herkunft der LTHR reicht durch: die Baender aendert sie nicht, ihre
+     Belastbarkeit schon. */
+  it('reicht die Herkunft der LTHR mit durch', () => {
+    const gemessen = { ...mitTest, quellen: { lthr: { art:'test', tag:'2026-09-10' } } };
+    expect(Z.zonenGrund(plan, gemessen, ab).quelle).toEqual({ art:'test', tag:'2026-09-10' });
+    expect(Z.zonenGrund(plan, gemessen, ab - 1).quelle).toEqual({ art:'test', tag:'2026-09-10' });
+
+    const getippt = { ...mitTest, quellen: { lthr: { art:'hand' } } };
+    expect(Z.zonenGrund(plan, getippt, ab).quelle).toEqual({ art:'hand' });
+    /* Ohne Vermerk bleibt es bei null - geraten wird nicht. */
+    expect(Z.zonenGrund(plan, mitTest, ab).quelle).toBe(null);
   });
 
   /* Der Fall, der die Frage ausgeloest hat: gemessen ist, gerechnet wird
@@ -854,5 +867,78 @@ describe('Grund fuer das Zonenmodell', () => {
     expect(W.weekNumberFor(W.weekStartFor(ab, start), start)).toBe(ab);
     /* Der erste Tag der Woche und nicht irgendeiner darin. */
     expect(W.weekNumberFor(W.addDays(W.weekStartFor(ab, start), -1), start)).toBe(ab - 1);
+  });
+});
+
+/* ---- Woher ein Schwellenwert kommt ----
+
+   Die App wusste es bis zum 10.09.2026 nicht und behauptete trotzdem etwas:
+   die Zonenkarte schrieb "aus Test uebernommen", sobald ueberhaupt eine LTHR
+   dastand, auch bei einer von Hand getippten. Beide Wege gelten gleich - was
+   zuletzt gesetzt wurde, traegt die Baender -, aber die Anzeige muss sie
+   auseinanderhalten koennen. */
+describe('Herkunft der Schwellenwerte', () => {
+  const leer = { ftp:null, lthr:null, hrmax:null, quellen:{} };
+
+  it('markiert nach einem Test nur, was der Test misst', () => {
+    const vonHand = Z.schwellenVonHand(leer, { ftp:null, lthr:null, hrmax:186 });
+    const nachTest = Z.schwellenAusTest(vonHand,
+      { ftp:219, lthr:168, hrmax:186 }, { ftp:true, lthr:true }, '2026-09-10');
+
+    expect(Z.quelleVon(nachTest, 'ftp')).toEqual({ art:'test', tag:'2026-09-10' });
+    expect(Z.quelleVon(nachTest, 'lthr')).toEqual({ art:'test', tag:'2026-09-10' });
+    /* Die HFmax misst kein Schwellentest - sie behaelt ihren Vermerk. */
+    expect(Z.quelleVon(nachTest, 'hrmax')).toEqual({ art:'hand' });
+  });
+
+  /* Ohne aufgezeichneten Puls faellt die LTHR auf den bisherigen Wert
+     zurueck. Sie ist dann nicht in diesem Test gemessen worden, auch wenn sie
+     mit ihm gespeichert wird. */
+  it('laesst einen mitgereichten Wert seine Herkunft behalten', () => {
+    const vorher = Z.schwellenVonHand(leer, { ftp:null, lthr:158, hrmax:null });
+    const nachTest = Z.schwellenAusTest(vorher,
+      { ftp:219, lthr:158, hrmax:null }, { ftp:true, lthr:false }, '2026-09-10');
+
+    expect(Z.quelleVon(nachTest, 'ftp').art).toBe('test');
+    expect(Z.quelleVon(nachTest, 'lthr')).toEqual({ art:'hand' });
+  });
+
+  /* Eine Wiederholungsmessung ist eine Messung, auch wenn dieselbe Zahl
+     herauskommt - sonst truege der zweite Test den Vermerk des ersten. */
+  it('markiert eine Messung auch bei unveraenderter Zahl', () => {
+    const ersterTest = Z.schwellenAusTest(leer,
+      { ftp:219, lthr:168, hrmax:null }, { ftp:true, lthr:true }, '2026-09-10');
+    const zweiterTest = Z.schwellenAusTest(ersterTest,
+      { ftp:219, lthr:168, hrmax:null }, { ftp:true, lthr:true }, '2026-10-22');
+
+    expect(Z.quelleVon(zweiterTest, 'lthr').tag).toBe('2026-10-22');
+  });
+
+  /* Wer nur die HFmax nachtraegt, soll damit nicht die gemessene FTP zu einer
+     getippten machen. */
+  it('markiert von Hand nur, was sich geaendert hat', () => {
+    const nachTest = Z.schwellenAusTest(leer,
+      { ftp:219, lthr:168, hrmax:null }, { ftp:true, lthr:true }, '2026-09-10');
+    const mitHfmax = Z.schwellenVonHand(nachTest, { ftp:219, lthr:168, hrmax:186 });
+
+    expect(Z.quelleVon(mitHfmax, 'ftp').art).toBe('test');
+    expect(Z.quelleVon(mitHfmax, 'lthr').art).toBe('test');
+    expect(Z.quelleVon(mitHfmax, 'hrmax')).toEqual({ art:'hand' });
+
+    /* Die von Hand korrigierte LTHR gilt und heisst dann auch so. */
+    const korrigiert = Z.schwellenVonHand(mitHfmax, { ftp:219, lthr:171, hrmax:186 });
+    expect(korrigiert.lthr).toBe(171);
+    expect(Z.quelleVon(korrigiert, 'lthr')).toEqual({ art:'hand' });
+    expect(Z.quelleVon(korrigiert, 'ftp').art).toBe('test');
+  });
+
+  it('vergisst die Herkunft eines geleerten Wertes', () => {
+    const nachTest = Z.schwellenAusTest(leer,
+      { ftp:219, lthr:168, hrmax:null }, { ftp:true, lthr:true }, '2026-09-10');
+    const ohneFtp = Z.schwellenVonHand(nachTest, { ftp:null, lthr:168, hrmax:null });
+
+    expect(ohneFtp.ftp).toBe(null);
+    expect(Z.quelleVon(ohneFtp, 'ftp')).toBe(null);
+    expect(Z.quelleVon(ohneFtp, 'lthr').art).toBe('test');
   });
 });

@@ -285,6 +285,27 @@ sieht aus wie hartcodierte Zahlen. `zonenGrund` unterscheidet deshalb „zu frü
 (LTHR liegt vor, Woche noch nicht erreicht – mit Datum, ab dem gerechnet wird)
 von „kein Test“ (es fehlt die Messung), und die Karte schreibt beides hin.
 
+### Gemessen oder von Hand
+
+FTP, LTHR und HFmax entstehen auf zwei Wegen: ein Schwellentest **misst** sie,
+oder man **trägt sie ein**. Beide gelten gleich – gerechnet wird mit dem, was
+zuletzt gesetzt wurde, eine von Hand eingetragene LTHR trägt die Coggan-Bänder
+genauso wie eine gemessene. Was fehlte, war die Auskunft, welcher Fall vorliegt:
+die Karte behauptete „aus Test übernommen“, sobald überhaupt eine LTHR dastand.
+
+Seit dem 10.09.2026 hängt die Herkunft an jedem Wert **einzeln**
+(`thresholds.quellen`), weil der Normalfall gemischt ist – HFmax misst kein
+Schwellentest:
+
+| | markiert wird |
+|---|---|
+| `schwellenAusTest` | was der Test hergab, auch bei unveränderter Zahl (eine Wiederholungsmessung ist eine Messung) |
+| `schwellenVonHand` | was sich geändert hat (wer nur HFmax nachträgt, macht damit keine gemessene FTP zu einer getippten) |
+
+Werte aus der Zeit davor tragen keinen Vermerk. Die Anzeige rät dann nicht,
+sondern schreibt „nicht vermerkt“ – eine geratene Herkunft stünde so bestimmt da
+wie eine belegte. Beim nächsten Setzen des Wertes klärt sich das von selbst.
+
 Ein Donnerstag darf daneben eine **Variante** tragen – eine zweite zulässige Form
 desselben Tages, über die am Tag selbst entschieden wird. Im ausgelieferten Plan
 ist das die VO2max-Referenz in Woche 5: fünf Minuten maximal als erste

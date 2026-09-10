@@ -99,12 +99,29 @@ export function createRepos(store){
       return k ? store.set(KEYS.mapKey, k) : store.remove(KEYS.mapKey);
     },
 
+    /* quellen wandert mit: seit dem 10.09.2026 haengt an jedem der drei Werte,
+       ob er in einem Test gemessen oder von Hand gesetzt wurde. Nur die drei
+       bekannten Felder werden uebernommen und nur mit den beiden bekannten
+       Arten - was hier hereinkommt, kann aus einer Sicherung stammen.
+
+       Fehlt der Block, bleibt er leer. Aus einer Zahl allein laesst sich ihre
+       Herkunft nicht erraten, und eine geratene Herkunft waere schlimmer als
+       gar keine: sie stuende so bestimmt da wie eine vermerkte. */
     async thresholds(){
       const v = await json(KEYS.thresholds, null);
       const n = x => (x > 0 ? Math.round(x) : null);
-      return v && typeof v === 'object'
-        ? { ftp:n(v.ftp), lthr:n(v.lthr), hrmax:n(v.hrmax) }
-        : { ftp:null, lthr:null, hrmax:null };
+      if(!(v && typeof v === 'object')) return { ftp:null, lthr:null, hrmax:null, quellen:{} };
+
+      const quellen = {};
+      const roh = v.quellen && typeof v.quellen === 'object' ? v.quellen : {};
+      for(const f of ['ftp', 'lthr', 'hrmax']){
+        const q = roh[f];
+        if(!(q && (q.art === 'test' || q.art === 'hand'))) continue;
+        quellen[f] = q.art === 'test' && typeof q.tag === 'string'
+          ? { art:'test', tag:q.tag }
+          : { art:q.art };
+      }
+      return { ftp:n(v.ftp), lthr:n(v.lthr), hrmax:n(v.hrmax), quellen };
     },
     async setThresholds(t){ return store.set(KEYS.thresholds, JSON.stringify(t)); },
 

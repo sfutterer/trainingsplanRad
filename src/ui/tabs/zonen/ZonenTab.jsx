@@ -24,7 +24,8 @@ import { plan, thresholds, week, testLog, interimLog, startDate,
 import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag,
          datumText, weekStartFor } from '../../../domain/week.js';
 import { gotoTab } from '../../../state/navigation.js';
-import { hrBands, zonenGrund, zoneBand } from '../../../domain/zones.js';
+import { hrBands, zonenGrund, zoneBand, quelleVon, schwellenVonHand,
+         SCHWELLEN_FELDER } from '../../../domain/zones.js';
 import { sprechtestBezug, FTP_FAKTOR } from '../../../domain/test.js';
 import { zahl } from '../../../domain/zahlen.js';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
@@ -42,11 +43,23 @@ import './zonen.css';
    die halb umschaltet und nichts dazu sagt, laesst genau einen Schluss zu:
    die Zahlen stehen fest im Code. Sie stehen in plan.json, und was fehlte,
    war der Satz, ab wann damit gerechnet wird. */
+/* Woher ein Wert kommt, in Worten. Ohne Vermerk kein Satz: eine geratene
+   Herkunft stuende so bestimmt da wie eine vermerkte. */
+function herkunftText(quelle){
+  if(!quelle) return null;
+  if(quelle.art === 'hand') return 'von Hand eingetragen';
+  return 'im Test' + (quelle.tag ? ' vom ' + datumText(dayFromIso(quelle.tag)) : '') + ' gemessen';
+}
+
 function ZonenKarte(){
   const p = plan.value, th = thresholds.value, w = week.value, start = startDate.value;
   const bands = hrBands(p, th, w);
-  const { coggan, grund, abWoche } = zonenGrund(p, th, w);
+  const { coggan, grund, abWoche, quelle } = zonenGrund(p, th, w);
   const abDatum = abWoche && start ? weekStartFor(abWoche, start) : null;
+  /* Die Herkunft der LTHR als Einschub, oder gar nichts. Sie steht nicht als
+     eigener Satz da: der Hinweis erklaert, ab wann gerechnet wird, und woher
+     die Zahl kommt, gehoert in dieselbe Zeile. */
+  const woher = herkunftText(quelle);
 
   return (
     <div class="card">
@@ -56,10 +69,15 @@ function ZonenKarte(){
       </b></div>
       <Zonenliste bands={bands} plan={p} thresholds={th} mitWatt />
 
+      {coggan && woher && (
+        <p class="hint">
+          Die Bänder entstehen aus der LTHR von {th.lthr} bpm – {woher}.
+        </p>
+      )}
       {grund === 'zu-frueh' && (
         <p class="hint good">
-          Die gemessene LTHR steht ({th.lthr} bpm) und ist nicht verloren – gerechnet wird mit
-          ihr ab Woche {abWoche}
+          Die LTHR steht ({th.lthr} bpm{woher ? ', ' + woher : ''}) und ist nicht verloren –
+          gerechnet wird mit ihr ab Woche {abWoche}
           {abDatum ? ', also ab ' + datumText(abDatum) : ''}. Bis dahin gelten die
           Übergangsbänder. So verlangt es der Plan: der Test misst die Bänder des
           <b> Folgeblocks</b>, nicht die der laufenden Woche.
@@ -68,16 +86,16 @@ function ZonenKarte(){
       )}
       {grund === 'kein-test' && w >= p.cogganFromWeek && (
         <p class="hint warn">
-          Ab Woche {p.cogganFromWeek} wäre Coggan vorgesehen, es fehlt aber die LTHR. Solange kein
-          Test eingetragen ist, laufen die Übergangsbänder weiter – die App rechnet nicht mit
-          Zonen, die nicht gemessen wurden.
+          Ab Woche {p.cogganFromWeek} wäre Coggan vorgesehen, es fehlt aber die LTHR. Solange
+          keine dasteht – gemessen oder von Hand –, laufen die Übergangsbänder weiter.
         </p>
       )}
 
       <p class="hint">{coggan ? p.texts.zoneNoteCoggan : p.texts.zoneNoteTransition}</p>
       <p class="hint">
         Keine dieser Zahlen steht im Code: die Übergangsbänder und die Coggan-Prozentsätze
-        stehen in <b>plan.json</b>, die LTHR und die FTP kommen aus dem Schwellentest.
+        stehen in <b>plan.json</b>, LTHR und FTP kommen aus dem Schwellentest oder aus der
+        Eingabe darunter.
       </p>
     </div>
   );
@@ -170,7 +188,29 @@ function Verlauf({ eintraege }){
 
    Der Weg zum Test steht daneben als Knopf. Er ist der Grund, aus dem das
    Formular hier verschwinden konnte: wer hierher kam, um einen Test
-   einzutragen, ist einen Tipp entfernt von der Stelle, an der das geht. */
+   einzutragen, ist einen Tipp entfernt von der Stelle, an der das geht.
+
+   Was hier eingetragen wird, gilt - genau wie ein Messwert und ohne
+   Einschraenkung. Die Kopfzeile behauptete bis zum 10.09.2026 "aus Test
+   uebernommen", sobald ueberhaupt eine LTHR dastand, auch bei einer von Hand
+   getippten. Jetzt steht je Wert dabei, woher er kommt: eine getippte HFmax
+   neben einer gemessenen FTP ist der Normalfall und keine Unstimmigkeit. */
+
+const FELDNAMEN = { ftp: 'FTP', lthr: 'LTHR', hrmax: 'HFmax' };
+const EINHEIT   = { ftp: 'W', lthr: 'bpm', hrmax: 'bpm' };
+
+/* Ein Satz fuer die Kopfzeile. Nicht die Aufzaehlung aller drei - die steht
+   darunter -, sondern die Antwort auf "womit rechnet die App gerade". */
+function herkunftKurz(th){
+  const arten = SCHWELLEN_FELDER
+    .filter(f => th[f] > 0)
+    .map(f => { const q = quelleVon(th, f); return q ? q.art : 'unbekannt'; });
+  if(!arten.length) return 'noch nichts eingetragen';
+  const einzig = new Set(arten);
+  if(einzig.size > 1) return 'gemessen und von Hand';
+  return { test: 'aus dem Test', hand: 'von Hand', unbekannt: 'Herkunft nicht vermerkt' }[arten[0]];
+}
+
 function SchwellenKarte(){
   const th = thresholds.value;
   const [f, setF] = useState({ ftp: th.ftp, lthr: th.lthr, hrmax: th.hrmax });
@@ -179,22 +219,42 @@ function SchwellenKarte(){
 
   return (
     <div class="card">
-      <div class="row"><span>Schwellenwerte</span><b>{th.lthr > 0 ? 'aus Test übernommen' : 'noch kein Test'}</b></div>
+      <div class="row"><span>Schwellenwerte</span><b>{herkunftKurz(th)}</b></div>
       <Zahlenfeld titel="FTP (W)" wert={f.ftp} min={1} onWert={v => setF({ ...f, ftp: v })} />
       <Zahlenfeld titel="LTHR (bpm)" wert={f.lthr} min={1} onWert={v => setF({ ...f, lthr: v })} />
       <Zahlenfeld titel="HFmax (bpm)" wert={f.hrmax} min={1} onWert={v => setF({ ...f, hrmax: v })} />
 
       <div class="buttons">
         <button class="btn" disabled={!geaendert}
-          onClick={() => setThresholds({ ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax })}>Übernehmen</button>
+          onClick={() => setThresholds(schwellenVonHand(th, { ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax }))}>
+          Übernehmen</button>
         <button class="btn secondary" onClick={() => gotoTab('test', true)}>Zum Schwellentest</button>
       </div>
 
+      {/* Je Wert, woher er kommt. Ein Wert ohne Vermerk stammt aus der Zeit
+          vor dieser Anzeige; geraten wird nicht, er sagt es selbst. */}
+      {SCHWELLEN_FELDER.some(k => th[k] > 0) && (
+        <>
+          <div class="listhead">Herkunft</div>
+          {SCHWELLEN_FELDER.map(k => (
+            <div class="listrow" key={k}>
+              <span>{FELDNAMEN[k]}</span>
+              <span>{th[k] > 0
+                ? th[k] + ' ' + EINHEIT[k] + ' · ' + (herkunftText(quelleVon(th, k)) || 'nicht vermerkt')
+                : 'nicht gesetzt'}</span>
+            </div>
+          ))}
+        </>
+      )}
+
       <p class="hint">
-        Hier wird korrigiert, nicht gemessen: die drei Zahlen gelten ab sofort für alle Zonen,
-        die Testhistorie bleibt unberührt. Ein gefahrener Test gehört unter „Schwellentest“ in
-        die Ansicht <b>Ergebnis</b> – dort fallen FTP und LTHR aus Ø-Watt und Ø-Puls, und der
-        Eintrag trägt Protokoll, Kadenz und RPE mit.
+        Was hier steht, gilt: die drei Zahlen tragen ab sofort alle Zonen – die Pulsbänder
+        ab Woche {plan.value.cogganFromWeek}, die Wattzonen sofort. Vermerkt wird nur, dass
+        sie von Hand kommen; ein späterer Test überschreibt sie wieder mit dem, was er misst.
+        Die Testhistorie bleibt unberührt: eine getippte Zahl ist keine Messung und gehört
+        nicht in eine Reihe, die auf einen identischen Ablauf geprüft wird. Ein gefahrener Test
+        gehört unter „Schwellentest“ in die Ansicht <b>Ergebnis</b> – dort fallen FTP und LTHR
+        aus Ø-Watt und Ø-Puls, und der Eintrag trägt Protokoll, Kadenz und RPE mit.
       </p>
       <p class="hint">
         FTP = Ø-Watt der 20 min × {String(FTP_FAKTOR).replace('.', ',')}, LTHR = Ø-Puls der 20 min.

@@ -52,7 +52,7 @@ import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds } from '../../../domain/timer/sequences.js';
-import { hrBands, usesCoggan } from '../../../domain/zones.js';
+import { hrBands, usesCoggan, schwellenAusTest } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
          WEEKDAY_NAMES, datumText, tagUndMonat } from '../../../domain/week.js';
 import { fetchGewicht, fetchActivities, fetchStreams,
@@ -613,8 +613,14 @@ function Ergebnisformular({ p, th, ziel }){
       /* Beide Werte werden uebernommen und nicht nur die FTP, wenn noch keine
          dastand. Ein Test, dessen LTHR man danach von Hand nachtragen muss,
          hat den halben Zweck verfehlt - und der Rueckweg steht offen: unter
-         Zonen lassen sich beide Zahlen jederzeit korrigieren. */
-      await setThresholds(neu);
+         Zonen lassen sich beide Zahlen jederzeit korrigieren.
+
+         Als gemessen gilt nur, was dieser Test hergab. Die HFmax wird bloss
+         mitgereicht - sie misst kein Schwellentest -, und ohne
+         aufgezeichneten Puls faellt die LTHR auf den bisherigen Wert zurueck
+         und behaelt dessen Herkunft. */
+      await setThresholds(schwellenAusTest(th, neu,
+        { ftp: werte.ftp != null, lthr: werte.lthr != null }, tagIso));
       setMeldung({ art:'ok', text:'Gespeichert. FTP ' + (neu.ftp || '–') +
         ' W, LTHR ' + (neu.lthr || '–') + ' bpm – die Zonen rechnen ab sofort damit.' });
     } else {
