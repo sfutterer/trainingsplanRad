@@ -36,6 +36,9 @@ export function AboutTab(){
               <p>Die Abfragen gehen direkt vom Gerät an intervals.icu, mit deinem Schlüssel im
                  Kopf der Anfrage. Es gibt keinen Server dieser App dazwischen – der Schlüssel
                  verlässt das Gerät nur in diese eine Richtung.</p>
+              <p>Geschrieben wird dort nichts. Bis zum 10.09.2026 trug die App das Gewicht des
+                 Testtages in die Wellness zurück – dorthin, wo es die Waage über Garmin ohnehin
+                 schon abgelegt hatte. Der Schlüssel braucht deshalb keine Schreibrechte.</p>
             </>
           } />
         <Zeile titel="Open-Meteo" wert="Wetter je Stunde · kein Schlüssel"

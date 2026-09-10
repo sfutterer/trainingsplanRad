@@ -68,31 +68,18 @@ export async function fetchGewicht(key, tagIso){
   return r ? r.weight : null;
 }
 
-/* Der einzige schreibende Aufruf der App.
+/* Hier stand bis zum 10.09.2026 putWellness, der einzige schreibende Aufruf
+   der App: das Gewicht des Testtages nach intervals.icu.
 
-   Gewicht am Testtag gehoert laut Trainingsplan in die Wellness - sonst sind
-   die Testwerte spaeter nicht einzuordnen. Es zweimal von Hand zu pflegen, in
-   der App und auf intervals.icu, geht genau so lange gut, bis man es einmal
-   vergisst. PUT setzt nur die uebergebenen Felder, der Rest des Tages bleibt
-   stehen. */
-export async function putWellness(key, dayIso, felder){
-  let res;
-  try {
-    res = await fetch(ICU_BASE + '/athlete/0/wellness/' + dayIso, {
-      method: 'PUT',
-      headers: { Authorization: authHeader(key), Accept: 'application/json',
-                 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: dayIso, ...felder })
-    });
-  } catch(e){
-    throw new Error('Keine Verbindung zu intervals.icu. Offline oder Netz blockiert?');
-  }
-  if(res.status === 401 || res.status === 403){
-    throw new Error('intervals.icu hat das Schreiben abgelehnt (' + res.status + '). Der Key braucht Schreibrechte.');
-  }
-  if(!res.ok) throw new Error('intervals.icu antwortete mit ' + res.status + '.');
-  return res.json().catch(() => ({}));
-}
+   Er hatte nie einen Auftrag. Das Gewicht kommt von der Waage ueber Garmin
+   und steht dort, bevor die App danach fragt - der Schreibvorgang trug es
+   also dorthin zurueck, woher es kam. Was blieb, war eine Rueckfrage am Ende
+   jedes Tests, ein API-Key mit Schreibrechten und die Moeglichkeit, einen
+   getippten Zahlendreher ueber den gemessenen Wert zu legen.
+
+   Diese App liest von intervals.icu und schreibt nichts. Das ist jetzt keine
+   Beschreibung des Ist-Zustands mehr, sondern eine Eigenschaft: es gibt keine
+   Stelle, an der ein PUT stuende. */
 
 /* Was das Konto in der Wellness tatsaechlich fuehrt.
 

@@ -3,20 +3,30 @@
    Standen frueher unter den Tageskarten. Das war die falsche Stelle: der Plan
    beantwortet "was mache ich heute", diese Seite beantwortet "mit welchen
    Zahlen rechne ich". Das eine schaut man taeglich an, das andere alle paar
-   Wochen. */
+   Wochen.
+
+   Genau darauf ist die Seite seit dem 10.09.2026 beschraenkt. Bis dahin stand
+   hier ein zweites Testformular neben dem im Testbereich - beide fuellten
+   denselben Speicher, aber nicht mit demselben Eintrag: dieses fragte Ø-Watt,
+   Kadenz, Gewicht und Bedingungen, das andere zusaetzlich Ø-Puls und RPE. Ein
+   ueber diesen Weg eingetragener Test hatte also keine LTHR - ausgerechnet die
+   Zahl, aus der alle Pulsbaender entstehen - und keine Guetepruefung. Zwei
+   Wege zu derselben Ablage, von denen einer weniger speichert, sind keine
+   Wahlmoeglichkeit, sondern eine Falle.
+
+   Was bleibt, ist die Korrektur von Hand: FTP, LTHR und HFmax direkt setzen.
+   Das ist eine andere Sache als einen Test einzutragen und gehoert deshalb
+   nicht in die Testhistorie - eine getippte Zahl ist keine Messung. */
 
 import { useState } from 'preact/hooks';
-import { plan, thresholds, startDate, week, testLog, interimLog, apiKey,
-         setThresholds, addTestEntry, addInterimEntry } from '../../../state/store.js';
-import { fetchGewicht } from '../../../data/icu.js';
+import { plan, thresholds, week, testLog, interimLog, startDate,
+         setThresholds, addInterimEntry } from '../../../state/store.js';
 import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag,
          datumText } from '../../../domain/week.js';
+import { gotoTab } from '../../../state/navigation.js';
 import { hrBands, usesCoggan, zoneBand } from '../../../domain/zones.js';
-import { sprechtestBezug, testWerte, baueTestEintrag, FTP_FAKTOR } from '../../../domain/test.js';
+import { sprechtestBezug, FTP_FAKTOR } from '../../../domain/test.js';
 import { zahl } from '../../../domain/zahlen.js';
-/* Der Schreibvorgang samt Rueckfrage liegt in state/gewicht.js - der
-   Testbereich schreibt dasselbe. */
-import { gewichtSchreiben } from '../../../state/gewicht.js';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
 import { Verlaufsgraph } from '../../components/Verlaufsgraph.jsx';
 import { Testhistorie } from '../../components/Testhistorie.jsx';
@@ -116,112 +126,22 @@ function Verlauf({ eintraege }){
   );
 }
 
-/* Das Testformular klappt an der Stelle der Tastenreihe auf.
+/* Die Schwellenwerte, mit denen gerechnet wird - und nur sie.
 
-   Vorher fragten vier prompt() nacheinander nach den Werten. Das liess sich
-   nicht korrigieren und nicht abbrechen, ohne alles zu verlieren: wer beim
-   dritten Fenster merkte, dass er die 20-min-Watt falsch abgelesen hatte,
-   fing von vorn an. Ein Formular zeigt alle vier Felder gleichzeitig, laesst
-   sie in beliebiger Reihenfolge ausfuellen und hat einen Abbrechen-Knopf.
+   Die Karte kann eine Zahl aendern und keinen Test anlegen. Der Unterschied
+   ist nicht formal: die Testhistorie traegt Protokollkennung und Fassung, weil
+   der Trainingsplan denselben Ablauf ueber alle Termine verlangt. Eine hier
+   getippte FTP hat kein Protokoll - sie in dieselbe Reihe zu stellen, macht
+   aus der Pruefung "gleicher Ablauf?" eine, die stillschweigend besteht.
 
-   Die gerechnete FTP steht schon in der Kopfzeile, waehrend man tippt - so
-   sieht man vor dem Speichern, welche Zahl daraus wird. */
-function TestFormular({ tagIso, vorschlag, onSpeichern, onAbbrechen }){
-  const [w20, setW20] = useState(null);
-  const [kadenz, setKadenz] = useState(null);
-  const [kg, setKg] = useState(vorschlag);
-  const [bed, setBed] = useState('');
-
-  return (
-    <>
-      <div class="row"><span>Test vom {datumText(dayFromIso(tagIso))}</span>
-        <b>{w20 > 0 ? 'FTP ' + Math.round(w20 * FTP_FAKTOR) + ' W' : 'Ø-Watt eintragen'}</b></div>
-      <Zahlenfeld titel="Ø-Watt der 20 min" wert={w20} min={1} onWert={setW20} />
-      {/* Seit Fassung 4 die Kadenz statt der 5-min-Leistung: die entsteht an
-          einem anderen Tag und steht im Testbereich unter „VO2max-Referenz". */}
-      <Zahlenfeld titel="Ø-Kadenz der 20 min" wert={kadenz} min={1} onWert={setKadenz} />
-      <Zahlenfeld titel="Gewicht (kg)" wert={kg} min={1} dezimal schritt="0.1" onWert={setKg} />
-      <Textfeld titel="Bedingungen" wert={bed} onWert={setBed}
-        platzhalter="Temperatur, Wind, Strecke, Rad" />
-      <div class="buttons">
-        <button class="btn" onClick={() => onSpeichern({ w20, kadenz, kg, bed: bed.trim() })}>Speichern</button>
-        <button class="btn secondary" onClick={onAbbrechen}>Abbrechen</button>
-      </div>
-      <p class="hint">
-        Nur die 20-min-Watt werden gebraucht; alles andere ist freiwillig.
-        {vorschlag != null && kg === vorschlag
-          ? ' Das Gewicht ist aus der Wellness von intervals.icu übernommen.' : ''}
-      </p>
-    </>
-  );
-}
-
+   Der Weg zum Test steht daneben als Knopf. Er ist der Grund, aus dem das
+   Formular hier verschwinden konnte: wer hierher kam, um einen Test
+   einzutragen, ist einen Tipp entfernt von der Stelle, an der das geht. */
 function SchwellenKarte(){
   const th = thresholds.value;
   const [f, setF] = useState({ ftp: th.ftp, lthr: th.lthr, hrmax: th.hrmax });
-  const [meldung, setMeldung] = useState(null);
-  const [test, setTest] = useState(null);
 
   const geaendert = f.ftp !== th.ftp || f.lthr !== th.lthr || f.hrmax !== th.hrmax;
-
-  /* Das Gewicht steht meist schon in der Wellness - dann muss es niemand
-     abtippen und die beiden Quellen koennen nicht auseinanderlaufen.
-
-     Still, wenn nichts dasteht: hier ist es ein Vorschlag und keine Antwort
-     auf eine Frage des Nutzers. Im Testbereich meldet derselbe Abruf einen
-     Fehlschlag, weil er dort auf Knopfdruck laeuft. */
-  async function testOeffnen(){
-    const tagIso = isoDayLocal(toMidnight(new Date()));
-    setTest({ tagIso, vorschlag: null, bereit: false });
-    const vorschlag = apiKey.value
-      ? await fetchGewicht(apiKey.value, tagIso).catch(() => null)
-      : null;
-    /* Nur uebernehmen, wenn das Formular noch fuer denselben Tag offen ist -
-       sonst schriebe eine spaete Antwort in ein Formular, das der Nutzer
-       inzwischen geschlossen hat. */
-    setTest(t => (t && t.tagIso === tagIso ? { tagIso, vorschlag, bereit: true } : t));
-  }
-
-  async function testSpeichern({ w20, kadenz, kg, bed }){
-    const { tagIso, vorschlag } = test;
-    setTest(null);
-
-    /* Dieselbe Rechnung wie im Testbereich, aus derselben Funktion. Bis zum
-       04.09.2026 stand hier Math.round(w20 * 0.95), waehrend FTP_FAKTOR zwei
-       Dateien weiter dieselbe Zahl trug - der Faktor liess sich nicht mehr an
-       einer Stelle aendern, und die Karte darunter nannte ihn ein drittes
-       Mal im Fliesstext. */
-    const werte = testWerte({ w20, kadenz, gewicht: kg });
-
-    /* Ohne eingetragene FTP die aus dem Test gerechnete uebernehmen - eine
-       bereits gesetzte wird nicht ungefragt ueberschrieben. Anders als im
-       Testbereich, wo der Wert des Tages gerade gemessen wurde: hier tippt
-       jemand Zahlen ein, die er schon hat. */
-    let ftp = f.ftp;
-    if(werte.ftp != null && !ftp){
-      ftp = werte.ftp;
-      setF({ ...f, ftp });
-      await setThresholds({ ftp, lthr: f.lthr, hrmax: f.hrmax });
-    }
-    /* Ein Eintrag, eine Gestalt - egal ueber welchen Bildschirm er entsteht.
-       Vorher wurde er hier und im Testbereich getrennt gebaut, mit
-       verschiedenen Feldern; im Verlauf standen dadurch zwei Sorten Eintrag
-       nebeneinander. */
-    await addTestEntry(baueTestEintrag({
-      tagIso, week: weekNumberFor(dayFromIso(tagIso), startDate.value),
-      werte, ftp, lthr: f.lthr, bedingungen: bed, plan: plan.value
-    }));
-    setMeldung({ art:'ok', text:'Test gespeichert.' });
-
-    /* Nur schreiben, wenn der Wert nicht ohnehin von dort kam. */
-    if(kg !== vorschlag){
-      const g = await gewichtSchreiben(tagIso, kg);
-      if(g.art === 'ok') setMeldung({ art:'ok', text:'Gewicht nach intervals.icu geschrieben.' });
-      if(g.art === 'fehler'){
-        setMeldung({ art:'fehler', text:'Nicht geschrieben: ' + g.text + ' Der Test ist trotzdem gespeichert.' });
-      }
-    }
-  }
 
   return (
     <div class="card">
@@ -230,26 +150,24 @@ function SchwellenKarte(){
       <Zahlenfeld titel="LTHR (bpm)" wert={f.lthr} min={1} onWert={v => setF({ ...f, lthr: v })} />
       <Zahlenfeld titel="HFmax (bpm)" wert={f.hrmax} min={1} onWert={v => setF({ ...f, hrmax: v })} />
 
-      {test
-        ? (test.bereit
-            ? <TestFormular tagIso={test.tagIso} vorschlag={test.vorschlag}
-                onSpeichern={testSpeichern} onAbbrechen={() => setTest(null)} />
-            : <p class="hint">Gewicht wird aus der Wellness geholt …</p>)
-        : (
-          <div class="buttons">
-            <button class="btn" disabled={!geaendert}
-              onClick={() => setThresholds({ ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax })}>Übernehmen</button>
-            <button class="btn secondary" onClick={testOeffnen}>Als Test speichern</button>
-          </div>
-        )}
+      <div class="buttons">
+        <button class="btn" disabled={!geaendert}
+          onClick={() => setThresholds({ ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax })}>Übernehmen</button>
+        <button class="btn secondary" onClick={() => gotoTab('test', true)}>Zum Schwellentest</button>
+      </div>
 
+      <p class="hint">
+        Hier wird korrigiert, nicht gemessen: die drei Zahlen gelten ab sofort für alle Zonen,
+        die Testhistorie bleibt unberührt. Ein gefahrener Test gehört unter „Schwellentest“ in
+        die Ansicht <b>Ergebnis</b> – dort fallen FTP und LTHR aus Ø-Watt und Ø-Puls, und der
+        Eintrag trägt Protokoll, Kadenz und RPE mit.
+      </p>
       <p class="hint">
         FTP = Ø-Watt der 20 min × {String(FTP_FAKTOR).replace('.', ',')}, LTHR = Ø-Puls der 20 min.
         Dieselben Werte gehören in
         intervals.icu unter Settings → Ride, Power Zones und HR Zones auf Coggan, Load Priority
         auf Power, FTP von automatisch auf manuell.
       </p>
-      {meldung && <div class={'meldung ' + meldung.art}><b>{meldung.text}</b></div>}
       {testLog.value.length > 1 && <Verlauf eintraege={testLog.value} />}
       <Testhistorie eintraege={testLog.value} />
     </div>

@@ -29,12 +29,19 @@
    solange nicht dasteht, dass genau sie das Ziel der zwanzig Minuten ist und
    welche FTP daraus faellt, wenn sie haelt.
 
-   Warum LTHR hier ein eigenes Feld hat und im Zonen-Tab nicht: das dortige
-   Formular nimmt Ø-Watt, rechnet die FTP und laesst die LTHR von Hand
-   eintragen - ausgerechnet die Zahl, aus der alle Pulsbaender entstehen. Wer
-   sie vergisst, faehrt den Folgeblock weiter nach den Uebergangsbaendern und
-   merkt es nicht. */
+   Seit dem 10.09.2026 ist die Ergebnisansicht die einzige Stelle, an der ein
+   Test eingetragen wird. Daneben stand bis dahin ein zweites Formular unter
+   "Zonen & Schwellenwerte", das denselben Speicher fuellte und dabei weniger
+   fragte: Ø-Watt, Kadenz, Gewicht, Bedingungen - kein Ø-Puls, kein RPE. Wer
+   den falschen der beiden Wege nahm, bekam einen Eintrag ohne LTHR und ohne
+   Guetepruefung, also gerade ohne die Zahl, aus der alle Pulsbaender
+   entstehen, und ohne den Hinweis, dass der Test nicht ausbelastet war.
 
+   Der Zonen-Tab behaelt, was ihm gehoert: FTP, LTHR und HFmax von Hand zu
+   korrigieren. Das ist etwas anderes als einen Test einzutragen - eine
+   Korrektur ist keine Messung und gehoert nicht in die Testhistorie. */
+
+import { Fragment } from 'preact';
 import { useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, testLog, testPrep, apiKey, settings,
          setThresholds, addTestEntry, setTestPrep } from '../../../state/store.js';
@@ -50,10 +57,6 @@ import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
          WEEKDAY_NAMES, datumText, tagUndMonat } from '../../../domain/week.js';
 import { fetchGewicht, fetchActivities, fetchStreams,
          zahlenStrom } from '../../../data/icu.js';
-/* Der Schreibvorgang samt Rueckfrage liegt in state/gewicht.js - der
-   Zonen-Tab schreibt dasselbe, und das Versprechen "der einzige Wert, den
-   diese App jemals dorthin schreibt" darf nicht an zwei Stellen stehen. */
-import { gewichtSchreiben } from '../../../state/gewicht.js';
 import { Segmented } from '../../components/Segmented.jsx';
 import { Baustein } from '../training/Baustein.jsx';
 /* Ring, Vorschau und Zonenkarte teilt sich dieser Bereich mit dem
@@ -544,9 +547,14 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
 
 /* ---------- Ergebnis ---------- */
 
+const LEERES_ERGEBNIS = { w20:null, hr20:null, kadenz:null, rpe:null, kg:null, bed:'' };
+
 function ErgebnisAnsicht({ p, th, termin }){
-  const [f, setF] = useState({ w20:null, hr20:null, kadenz:null, rpe:null, kg:null, bed:'' });
+  const [f, setF] = useState(LEERES_ERGEBNIS);
   const [meldung, setMeldung] = useState(null);
+  /* Zaehlt die gespeicherten Tests dieser Sitzung und dient als Schluessel der
+     Feldgruppe. Grund steht bei setF(LEERES_ERGEBNIS) in speichern(). */
+  const [runde, setRunde] = useState(0);
   const werte = testWerte({ w20:f.w20, hr20:f.hr20, kadenz:f.kadenz, rpe:f.rpe, gewicht:f.kg });
   const tagIso = isoDayLocal(toMidnight(today.value));
   const bereit = werte.ftp != null || werte.lthr != null;
@@ -573,19 +581,30 @@ function ErgebnisAnsicht({ p, th, termin }){
       tagIso, week: weekNumberFor(dayFromIso(tagIso), startDate.value),
       werte, ftp: neu.ftp, lthr: neu.lthr, bedingungen: f.bed, plan: p
     }));
-    /* Anders als im Zonen-Tab werden beide Werte uebernommen und nicht nur die
-       FTP, wenn noch keine dastand. Ein Test, dessen LTHR man danach von Hand
-       nachtragen muss, hat den halben Zweck verfehlt - und der Rueckweg steht
-       offen: unter Zonen lassen sich beide Zahlen jederzeit korrigieren. */
+    /* Beide Werte werden uebernommen und nicht nur die FTP, wenn noch keine
+       dastand. Ein Test, dessen LTHR man danach von Hand nachtragen muss, hat
+       den halben Zweck verfehlt - und der Rueckweg steht offen: unter Zonen
+       lassen sich beide Zahlen jederzeit korrigieren. */
     await setThresholds(neu);
     setMeldung({ art:'ok', text:'Test gespeichert. FTP ' + (neu.ftp || '–') +
       ' W, LTHR ' + (neu.lthr || '–') + ' bpm – die Zonen rechnen ab sofort damit.' });
 
-    const g = await gewichtSchreiben(tagIso, werte.weight);
-    if(g.art === 'fehler'){
-      setMeldung({ art:'fehler', text:'Gewicht nicht geschrieben: ' + g.text +
-        ' Der Test ist trotzdem gespeichert.' });
-    }
+    /* Die Felder leeren.
+
+       Sie blieben bis zum 10.09.2026 stehen, und die Meldung war das einzige,
+       was sich nach dem Speichern aenderte - ein zweiter Tipp auf den Knopf
+       schrieb denselben Test ein zweites Mal in die Historie. Was gespeichert
+       wurde, steht darunter in der Testhistorie und ist dort auch die
+       Bestaetigung, dass es angekommen ist.
+
+       Der Zaehler im Schluessel setzt die Felder wirklich neu. Zahlenfeld haelt
+       waehrend der Eingabe einen Rohtext, damit "1," unter den Fingern nicht
+       zur 1 wird - und dieser Rohtext ueberlebt ein Leeren von aussen. Ohne
+       den Wechsel des Schluessels staenden die alten Zahlen weiter in den
+       Feldern, waehrend der Speichern-Knopf grau ist: die Anzeige haette dann
+       behauptet, es sei noch etwas einzutragen. */
+    setF(LEERES_ERGEBNIS);
+    setRunde(r => r + 1);
   }
 
   return (
@@ -600,33 +619,35 @@ function ErgebnisAnsicht({ p, th, termin }){
           <div class="ergwert"><b>{werte.lthr != null ? werte.lthr + ' bpm' : '–'}</b><span>LTHR</span></div>
           <div class="ergwert"><b>{werte.wkg != null ? zahl(werte.wkg, 2) : '–'}</b><span>W/kg</span></div>
         </div>
-        <Zahlenfeld titel="Ø-Watt der 20 min" wert={f.w20} min={1}
-          onWert={v => setF({ ...f, w20: v })} />
-        <Zahlenfeld titel="Ø-Puls der 20 min (bpm)" wert={f.hr20} min={1}
-          onWert={v => setF({ ...f, hr20: v })} />
-        {/* Kadenz statt der 5-min-Leistung: die entsteht seit Fassung 4 an
-            einem anderen Tag und steht in ihrer eigenen Karte. Die Kadenz
-            gehoert dagegen zum Test - zwei Tests bei 78 und bei 92 U/min sind
-            nicht dasselbe. */}
-        <Zahlenfeld titel="Ø-Kadenz der 20 min (U/min)" wert={f.kadenz} min={1}
-          onWert={v => setF({ ...f, kadenz: v })} />
-        {/* Das einzige Feld, das etwas ueber die Guete des Messwerts sagt.
-            Der Trainingsplan verlangt es ausdruecklich: RPE der letzten fuenf
-            Minuten, unter 9 heisst nicht ausbelastet. */}
-        <Zahlenfeld titel="RPE der letzten 5 min (1–10)" wert={f.rpe} min={1} max={10}
-          onWert={v => setF({ ...f, rpe: v })} />
-        {werte.ausbelastet === false && (
-          <p class="hint warn">
-            Unter {AUSBELASTET_RPE} heißt: nicht ausbelastet. Dann ist die FTP eher zu niedrig –
-            gemessen wurde nicht die Schwelle, sondern die Bereitschaft, an sie heranzugehen.
-            Der Wert gilt trotzdem als Untergrenze; die eFTP und die VO2max-Referenz bleiben
-            die Gegenproben.
-          </p>
-        )}
-        <Zahlenfeld titel="Gewicht (kg)" wert={f.kg} min={1} dezimal schritt="0.1"
-          onWert={v => setF({ ...f, kg: v })} />
-        <Textfeld titel="Bedingungen" wert={f.bed} onWert={v => setF({ ...f, bed: v })}
-          platzhalter="Temperatur, Wind, Strecke, Rad" />
+        <Fragment key={runde}>
+          <Zahlenfeld titel="Ø-Watt der 20 min" wert={f.w20} min={1}
+            onWert={v => setF({ ...f, w20: v })} />
+          <Zahlenfeld titel="Ø-Puls der 20 min (bpm)" wert={f.hr20} min={1}
+            onWert={v => setF({ ...f, hr20: v })} />
+          {/* Kadenz statt der 5-min-Leistung: die entsteht seit Fassung 4 an
+              einem anderen Tag und steht in ihrer eigenen Karte. Die Kadenz
+              gehoert dagegen zum Test - zwei Tests bei 78 und bei 92 U/min sind
+              nicht dasselbe. */}
+          <Zahlenfeld titel="Ø-Kadenz der 20 min (U/min)" wert={f.kadenz} min={1}
+            onWert={v => setF({ ...f, kadenz: v })} />
+          {/* Das einzige Feld, das etwas ueber die Guete des Messwerts sagt.
+              Der Trainingsplan verlangt es ausdruecklich: RPE der letzten fuenf
+              Minuten, unter 9 heisst nicht ausbelastet. */}
+          <Zahlenfeld titel="RPE der letzten 5 min (1–10)" wert={f.rpe} min={1} max={10}
+            onWert={v => setF({ ...f, rpe: v })} />
+          {werte.ausbelastet === false && (
+            <p class="hint warn">
+              Unter {AUSBELASTET_RPE} heißt: nicht ausbelastet. Dann ist die FTP eher zu niedrig –
+              gemessen wurde nicht die Schwelle, sondern die Bereitschaft, an sie heranzugehen.
+              Der Wert gilt trotzdem als Untergrenze; die eFTP und die VO2max-Referenz bleiben
+              die Gegenproben.
+            </p>
+          )}
+          <Zahlenfeld titel="Gewicht (kg)" wert={f.kg} min={1} dezimal schritt="0.1"
+            onWert={v => setF({ ...f, kg: v })} />
+          <Textfeld titel="Bedingungen" wert={f.bed} onWert={v => setF({ ...f, bed: v })}
+            platzhalter="Temperatur, Wind, Strecke, Rad" />
+        </Fragment>
         <div class="buttons">
           <button class="btn" disabled={!bereit} onClick={speichern}>Speichern</button>
           <button class="btn secondary" disabled={!apiKey.value} onClick={gewichtHolen}>Gewicht holen</button>
@@ -634,7 +655,10 @@ function ErgebnisAnsicht({ p, th, termin }){
         <p class="hint">
           Ø-Watt und Ø-Puls stehen in der Aufzeichnung als Werte des 20-min-Intervalls. Ohne
           Leistungsmesser genügt der Puls – die LTHR allein trägt die Pulsbänder, die
-          Wattzonen bleiben dann leer.
+          Wattzonen bleiben dann leer. Das Gewicht kommt über „Gewicht holen“ aus der
+          Wellness von intervals.icu, wo es die Waage über Garmin hinterlegt hat; geschrieben
+          wird dorthin nichts. Gespeichert wird hier – „Zonen &amp; Schwellenwerte“ ist zum
+          Korrigieren da, nicht zum Eintragen.
         </p>
         {meldung && <div class={'meldung ' + meldung.art}><b>{meldung.text}</b></div>}
       </div>

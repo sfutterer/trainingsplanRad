@@ -221,8 +221,9 @@ Nur über das Menü erreichbar, weil man sie selten braucht:
 
 - **Schwellentest** – Anleitung, Anlauf als Zeitleiste, Go/No-Go zum Abhaken,
   die Uhr für Test, Tempotest und Öffner, die VO2max-Referenz mit ihrer
-  118-%-Gegenprobe, und die Eingabe von FTP und LTHR
-- **Zonen & Schwellenwerte** – Zonenmodell, FTP und LTHR, Sprechtest-Erhebung
+  118-%-Gegenprobe, und die einzige Stelle, an der ein Test eingetragen wird
+- **Zonen & Schwellenwerte** – Zonenmodell, FTP, LTHR und HFmax von Hand
+  korrigieren, Verlauf und Testhistorie, Sprechtest-Erhebung
 - **Einstellungen** – Zugänge, Erscheinungsbild, Planbeginn, Plan, Sicherung, Diagnose
 - **Über die App** – Version, welche Schnittstelle wofür benutzt wird, was dabei
   das Gerät verlässt, Zeitgrenzen, Nachweise
@@ -240,6 +241,15 @@ Testhistorie das.
 Deshalb gibt es genau **ein** aktives Protokoll und keine Liste: eine Liste wäre
 die Einladung, die Regel zu brechen.
 
+Aus demselben Grund gibt es genau **eine** Stelle, an der ein Test eingetragen
+wird: „Schwellentest“ → **Ergebnis**. Bis zum 10.09.2026 stand daneben ein
+zweites Formular unter „Zonen & Schwellenwerte“, das denselben Speicher füllte,
+aber weniger fragte – Ø-Watt, Kadenz, Gewicht, Bedingungen, kein Ø-Puls und kein
+RPE. Ein darüber angelegter Eintrag hatte damit keine LTHR, also gerade die Zahl
+nicht, aus der alle Pulsbänder entstehen. Der Zonen-Tab korrigiert seither nur
+noch FTP, LTHR und HFmax; eine getippte Korrektur ist keine Messung und landet
+nicht in der Testhistorie.
+
 Ein Donnerstag darf daneben eine **Variante** tragen – eine zweite zulässige Form
 desselben Tages, über die am Tag selbst entschieden wird. Im ausgelieferten Plan
 ist das die VO2max-Referenz in Woche 5: fünf Minuten maximal als erste
@@ -254,7 +264,7 @@ Unterschied liegen unter der Auflösung des Umfangsdeckels.
 
 | Dienst | Wofür | Schlüssel |
 |---|---|---|
-| intervals.icu | Aktivitäten, Streams, Wellness | nötig, Settings → Developer Settings |
+| intervals.icu | Aktivitäten, Streams, Wellness – nur lesend | nötig, Settings → Developer Settings |
 | Thunderforest | Kartenkacheln in der Analyse (Atlas, OpenCycleMap, Landscape) | optional, sonst OpenStreetMap |
 | Open-Meteo | Temperatur, Feuchte, Niederschlag und Wind je Stunde | keiner |
 | Overpass (OpenStreetMap) | Untergrund der gefahrenen Wege | keiner |
@@ -262,6 +272,11 @@ Unterschied liegen unter der Auflösung des Umfangsdeckels.
 
 Die Anleitung, wo man die Schlüssel bekommt, steht in der App hinter dem
 Fragezeichen der jeweiligen Zeile.
+
+Zu intervals.icu geht kein schreibender Aufruf. Bis zum 10.09.2026 gab es genau
+einen – das Gewicht des Testtages in die Wellness –, und der trug den Wert
+dorthin zurück, wo ihn die Waage über Garmin ohnehin schon abgelegt hatte. Der
+Schlüssel braucht keine Schreibrechte.
 
 ## Farben
 
