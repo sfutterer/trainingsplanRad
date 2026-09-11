@@ -10,11 +10,15 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 5, Stand 09.09.2026.** Änderung gegenüber Fassung 4 an genau einer Stelle:
-> **Der Erhaltungsreiz in Phase 3 wird aufgewertet und verlegt.** Statt 6 × 30 s am
-> Mittwoch stehen in Woche 11 und 12 nun **3 × 3 min bei 108–115 % FTP, eingebettet in
-> die Z2-Einheit am Donnerstag.** Der Mittwoch ist damit wieder eine reine Z2-Fahrt.
-> Alles andere aus Fassung 4 bleibt unverändert.
+> **Fassung 6, Stand 11.09.2026.** Eine Grundsatzentscheidung: **Es wird das ganze Jahr
+> draußen gefahren, keine Rolle.** Folgen an drei Stellen: Abschnitt 4.11 ordnet den
+> Donnerstag neu — tagsüber, sonst im Dunkeln auf bekannter Strecke, in den Samstag nur
+> noch bei schlechtem Wetter. Der Retest am 03.12. startet um **14:00 statt 16:21**
+> (Abschnitt 2a, Details in `SCHWELLENTESTS.md`). Der Merkposten „Rolle“ in Abschnitt 8
+> entfällt. Alles andere aus Fassung 5 bleibt unverändert.
+>
+> Fassung 5 (09.09.2026) brachte: Erhaltungsreiz Phase 3 als 3 × 3 min bei 108–115 % FTP,
+> eingebettet in die Z2-Einheit am Donnerstag, statt 6 × 30 s am Mittwoch.
 >
 > Fassung 4 (04.09.2026) brachte: 5-Minuten-All-out aus dem Schwellentest gestrichen,
 > VO2max-Referenz auf Do 17.09. verlegt, Testdauer 65 → 55 min.
@@ -24,8 +28,8 @@ Plan muss dieses Dokument mitgezogen werden.
 > Phase 3, Ernährungs-Zieldaten als eigener Abschnitt. Der Plan endet mit Woche 16 —
 > danach wird ein neuer Plan geschrieben.
 >
-> Begründungen der Änderungen in Abschnitt 9 (Fassung 3), 9a (Fassung 4) und
-> 9b (Fassung 5).
+> Begründungen der Änderungen in Abschnitt 9 (Fassung 3), 9a (Fassung 4),
+> 9b (Fassung 5) und 9c (Fassung 6).
 
 ---
 
@@ -531,7 +535,7 @@ liefern etwa eine Minute nutzbare Zeit nahe VO2max je Wiederholung, in Summe run
 harte Zeit pro Woche. Das ist etwa ein Drittel der Phase-2-Dosis (20 min) und liegt
 damit im Bereich, in dem Erhalt funktioniert: Intensität halten, Umfang darf fallen.
 
-**Verschiebt sich der Donnerstag** (Wetter, Dunkelheit, Abschnitt 4.11), wandert der
+**Verschiebt sich der Donnerstag** (Wetter, Abschnitt 4.11), wandert der
 Erhaltungsreiz mit in die Einheit, in die der Donnerstag verlegt wird — bei Verlegung
 auf den Samstag in die zweite Hälfte der Ausfahrt. Der Samstag ist dann kein sauberer
 Z2-Tag mehr und **das Decoupling der Woche fällt als Kennzahl aus.**
@@ -647,6 +651,13 @@ Minuten sollen sich anfühlen wie „gerade noch".
 **Strecke:** 20 min ohne Ampel, Kreuzung, Abfahrt oder Gegenverkehr, flach oder
 gleichmäßig ansteigend. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad,
 gleicher Reifendruck — sonst ist der Retest nicht vergleichbar.
+
+**Einzige festgelegte Ausnahme: Retest 03.12. mit Start 14:00 statt 16:21.** Sonnenuntergang
+ist dann gegen 16:25, die Fahrt dauert 1:31 h — mit 16:21 läge schon der Testabschnitt im
+Dunkeln. Strecke, Protokoll, Rad und Reifendruck bleiben identisch; die Uhrzeit ist die
+kleinste mögliche Abweichung und wird unter „Bedingungen“ vermerkt. Begründung in 9c,
+Details in `SCHWELLENTESTS.md`. Der 22.10. bleibt bei 16:21 (Rückkehr gegen 17:50,
+Sonnenuntergang gegen 18:20).
 
 ### Anlauf zum 10.09.2026 (verbindlich)
 
@@ -1093,12 +1104,28 @@ Folgewoche nicht aufblähen.
 Grundregel aus Abschnitt 1: Donnerstag wird 60 min Z2, Samstag ohne Blöcke.
 **Zwei rote Tage hintereinander → gesamte Woche als Erholungswoche.**
 
-### 4.11 Wetter am Qualitätstag
+### 4.11 Wetter und Tageslicht am Qualitätstag
+
+**Seit Fassung 6 wird das ganze Jahr draußen gefahren.** Dunkelheit ist deshalb kein
+Grund mehr, den Donnerstag zu verlegen — schlechtes Wetter schon.
+
+| Priorität | Donnerstag | Hinweis |
+|---|---|---|
+| **1** | **tagsüber fahren** (Gleitzeit, früherer Feierabend) | Regelfall, sobald es nach Feierabend dunkel ist |
+| **2** | im Dunkeln auf bekannter Strecke | tagsüber bereits gefahren, befestigt, verkehrsarm. Gilt auch für die Z4-Blöcke in Phase 4 |
+| **3** | in den Samstag verlegen | **nur bei schlechtem Wetter** (Starkregen, Sturm, Glätte) |
+
+Bei Priorität 3:
 
 - Do ↔ Sa tauschen, **nur** wenn die lange Ausfahrt dann am Sonntag Platz hat. Beachten:
-  das verschiebt Umfang in die Folgewoche.
-- Sonst: Donnerstag zu Z2 machen, Intervalle in den Samstag verlegen.
-- Ab Woche 11 liegt der Donnerstag im Dunkeln — dann ist das der Regelfall.
+  das verschiebt Umfang in die Folgewoche (4.0).
+- Sonst: Donnerstag zu Z2 machen, Intervalle in die zweite Hälfte der Samstagsausfahrt.
+  **Das Decoupling der Woche fällt dann als Kennzahl aus.**
+
+**Warum diese Reihenfolge:** Bis Fassung 5 war die Verlegung in den Samstag ab Woche 11
+der Regelfall. Damit wäre in fast jeder Belastungswoche der Phasen 3 und 4 der Samstag
+kein sauberer Z2-Tag gewesen — und das Decoupling, die zentrale Grundlagenkennzahl
+zwischen den Tests, hätte genau in den Wochen vor dem letzten Retest gefehlt.
 
 ### 4.12 Urlaub oder Reise, ganze Woche
 
@@ -1130,7 +1157,7 @@ Ausrollen, Zonenanzeige und Sprachansage.
 
 **Analyse** — Abgleich der tatsächlichen Aktivitäten mit dem Plan, siehe Abschnitt 7.
 
-### Anpassungsbedarf für Fassung 3, 4 und 5
+### Anpassungsbedarf für Fassung 3 bis 6
 
 Was die App mitziehen muss, geordnet nach der Fassung, aus der die Anforderung stammt.
 
@@ -1217,6 +1244,12 @@ Aus Fassung 5 (09.09.2026):
     dieselbe Regel wie beim Schwellentest und beim Testanlauf, und dieselbe wie die
     Steuergrößen-Tabelle in Abschnitt 6: Watt für die 3 × 3 min, HF nur am
     Intervallende.
+
+Aus Fassung 6 (11.09.2026):
+
+24. **Keine Anforderung an App oder `plan.json`.** Abschnitt 4.11 ist eine Ausweichregel
+    ohne Datenfolge. Die abweichende Startzeit am 03.12. gehört ins Feld „Bedingungen“
+    der Testhistorie (Punkt 20).
 
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.
@@ -1469,8 +1502,8 @@ Auswertung der 16 Wochen ein neuer Plan geschrieben.
 Punkte, die dann zu klären sind — hier nur als Merkposten, ohne Festlegung:
 
 - Ergebnis der drei Schwellentests und die Entwicklung von FTP, LTHR und Gewicht
-- Rolle oder Smarttrainer für den Winter, da Draußentraining unter der Woche ab Dezember
-  praktisch ausgeschlossen ist
+- Lage der Qualitätseinheiten im Tageslicht von Dezember bis Februar — draußen, ohne
+  Rolle (Entscheidung Fassung 6, Abschnitt 4.11)
 - Zieltermin und Zielereignis
 - Höhenmeter als eigenständige Progression
 - Lange Ausfahrten jenseits von drei Stunden
@@ -1610,6 +1643,43 @@ Woche 13 bleibt bei 0 % — sie ist eine Erholungswoche, das ist Absicht.
   Abschnitt 9 für den Einstiegssprung.
 - **Der gesamte Testanlauf und der Test am 10.09.** Diese Fassung entsteht am Vorabend
   des Tests und lässt alles unberührt, was Woche 4 betrifft.
+
+---
+
+## 9c. Änderungen gegenüber Fassung 5
+
+Eine Grundsatzentscheidung, mit ihren Folgeanpassungen.
+
+### Anlass
+
+Frage, warum viele im Winter auf die Rolle wechseln. Die üblichen Gründe — Frost, Streusalz,
+Materialverschleiß, fehlende Ausrüstung — treffen hier kaum zu: Rheingraben mit seltenem
+Frost und wenig Salz, Winterkleidung, Beleuchtung und Reflektoren vorhanden, Erfahrung mit
+Winterfahrten vorhanden. Übrig bleibt ein Grund dagegen, und der wiegt schwer: **Die Rolle
+wäre ein Motivationsrisiko.** Der beste Plan ist der, der durchgezogen wird.
+
+Nebeneffekt: Alle Daten stammen aus derselben Umgebung. Rollen- und Draußenwerte sind nicht
+1:1 vergleichbar (fehlender Fahrtwind, anderer Puls bei gleicher Leistung) — diese
+Umrechnung entfällt.
+
+### Die Änderung
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **Ganzjährig draußen, keine Rolle** | Siehe Anlass |
+| 2 | **Abschnitt 4.11 neu geordnet:** tagsüber → im Dunkeln auf bekannter Strecke → Samstag nur bei schlechtem Wetter | Die alte Regel machte die Verlegung in den Samstag ab Woche 11 zum Regelfall und hätte das Decoupling über die Phasen 3 und 4 weitgehend ausgeschaltet |
+| 3 | **Abschnitt 2, Phase 3:** Dunkelheit als Verlegungsgrund gestrichen | Folge aus 2 |
+| 4 | **Retest 03.12.: Start 14:00 statt 16:21** | Sonnenuntergang gegen 16:25, Fahrt 1:31 h. Maximalbelastung bei fast 30 km/h im Dunkeln ist weder sicher noch vergleichbar. Die Uhrzeit ist die kleinste mögliche Abweichung — Strecke, Protokoll, Rad und Reifendruck bleiben |
+| 5 | **Abschnitt 8:** Merkposten „Rolle“ ersetzt durch „Qualitätseinheiten im Tageslicht Dezember bis Februar“ | Die Prämisse „Draußentraining ab Dezember praktisch ausgeschlossen“ trifft nicht zu |
+
+### Bewusst **nicht** geändert
+
+- **Retest 22.10. bleibt bei 16:21.** Rückkehr gegen 17:50, Sonnenuntergang gegen 18:20.
+- **Die Testbedingungen im Übrigen.** Die Protokollgleichheit aus 2a gilt unverändert; die
+  Startzeit am 03.12. ist die einzige dokumentierte Abweichung.
+- **Wochenstruktur, Umfänge, Donnerstag als Qualitätstag.**
+- **Kein zusätzliches Go/No-Go-Kriterium für Dunkelheit.** Die Reihenfolge in 4.11 regelt
+  das; ein weiteres Kriterium würde den Donnerstag ab November dauerhaft blockieren.
 
 ---
 
