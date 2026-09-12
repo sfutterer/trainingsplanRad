@@ -52,7 +52,8 @@ import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds } from '../../../domain/timer/sequences.js';
-import { hrBands, usesCoggan, schwellenAusTest } from '../../../domain/zones.js';
+import { hrBands, usesCoggan, schwellenAusTest,
+         ueberstimmteFelder } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
          WEEKDAY_NAMES, datumText, tagUndMonat } from '../../../domain/week.js';
 import { fetchGewicht, fetchActivities, fetchStreams,
@@ -553,6 +554,9 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
    nachschlagbar, und nur so laesst sich ein Zahlendreher berichtigen, ohne
    alles neu zu tippen. Der Ø-Puls kommt aus hr20, faellt aber auf lthr
    zurueck: Eintraege von vor dem 10.09.2026 kennen hr20 nicht. */
+/* Fuer die Meldung, wenn ein von Hand gesetzter Wert den Messwert ueberstimmt. */
+const FELDNAME = { ftp: 'Die FTP', lthr: 'Die LTHR', hrmax: 'Die HFmax' };
+
 function ausEintrag(e){
   if(!e) return { w20:null, hr20:null, kadenz:null, rpe:null, kg:null, bed:'' };
   return {
@@ -615,14 +619,19 @@ function Ergebnisformular({ p, th, ziel }){
          hat den halben Zweck verfehlt - und der Rueckweg steht offen: unter
          Zonen lassen sich beide Zahlen jederzeit korrigieren.
 
-         Als gemessen gilt nur, was dieser Test hergab. Die HFmax wird bloss
-         mitgereicht - sie misst kein Schwellentest -, und ohne
-         aufgezeichneten Puls faellt die LTHR auf den bisherigen Wert zurueck
-         und behaelt dessen Herkunft. */
-      await setThresholds(schwellenAusTest(th, neu,
-        { ftp: werte.ftp != null, lthr: werte.lthr != null }, tagIso));
-      setMeldung({ art:'ok', text:'Gespeichert. FTP ' + (neu.ftp || '–') +
-        ' W, LTHR ' + (neu.lthr || '–') + ' bpm – die Zonen rechnen ab sofort damit.' });
+         Uebernommen wird nur, was dieser Test gemessen hat, und nur, wo
+         seither nichts von Hand gesetzt wurde. Welcher Wert am Ende gilt,
+         entscheidet schwellenAusTest und nicht diese Stelle - siehe dort. */
+      const gemessen = { ftp: werte.ftp, lthr: werte.lthr };
+      const satz = schwellenAusTest(th, gemessen, tagIso);
+      await setThresholds(satz);
+
+      const hand = ueberstimmteFelder(th, gemessen, tagIso)
+        .map(k => FELDNAME[k]).join(' und ');
+      setMeldung({ art:'ok', text:'Gespeichert. FTP ' + (satz.ftp || '–') +
+        ' W, LTHR ' + (satz.lthr || '–') + ' bpm – die Zonen rechnen ab sofort damit.'
+        + (hand ? ' ' + hand + ' bleibt beim Wert von Hand: er wurde nach dem '
+                + datumText(ziel.datum) + ' eingetragen und ist damit der neuere.' : '') });
     } else {
       setMeldung({ art:'ok', text:'Gespeichert. Die Schwellenwerte bleiben stehen: ' +
         'es gibt einen neueren Test, und der trägt die Zonen.' });

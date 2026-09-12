@@ -117,9 +117,14 @@ export function createRepos(store){
       for(const f of ['ftp', 'lthr', 'hrmax']){
         const q = roh[f];
         if(!(q && (q.art === 'test' || q.art === 'hand'))) continue;
-        quellen[f] = q.art === 'test' && typeof q.tag === 'string'
-          ? { art:'test', tag:q.tag }
-          : { art:q.art };
+        if(q.art === 'test'){
+          quellen[f] = typeof q.tag === 'string' ? { art:'test', tag:q.tag } : { art:'test' };
+        } else {
+          /* seit entscheidet, ob ein berichtigter Test diesen Wert wieder
+             ueberschreiben darf. Fehlt es - Eingaben von vor dem 12.09.2026 -,
+             gewinnt der Test wie bisher. */
+          quellen[f] = typeof q.seit === 'string' ? { art:'hand', seit:q.seit } : { art:'hand' };
+        }
       }
       return { ftp:n(v.ftp), lthr:n(v.lthr), hrmax:n(v.hrmax), quellen };
     },

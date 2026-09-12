@@ -47,7 +47,12 @@ import './zonen.css';
    Herkunft stuende so bestimmt da wie eine vermerkte. */
 function herkunftText(quelle){
   if(!quelle) return null;
-  if(quelle.art === 'hand') return 'von Hand eingetragen';
+  if(quelle.art === 'hand'){
+    /* Das Datum der Eingabe steht dabei, weil es etwas entscheidet: ein Test
+       ueberschreibt diesen Wert nur, wenn sein Testtag danach liegt. */
+    return 'von Hand eingetragen'
+      + (quelle.seit ? ' am ' + datumText(new Date(quelle.seit)) : '');
+  }
   return 'im Test' + (quelle.tag ? ' vom ' + datumText(dayFromIso(quelle.tag)) : '') + ' gemessen';
 }
 
@@ -226,7 +231,8 @@ function SchwellenKarte(){
 
       <div class="buttons">
         <button class="btn" disabled={!geaendert}
-          onClick={() => setThresholds(schwellenVonHand(th, { ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax }))}>
+          onClick={() => setThresholds(schwellenVonHand(
+            th, { ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax }, new Date().toISOString()))}>
           Übernehmen</button>
         <button class="btn secondary" onClick={() => gotoTab('test', true)}>Zum Schwellentest</button>
       </div>
@@ -249,8 +255,16 @@ function SchwellenKarte(){
 
       <p class="hint">
         Was hier steht, gilt: die drei Zahlen tragen ab sofort alle Zonen – die Pulsbänder
-        ab Woche {plan.value.cogganFromWeek}, die Wattzonen sofort. Vermerkt wird nur, dass
-        sie von Hand kommen; ein späterer Test überschreibt sie wieder mit dem, was er misst.
+        ab Woche {plan.value.cogganFromWeek}, die Wattzonen sofort. Auch die Auswertung
+        vergangener Fahrten rechnet damit, denn sie nimmt immer die geltenden Schwellenwerte.
+      </p>
+      <p class="hint">
+        Vermerkt wird, <b>wann</b> eingetragen wurde – und das entscheidet etwas: ein Test
+        überschreibt eine Zahl von Hand nur, wenn sein <b>Testtag nach der Eingabe liegt</b>.
+        Ein später berichtigter Testeintrag holt damit keinen Messwert zurück, den du bewusst
+        ersetzt hast; der nächste Test gewinnt dagegen, seine Messung ist die neuere.
+      </p>
+      <p class="hint">
         Die Testhistorie bleibt unberührt: eine getippte Zahl ist keine Messung und gehört
         nicht in eine Reihe, die auf einen identischen Ablauf geprüft wird. Ein gefahrener Test
         gehört unter „Schwellentest“ in die Ansicht <b>Ergebnis</b> – dort fallen FTP und LTHR

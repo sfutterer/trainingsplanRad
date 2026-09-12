@@ -377,6 +377,39 @@ Werte aus der Zeit davor tragen keinen Vermerk. Die Anzeige rät dann nicht,
 sondern schreibt „nicht vermerkt“ – eine geratene Herkunft stünde so bestimmt da
 wie eine belegte. Beim nächsten Setzen des Wertes klärt sich das von selbst.
 
+#### Wer gewinnt, wenn beide denselben Wert setzen
+
+Der zuletzt gesetzte — und dafür trägt die Eingabe von Hand seit dem 12.09.2026
+einen Zeitpunkt (`seit`). Ohne ihn reichte es genau solange, wie ein Test nur
+einmal gespeichert wird; seit ein gespeicherter Test wieder aufgemacht und
+berichtigt werden kann, nicht mehr.
+
+> **Ein Test setzt einen Wert nur, wenn nach seinem Testtag keine Eingabe von
+> Hand steht.**
+
+Verglichen wird die Eingabe mit dem **Testtag**, nicht mit dem Zeitpunkt des
+Speicherns: der Testtag ist das Datum, an dem gemessen wurde, und ein Nachtrag
+drei Wochen später macht die Messung nicht neuer. Ein späterer Test gewinnt
+dagegen immer — seine Messung liegt nach der Eingabe. `ueberstimmteFelder` sagt,
+welche Felder die Hand behalten hat; der Testbereich schreibt es in seine
+Meldung, damit kein Messwert stillschweigend unter den Tisch fällt. Die Messung
+selbst bleibt in der Testhistorie, sie trägt nur nicht die Zonen.
+
+Der Anlass: der Test vom 10.09.2026 ergab als Ø-Puls der 20 min 152 bpm, und
+Coggan daraus legt Z2 auf 103–126 bpm — eine Grundlagenfahrt mit 132 bpm liegt
+darin in Z3. Die Schwellen-HF gehört dort nicht hin und wurde am 12.09. von Hand
+auf 163 gesetzt. Ein Tippfehler im Testeintrag, zwei Tage später berichtigt,
+hätte die 152 wieder über die 163 gelegt — still, und mit ihr den Fehlalarm.
+
+ISO-Zeichenketten vergleichen sich dabei wie Zeitpunkte, und ein Zeitstempel ist
+länger als der Tag, in dem er liegt: `'2026-09-10T18:04' > '2026-09-10'`. Eine
+Eingabe am Testtag selbst gewinnt damit gegen den Test, und das ist richtig —
+gefahren wurde an diesem Tag vorher. Eingaben ohne Zeitpunkt (aus der Zeit vor
+dieser Änderung) können eine Messung nicht überstimmen.
+
+Die Auswertung vergangener Fahrten rechnet immer mit den **geltenden**
+Schwellenwerten, nicht mit denen, die zur Zeit der Fahrt gespeichert waren.
+
 Ein Donnerstag darf daneben eine **Variante** tragen – eine zweite zulässige Form
 desselben Tages, über die am Tag selbst entschieden wird. Im ausgelieferten Plan
 ist das die VO2max-Referenz in Woche 5: fünf Minuten maximal als erste

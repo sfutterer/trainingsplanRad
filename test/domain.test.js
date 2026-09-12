@@ -879,37 +879,41 @@ describe('Grund fuer das Zonenmodell', () => {
    auseinanderhalten koennen. */
 describe('Herkunft der Schwellenwerte', () => {
   const leer = { ftp:null, lthr:null, hrmax:null, quellen:{} };
+  const TEST_TAG = '2026-09-10';
+  /* Zwei Tage nach dem Test von Hand gesetzt - der Fall vom 12.09.2026. */
+  const DANACH = '2026-09-12T18:04:00.000Z';
+  const DAVOR  = '2026-09-08T07:30:00.000Z';
 
   it('markiert nach einem Test nur, was der Test misst', () => {
-    const vonHand = Z.schwellenVonHand(leer, { ftp:null, lthr:null, hrmax:186 });
-    const nachTest = Z.schwellenAusTest(vonHand,
-      { ftp:219, lthr:168, hrmax:186 }, { ftp:true, lthr:true }, '2026-09-10');
+    const vonHand = Z.schwellenVonHand(leer, { ftp:null, lthr:null, hrmax:186 }, DAVOR);
+    const nachTest = Z.schwellenAusTest(vonHand, { ftp:219, lthr:168 }, TEST_TAG);
 
-    expect(Z.quelleVon(nachTest, 'ftp')).toEqual({ art:'test', tag:'2026-09-10' });
-    expect(Z.quelleVon(nachTest, 'lthr')).toEqual({ art:'test', tag:'2026-09-10' });
-    /* Die HFmax misst kein Schwellentest - sie behaelt ihren Vermerk. */
-    expect(Z.quelleVon(nachTest, 'hrmax')).toEqual({ art:'hand' });
+    expect(nachTest.ftp).toBe(219);
+    expect(nachTest.lthr).toBe(168);
+    expect(Z.quelleVon(nachTest, 'ftp')).toEqual({ art:'test', tag:TEST_TAG });
+    expect(Z.quelleVon(nachTest, 'lthr')).toEqual({ art:'test', tag:TEST_TAG });
+    /* Die HFmax misst kein Schwellentest - Wert und Vermerk bleiben. */
+    expect(nachTest.hrmax).toBe(186);
+    expect(Z.quelleVon(nachTest, 'hrmax')).toEqual({ art:'hand', seit:DAVOR });
   });
 
-  /* Ohne aufgezeichneten Puls faellt die LTHR auf den bisherigen Wert
-     zurueck. Sie ist dann nicht in diesem Test gemessen worden, auch wenn sie
-     mit ihm gespeichert wird. */
-  it('laesst einen mitgereichten Wert seine Herkunft behalten', () => {
-    const vorher = Z.schwellenVonHand(leer, { ftp:null, lthr:158, hrmax:null });
-    const nachTest = Z.schwellenAusTest(vorher,
-      { ftp:219, lthr:158, hrmax:null }, { ftp:true, lthr:false }, '2026-09-10');
+  /* Ohne aufgezeichneten Puls misst der Test keine LTHR. Der bisherige Wert
+     bleibt stehen, samt Herkunft - er ist nicht in diesem Test entstanden. */
+  it('laesst einen nicht gemessenen Wert unangetastet', () => {
+    const vorher = Z.schwellenVonHand(leer, { ftp:null, lthr:158, hrmax:null }, DAVOR);
+    const nachTest = Z.schwellenAusTest(vorher, { ftp:219, lthr:null }, TEST_TAG);
 
+    expect(nachTest.ftp).toBe(219);
     expect(Z.quelleVon(nachTest, 'ftp').art).toBe('test');
-    expect(Z.quelleVon(nachTest, 'lthr')).toEqual({ art:'hand' });
+    expect(nachTest.lthr).toBe(158);
+    expect(Z.quelleVon(nachTest, 'lthr').art).toBe('hand');
   });
 
   /* Eine Wiederholungsmessung ist eine Messung, auch wenn dieselbe Zahl
      herauskommt - sonst truege der zweite Test den Vermerk des ersten. */
   it('markiert eine Messung auch bei unveraenderter Zahl', () => {
-    const ersterTest = Z.schwellenAusTest(leer,
-      { ftp:219, lthr:168, hrmax:null }, { ftp:true, lthr:true }, '2026-09-10');
-    const zweiterTest = Z.schwellenAusTest(ersterTest,
-      { ftp:219, lthr:168, hrmax:null }, { ftp:true, lthr:true }, '2026-10-22');
+    const ersterTest = Z.schwellenAusTest(leer, { ftp:219, lthr:168 }, TEST_TAG);
+    const zweiterTest = Z.schwellenAusTest(ersterTest, { ftp:219, lthr:168 }, '2026-10-22');
 
     expect(Z.quelleVon(zweiterTest, 'lthr').tag).toBe('2026-10-22');
   });
@@ -917,25 +921,83 @@ describe('Herkunft der Schwellenwerte', () => {
   /* Wer nur die HFmax nachtraegt, soll damit nicht die gemessene FTP zu einer
      getippten machen. */
   it('markiert von Hand nur, was sich geaendert hat', () => {
-    const nachTest = Z.schwellenAusTest(leer,
-      { ftp:219, lthr:168, hrmax:null }, { ftp:true, lthr:true }, '2026-09-10');
-    const mitHfmax = Z.schwellenVonHand(nachTest, { ftp:219, lthr:168, hrmax:186 });
+    const nachTest = Z.schwellenAusTest(leer, { ftp:219, lthr:168 }, TEST_TAG);
+    const mitHfmax = Z.schwellenVonHand(nachTest, { ftp:219, lthr:168, hrmax:186 }, DANACH);
 
     expect(Z.quelleVon(mitHfmax, 'ftp').art).toBe('test');
     expect(Z.quelleVon(mitHfmax, 'lthr').art).toBe('test');
-    expect(Z.quelleVon(mitHfmax, 'hrmax')).toEqual({ art:'hand' });
+    expect(Z.quelleVon(mitHfmax, 'hrmax')).toEqual({ art:'hand', seit:DANACH });
 
     /* Die von Hand korrigierte LTHR gilt und heisst dann auch so. */
-    const korrigiert = Z.schwellenVonHand(mitHfmax, { ftp:219, lthr:171, hrmax:186 });
+    const korrigiert = Z.schwellenVonHand(mitHfmax, { ftp:219, lthr:171, hrmax:186 }, DANACH);
     expect(korrigiert.lthr).toBe(171);
-    expect(Z.quelleVon(korrigiert, 'lthr')).toEqual({ art:'hand' });
+    expect(Z.quelleVon(korrigiert, 'lthr')).toEqual({ art:'hand', seit:DANACH });
     expect(Z.quelleVon(korrigiert, 'ftp').art).toBe('test');
   });
 
+  /* ---- Wer gewinnt, wenn beide denselben Wert setzen ----
+
+     Der Fall, der es noetig gemacht hat: der Test vom 10.09.2026 ergab als
+     Ø-Puls 152 bpm. Coggan daraus legt Z2 auf 103-126 bpm, und eine
+     Grundlagenfahrt mit 132 bpm liegt darin in Z3 - daher der Fehlalarm zur
+     Ausfahrt vom 12.09. Die Schwellen-HF wurde deshalb am 12.09. von Hand auf
+     163 gesetzt. Ein zwei Tage spaeter berichtigter Testeintrag haette die 152
+     still zurueckgeholt. */
+  describe('Eingabe von Hand gegen Messwert', () => {
+    const nachTest = Z.schwellenAusTest(leer, { ftp:192, lthr:152 }, TEST_TAG);
+    const vonHand = Z.schwellenVonHand(nachTest,
+      { ftp:192, lthr:163, hrmax:180 }, DANACH);
+
+    it('haelt die spaetere Eingabe gegen ein Nachspeichern desselben Tests', () => {
+      const nochmal = Z.schwellenAusTest(vonHand, { ftp:192, lthr:152 }, TEST_TAG);
+
+      expect(nochmal.lthr).toBe(163);
+      expect(Z.quelleVon(nochmal, 'lthr')).toEqual({ art:'hand', seit:DANACH });
+      expect(Z.ueberstimmteFelder(vonHand, { ftp:192, lthr:152 }, TEST_TAG)).toContain('lthr');
+      /* Die FTP war unveraendert getippt und gilt damit ebenfalls von Hand -
+         der Messwert ist derselbe, also aendert sich nichts als der Vermerk. */
+      expect(nochmal.ftp).toBe(192);
+    });
+
+    it('laesst einen spaeteren Test gewinnen', () => {
+      const retest = Z.schwellenAusTest(vonHand, { ftp:205, lthr:166 }, '2026-10-22');
+
+      expect(retest.lthr).toBe(166);
+      expect(Z.quelleVon(retest, 'lthr')).toEqual({ art:'test', tag:'2026-10-22' });
+      expect(Z.ueberstimmteFelder(vonHand, { ftp:205, lthr:166 }, '2026-10-22')).toEqual([]);
+    });
+
+    it('laesst den Test gewinnen, wenn die Eingabe aelter ist', () => {
+      const frueh = Z.schwellenVonHand(leer, { ftp:null, lthr:170, hrmax:null }, DAVOR);
+      const danach = Z.schwellenAusTest(frueh, { ftp:192, lthr:152 }, TEST_TAG);
+
+      expect(danach.lthr).toBe(152);
+      expect(Z.quelleVon(danach, 'lthr').art).toBe('test');
+    });
+
+    /* Eine Eingabe am Testtag selbst liegt nach der Fahrt - an diesem Tag
+       wurde vormittags gemessen und abends eingetragen. Der Zeitstempel ist
+       laenger als der Tag, ISO vergleicht sich richtig. */
+    it('zaehlt eine Eingabe am Testtag als die spaetere', () => {
+      const amTag = Z.schwellenVonHand(nachTest,
+        { ftp:192, lthr:163, hrmax:null }, TEST_TAG + 'T19:00:00.000Z');
+      const nochmal = Z.schwellenAusTest(amTag, { ftp:192, lthr:152 }, TEST_TAG);
+      expect(nochmal.lthr).toBe(163);
+    });
+
+    /* Ohne vermerkten Zeitpunkt - Eingaben von vor dem 12.09.2026 - gewinnt
+       der Test wie bisher. Eine Eingabe, von der niemand weiss, wann sie war,
+       kann eine Messung nicht ueberstimmen. */
+    it('laesst den Test gewinnen, wenn die Eingabe keinen Zeitpunkt traegt', () => {
+      const ohneZeit = { ftp:192, lthr:163, hrmax:180, quellen:{ lthr:{ art:'hand' } } };
+      expect(Z.handNachTest(ohneZeit, 'lthr', TEST_TAG)).toBe(false);
+      expect(Z.schwellenAusTest(ohneZeit, { ftp:192, lthr:152 }, TEST_TAG).lthr).toBe(152);
+    });
+  });
+
   it('vergisst die Herkunft eines geleerten Wertes', () => {
-    const nachTest = Z.schwellenAusTest(leer,
-      { ftp:219, lthr:168, hrmax:null }, { ftp:true, lthr:true }, '2026-09-10');
-    const ohneFtp = Z.schwellenVonHand(nachTest, { ftp:null, lthr:168, hrmax:null });
+    const nachTest = Z.schwellenAusTest(leer, { ftp:219, lthr:168 }, TEST_TAG);
+    const ohneFtp = Z.schwellenVonHand(nachTest, { ftp:null, lthr:168, hrmax:null }, DANACH);
 
     expect(ohneFtp.ftp).toBe(null);
     expect(Z.quelleVon(ohneFtp, 'ftp')).toBe(null);

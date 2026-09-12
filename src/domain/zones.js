@@ -60,13 +60,41 @@ export const ROLLEN_WATT = 1;
    Schwellentest, die Zahl ist also praktisch immer von Hand, waehrend FTP und
    LTHR daneben gemessen sein koennen.
 
-     { art: 'test', tag: '2026-09-10' }   im Test dieses Tages gemessen
-     { art: 'hand' }                      von Hand eingetragen
-     null / fehlt                         nicht gesetzt oder nicht vermerkt
+     { art: 'test', tag: '2026-09-10' }         im Test dieses Tages gemessen
+     { art: 'hand', seit: '2026-09-12T18:04' }  von Hand eingetragen, mit
+                                                Zeitpunkt der Eingabe
+     null / fehlt                               nicht gesetzt oder nicht
+                                                vermerkt
 
    Nicht vermerkt heisst nicht vermerkt: Schwellenwerte, die vor dieser
    Aenderung gespeichert wurden, tragen keine Herkunft, und die Anzeige rate
-   nicht - sie schweigt darueber, bis der Wert das naechste Mal gesetzt wird. */
+   nicht - sie schweigt darueber, bis der Wert das naechste Mal gesetzt wird.
+
+   ---- Wer gewinnt, wenn beide Wege denselben Wert setzen ----
+
+   Der zuletzt gesetzte, und dafuer braucht die Hand einen Zeitpunkt. Bis zum
+   12.09.2026 trug sie keinen, und das reichte genau solange, wie ein Test nur
+   einmal gespeichert wird.
+
+   Seit ein gespeicherter Test wieder aufgemacht und berichtigt werden kann,
+   reicht es nicht mehr: der Schwellentest vom 10.09.2026 ergab als Ø-Puls der
+   zwanzig Minuten 152 bpm, und daraus Coggan-Baender, deren Z2 bei 126 bpm
+   endet - eine Grundlagenfahrt mit 132 bpm liegt darin in Z3. Die Schwellen-HF
+   gehoert dort nicht hin; sie wurde am 12.09. von Hand auf 163 gesetzt. Ein
+   Tippfehler im Testeintrag, zwei Tage spaeter berichtigt, haette die 152
+   wieder ueber die 163 gelegt - still, und mit ihr den Fehlalarm.
+
+   Die Regel lautet deshalb: ein Test setzt einen Wert nur, wenn nach seinem
+   Testtag keine Eingabe von Hand steht. Verglichen wird die Eingabe mit dem
+   Tag des Tests und nicht mit dem Zeitpunkt des Speicherns - der Testtag ist
+   das Datum, an dem gemessen wurde, und ein Nachtrag drei Wochen spaeter
+   macht die Messung nicht neuer. Ein spaeterer Test gewinnt dagegen immer:
+   seine Messung liegt nach der Eingabe.
+
+   ISO-Zeichenketten vergleichen sich dabei wie Zeitpunkte, und ein Zeitstempel
+   ist laenger als der Tag, an dem er liegt - '2026-09-10T18:04' > '2026-09-10'
+   ist wahr. Eine Eingabe am Testtag selbst gewinnt damit gegen den Test, und
+   das ist richtig: gefahren wurde an diesem Tag vorher. */
 
 export const SCHWELLEN_FELDER = ['ftp', 'lthr', 'hrmax'];
 
@@ -75,30 +103,80 @@ export function quelleVon(th, feld){
   return q && q.art ? q : null;
 }
 
+/* Steht fuer dieses Feld eine Eingabe von Hand, die nach dem Testtag liegt?
+
+   Ohne vermerkten Zeitpunkt nein - eine Eingabe, von der niemand weiss, wann
+   sie war, kann eine Messung nicht ueberstimmen. */
+export function handNachTest(th, feld, tag){
+  const q = quelleVon(th, feld);
+  return !!(q && q.art === 'hand' && q.seit && tag && q.seit > tag);
+}
+
 function mitQuellen(neu, quellen){
   return { ftp: neu.ftp ?? null, lthr: neu.lthr ?? null, hrmax: neu.hrmax ?? null, quellen };
 }
 
-/* Nach einem Test. Gemessen ist, was der Test hergab - und zwar auch dann,
-   wenn dieselbe Zahl schon dastand: eine Wiederholungsmessung ist eine
-   Messung. Was der Test nicht misst, behaelt seine bisherige Herkunft; sonst
-   truege eine mitgereichte HFmax nach jedem Test den Stempel "gemessen". */
-export function schwellenAusTest(alt, neu, gemessen, tag){
+/* Nach einem Test.
+
+   gemessen traegt die Werte, die dieser Test hergegeben hat - null fuer
+   "nicht gemessen". Was er nicht misst, bleibt unangetastet samt Herkunft;
+   sonst truege eine mitgereichte HFmax nach jedem Test den Stempel
+   "gemessen". Gemessen ist auch eine Zahl, die schon dastand: eine
+   Wiederholungsmessung ist eine Messung.
+
+   Was nach dem Testtag von Hand gesetzt wurde, bleibt stehen - samt Wert.
+   Die Messung ist damit nicht verloren, sie steht in der Testhistorie; sie
+   traegt nur nicht die Zonen. Begruendung oben bei handNachTest.
+
+   Gibt zurueck, was gilt: die drei Werte und ihre Herkunft, und nichts
+   daneben - das Ergebnis wird so gespeichert, wie es hier herauskommt. Der
+   Aufrufer rechnet nicht selbst aus, welcher Wert gewinnt; genau dort entstand
+   der Fehler, den die Regel verhindert. */
+export function schwellenAusTest(alt, gemessen, tag){
   const quellen = { ...(alt && alt.quellen) };
+  const werte = {
+    ftp:   alt ? alt.ftp   ?? null : null,
+    lthr:  alt ? alt.lthr  ?? null : null,
+    hrmax: alt ? alt.hrmax ?? null : null
+  };
+
   for(const f of SCHWELLEN_FELDER){
-    if(neu[f] == null){ quellen[f] = null; continue; }
-    if(gemessen && gemessen[f]) quellen[f] = { art: 'test', tag };
+    const m = gemessen ? gemessen[f] : null;
+    if(m == null) continue;
+    if(handNachTest(alt, f, tag)) continue;
+    werte[f] = m;
+    quellen[f] = { art: 'test', tag };
   }
-  return mitQuellen(neu, quellen);
+  for(const f of SCHWELLEN_FELDER) if(werte[f] == null) quellen[f] = null;
+
+  return mitQuellen(werte, quellen);
+}
+
+/* Welche gemessenen Felder eine spaetere Eingabe von Hand behaelt.
+
+   Eigene Auskunft und kein Feld am Ergebnis: der Testbereich braucht sie fuer
+   seine Meldung - ein Messwert, der nicht uebernommen wurde, ohne dass es
+   dasteht, ist derselbe stille Vorgang von der anderen Seite -, aber
+   gespeichert wird nur, was gilt. */
+export function ueberstimmteFelder(alt, gemessen, tag){
+  return SCHWELLEN_FELDER.filter(f =>
+    gemessen && gemessen[f] != null && handNachTest(alt, f, tag));
 }
 
 /* Von Hand. Markiert wird, was sich geaendert hat - wer nur die HFmax
-   nachtraegt, soll damit nicht die gemessene FTP zu einer getippten machen. */
-export function schwellenVonHand(alt, neu){
+   nachtraegt, soll damit nicht die gemessene FTP zu einer getippten machen.
+
+   jetzt ist der Zeitpunkt der Eingabe, als ISO-Zeichenkette. Er entscheidet
+   spaeter, ob ein berichtigter Test diesen Wert wieder ueberschreiben darf -
+   deshalb kommt er herein und wird nicht hier geholt: dieses Modul kennt
+   keine Uhr. */
+export function schwellenVonHand(alt, neu, jetzt){
   const quellen = { ...(alt && alt.quellen) };
   for(const f of SCHWELLEN_FELDER){
     if(neu[f] == null){ quellen[f] = null; continue; }
-    if(!alt || alt[f] !== neu[f]) quellen[f] = { art: 'hand' };
+    if(!alt || alt[f] !== neu[f]){
+      quellen[f] = jetzt ? { art: 'hand', seit: jetzt } : { art: 'hand' };
+    }
   }
   return mitQuellen(neu, quellen);
 }
