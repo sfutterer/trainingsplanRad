@@ -9,6 +9,38 @@
 
 export const NO_THRESHOLDS = { ftp: null, lthr: null, hrmax: null };
 
+/* Oben offen. Derselbe Wert wie in plan.js, wo die Uebergangsbaender gebaut
+   werden - bandRange erkennt daran, dass "ueber x" statt "x-y" dasteht. */
+const OPEN_TOP = 999;
+
+/* Wie lange gemittelt wird, bevor Wattwerte in Baender fallen.
+
+   Roher Leistungsstrom ist kein Intensitaetsmass. Auf der Strasse springt er
+   zwischen 0 W im Rollen und 400 W an jeder Bodenwelle; eine gleichmaessig
+   gefahrene Grundlagenausfahrt mit 139 W Ø verteilt sich sample-fuer-sample
+   ueber alle fuenf Zonen. Der Puls glaettet sich von selbst, weil der
+   Kreislauf traege ist - die Leistung tut es nicht, und deshalb muss die
+   Auswertung es tun.
+
+   Dreissig Sekunden, weil das die Zeitkonstante ist, mit der Coggan selbst
+   rechnet (die normalisierte Leistung mittelt ueber genau dieses Fenster).
+   Zentriert und nicht nachlaufend: ein nachlaufendes Mittel verschiebt die
+   Verteilung um eine halbe Fensterlaenge, und fuer ein Histogramm ist die
+   Verschiebung ein Fehler ohne Gegenwert. */
+export const WATT_FENSTER_SEK = 30;
+
+/* Unter diesem Wert wird nicht getreten, sondern gerollt.
+
+   Genau null und nicht "wenig": ohne Drehmoment keine Leistung, das ist
+   Freilauf. Soft pedalling mit 30 W ist dagegen Treten und gehoert in Z1.
+
+   Rollzeit steht nicht in Z1, sondern neben der Verteilung. Sie in Z1 zu
+   zaehlen liest sich harmlos, verschiebt aber genau die Kennzahl, an der die
+   Warnung "zu locker" haengt: eine Ausfahrt mit langen Abfahrten waere nach
+   Watt zu einem Drittel "unter Z2", ohne dass irgendwo zu locker gefahren
+   wurde. Die Anteile gelten deshalb auf die getretene Zeit. */
+export const ROLLEN_WATT = 1;
+
 /* ---- Woher ein Schwellenwert kommt ----
 
    Die drei Zahlen entstehen auf zwei Wegen, und die App wusste bis zum
@@ -120,6 +152,79 @@ export function zonenGrund(plan, th, week){
   };
 }
 
+/* ---- Leistungsbaender zum Zaehlen ----
+
+   Die Wattzonen stehen in plan.json als Coggan-Prozentschritte und sind
+   absichtlich nicht lueckenlos: Z1 bis 55 %, Z2 ab 56 %. Zum Anzeigen ist das
+   richtig - so ist Coggan definiert -, zum Zaehlen nicht. zoneSeconds ordnet
+   ein Sample dem Band mit min <= v < max zu; bei einer FTP von 192 W fielen
+   die knapp zwei Watt zwischen 105,6 und 107,5 durch jedes Raster und
+   verschwanden aus der Gesamtzeit.
+
+   Zum Zaehlen werden die Luecken deshalb geschlossen: jedes Band reicht bis
+   zum Beginn des naechsten, das oberste ist oben offen. Ein Sprint mit 130 %
+   FTP gehoert in Z5 und nicht in keine Zone - maxFactor 1,2 ist eine Angabe
+   fuer die Tabelle, keine Obergrenze der Wirklichkeit.
+
+   Kein "unter"-Band: in Watt gibt es kein "unterhalb Z1", Z1 beginnt bei null.
+   Was darunter liegt, ist kein niedriger Wert, sondern gar kein Treten - und
+   das behandelt zoneSeconds getrennt. */
+export function powerBands(plan, th){
+  if(!hasFtp(th)) return null;
+  const keys = Object.keys(plan.powerZones)
+    .sort((a, b) => plan.powerZones[a][0] - plan.powerZones[b][0]);
+  const w = f => Math.round(th.ftp * f);
+  return keys.map((k, i) => ({
+    key: k,
+    label: plan.zoneLabel[k] || k.toUpperCase(),
+    min: w(plan.powerZones[k][0]),
+    max: i + 1 < keys.length ? w(plan.powerZones[keys[i + 1]][0]) : OPEN_TOP
+  }));
+}
+
+/* ---- Woraus die Zonenverteilung gerechnet wird ----
+
+   Bis zum 12.09.2026 immer aus dem Pulsstrom, und bis Woche 5 gegen die
+   Uebergangsbaender. Das war zum Scheitern verurteilt, sobald der Test lief:
+   die Uebergangsbaender stuetzten sich auf eine ungepruefte HFmax und auf
+   Geschwindigkeit als Ersatz fuer Leistung, und der Trainingsplan nennt sie
+   ausdruecklich eine Arbeitsannahme bis zum Testtag. Eine Ausfahrt danach
+   gegen sie zu messen, erzeugt Warnungen ueber einen Massstab, den es nicht
+   mehr gibt - die Samstagsausfahrt vom 12.09.2026 lag mit 31 % "ueber Z2",
+   bei 139 W Ø gegen ein Z2 von 106-144 W und einer Entkopplung von -0,9 %.
+
+   Der Plan sagt das fuer den Donnerstag selbst: "Ab Woche 5 wird stattdessen
+   die Zeit in der Watt-Zone gezaehlt." Dieselbe Regel gilt fuer jede
+   Radeinheit - eine Fahrt wird nicht danach beurteilt, welcher Wochentag sie
+   ist.
+
+     'watt'           ab cogganFromWeek, sobald FTP und Leistungsstrom da sind
+     'hf-coggan'      ab cogganFromWeek ohne Leistung: Puls gegen die Coggan-
+                      Baender aus der LTHR. Das Trekkingrad hat keinen
+                      Leistungsmesser, seine Fahrten bleiben auswertbar.
+     'hf-uebergang'   Woche 1 bis 4, oder ueberhaupt keine Messwerte. Die
+                      Wochen davor bleiben damit reproduzierbar.
+
+   hatLeistung entscheidet der Aufrufer - nur er sieht den Strom. */
+export function zonenQuelle(plan, th, week, hatLeistung){
+  const abWoche = week >= plan.cogganFromWeek;
+  if(abWoche && hatLeistung && hasFtp(th)) return 'watt';
+  if(abWoche && hasLthr(th)) return 'hf-coggan';
+  return 'hf-uebergang';
+}
+
+/* Quelle und Baender in einem Griff, damit kein Aufrufer die eine ohne die
+   anderen bestimmt. */
+export function zonenBaender(plan, th, week, hatLeistung){
+  const quelle = zonenQuelle(plan, th, week, hatLeistung);
+  return {
+    quelle,
+    bands: quelle === 'watt' ? powerBands(plan, th)
+         : quelle === 'hf-coggan' ? cogganHrBands(plan, th.lthr)
+         : plan.hrTransition
+  };
+}
+
 export function hrBands(plan, th, week){
   return usesCoggan(plan, th, week) ? cogganHrBands(plan, th.lthr) : plan.hrTransition;
 }
@@ -186,17 +291,72 @@ export function estimateDistance(plan, minutes, week){
   return Math.round((minutes / 60) * estimateSpeed(plan, week));
 }
 
-/* Zonenzeit aus dem Puls-Stream.
+/* Ob ein Leistungsstrom tatsaechlich Leistung enthaelt.
+
+   Der Strom kann da sein und trotzdem nichts hergeben: eine Fahrt ohne
+   Leistungsmesser liefert je nach Konto keinen watts-Strom, einen mit lauter
+   null oder einen mit lauter Nullen. Verlangt wird deshalb, dass ein knappes
+   Drittel der Messwerte echte Leistung traegt - weniger ist ein Ausfall und
+   keine Aufzeichnung. Dreissig Messwerte als Untergrenze, damit ein
+   Zweiminuten-Schnipsel nicht darueber entscheidet, welcher Massstab fuer den
+   Tag gilt. */
+export function hatLeistungsstrom(data){
+  if(!Array.isArray(data) || data.length < 30) return false;
+  let echte = 0;
+  for(const v of data) if(Number.isFinite(v) && v > 0) echte++;
+  return echte >= data.length * 0.3;
+}
+
+/* Gleitender Mittelwert ueber ein Zeitfenster, zentriert.
+
+   Ueber die Zeitachse und nicht ueber Messwerte: bei variablem Takt sind
+   dreissig Samples zwischen 30 s und zweieinhalb Minuten lang, und ein
+   Fenster, dessen Laenge von der Aufzeichnung abhaengt, glaettet jede Fahrt
+   anders. Zwei Zeiger, weil beide Fenstergrenzen mit i monoton wachsen -
+   ueber die ganze Fahrt bleibt es damit linear. */
+function gleitenderMittel(werte, zeit, fensterSek){
+  const n = werte.length;
+  const halb = fensterSek / 2;
+  const out = new Array(n);
+  let a = 0, b = 0, summe = 0, anzahl = 0;
+
+  for(let i = 0; i < n; i++){
+    while(b < n && zeit[b] <= zeit[i] + halb){
+      const v = werte[b];
+      if(Number.isFinite(v)){ summe += v; anzahl++; }
+      b++;
+    }
+    while(a < n && zeit[a] < zeit[i] - halb){
+      const v = werte[a];
+      if(Number.isFinite(v)){ summe -= v; anzahl--; }
+      a++;
+    }
+    /* Faellt das ganze Fenster aus, bleibt der Rohwert stehen - und ist er
+       selbst keine Zahl, bleibt er es. Die Zaehlung ueberspringt ihn dann. */
+    out[i] = anzahl > 0 ? summe / anzahl : werte[i];
+  }
+  return out;
+}
+
+/* Zonenzeit aus einem Messstrom - Puls oder Leistung.
 
    Ein Sample ist NICHT eine Sekunde: Garmin zeichnet variabel auf, in echten
    Daten liegen die Abstaende zwischen 1 und 17 s bei einem Mittel von gut 4 s.
    Jedes Sample gilt bis zum naechsten, gewichtet mit dem Zeitdelta. Ohne
    time-Stream bleibt eine Sekunde je Sample als Notnagel, dann stimmen zwar
-   die Anteile, aber nicht die absoluten Minuten. */
-export function zoneSeconds(bands, hrData, timeData, recordedSec){
+   die Anteile, aber nicht die absoluten Minuten.
+
+   opts fuer den Leistungsstrom, siehe WATT_FENSTER_SEK und ROLLEN_WATT:
+
+     fensterSek   vorher ueber dieses Zeitfenster mitteln
+     rollenUnter  Werte darunter zaehlen als Rollen, nicht als Zone. Sie
+                  stehen in _rollen und fehlen in _total - die Anteile gelten
+                  damit auf die getretene Zeit. */
+export function zoneSeconds(bands, hrData, timeData, recordedSec, opts){
+  const o = opts || {};
   const out = {};
   for(const b of bands) out[b.key] = 0;
-  let counted = 0;
+  let counted = 0, rollen = 0;
   const n = hrData.length;
   const hasTime = Array.isArray(timeData) && timeData.length === n && n > 1;
 
@@ -227,9 +387,17 @@ export function zoneSeconds(bands, hrData, timeData, recordedSec){
     if(q > 0.2 && q < 60){ fallbackDt = q; method = 'skaliert'; takt = q; }
   }
 
+  /* Geglaettet wird auf der Zeitachse, auch wo es keinen Zeit-Stream gibt -
+     dann auf der aus dem Takt gerechneten. Ein gleichmaessiges Raster ist
+     genau die Annahme, die 'skaliert' und 'annahme' ohnehin schon treffen. */
+  let werte = hrData;
+  if(o.fensterSek > 0 && n > 1){
+    const zeit = hasTime ? timeData : hrData.map((_, i) => i * (fallbackDt || 1));
+    werte = gleitenderMittel(hrData, zeit, o.fensterSek);
+  }
+
   for(let i = 0; i < n; i++){
-    const v = hrData[i];
-    if(v == null || isNaN(v)) continue;
+    const v = werte[i];
     let dt = fallbackDt;
     if(hasTime){
       const next = i + 1 < n ? timeData[i + 1] : null;
@@ -238,10 +406,13 @@ export function zoneSeconds(bands, hrData, timeData, recordedSec){
       if(!(dt > 0)) dt = 0;
       if(dt > 60) dt = 60;
     }
+    if(!Number.isFinite(v)) continue;
+    if(o.rollenUnter != null && v < o.rollenUnter){ rollen += dt; continue; }
     const band = bands.find(b => v >= b.min && v < b.max);
     if(band){ out[band.key] += dt; counted += dt; }
   }
   out._total = counted;
+  out._rollen = rollen;
   out._method = method;
   out._takt = takt;
   out._samples = n;

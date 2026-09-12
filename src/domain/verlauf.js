@@ -25,7 +25,7 @@
    Parameter herein, damit sich jede Aussage mit einer synthetischen Reihe
    nachpruefen laesst. */
 
-import { isRide } from './analysis.js';
+import { isRide, ENTKOPPLUNG_GUT } from './analysis.js';
 import { tagNr, kurzTag } from './week.js';
 import { median, zahl } from './zahlen.js';
 
@@ -41,7 +41,7 @@ export const VERLAUF = {
         flachProzent: 1, dauerSpreizung: 3, pulsSpanne: 12 },
   /* Entkopplung wird erst auf der langen Fahrt aussagekraeftig - auf einer
      Stunde entkoppelt fast nichts, auch bei schlechter Grundlage. */
-  entkopplung: { minSec: 75 * 60, flachAbsolut: 0.2, gut: 5 },
+  entkopplung: { minSec: 75 * 60, flachAbsolut: 0.2, gut: ENTKOPPLUNG_GUT },
   test: { minPunkte: 3, minWochen: 4, flachProzent: 0.5 },
   interim: { minPunkte: 4, minWochen: 3 },
   umfang: { flachProzent: 3, quoteFlach: 1, rahmen: 0.15 },

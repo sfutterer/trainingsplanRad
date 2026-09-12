@@ -58,6 +58,29 @@ export function tagesGruppen(activities){
   }));
 }
 
+/* Gegen welchen Massstab die Zonen dieser Fahrt gezaehlt wurden.
+
+   Steht seit dem 12.09.2026 dabei, und zwar immer dann, wenn es nicht der
+   naheliegende ist. Ein Anteil ohne Bezugsgroesse ist die Zahl, die den
+   Fehlalarm ueberhaupt erzeugt hat: "31 % der Zeit ueber Z2" klingt
+   unmissverstaendlich, bis man fragt, welches Z2 gemeint war.
+
+   Bei 'watt' bleibt es still - ab Woche 5 ist das der vorgesehene Massstab,
+   und wer ihn ankuendigt, macht aus dem Regelfall eine Besonderheit. */
+export function zonenQuelleNote(z){
+  if(!z || !z._quelle) return null;
+  if(z._quelle === 'gemischt') return { kind:'info', text: T.zonenGemischt };
+  if(z._quelle === 'hf-coggan'){
+    return { kind:'info', text: T.zonenOhneLeistung };
+  }
+  if(z._quelle === 'watt'){
+    const roll = z._rollen > 60 ? Math.round(z._rollen / 60) : 0;
+    return roll ? { kind:'info', text: T.zonenWattRollen(roll) } : null;
+  }
+  /* 'hf-uebergang' ab der Coggan-Woche heisst: es fehlen beide Zahlen. */
+  return z._wattAusgefallen ? { kind:'info', text: T.zonenNochUebergang } : null;
+}
+
 export function recordingNote(z){
   if(!z) return null;
   const takt = z._takt ? (Math.round(z._takt * 10) / 10).toString().replace('.', ',') : null;
@@ -89,6 +112,20 @@ export function pct(part, whole){
    zu harte Fahrt herabsetzen. Mehr Umfang allein bleibt "eingehalten". */
 export const DUR_TOL_SHORT = 0.15;
 const DUR_TOL_LONG  = 0.35;
+
+/* Aerobe Entkopplung: bis hierher traegt die Grundlage diese Dauer.
+
+   Steht hier, weil sie ab dem 12.09.2026 nicht mehr nur eine Kurve im Verlauf
+   beschreibt, sondern in die Tagesbewertung eingreift - und eine Schwelle, die
+   an zwei Stellen etwas entscheidet, darf nicht zweimal dastehen. verlauf.js
+   holt sie von hier. */
+export const ENTKOPPLUNG_GUT = 5;
+
+/* Pa:Hf bzw. Pw:Hf einer Fahrt, wie intervals.icu sie liefert. */
+function entkopplungVon(act){
+  const d = act && act.decoupling;
+  return Number.isFinite(d) ? d : null;
+}
 
 /* Setzt den Status herab und zieht das Badge mit. Ohne das behielte eine
    Einheit mit passender Dauer das Badge "erfuellt", obwohl die Zonenpruefung
@@ -207,9 +244,14 @@ function fahrtTeile(rides, zonesById){
 }
 
 /* Unter fuenf Minuten Aufzeichnung sagt eine Zonenverteilung nichts - dann
-   soll auch nichts behauptet werden. */
+   soll auch nichts behauptet werden.
+
+   Gereicht wird die ganze Fahrt und nicht nur ihre Zonen. Seit die
+   Entkopplung die Zonenwarnung sticht, braucht die Bewertung ein Feld der
+   Aufzeichnung selbst - und eine Funktion, die Zonen bekommt und danach die
+   Fahrt sucht, haette sie sich von irgendwo herholen muessen. */
 function jeFahrt(fn){
-  return f => (f.zones && f.zones._total > 300 ? fn(f.zones) : []);
+  return f => (f.zones && f.zones._total > 300 ? fn(f) : []);
 }
 
 function fahrtenNotizen(row, teile, sollMin, minimum, intensitaet){
@@ -227,6 +269,8 @@ function fahrtenNotizen(row, teile, sollMin, minimum, intensitaet){
       f.notes.push({ kind:'info', text: T.fahrtUeberZiel(mehrere, kum, sollMin, minimum) });
     }
     if(intensitaet) f.notes.push(...intensitaet(f));
+    const quelle = zonenQuelleNote(f.zones);
+    if(quelle) f.notes.push(quelle);
     const aufz = recordingNote(f.zones);
     if(aufz) f.notes.push(aufz);
   }
@@ -246,7 +290,8 @@ function fertig(row){
   return row;
 }
 
-function lockerNotes(row, z){
+function lockerNotes(row, f){
+  const z = f.zones;
   const locker = pct((z.unter || 0) + (z.z1 || 0) + (z.z2 || 0), z._total);
   const hart = pct((z.z3 || 0) + (z.z4 || 0) + (z.z5 || 0), z._total);
   if(hart > 25){
@@ -306,8 +351,9 @@ function legNotes(row, legSessions, t){
    Zu lang ist kein Fehler und darf keine Warnung ausloesen. Bewertet wird
    stattdessen die Intensitaet - ueber 20 % der Zeit oberhalb Z2 heisst, der
    Weg wurde unter Zeitdruck gefahren. */
-function commuteIntensityNotes(row, zones){
+function commuteIntensityNotes(row, f){
   const notes = [];
+  const zones = f.zones;
   if(!zones || !zones._total || zones._total <= 300) return notes;
   const ueber = pct((zones.z3 || 0) + (zones.z4 || 0) + (zones.z5 || 0), zones._total);
   if(ueber > 20){
@@ -326,29 +372,40 @@ function commuteIntensityNotes(row, zones){
 function mergeZones(plan, rides, zonesById){
   const RANG = { zeitgewichtet: 0, skaliert: 1, annahme: 2 };
   const merged = {};
-  let total = 0, method = null, takt = null, samples = 0;
+  let total = 0, rollen = 0, method = null, takt = null, samples = 0;
+  const quellen = new Set();
   plan.zoneKeys.forEach(k => { merged[k] = 0; });
   for(const a of rides){
     const z = zonesById[a.id];
     if(!z) continue;
     plan.zoneKeys.forEach(k => { merged[k] += z[k] || 0; });
     total += z._total || 0;
+    rollen += z._rollen || 0;
     samples += z._samples || 0;
+    if(z._quelle) quellen.add(z._quelle);
     if(z._method && (method === null || RANG[z._method] > RANG[method])) method = z._method;
     if(z._takt && (takt === null || z._takt > takt)) takt = z._takt;
   }
   if(!(total > 0)) return null;
   merged._total = total;
+  merged._rollen = rollen;
   merged._method = method;
   merged._takt = takt;
   merged._samples = samples;
+  /* Zwei Fahrten an einem Tag koennen gegen verschiedene Massstaebe gezaehlt
+     worden sein - Rennrad mit Leistungsmesser vormittags, Trekkingrad
+     nachmittags. Die Sekunden addieren sich trotzdem, die Aussage nicht:
+     "18 % ueber Z2" ist dann ein Anteil aus zwei Waehrungen. Das steht
+     dran, statt dass eine Zahl es verschweigt. */
+  merged._quelle = quellen.size === 1 ? [...quellen][0] : (quellen.size ? 'gemischt' : null);
   return merged;
 }
 
 /* Die Zonen einer Grundlagenfahrt. Auf ihr ist schon Z3 zu hart; am Samstag
    sind in den Wochen 6, 10 und 14 Z3-Bloecke geplant, deren Anteil ist
    zusaetzlich erlaubt. */
-function z2Notes(row, zones, t){
+function z2Notes(row, f, t){
+  const zones = f.zones;
   const notes = [];
   const total = zones._total;
   const anteil = pct(zones.z2 || 0, total);
@@ -359,7 +416,31 @@ function z2Notes(row, zones, t){
   const erlaubt = 20 + (t.hardMinutes && t.minutes
     ? Math.round(t.hardMinutes / t.minutes * 100) : 0);
 
-  if(ueber > erlaubt){
+  /* Die Entkopplung sticht die Zonenzaehlung - auf reinen Grundlagentagen.
+
+     Sie ist die belastbarere Kennzahl, und zwar nicht aus Geschmack: die
+     Zonenzaehlung fragt, wie viel Zeit oberhalb einer Grenze lag, die
+     Entkopplung fragt, ob der Koerper aerob gearbeitet hat. Oberhalb der
+     aeroben Schwelle steigt der Puls bei gleicher Leistung im Verlauf der
+     Fahrt - bleibt er flach, war die Fahrt aerob, und dann ist eine Grenze
+     ueberschritten worden, die fuer diesen Fahrer an der falschen Stelle lag.
+     Am 12.09.2026 standen sich genau diese zwei Aussagen gegenueber: 31 % der
+     Zeit "ueber Z2" gegen -0,9 % Entkopplung bei 140,4 -> 142,6 W und
+     131,4 -> 132,3 bpm ueber die beiden Haelften.
+
+     Nur auf Tagen ohne geplante Bloecke. Wo Bloecke vorgesehen sind, ist die
+     harte Zeit gewollt und die Zaehlung prueft ihre Dosis - eine flache
+     Entkopplung sagt dort nichts darueber, ob 15 statt 45 min Z3 gefahren
+     wurden.
+
+     Der Trainingsplan fuehrt die Entkopplung ohnehin als laufende Kontrolle;
+     hier bekommt sie zum ersten Mal eine Stimme in der Tagesbewertung. */
+  const ent = entkopplungVon(f.act);
+  const stichtDurch = !t.hardMinutes && ent != null && ent <= ENTKOPPLUNG_GUT;
+
+  if(ueber > erlaubt && stichtDurch){
+    notes.push({ kind:'good', text: T.z2EntkopplungSticht(ueber, erlaubt, ent, ENTKOPPLUNG_GUT) });
+  } else if(ueber > erlaubt){
     downgrade(row, 'zu hart');
     notes.push({ kind:'bad', text: T.z2ZuHart(ueber, sehrHart, erlaubt) });
   } else if(unten > 35){
@@ -505,6 +586,12 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
   if(zonesById){
     const merged = mergeZones(plan, rides, zonesById);
     if(merged) row.zones = merged;
+    /* Nur der gemischte Fall gehoert an den Tag: er ist eine Aussage ueber die
+       Tagessumme und nicht ueber eine Fahrt. Woher eine einzelne Verteilung
+       kommt, steht bei ihr - siehe fahrtenNotizen. */
+    if(merged && merged._quelle === 'gemischt'){
+      row.notes.push(zonenQuelleNote(merged));
+    }
   }
   row.z2Sec   = row.zones ? (row.zones.z2 || 0) : 0;
   row.hardSec = row.zones ? ((row.zones.z3 || 0) + (row.zones.z4 || 0) + (row.zones.z5 || 0)) : 0;

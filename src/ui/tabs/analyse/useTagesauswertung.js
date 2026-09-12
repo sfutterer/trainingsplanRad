@@ -44,7 +44,8 @@ import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
 import { ladeWege, untergrundCode, untergrundAusCode } from '../../../data/osm.js';
 import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn,
          setzeUntergrund, markiereDoppelt } from '../../../domain/strecke.js';
-import { zoneSeconds, hrBands } from '../../../domain/zones.js';
+import { zoneSeconds, zonenBaender, hatLeistungsstrom,
+         WATT_FENSTER_SEK, ROLLEN_WATT } from '../../../domain/zones.js';
 import { isoDayLocal, toMidnight, weekNumberFor } from '../../../domain/week.js';
 import { isRide } from '../../../domain/analysis.js';
 import { verfassungAus } from '../../../domain/wellness.js';
@@ -133,23 +134,39 @@ export function useTagesauswertung(acts){
       const zonenById = {};
       const teile = [];
       const wk = Math.max(weekNumberFor(new Date(liste[0].start_date_local), start), 1);
-      const baender = hrBands(p, th, wk);
 
       for(const a of fahrten){
         let streams = null;
         try {
-          streams = await fetchStreams(key, a.id, 'heartrate,time,latlng,altitude');
+          streams = await fetchStreams(key, a.id, 'heartrate,watts,time,latlng,altitude');
         } catch(e){
           fehlt.push('Streams zu „' + (a.name || a.type) + '" (' + e.message + ')');
         }
         if(weg) return;
 
         const hol = t => (streams || []).find(s => s.type === t);
-        const hr = hol('heartrate'), tm = hol('time');
-        if(hr && Array.isArray(hr.data)){
-          zonenById[a.id] = zoneSeconds(baender, hr.data,
-            tm && Array.isArray(tm.data) ? tm.data : null,
-            a.icu_recording_time || a.elapsed_time || a.moving_time || 0);
+        const hr = hol('heartrate'), tm = hol('time'), watt = hol('watts');
+        const zeit = tm && Array.isArray(tm.data) ? tm.data : null;
+        const dauer = a.icu_recording_time || a.elapsed_time || a.moving_time || 0;
+
+        /* Je Fahrt entschieden und nicht je Tag: das Rennrad hat einen
+           Leistungsmesser, das Trekkingrad nicht, und beide koennen an
+           demselben Tag gefahren worden sein. */
+        const hatWatt = !!(watt && hatLeistungsstrom(watt.data));
+        const { quelle, bands } = zonenBaender(p, th, wk, hatWatt);
+
+        const strom = quelle === 'watt' ? watt : hr;
+        if(bands && strom && Array.isArray(strom.data)){
+          zonenById[a.id] = zoneSeconds(bands, strom.data, zeit, dauer,
+            quelle === 'watt'
+              ? { fensterSek: WATT_FENSTER_SEK, rollenUnter: ROLLEN_WATT }
+              : null);
+          /* Woher die Verteilung kommt, wandert mit ihr. Ohne das koennte die
+             Auswertung einen Anteil nennen, ohne sagen zu koennen, worauf er
+             sich bezieht - und genau daran ist die Warnung vom 12.09.2026
+             gescheitert. */
+          zonenById[a.id]._quelle = quelle;
+          zonenById[a.id]._wattAusgefallen = quelle !== 'watt' && wk >= p.cogganFromWeek;
         }
 
         /* Die Form des latlng-Streams liegt nicht fest - das Umrechnen auf

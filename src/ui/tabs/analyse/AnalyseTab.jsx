@@ -66,19 +66,33 @@ const ANSICHTEN = [
   { id: 'verlauf', label: 'Verlauf' }
 ];
 
+/* Woran der Balken gemessen ist, in zwei Worten.
+
+   Steht seit dem 12.09.2026 in der Legende. Ein Balken ohne Bezugsgroesse ist
+   dieselbe Falle wie ein Anteil ohne sie: er sieht in beiden Faellen gleich
+   aus, und "18 % ueber Z2" bedeutet nach Watt etwas anderes als nach einem
+   Puls gegen eine geratene LTHR. */
+const QUELLE_KURZ = {
+  'watt':         'Watt',
+  'hf-coggan':    'Puls · Coggan',
+  'hf-uebergang': 'Puls · Übergangsbänder',
+  'gemischt':     'gemischte Quellen'
+};
+
 function ZonenBalken({ z }){
   const p = plan.value;
   if(!z || !z._total) return null;
+  const quelle = z._quelle ? QUELLE_KURZ[z._quelle] : null;
+  const teile = p.zoneKeys.filter(k => (z[k] || 0) / z._total >= 0.02)
+    .map(k => p.zoneLabel[k] + ' ' + pct(z[k], z._total) + '%');
+  if(quelle) teile.push(quelle);
   return (
     <>
       <div class="zbar">
         {p.zoneKeys.filter(k => (z[k] || 0) / z._total >= 0.01)
           .map(k => <span key={k} style={'width:' + (z[k] / z._total * 100).toFixed(1) + '%;background:' + zonenFarbe(k)}></span>)}
       </div>
-      <div class="zleg">
-        {p.zoneKeys.filter(k => (z[k] || 0) / z._total >= 0.02)
-          .map(k => p.zoneLabel[k] + ' ' + pct(z[k], z._total) + '%').join(' · ')}
-      </div>
+      <div class="zleg">{teile.join(' · ')}</div>
     </>
   );
 }

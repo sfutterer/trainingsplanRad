@@ -285,6 +285,77 @@ sieht aus wie hartcodierte Zahlen. `zonenGrund` unterscheidet deshalb „zu frü
 (LTHR liegt vor, Woche noch nicht erreicht – mit Datum, ab dem gerechnet wird)
 von „kein Test“ (es fehlt die Messung), und die Karte schreibt beides hin.
 
+### Woraus die Zonenverteilung gerechnet wird
+
+Die Auswertung einer Fahrt zählte bis zum 12.09.2026 immer den **Puls**, und bis
+Woche 5 gegen die Übergangsbänder. Das musste scheitern, sobald der Test lief:
+die Übergangsbänder stützen sich auf eine ungeprüfte HFmax und auf
+Geschwindigkeit als Ersatz für Leistung, und `TRAININGSPLAN.md` nennt sie
+ausdrücklich eine Arbeitsannahme bis zum Testtag. Für den Donnerstag schreibt
+Abschnitt 7 längst vor: „Ab Woche 5 wird stattdessen die Zeit in der Watt-Zone
+gezählt." Dieselbe Regel gilt jetzt für jede Radeinheit — eine Fahrt wird nicht
+danach beurteilt, welcher Wochentag sie ist.
+
+`zonenQuelle` entscheidet **je Fahrt**, nicht je Tag: Rennrad mit Leistungsmesser
+und Trekkingrad ohne können derselbe Tag sein.
+
+| Quelle | wann | Bänder |
+|---|---|---|
+| `watt` | ab `cogganFromWeek`, mit FTP und Leistungsstrom | Coggan-Leistungszonen |
+| `hf-coggan` | ab `cogganFromWeek` ohne Leistung | Coggan-Pulsbänder aus der LTHR, Einheit als „ohne Leistungsdaten" gekennzeichnet |
+| `hf-uebergang` | Woche 1–4, oder es fehlen beide Schwellenwerte | Übergangsbänder — damit bleiben die Wochen 1–4 reproduzierbar |
+
+Zwei Dinge macht der Leistungsstrom nötig, die der Puls nicht brauchte:
+
+**30 s gemittelt** (`WATT_FENSTER_SEK`). Roher Leistungsstrom ist kein
+Intensitätsmaß — er springt zwischen 0 W im Rollen und 400 W an jeder
+Bodenwelle, und eine gleichmäßig gefahrene Ausfahrt verteilt sich
+Sample-für-Sample über alle fünf Zonen. Der Puls glättet sich von selbst, weil
+der Kreislauf träge ist; die Leistung tut es nicht. Dreißig Sekunden, weil das
+die Zeitkonstante der normalisierten Leistung ist. Zentriert, nicht nachlaufend:
+ein nachlaufendes Mittel verschöbe das Histogramm um eine halbe Fensterlänge.
+
+**Rollzeit zählt nicht** (`ROLLEN_WATT`). Ohne Drehmoment keine Leistung — 0 W
+ist Freilauf und keine niedrige Intensität. Sie in Z1 zu zählen liest sich
+harmlos, verschiebt aber genau die Kennzahl, an der „zu locker" hängt. Die
+Anteile gelten deshalb auf die getretene Zeit; die Rollzeit steht daneben.
+
+Zum **Zählen** werden die Lücken der Coggan-Definition geschlossen (Z1 bis 55 %,
+Z2 ab 56 % — die zwei Watt dazwischen fielen sonst aus der Gesamtzeit), und das
+oberste Band ist oben offen: ein Sprint mit 130 % FTP gehört in Z5 und nicht in
+keine Zone. Angezeigt werden weiterhin die Coggan-Grenzen selbst.
+
+### Die Entkopplung sticht die Zonenzählung
+
+Auf Tagen **ohne geplante Blöcke** unterdrückt eine Entkopplung von ≤ 5 %
+(`ENTKOPPLUNG_GUT`) die Warnung „zu hart gefahren", auch wenn die Zonenzählung
+sie auslösen würde. Die Zählung fragt, wie viel Zeit oberhalb einer Grenze lag;
+die Entkopplung fragt, ob der Körper aerob gearbeitet hat. Oberhalb der aeroben
+Schwelle steigt der Puls bei gleicher Leistung im Verlauf der Fahrt — bleibt er
+flach, war die Fahrt aerob, und dann lag die Grenze falsch, nicht die Fahrt.
+
+Wo Blöcke vorgesehen sind, gilt das nicht: dort prüft die Zählung ihre Dosis,
+und eine flache Entkopplung sagt nichts darüber, ob 15 statt 45 min Z3 gefahren
+wurden. Von „zu locker" entlastet sie ebenfalls nicht — dort fehlt der Reiz, und
+flacher Puls ist genau das Symptom.
+
+Der Anlass war die Ausfahrt vom 12.09.2026: 147 min, 56,6 km, flach, 139 W Ø,
+132 bpm Ø, Entkopplung **−0,9 %** (140,4 → 142,6 W bei 131,4 → 132,3 bpm über
+die beiden Hälften) — und eine Warnung „31 % der Zeit über Z2". Der Test vom
+10.09. hatte als Ø-Puls der 20 min 152 bpm ergeben; Coggan aus 152 legt Z2 auf
+103–135 bpm, ein Grundlagenpuls von 132 liegt damit in Z3. Nicht die Fahrt war
+zu hart, die Bezugszahl war zu niedrig.
+
+Wichtig für das Verständnis der Grenze: **die Umstellung auf Watt allein spricht
+diese Fahrt nicht frei.** Coggan-Z2 endet bei 76 % FTP, also 146 W; ein Schnitt
+von 139 W liegt sieben Watt darunter, am oberen Rand von Z2. Eine
+zweieinhalbstündige Fahrt wandert um mehr als sieben Watt, auch über 30 s
+gemittelt — ein knappes Drittel der Zeit liegt rechnerisch in Z3, und daran
+ändert kein Maßstab etwas. Der Leistungsstrom ist der bessere Maßstab, weil er
+nicht an einer einzigen geratenen Pulszahl hängt. Freigesprochen wird die Fahrt
+von der Entkopplung. Beide Tests stehen in `test/domain.test.js` und
+`test/abgleich.test.js`.
+
 ### Gemessen oder von Hand
 
 FTP, LTHR und HFmax entstehen auf zwei Wegen: ein Schwellentest **misst** sie,

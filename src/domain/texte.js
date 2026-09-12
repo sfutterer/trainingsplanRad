@@ -19,6 +19,7 @@
    Rein: kein DOM, keine Uhr. */
 
 import { FTP_FAKTOR } from './test.js';
+import { zahl } from './zahlen.js';
 
 export const T = {
 
@@ -196,6 +197,16 @@ export const T = {
     + ', vorgesehen sind hier rund ' + erlaubt + ' %. Das ist eine Grundlagenfahrt – '
     + 'zu hart gefahren kostet sie die Erholung für den Qualitätstag.',
 
+  /* Die Entkopplung sticht die Zonenzaehlung. Genannt werden beide Zahlen und
+     nicht nur die, die gewinnt - sonst stuende hier ein Freispruch ohne
+     Anklage, und die Zonenzahl faende man nirgends mehr. */
+  z2EntkopplungSticht: (ueber, erlaubt, ent, grenze) =>
+    ueber + ' % der Zeit über Z2, vorgesehen sind rund ' + erlaubt + ' % – die Entkopplung '
+    + 'sticht das: ' + (ent > 0 ? '+' : '') + zahl(ent, 1) + ' %, bis ' + grenze + ' % trägt '
+    + 'die Grundlage diese Dauer. Bliebe der Puls bei gleicher Leistung nicht flach, wäre '
+    + 'oberhalb der aeroben Schwelle gefahren worden. Die Zonengrenze lag hier zu tief, '
+    + 'nicht die Fahrt zu hoch.',
+
   z2ZuLocker: unten =>
     unten + ' % der Zeit unter Z2. Für eine Grundlagenfahrt zu locker – der Reiz kommt aus Z2.',
 
@@ -226,5 +237,28 @@ export const T = {
 
   aufzeichnungGrob: (takt, samples) =>
     'Aufzeichnung im ⌀ ' + takt + '-Sekunden-Takt (' + samples + ' Messwerte), '
-    + 'zeitgewichtet ausgewertet.'
+    + 'zeitgewichtet ausgewertet.',
+
+  /* ---- Gegen welchen Massstab gezaehlt wurde ---- */
+
+  zonenOhneLeistung:
+    'Ohne Leistungsdaten – Zonen aus dem Puls gegen die Coggan-Bänder der LTHR. Ab Woche 5 '
+    + 'zählt sonst die Zeit in der Watt-Zone; dieses Rad hat keinen Leistungsmesser. Der '
+    + 'Puls antwortet träge und mit Verzögerung, die Anteile sind deshalb weicher als bei '
+    + 'einer Wattmessung.',
+
+  zonenNochUebergang:
+    'Zonen noch gegen die Übergangsbänder gezählt – es fehlen FTP und LTHR. Die '
+    + 'Übergangsbänder sind laut Trainingsplan eine Arbeitsannahme bis zum Testtag; jede '
+    + 'Aussage über „über Z2" steht und fällt mit ihnen. Unter „Zonen & Schwellenwerte“ '
+    + 'eintragen, dann rechnet die Auswertung mit den gemessenen Zahlen.',
+
+  zonenWattRollen: min =>
+    'Zonen aus der Leistung, über 30 s gemittelt. ' + min + ' min Rollzeit ohne Tritt sind '
+    + 'nicht mitgezählt – die Anteile gelten auf die getretene Zeit.',
+
+  zonenGemischt:
+    'Die Fahrten dieses Tages wurden gegen verschiedene Maßstäbe gezählt – eine mit '
+    + 'Leistung, eine ohne. Die Tagesanteile mischen damit zwei Währungen; verlässlich '
+    + 'sind die Angaben je Fahrt.'
 };

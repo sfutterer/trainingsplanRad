@@ -560,3 +560,125 @@ describe('Rundenschaetzung aus der Aufzeichnungsdauer', () => {
     expect(row.status).not.toBe('miss');
   });
 });
+
+/* ---- Der Fehlalarm vom 12.09.2026 ----
+
+   Die Samstagsausfahrt - 147 min, 56,6 km, flach, 139 W Ø, 132 bpm Ø,
+   Entkopplung -0,9 % - bekam eine Warnung "zu hart gefahren": 31 % der Zeit
+   ueber Z2. Gerechnet war das richtig, gemessen gegen die Uebergangsbaender
+   aus der Zeit vor dem Test, deren Z2 bei 135 bpm endet. Der Trainingsplan
+   nennt diese Baender ausdruecklich eine Arbeitsannahme bis zum Testtag; der
+   Test lief zwei Tage vorher.
+
+   Zwei unabhaengige Wege fuehren hier aus dem Fehlalarm heraus, und beide
+   werden gebraucht: der richtige Massstab (Leistung ab Woche 5) und die
+   Gegeninstanz (Entkopplung). Der erste greift nur mit Leistungsmesser, der
+   zweite auch auf dem Trekkingrad. */
+describe('Entkopplung gegen die Zonenwarnung', () => {
+  const soll = plan.weeks[0].tage.sa.minutes;
+  /* 31 % ueber Z2, wie am 12.09. gemessen - der Anlass der Warnung. */
+  const zuHart = zonen({ z2: 6080, z3: 2400, z4: 320 });
+
+  it('stuft ohne Entkopplungswert weiter herab', () => {
+    const row = tag(SA, [fahrt(soll)], { a1: zuHart });
+    expect(row.status).toBe('dev');
+    expect(row.badge).toBe('zu hart');
+  });
+
+  it('unterdrueckt die Warnung bei flacher Entkopplung', () => {
+    const row = tag(SA, [fahrt(soll, { decoupling: -0.9 })], { a1: zuHart });
+    expect(row.status).toBe('ok');
+    expect(row.badge).toBe('erfüllt');
+    /* Beide Zahlen stehen da - ein Freispruch ohne Anklage waere die
+       Zonenzahl, die man nirgends mehr findet. */
+    expect(texte(row)).toContain('31 %');
+    expect(texte(row)).toContain('sticht das');
+  });
+
+  it('laesst die Warnung stehen, wenn die Entkopplung selbst hoch ist', () => {
+    const row = tag(SA, [fahrt(soll, { decoupling: 7.4 })], { a1: zuHart });
+    expect(row.status).toBe('dev');
+    expect(row.badge).toBe('zu hart');
+  });
+
+  /* Genau auf der Grenze zaehlt als flach: "bis 5 %" traegt die Grundlage
+     diese Dauer, und derselbe Satz steht im Verlauf. */
+  it('zaehlt die Grenze selbst noch als flach', () => {
+    expect(tag(SA, [fahrt(soll, { decoupling: 5 })], { a1: zuHart }).status).toBe('ok');
+    expect(tag(SA, [fahrt(soll, { decoupling: 5.1 })], { a1: zuHart }).status).toBe('dev');
+  });
+
+  /* Wo Bloecke geplant sind, prueft die Zaehlung ihre Dosis. Eine flache
+     Entkopplung sagt dort nichts darueber, ob 15 statt 45 min Z3 gefahren
+     wurden - die Gegeninstanz gilt deshalb nur auf reinen Grundlagentagen. */
+  it('gilt nicht an einem Samstag mit geplanten Bloecken', () => {
+    const mitBloecken = plan.weeks.findIndex(w => w.tage.sa.bloecke);
+    expect(mitBloecken).toBeGreaterThan(-1);
+    const datum = dayFromIso('2026-08-15');
+    datum.setDate(datum.getDate() + mitBloecken * 7);
+    const t = D.buildDayInfo(plan, TH, datum, START).target;
+    expect(t.hardMinutes).toBeGreaterThan(0);
+
+    /* Weit ueber dem Erlaubten, damit die Warnung unabhaengig von der
+       Blockdosis faellt. */
+    const viel = zonen({ z2: 2000, z3: 4000, z4: 2800 });
+    const row = tag(datum, [fahrt(t.minutes, { decoupling: -0.9 })], { a1: viel });
+    expect(row.badge).toBe('zu hart');
+  });
+
+  /* Die Entkopplung entlastet nur die Warnung "zu hart". Eine zu locker
+     gefahrene Fahrt bleibt zu locker - dort fehlt der Reiz, und flacher Puls
+     ist genau das Symptom. */
+  it('entlastet nicht von "zu locker"', () => {
+    const row = tag(SA, [fahrt(soll, { decoupling: -0.9 })],
+      { a1: zonen({ unter: 3000, z1: 3000, z2: 1200 }) });
+    expect(row.badge).toBe('zu locker');
+  });
+});
+
+/* ---- Gegen welchen Massstab gezaehlt wurde ---- */
+describe('Herkunft der Zonenverteilung', () => {
+  const soll = plan.weeks[0].tage.sa.minutes;
+  const mitQuelle = (q, extra) =>
+    Object.assign(zonen({ z1: 1200, z2: 6000 }), { _quelle: q }, extra || {});
+
+  it('sagt nichts dazu, wenn nach Leistung gezaehlt wurde', () => {
+    const row = tag(SA, [fahrt(soll)], { a1: mitQuelle('watt') });
+    expect(texte(row)).not.toContain('Ohne Leistungsdaten');
+    expect(texte(row)).not.toContain('Übergangsbänder');
+  });
+
+  it('kennzeichnet eine Fahrt ohne Leistungsdaten', () => {
+    const row = tag(SA, [fahrt(soll)], { a1: mitQuelle('hf-coggan') });
+    expect(texte(row)).toContain('Ohne Leistungsdaten');
+    /* Eine Kennzeichnung ist kein Mangel - der Status bleibt, wie die
+       Verteilung ihn ergibt. */
+    expect(row.status).toBe('ok');
+  });
+
+  it('nennt die Rollzeit, die nicht mitgezaehlt wurde', () => {
+    const row = tag(SA, [fahrt(soll)], { a1: mitQuelle('watt', { _rollen: 900 }) });
+    expect(texte(row)).toContain('15 min Rollzeit');
+  });
+
+  it('mahnt die fehlenden Schwellenwerte an, sobald Coggan gelten wuerde', () => {
+    const row = tag(SA, [fahrt(soll)],
+      { a1: mitQuelle('hf-uebergang', { _wattAusgefallen: true }) });
+    expect(texte(row)).toContain('Übergangsbänder');
+    expect(texte(row)).toContain('Zonen & Schwellenwerte');
+  });
+
+  it('schweigt in den Wochen 1 bis 4', () => {
+    const row = tag(SA, [fahrt(soll)], { a1: mitQuelle('hf-uebergang') });
+    expect(texte(row)).not.toContain('Übergangsbänder');
+  });
+
+  it('sagt es, wenn zwei Fahrten verschieden gezaehlt wurden', () => {
+    const row = tag(SA, [
+      fahrt(soll / 2, { id: 'a1' }),
+      fahrt(soll / 2, { id: 'a2', start_date_local: '2026-08-15T15:00:00' })
+    ], { a1: mitQuelle('watt'), a2: mitQuelle('hf-coggan') });
+    expect(row.zones._quelle).toBe('gemischt');
+    expect(texte(row)).toContain('zwei Währungen');
+  });
+});

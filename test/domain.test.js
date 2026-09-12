@@ -942,3 +942,225 @@ describe('Herkunft der Schwellenwerte', () => {
     expect(Z.quelleVon(ohneFtp, 'lthr').art).toBe('test');
   });
 });
+
+/* ---- Zonen aus der Leistung, ab Woche 5 ----
+
+   Bis zum 12.09.2026 rechnete die Auswertung jede Zonenverteilung aus dem
+   Pulsstrom, und bis Woche 5 gegen die Uebergangsbaender. Die
+   Samstagsausfahrt vom 12.09. bekam dadurch eine Warnung "zu hart": 31 % der
+   Zeit ueber Z2 - gemessen gegen ein Z2, das bei 135 bpm endet und laut
+   Trainingsplan nur bis zum Testtag galt. Bei 139 W Ø gegen ein Z2 von
+   106-144 W und -0,9 % Entkopplung war die Fahrt eine Grundlagenfahrt. */
+describe('Leistungsbaender', () => {
+  const th = { ftp: 192, lthr: 163, hrmax: 180 };
+
+  it('schliesst die Luecken der Coggan-Definition', () => {
+    const b = Z.powerBands(plan, th);
+    /* Jedes Band reicht bis zum Beginn des naechsten - sonst faellt ein
+       Sample zwischen 105,6 und 107,5 W aus der Gesamtzeit. */
+    for(let i = 1; i < b.length; i++) expect(b[i].min).toBe(b[i - 1].max);
+    expect(b[0].min).toBe(0);
+  });
+
+  it('laesst das oberste Band oben offen', () => {
+    const b = Z.powerBands(plan, th);
+    const z5 = b[b.length - 1];
+    expect(z5.key).toBe('z5');
+    /* maxFactor 1,2 ist eine Angabe fuer die Tabelle. Ein Sprint mit 130 %
+       FTP gehoert in Z5 und nicht in keine Zone. */
+    expect(z5.max).toBeGreaterThan(Math.round(192 * 1.2));
+  });
+
+  it('setzt die Grenzen aus FTP und plan.json', () => {
+    const b = Z.powerBands(plan, th);
+    const z2 = b.find(x => x.key === 'z2');
+    /* 56 % von 192 W. Die Obergrenze ist der Beginn von Z3 (76 %). */
+    expect(z2.min).toBe(Math.round(192 * 0.56));
+    expect(z2.max).toBe(Math.round(192 * 0.76));
+    /* Die Ø-Leistung der Fahrt vom 12.09. liegt darin. */
+    expect(139).toBeGreaterThanOrEqual(z2.min);
+    expect(139).toBeLessThan(z2.max);
+  });
+
+  it('bleibt ohne FTP leer statt zu raten', () => {
+    expect(Z.powerBands(plan, { ftp: null, lthr: 163 })).toBe(null);
+  });
+});
+
+describe('Welcher Massstab fuer eine Fahrt gilt', () => {
+  const voll = { ftp: 192, lthr: 163, hrmax: 180 };
+  const ab = plan.cogganFromWeek;
+
+  it('rechnet ab der Coggan-Woche nach Leistung', () => {
+    expect(Z.zonenQuelle(plan, voll, ab, true)).toBe('watt');
+    expect(Z.zonenBaender(plan, voll, ab, true).bands)
+      .toEqual(Z.powerBands(plan, voll));
+  });
+
+  /* Das Trekkingrad hat keinen Leistungsmesser. Seine Fahrten bleiben
+     auswertbar - aber gegen die neuen Baender, nicht gegen die alten. */
+  it('faellt ohne Leistung auf die Coggan-Pulsbaender zurueck', () => {
+    expect(Z.zonenQuelle(plan, voll, ab, false)).toBe('hf-coggan');
+    expect(Z.zonenBaender(plan, voll, ab, false).bands)
+      .not.toBe(plan.hrTransition);
+  });
+
+  it('haelt die Wochen 1 bis 4 bei den Uebergangsbaendern', () => {
+    expect(Z.zonenQuelle(plan, voll, ab - 1, true)).toBe('hf-uebergang');
+    expect(Z.zonenBaender(plan, voll, ab - 1, true).bands).toBe(plan.hrTransition);
+  });
+
+  /* Ohne gemessene Zahlen gibt es nichts Besseres. Die Auswertung sagt das
+     dann auch - siehe zonenQuelleNote. */
+  it('bleibt ohne Schwellenwerte bei den Uebergangsbaendern', () => {
+    expect(Z.zonenQuelle(plan, Z.NO_THRESHOLDS, ab, true)).toBe('hf-uebergang');
+    expect(Z.zonenQuelle(plan, { ftp: 192, lthr: null }, ab, false)).toBe('hf-uebergang');
+    /* FTP ohne LTHR und mit Leistungsstrom reicht aber. */
+    expect(Z.zonenQuelle(plan, { ftp: 192, lthr: null }, ab, true)).toBe('watt');
+  });
+});
+
+describe('Leistungsstrom erkennen', () => {
+  it('verlangt echte Werte und nicht bloss ein Feld', () => {
+    expect(Z.hatLeistungsstrom(new Array(200).fill(0))).toBe(false);
+    expect(Z.hatLeistungsstrom(new Array(200).fill(null))).toBe(false);
+    expect(Z.hatLeistungsstrom(new Array(200).fill(150))).toBe(true);
+  });
+
+  it('verwirft einen zu kurzen oder fehlenden Strom', () => {
+    expect(Z.hatLeistungsstrom(new Array(10).fill(150))).toBe(false);
+    expect(Z.hatLeistungsstrom(null)).toBe(false);
+  });
+
+  /* Ein Ausfall auf halber Strecke ist kein Leistungsmesser. */
+  it('verwirft einen ueberwiegend leeren Strom', () => {
+    const luecken = new Array(200).fill(null);
+    for(let i = 0; i < 40; i++) luecken[i] = 150;
+    expect(Z.hatLeistungsstrom(luecken)).toBe(false);
+    for(let i = 40; i < 80; i++) luecken[i] = 150;
+    expect(Z.hatLeistungsstrom(luecken)).toBe(true);
+  });
+});
+
+describe('Zonenzeit aus der Leistung', () => {
+  const th = { ftp: 192, lthr: 163, hrmax: 180 };
+  const bands = Z.powerBands(plan, th);
+  const zeit = n => Array.from({ length: n }, (_, i) => i);
+  const opts = { fensterSek: Z.WATT_FENSTER_SEK, rollenUnter: Z.ROLLEN_WATT };
+
+  /* Der Kern der Sache: roher Leistungsstrom ist kein Intensitaetsmass.
+     Wechselt eine gleichmaessig gefahrene Fahrt sekuendlich zwischen Rollen
+     und 280 W, liegt der Schnitt bei 140 W - mitten in Z2 -, sample-fuer-
+     sample aber kein einziger Wert darin. */
+  it('mittelt ueber 30 s, bevor gezaehlt wird', () => {
+    const n = 1200;
+    const werte = Array.from({ length: n }, (_, i) => (i % 2 ? 280 : 0));
+
+    const roh = Z.zoneSeconds(bands, werte, zeit(n), n, { rollenUnter: Z.ROLLEN_WATT });
+    expect(roh.z2 || 0).toBe(0);
+
+    const glatt = Z.zoneSeconds(bands, werte, zeit(n), n, opts);
+    expect(glatt.z2 / glatt._total).toBeGreaterThan(0.95);
+  });
+
+  it('zaehlt Rollzeit nicht als Zone', () => {
+    const n = 1200;
+    /* Zehn Minuten treten, zehn Minuten rollen. */
+    const werte = Array.from({ length: n }, (_, i) => (i < 600 ? 130 : 0));
+    const z = Z.zoneSeconds(bands, werte, zeit(n), n, { rollenUnter: Z.ROLLEN_WATT });
+
+    expect(z._rollen).toBeGreaterThan(500);
+    expect(z._total).toBeLessThan(700);
+    /* Die Anteile gelten auf die getretene Zeit - sonst waere diese Fahrt zur
+       Haelfte "unter Z2", ohne dass zu locker gefahren wurde. */
+    expect(z.z2 / z._total).toBeGreaterThan(0.95);
+  });
+
+  it('laesst den Pulsstrom unveraendert zaehlen', () => {
+    const n = 600;
+    const werte = new Array(n).fill(130);
+    const ohne = Z.zoneSeconds(plan.hrTransition, werte, zeit(n), n);
+    const mitOpts = Z.zoneSeconds(plan.hrTransition, werte, zeit(n), n, null);
+    expect(ohne.z2).toBe(mitOpts.z2);
+    /* Ohne rollenUnter wird nichts als Rollen weggerechnet. */
+    expect(ohne._rollen).toBe(0);
+  });
+
+  /* Die Fahrt vom 12.09.2026, nachgebaut: 147 min, Ø 139 W, Ø 132 bpm,
+     Entkopplung -0,9 %. Sie bekam 31 % "ueber Z2" - und hier steht, woran das
+     lag.
+
+     Der Protokollwert des Tests war ein Ø-Puls von 152 bpm ueber die zwanzig
+     Minuten, und genau der landete als LTHR in den Schwellenwerten. Coggan
+     aus 152 legt Z2 auf 103-126 bpm; ein Grundlagenpuls von 132 liegt damit
+     in Z3. Nicht die Fahrt war zu hart, die Bezugszahl war zu niedrig.
+
+     Mit der Schwellen-HF von 163 reicht Z2 bis 135 und dieselbe Fahrt ist
+     eine Grundlagenfahrt. Nach Leistung gemessen ist sie es ohnehin - und das
+     ist der Punkt: der Massstab haengt dann nicht mehr an einer einzigen Zahl,
+     die man richtig raten muss. */
+  const ritt = n => ({
+    /* Schneller Tretschlag, den dreissig Sekunden wegmitteln, darunter die
+       langsame Welle des Gelaendes, die bleibt. So sieht Strassenleistung
+       aus - nicht wie eine Zahl mit Rauschen. */
+    watt: Array.from({ length: n }, (_, i) =>
+      Math.max(0, Math.round(139 + 90 * Math.sin(i / 1.7) + 60 * Math.sin(i / 3.1)
+                             + 12 * Math.sin(i / 600)))),
+    /* Ø 132 bpm, p90 bei 136 - die Werte der Fahrt vom 12.09. */
+    puls: Array.from({ length: n }, (_, i) =>
+      Math.round(132 + 3 * Math.sin(i / 300) + 2 * Math.sin(i / 47)))
+  });
+  const ueberZ2 = z => (z.z3 + z.z4 + z.z5) / z._total;
+
+  it('zeigt, dass die zu niedrige LTHR den Fehlalarm erzeugt', () => {
+    const n = 147 * 60;
+    const { puls } = ritt(n);
+    const ausTest = Z.zonenBaender(plan, { ftp: 192, lthr: 152 }, 5, false).bands;
+    const vonHand = Z.zonenBaender(plan, { ftp: 192, lthr: 163 }, 5, false).bands;
+
+    /* Mit 152 liegt praktisch die ganze Fahrt "ueber Z2" - Z2 endet bei
+       126 bpm, gefahren wurden 132. */
+    const mit152 = ueberZ2(Z.zoneSeconds(ausTest, puls, zeit(n), n));
+    const mit163 = ueberZ2(Z.zoneSeconds(vonHand, puls, zeit(n), n));
+    expect(mit152).toBeGreaterThan(0.9);
+    expect(mit163).toBeLessThan(mit152 / 3);
+  });
+
+  /* Und hier steht, was die Umstellung auf Watt allein NICHT leistet.
+
+     Die Fahrt lag bei 139 W Ø, und Coggan-Z2 endet bei 76 % FTP, also
+     146 W. Der Schnitt liegt damit sieben Watt unter der Bandgrenze - das
+     ist das obere Ende von Z2, nicht seine Mitte. Eine zweieinhalb Stunden
+     lange Fahrt wandert um mehr als sieben Watt, gleichmaessig gefahren und
+     ueber dreissig Sekunden gemittelt: ein knappes Drittel der Zeit liegt
+     rechnerisch in Z3, und daran aendert kein Massstab etwas.
+
+     Der Leistungsstrom ist der richtige Massstab - er haengt nicht an einer
+     einzigen geratenen Pulszahl -, aber die Grenze von 20 % "ueber Z2"
+     spricht eine Fahrt am oberen Rand von Z2 weiter schuldig. Was sie
+     freispricht, ist die Entkopplung; siehe abgleich.test.js. */
+  it('spricht die Ausfahrt nach Leistung nicht allein frei', () => {
+    const n = 147 * 60;
+    const { watt } = ritt(n);
+    const z = Z.zoneSeconds(bands, watt, zeit(n), n, opts);
+
+    /* Der Schwerpunkt liegt in Z2 - die Fahrt ist als Grundlagenfahrt
+       erkennbar. */
+    expect(z.z2 / z._total).toBeGreaterThan(0.6);
+    expect(z.z2).toBeGreaterThan(z.z3 + z.z4 + z.z5);
+    /* Und trotzdem reisst sie die 20-Prozent-Grenze. */
+    expect(ueberZ2(z)).toBeGreaterThan(0.2);
+  });
+
+  /* Eine Fahrt in der Mitte von Z2 - 125 W bei FTP 192, also 65 % - bleibt
+     dagegen auch nach Zaehlung klar drin. Die Grenze taugt, nur nicht fuer
+     einen Schnitt zwei Prozent unter der Bandkante. */
+  it('bestaetigt eine Fahrt in der Mitte von Z2', () => {
+    const n = 147 * 60;
+    const werte = Array.from({ length: n }, (_, i) =>
+      Math.max(0, Math.round(125 + 90 * Math.sin(i / 1.7) + 60 * Math.sin(i / 3.1)
+                             + 10 * Math.sin(i / 600))));
+    const z = Z.zoneSeconds(bands, werte, zeit(n), n, opts);
+    expect(ueberZ2(z)).toBeLessThan(0.05);
+  });
+});
