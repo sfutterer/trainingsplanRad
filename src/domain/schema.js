@@ -333,9 +333,14 @@ function pvTage(err, t, feld, zonen){
   pvNum(err, t.sa.minutes, feld + '.sa.minutes', {min:0, int:true});
   /* Hoehenmeter sind freiwillig: ein eigener Plan von vor dem 13.09.2026
      kennt sie nicht und soll deshalb nicht abgelehnt werden. Steht das Feld
-     aber da, muss es eine Zahl sein. */
-  if(t.sa.hoehenmeter !== undefined){
-    pvNum(err, t.sa.hoehenmeter, feld + '.sa.hoehenmeter', {min:0, int:true});
+     aber da, muss es ein Band sein, das unten nicht hoeher liegt als oben. */
+  if(t.sa.hoehenmeter !== undefined && pvObj(err, t.sa.hoehenmeter, feld + '.sa.hoehenmeter')){
+    const hm = t.sa.hoehenmeter;
+    const von = pvNum(err, hm.von, feld + '.sa.hoehenmeter.von', {min:0, int:true});
+    const bis = pvNum(err, hm.bis, feld + '.sa.hoehenmeter.bis', {min:0, int:true});
+    if(von && bis && hm.von > hm.bis){
+      err.push(feld + '.sa.hoehenmeter: von ' + hm.von + ' liegt über bis ' + hm.bis + '.');
+    }
   }
   pvBlocks(err, t.sa.bloecke, feld + '.sa.bloecke');
 

@@ -119,7 +119,16 @@
    Wochenangaben und die Wiederholungsziele haben ihre Pruefsumme behalten.
    Beide Abzuege sind um genau 9 Zeichen laenger: "ca. 80 hm" ist so lang wie
    "50–100 hm", jeder dreistellige Wert eine Stelle mehr - und dreistellig
-   sind die Samstage der Wochen 8, 9, 11, 12 und 14 bis 18. */
+   sind die Samstage der Wochen 8, 9, 11, 12 und 14 bis 18.
+
+   Neu gesetzt am selben Tag: aus dem Punktwert wird ein Band. "ca. 225 hm"
+   trifft keine Strecke, die es gibt; die Baender sind 100 hm breit und
+   steigen je Belastungswoche um 50 hm. Betroffen sind dieselben 14 Samstage
+   und nur ihr Wert - ersetzt man in beiden Ausgaben den Hoehenmeterwert durch
+   dasselbe Zeichen, sind sie gleich. Die Laenge waechst um 5 Zeichen je
+   Abzug: "150–250 hm" ist eine Stelle laenger als ein zweistelliges
+   "ca. 80 hm" und so lang wie ein dreistelliges - zweistellig waren die
+   Wochen 5, 6, 7, 10 und 13. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -281,7 +290,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: 'de939b269b0ac6c5', len: 183490 });
+      .toEqual({ hash: 'd0869e04d715eb61', len: 183495 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -305,7 +314,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '9286337465f29440', len: 164197 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '3a3d477def5acc84', len: 164202 });
   });
 });
 
@@ -330,26 +339,27 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
     expect(ist).toEqual(max);
   });
 
-  /* Abschnitt 1, "Hoehenmeter - Einfuehrung", und die Reihe SAT_HM in
-     Abschnitt 2: flach bis zum Test, Einstieg in Woche 5 mit 50–100 Hm, danach
-     +10–15 % je Belastungswoche. Die Erholungswochen gehen auf rund zwei
-     Drittel zurueck und werden nicht mitgezaehlt - die naechste
+  /* Abschnitt 1, "Hoehenmeter - Einfuehrung", und die Reihen SAT_HM_* in
+     Abschnitt 2: flach bis zum Test, ab Woche 5 ein Band von 100 hm, das je
+     Belastungswoche um 50 hm steigt. In den Erholungswochen beginnt das Band
+     halb so hoch wie in der letzten Belastungswoche; sie zaehlen nicht mit - die naechste
      Belastungswoche setzt auf der letzten auf, nicht auf der Erholung. */
   it('Hoehenmeter am Samstag stimmen mit Abschnitt 2 ueberein', () => {
-    const soll = [0, 0, 0, 0, 80, 90, 60, 100, 115, 75, 130, 145, 95, 160, 180, 120];
-    const ist = [];
-    for(let w = 1; w <= 16; w++) ist.push(W.tagDaten(plan, w, 'sa').hoehenmeter);
-    expect(ist).toEqual(soll);
+    const soll = [0, 0, 0, 0, 150, 200, 100, 250, 300, 150, 350, 400, 200, 450, 500, 250];
+    const baender = [];
+    for(let w = 1; w <= 16; w++) baender.push(W.tagDaten(plan, w, 'sa').hoehenmeter);
+    expect(baender.map(b => b.von)).toEqual(soll);
+    baender.forEach((b, i) => expect(b.bis - b.von).toBe(i < 4 ? 0 : 100));
 
     let vorher = null;
     for(let w = 5; w <= 16; w++){
-      if(W.isRecoveryWeek(plan, w)) continue;
-      if(vorher !== null){
-        const plus = ist[w - 1] / vorher - 1;
-        expect(plus).toBeGreaterThanOrEqual(0.10);
-        expect(plus).toBeLessThanOrEqual(0.15);
+      const b = baender[w - 1];
+      if(W.isRecoveryWeek(plan, w)){
+        expect(b.von).toBe(vorher.von / 2);
+        continue;
       }
-      vorher = ist[w - 1];
+      if(vorher !== null) expect(b.von - vorher.von).toBe(50);
+      vorher = b;
     }
   });
 
@@ -357,8 +367,8 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
     const hm = w => D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(start, (w - 1) * 7), start)
       .einheiten[0].kennzahlen.find(k => k.label === 'Höhenmeter');
     expect(hm(4).wert).toBe('flach');
-    expect(hm(5).wert).toBe('ca. 80 hm');
-    expect(hm(15).wert).toBe('ca. 180 hm');
+    expect(hm(6).wert).toBe('200–300 hm');
+    expect(hm(15).wert).toBe('500–600 hm');
   });
 
   it('Samstagskarte ohne Hoehenmeter im Plan nennt keine', () => {
@@ -370,10 +380,12 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
     expect(info.einheiten[0].hinweise).toEqual([]);
   });
 
-  it('beanstandet Hoehenmeter, die keine Zahl sind', () => {
+  it('beanstandet Hoehenmeter, die kein Band sind', () => {
     const k = structuredClone(json);
-    k.weeks[4].tage.sa.hoehenmeter = '80';
+    k.weeks[4].tage.sa.hoehenmeter = 200;
     expect(planValidate(k).join(' ')).toContain('tage.sa.hoehenmeter');
+    k.weeks[4].tage.sa.hoehenmeter = { von: 300, bis: 200 };
+    expect(planValidate(k).join(' ')).toContain('von 300 liegt über bis 200');
   });
 
   it('Erholungswochen sind 4, 7, 10, 13 und 16', () => {

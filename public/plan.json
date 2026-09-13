@@ -16,7 +16,7 @@
     "sprache": "Die Schluessel sind englisch, alle Werte und dieser Block sind deutsch. Absicht: die Schluessel bleiben maschinennah und stimmen mit den Feldnamen im Code ueberein, alles Erklaerende bleibt in der Sprache der App.",
     "farben": "Die Zonenfarben standen bis zum 29.08.2026 hier als Hexwerte und gleichzeitig als Tokens in src/ui/theme.css - beide wurden benutzt, also hatte dieselbe Zone je nach Anzeige eine andere Farbe, und die Fassung aus dieser Datei folgte dem Dunkelmodus nicht. Welche Farbe eine Zone traegt, ist Darstellung und keine Trainingsvorgabe; sie steht deshalb nur noch in theme.css.",
     "testProtokoll": "thresholdTest.id und .fassung benennen das Protokoll. Der Trainingsplan verlangt, dass alle drei Termine identisch gefahren werden - deshalb gibt es genau ein aktives Protokoll und keine Liste. Die Kennung wandert in jeden Testeintrag; weichen zwei Eintraege voneinander ab, sagt die Anzeige das, statt zwei unvergleichbare Werte in dieselbe Linie zu zeichnen.",
-    "tage": "Die Wochentage unter ihrem Kuerzel: di, mi, do, sa, so. Montag und Freitag fehlen, weil an ihnen nichts von der Woche abhaengt - der Montag ist frei, der Freitag steht in fridayOptional. di.minutes und di.legRounds: Arbeitsweg und die zweite Beineinheit am Abend. mi.minutes und mi.extra: die kurze Fahrt und ein daran haengender Reiz. do: der Qualitaetstag als vollstaendiges Objekt, siehe variante und schrittfolge. sa.minutes, sa.hoehenmeter und sa.bloecke: die lange Ausfahrt, ihre Hoehenmeter und die Z3-Bloecke darin. hoehenmeter ist ein Richtwert in Hm; 0 heisst flach. Fehlt das Feld, nennt die Karte keine Hoehenmeter - lieber keine Vorgabe als eine erfundene. so.optionalMinutes und so.legRounds: die optionale Fahrt davor und die Runden des Beinblocks. Ein Kuerzel, das hier nicht steht, wird beanstandet - sonst schriebe jemand \"mo\" hin und wunderte sich, dass der Montag sich nicht ruehrt.",
+    "tage": "Die Wochentage unter ihrem Kuerzel: di, mi, do, sa, so. Montag und Freitag fehlen, weil an ihnen nichts von der Woche abhaengt - der Montag ist frei, der Freitag steht in fridayOptional. di.minutes und di.legRounds: Arbeitsweg und die zweite Beineinheit am Abend. mi.minutes und mi.extra: die kurze Fahrt und ein daran haengender Reiz. do: der Qualitaetstag als vollstaendiges Objekt, siehe variante und schrittfolge. sa.minutes, sa.hoehenmeter und sa.bloecke: die lange Ausfahrt, ihr Hoehenmeterband und die Z3-Bloecke darin. hoehenmeter ist ein Band { von, bis } in Hm fuer die Streckenwahl; bis 0 heisst flach. Fehlt das Feld, nennt die Karte keine Hoehenmeter - lieber keine Vorgabe als eine erfundene. so.optionalMinutes und so.legRounds: die optionale Fahrt davor und die Runden des Beinblocks. Ein Kuerzel, das hier nicht steht, wird beanstandet - sonst schriebe jemand \"mo\" hin und wunderte sich, dass der Montag sich nicht ruehrt.",
     "variante": "Ein tage.do darf eine benannte Variante tragen: eine zweite zulaessige Form desselben Tages, ueber die am Tag selbst entschieden wird. Im ausgelieferten Plan ist das die VO2max-Referenz in Woche 5. Der Regelfall bleibt daneben unveraendert stehen - gewaehlt wird in der App, und die Wahl wird gespeichert. Die Wochensumme rechnet mit der Variante, weil der Trainingsplan sie so nennt; die zwei Minuten Unterschied liegen unter der Aufloesung des Umfangsdeckels. Nicht zu verwechseln mit kind \"steps\": die Variante ist eine zweite Form, ueber die entschieden wird, eine Schrittfolge unter kind ist der Regelfall selbst.",
     "schrittfolge": "Ein tage.do mit kind \"steps\" traegt seinen Ablauf als Schrittliste statt als drei Zahlen. Gebraucht, sobald ein Tag mehr ist als Einfahren, n gleiche Bloecke und Ausrollen - im ausgelieferten Plan der Donnerstag der Wochen 11 und 12: Z2, darin drei Reize, danach wieder Z2. Die Schritte sind dieselben wie im Schwellentest und im Testanlauf; type \"ride\" kam dafuer dazu und meint einen Abschnitt, der weder Einfahren noch Belastung noch Pause ist. Die Dauer wird aus den Schritten gerechnet und darf deshalb nicht daneben stehen. Optional: steering (ersetzt die Zielzone auf der Karte), note (Hinweis unter der Einheit) und art (das Einheitszeichen in Plan und Analyse - ohne Angabe gilt \"intervalle\").",
     "ansage": "Ein Schritt darf mit say sagen, was die Stimme zu ihm sagt. Ohne Angabe gilt der Satz seiner Art. Bis Fassung 4 entschied allein die Art ueber den Wortlaut - das reicht, solange eine Folge aus Einfahren, Belastung, Pause und Ausrollen besteht, und stimmt nicht mehr, sobald die Datei Abschnitte frei zusammensetzt: \"Alle Intervalle geschafft\" gehoert an das Ende einer Einheit und nicht vor den eingebetteten Reiz der Phase 3.",
@@ -68,7 +68,10 @@
         },
         "sa": {
           "minutes": 120,
-          "hoehenmeter": 0,
+          "hoehenmeter": {
+            "von": 0,
+            "bis": 0
+          },
           "bloecke": null
         },
         "so": {
@@ -105,7 +108,10 @@
         },
         "sa": {
           "minutes": 130,
-          "hoehenmeter": 0,
+          "hoehenmeter": {
+            "von": 0,
+            "bis": 0
+          },
           "bloecke": null
         },
         "so": {
@@ -142,7 +148,10 @@
         },
         "sa": {
           "minutes": 140,
-          "hoehenmeter": 0,
+          "hoehenmeter": {
+            "von": 0,
+            "bis": 0
+          },
           "bloecke": null
         },
         "so": {
@@ -176,7 +185,10 @@
         },
         "sa": {
           "minutes": 90,
-          "hoehenmeter": 0,
+          "hoehenmeter": {
+            "von": 0,
+            "bis": 0
+          },
           "bloecke": null
         },
         "so": {
@@ -320,7 +332,10 @@
         },
         "sa": {
           "minutes": 150,
-          "hoehenmeter": 80,
+          "hoehenmeter": {
+            "von": 150,
+            "bis": 250
+          },
           "bloecke": null
         },
         "so": {
@@ -357,7 +372,10 @@
         },
         "sa": {
           "minutes": 160,
-          "hoehenmeter": 90,
+          "hoehenmeter": {
+            "von": 200,
+            "bis": 300
+          },
           "bloecke": {
             "reps": 2,
             "minutes": 12,
@@ -398,7 +416,10 @@
         },
         "sa": {
           "minutes": 100,
-          "hoehenmeter": 60,
+          "hoehenmeter": {
+            "von": 100,
+            "bis": 200
+          },
           "bloecke": null
         },
         "so": {
@@ -435,7 +456,10 @@
         },
         "sa": {
           "minutes": 165,
-          "hoehenmeter": 100,
+          "hoehenmeter": {
+            "von": 250,
+            "bis": 350
+          },
           "bloecke": null
         },
         "so": {
@@ -472,7 +496,10 @@
         },
         "sa": {
           "minutes": 175,
-          "hoehenmeter": 115,
+          "hoehenmeter": {
+            "von": 300,
+            "bis": 400
+          },
           "bloecke": {
             "reps": 2,
             "minutes": 12,
@@ -510,7 +537,10 @@
         },
         "sa": {
           "minutes": 100,
-          "hoehenmeter": 75,
+          "hoehenmeter": {
+            "von": 150,
+            "bis": 250
+          },
           "bloecke": null
         },
         "so": {
@@ -621,7 +651,10 @@
         },
         "sa": {
           "minutes": 170,
-          "hoehenmeter": 130,
+          "hoehenmeter": {
+            "von": 350,
+            "bis": 450
+          },
           "bloecke": null
         },
         "so": {
@@ -732,7 +765,10 @@
         },
         "sa": {
           "minutes": 180,
-          "hoehenmeter": 145,
+          "hoehenmeter": {
+            "von": 400,
+            "bis": 500
+          },
           "bloecke": {
             "reps": 2,
             "minutes": 12,
@@ -770,7 +806,10 @@
         },
         "sa": {
           "minutes": 105,
-          "hoehenmeter": 95,
+          "hoehenmeter": {
+            "von": 200,
+            "bis": 300
+          },
           "bloecke": null
         },
         "so": {
@@ -807,7 +846,10 @@
         },
         "sa": {
           "minutes": 175,
-          "hoehenmeter": 160,
+          "hoehenmeter": {
+            "von": 450,
+            "bis": 550
+          },
           "bloecke": null
         },
         "so": {
@@ -844,7 +886,10 @@
         },
         "sa": {
           "minutes": 185,
-          "hoehenmeter": 180,
+          "hoehenmeter": {
+            "von": 500,
+            "bis": 600
+          },
           "bloecke": null
         },
         "so": {
@@ -878,7 +923,10 @@
         },
         "sa": {
           "minutes": 105,
-          "hoehenmeter": 120,
+          "hoehenmeter": {
+            "von": 250,
+            "bis": 350
+          },
           "bloecke": null
         },
         "so": {
@@ -901,7 +949,10 @@
       },
       "sa": {
         "minutes": 105,
-        "hoehenmeter": 120,
+        "hoehenmeter": {
+          "von": 250,
+          "bis": 350
+        },
         "bloecke": null
       }
     }

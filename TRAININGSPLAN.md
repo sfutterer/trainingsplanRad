@@ -403,19 +403,29 @@ Zeit-Progression** eingeführt, sondern als eigenständige, entkoppelte Variable
   **Samstag**.
 - **Kadenz bewusst hochhalten**, nicht unter 70 rpm. Passende Übersetzung ist die
   wirksamere Lösung als Disziplin am Berg.
-- **Danach eigenständige Progression** (+10–15 % alle 1–2 Wochen), unabhängig von der
+- **Danach eigenständige Progression:** +50 Hm je Belastungswoche, unabhängig von der
   Zeit-Progression der Woche.
 
-**Richtwerte Samstag** (Hm je Ausfahrt, Reihe `SAT_HM` in Abschnitt 2):
+**Hm-Band Samstag** (Hm je Ausfahrt, Reihen `SAT_HM_*` in Abschnitt 2):
 
 | Woche | 1–4 | 5 | 6 | **7** | 8 | 9 | **10** | 11 | 12 | **13** | 14 | 15 | **16** |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Hm** | flach | 80 | 90 | **60** | 100 | 115 | **75** | 130 | 145 | **95** | 160 | 180 | **120** |
+| **Hm** | flach | 150–250 | 200–300 | **100–200** | 250–350 | 300–400 | **150–250** | 350–450 | 400–500 | **200–300** | 450–550 | 500–600 | **250–350** |
 
-Jede Belastungswoche liegt 10–15 % über der vorigen Belastungswoche. Die
-Erholungswochen gehen auf rund zwei Drittel zurück und zählen für die Steigerung nicht
-mit — die nächste Belastungswoche setzt auf der letzten Belastungswoche auf. Die Werte
-sind Richtwerte für die Streckenwahl, keine Punktlandung: ±20 % sind dieselbe Einheit.
+**Ein Band statt eines Punktwerts.** Strecken gibt es nicht in 10er-Schritten; ein Band
+von 100 Hm lässt die Wahl zwischen mehreren echten Runden. Innerhalb des Bands ist jede
+Strecke dieselbe Einheit.
+
+**Warum nicht +10–15 %.** Die erste Fassung dieser Progression rechnete die 50–100 Hm als
+Gesamtwert und steigerte sie um 10–15 %. Das lag unter dem Ist-Stand: die flache
+Referenzfahrt vom 22.08. hatte bereits 113 Hm, 2,6 Hm/km ergeben auf einer Samstagsrunde
+rund 120 Hm. Die Einstiegs-Hm kommen deshalb **auf** die flache Basis, und die Steigerung
+läuft in festen 50-Hm-Schritten — am Anfang etwas schneller als 15 %, ab Woche 11
+innerhalb von 10–15 %. Der Anker ist eine real fahrbare Runde mit rund 300 Hm in Woche 6.
+
+In den **Erholungswochen** beginnt das Band halb so hoch wie in der letzten
+Belastungswoche. Sie zählen für die Steigerung nicht mit — die nächste Belastungswoche
+setzt auf der letzten Belastungswoche auf.
 
 ### Wellness-Gate
 
@@ -488,7 +498,8 @@ CORE_WORK   [25, 30, 35, 25, 30, 35, 30, 35, 40, 30, 40, 40, 30, 40, 40, 30]
 CORE_ROUNDS [2, 2, 2, 2, 3, 3, 2, 3, 3, 2, 3, 3, 2, 3, 3, 2]
 CORE_REST   [25, 25, 25, 25, 20, 20, 25, 20, 20, 25, 20, 20, 25, 20, 20, 25]
 LEG_ROUNDS  [2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 3, 2, 3, 3, 2]
-SAT_HM      [0, 0, 0, 0, 80, 90, 60, 100, 115, 75, 130, 145, 95, 160, 180, 120]
+SAT_HM_VON  [0, 0, 0, 0, 150, 200, 100, 250, 300, 150, 350, 400, 200, 450, 500, 250]
+SAT_HM_BIS  SAT_HM_VON + 100 ab Woche 5
 RECOVERY    Wochen 4, 7, 10, 13, 16
 ```
 

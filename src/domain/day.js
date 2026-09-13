@@ -758,17 +758,23 @@ function samstag(c){
      Bis zum 13.09.2026 stand hier ab Woche 5 fest "50–100 hm" - der Einstieg
      aus dem Dokument, und dann Woche fuer Woche derselbe Einstieg. Die
      eigenstaendige Progression danach (+10–15 % alle 1–2 Wochen) kam auf der
-     Karte nie an. Jetzt steht der Wert je Woche in plan.json unter
-     sa.hoehenmeter, 0 heisst flach. Fehlt er - ein eigener Plan aus der Zeit
-     davor -, steht keine Zeile da statt einer erfundenen Zahl. */
+     Karte nie an. Jetzt steht je Woche ein Band in plan.json unter
+     sa.hoehenmeter.
+
+     Ein Band und kein Punktwert: Strecken gibt es nicht in 10er-Schritten.
+     "ca. 225 hm" trifft keine Runde, die man tatsaechlich faehrt - ein Band
+     von 100 hm laesst die Wahl zwischen zwei, drei echten Strecken. bis 0
+     heisst flach. Fehlt das Feld - ein eigener Plan aus der Zeit davor -,
+     steht keine Zeile da statt einer erfundenen Zahl. */
   const hm = c.tag('sa').hoehenmeter;
-  if(typeof hm === 'number'){
-    kennzahlen.push({ label:'Höhenmeter', wert: hm > 0 ? `ca. ${hm} hm` : 'flach' });
+  const huegelig = !!hm && hm.bis > 0;
+  if(hm){
+    kennzahlen.push({ label:'Höhenmeter', wert: huegelig ? `${hm.von}–${hm.bis} hm` : 'flach' });
   }
 
   info.einheiten = [einheit({
     art:'lang', titel:'Lange Ausfahrt', kennzahlen, bloecke: lang,
-    hinweise: hm > 0 ? [T.elevationShort] : []
+    hinweise: huegelig ? [T.elevationShort] : []
   })];
   /* In der Erholungswoche zaehlt keine harte Zeit - saturdayBlocks liefert
      dort ohnehin nichts, die Bedingung stand bis Fassung 3 trotzdem ein
