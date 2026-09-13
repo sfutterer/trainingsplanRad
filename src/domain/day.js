@@ -755,15 +755,20 @@ function samstag(c){
      Wert, den man vor dem Losfahren abliest. Die Begruendung steht im
      Dokument, nicht auf der Karte.
 
-     Der Umschaltpunkt ist cogganFromWeek und nicht zufaellig derselbe wie beim
-     Zonenmodell: beide haengen am Schwellentest. Bis dahin soll der Datensatz
-     flach bleiben, danach wird ueber Watt gesteuert. */
-  const vorTest = week < plan.cogganFromWeek;
-  kennzahlen.push({ label:'Höhenmeter', wert: vorTest ? 'flach' : '50–100 hm' });
+     Bis zum 13.09.2026 stand hier ab Woche 5 fest "50–100 hm" - der Einstieg
+     aus dem Dokument, und dann Woche fuer Woche derselbe Einstieg. Die
+     eigenstaendige Progression danach (+10–15 % alle 1–2 Wochen) kam auf der
+     Karte nie an. Jetzt steht der Wert je Woche in plan.json unter
+     sa.hoehenmeter, 0 heisst flach. Fehlt er - ein eigener Plan aus der Zeit
+     davor -, steht keine Zeile da statt einer erfundenen Zahl. */
+  const hm = c.tag('sa').hoehenmeter;
+  if(typeof hm === 'number'){
+    kennzahlen.push({ label:'Höhenmeter', wert: hm > 0 ? `ca. ${hm} hm` : 'flach' });
+  }
 
   info.einheiten = [einheit({
     art:'lang', titel:'Lange Ausfahrt', kennzahlen, bloecke: lang,
-    hinweise: vorTest ? [] : [T.elevationShort]
+    hinweise: hm > 0 ? [T.elevationShort] : []
   })];
   /* In der Erholungswoche zaehlt keine harte Zeit - saturdayBlocks liefert
      dort ohnehin nichts, die Bedingung stand bis Fassung 3 trotzdem ein

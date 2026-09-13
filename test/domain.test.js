@@ -103,7 +103,23 @@
    thursday jetzt die Schritte statt dreier Zahlen traegt). Kein
    Wochenumfang und kein Umfangsdeckel hat sich geaendert - die 15 min des
    Reizes liegen innerhalb der 70 bzw. 75 min, und genau das prueft die
-   Kennzahl "Wochenumfaenge Rad" weiter unten unveraendert nach. */
+   Kennzahl "Wochenumfaenge Rad" weiter unten unveraendert nach.
+
+   Neu gesetzt am 13.09.2026: die Hoehenmeter am Samstag steigen. Bis dahin
+   stand ab Woche 5 jeden Samstag fest "50–100 hm" - der Einstieg aus dem
+   Dokument, und die eigenstaendige Progression danach kam nie an. Jetzt steht
+   der Wert je Woche in plan.json unter sa.hoehenmeter.
+
+   Betroffen sind genau 14 der 126 Tage, und sie liessen sich vor dem
+   Neusetzen einzeln benennen: die Samstage der Wochen 5 bis 18, vom 12.09.
+   bis zum 12.12., in beiden Zonenpfaden. Der Vergleich lief ueber dieselbe
+   Ausgabe vor und nach der Aenderung; ersetzt man in der neuen jedes
+   "ca. N hm" durch "50–100 hm", ist sie Zeichen fuer Zeichen die alte. Die
+   Samstage der Wochen 1 bis 4 stehen weiter auf "flach", die
+   Wochenangaben und die Wiederholungsziele haben ihre Pruefsumme behalten.
+   Beide Abzuege sind um genau 9 Zeichen laenger: "ca. 80 hm" ist so lang wie
+   "50–100 hm", jeder dreistellige Wert eine Stelle mehr - und dreistellig
+   sind die Samstage der Wochen 8, 9, 11, 12 und 14 bis 18. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -265,7 +281,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '9840a8459c9d6d60', len: 183481 });
+      .toEqual({ hash: 'de939b269b0ac6c5', len: 183490 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -289,7 +305,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '41435f055f2e697d', len: 164188 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '9286337465f29440', len: 164197 });
   });
 });
 
@@ -312,6 +328,52 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
     const ist = [];
     for(let w = 1; w <= 16; w++) ist.push(D.weekCapMinutes(plan, w));
     expect(ist).toEqual(max);
+  });
+
+  /* Abschnitt 1, "Hoehenmeter - Einfuehrung", und die Reihe SAT_HM in
+     Abschnitt 2: flach bis zum Test, Einstieg in Woche 5 mit 50–100 Hm, danach
+     +10–15 % je Belastungswoche. Die Erholungswochen gehen auf rund zwei
+     Drittel zurueck und werden nicht mitgezaehlt - die naechste
+     Belastungswoche setzt auf der letzten auf, nicht auf der Erholung. */
+  it('Hoehenmeter am Samstag stimmen mit Abschnitt 2 ueberein', () => {
+    const soll = [0, 0, 0, 0, 80, 90, 60, 100, 115, 75, 130, 145, 95, 160, 180, 120];
+    const ist = [];
+    for(let w = 1; w <= 16; w++) ist.push(W.tagDaten(plan, w, 'sa').hoehenmeter);
+    expect(ist).toEqual(soll);
+
+    let vorher = null;
+    for(let w = 5; w <= 16; w++){
+      if(W.isRecoveryWeek(plan, w)) continue;
+      if(vorher !== null){
+        const plus = ist[w - 1] / vorher - 1;
+        expect(plus).toBeGreaterThanOrEqual(0.10);
+        expect(plus).toBeLessThanOrEqual(0.15);
+      }
+      vorher = ist[w - 1];
+    }
+  });
+
+  it('Samstagskarte nennt die Hoehenmeter der Woche', () => {
+    const hm = w => D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(start, (w - 1) * 7), start)
+      .einheiten[0].kennzahlen.find(k => k.label === 'Höhenmeter');
+    expect(hm(4).wert).toBe('flach');
+    expect(hm(5).wert).toBe('ca. 80 hm');
+    expect(hm(15).wert).toBe('ca. 180 hm');
+  });
+
+  it('Samstagskarte ohne Hoehenmeter im Plan nennt keine', () => {
+    const k = structuredClone(json);
+    delete k.weeks[4].tage.sa.hoehenmeter;
+    expect(planValidate(k)).toEqual([]);
+    const info = D.buildDayInfo(createPlan(k), Z.NO_THRESHOLDS, W.addDays(start, 28), start);
+    expect(info.einheiten[0].kennzahlen.some(x => x.label === 'Höhenmeter')).toBe(false);
+    expect(info.einheiten[0].hinweise).toEqual([]);
+  });
+
+  it('beanstandet Hoehenmeter, die keine Zahl sind', () => {
+    const k = structuredClone(json);
+    k.weeks[4].tage.sa.hoehenmeter = '80';
+    expect(planValidate(k).join(' ')).toContain('tage.sa.hoehenmeter');
   });
 
   it('Erholungswochen sind 4, 7, 10, 13 und 16', () => {

@@ -406,6 +406,17 @@ Zeit-Progression** eingeführt, sondern als eigenständige, entkoppelte Variable
 - **Danach eigenständige Progression** (+10–15 % alle 1–2 Wochen), unabhängig von der
   Zeit-Progression der Woche.
 
+**Richtwerte Samstag** (Hm je Ausfahrt, Reihe `SAT_HM` in Abschnitt 2):
+
+| Woche | 1–4 | 5 | 6 | **7** | 8 | 9 | **10** | 11 | 12 | **13** | 14 | 15 | **16** |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Hm** | flach | 80 | 90 | **60** | 100 | 115 | **75** | 130 | 145 | **95** | 160 | 180 | **120** |
+
+Jede Belastungswoche liegt 10–15 % über der vorigen Belastungswoche. Die
+Erholungswochen gehen auf rund zwei Drittel zurück und zählen für die Steigerung nicht
+mit — die nächste Belastungswoche setzt auf der letzten Belastungswoche auf. Die Werte
+sind Richtwerte für die Streckenwahl, keine Punktlandung: ±20 % sind dieselbe Einheit.
+
 ### Wellness-Gate
 
 Morgens vor dem Donnerstag zu prüfen, Datenquelle `GET /athlete/0/wellness`:
@@ -477,6 +488,7 @@ CORE_WORK   [25, 30, 35, 25, 30, 35, 30, 35, 40, 30, 40, 40, 30, 40, 40, 30]
 CORE_ROUNDS [2, 2, 2, 2, 3, 3, 2, 3, 3, 2, 3, 3, 2, 3, 3, 2]
 CORE_REST   [25, 25, 25, 25, 20, 20, 25, 20, 20, 25, 20, 20, 25, 20, 20, 25]
 LEG_ROUNDS  [2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 3, 2, 3, 3, 2]
+SAT_HM      [0, 0, 0, 0, 80, 90, 60, 100, 115, 75, 130, 145, 95, 160, 180, 120]
 RECOVERY    Wochen 4, 7, 10, 13, 16
 ```
 

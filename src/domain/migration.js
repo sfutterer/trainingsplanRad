@@ -94,8 +94,10 @@ const DOKU_3 = {
     + 'di.minutes und di.legRounds: Arbeitsweg und die zweite Beineinheit am '
     + 'Abend. mi.minutes und mi.extra: die kurze Fahrt und ein daran '
     + 'haengender Reiz. do: der Qualitaetstag als vollstaendiges Objekt, '
-    + 'siehe variante und schrittfolge. sa.minutes und sa.bloecke: die lange Ausfahrt und die '
-    + 'Z3-Bloecke darin. so.optionalMinutes und so.legRounds: die optionale '
+    + 'siehe variante und schrittfolge. sa.minutes, sa.hoehenmeter und sa.bloecke: die lange '
+    + 'Ausfahrt, ihre Hoehenmeter und die Z3-Bloecke darin. hoehenmeter ist ein '
+    + 'Richtwert in Hm; 0 heisst flach. Fehlt das Feld, nennt die Karte keine '
+    + 'Hoehenmeter - lieber keine Vorgabe als eine erfundene. so.optionalMinutes und so.legRounds: die optionale '
     + 'Fahrt davor und die Runden des Beinblocks. Ein Kuerzel, das hier nicht '
     + 'steht, wird beanstandet - sonst schriebe jemand "mo" hin und wunderte '
     + 'sich, dass der Montag sich nicht ruehrt.',

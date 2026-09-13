@@ -27,6 +27,20 @@ import * as D from '../src/domain/day.js';
 const v2 = JSON.parse(fs.readFileSync(new URL('./plan-v2.json', import.meta.url), 'utf8'));
 const v3 = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
 
+/* Die ausgelieferte Datei ohne die Hoehenmeter am Samstag.
+
+   Fassung 2 kannte keine Hoehenmeter, und die Migration erfindet keine: ein
+   gehobener Plan hat das Feld nicht, und seine Samstagskarte nennt dann
+   keinen Wert statt eines geratenen. Alles andere muss weiterhin Zeichen
+   fuer Zeichen die ausgelieferte Datei sein. */
+function ohneHoehenmeter(p){
+  const k = structuredClone(p);
+  for(const w of k.weeks) delete w.tage.sa.hoehenmeter;
+  delete k.winterBlock.tage.sa.hoehenmeter;
+  return k;
+}
+const v3OhneHm = ohneHoehenmeter(v3);
+
 describe('Fassung 2 auf 3', () => {
   const gehoben = migriere(structuredClone(v2));
 
@@ -44,7 +58,11 @@ describe('Fassung 2 auf 3', () => {
      so bleibt - eine Migration, die sich von der Datei entfernt, waere
      genau die stille Abweichung, die niemand bemerkt. */
   it('liefert die ausgelieferte plan.json', () => {
-    expect(gehoben).toEqual(v3);
+    expect(gehoben).toEqual(v3OhneHm);
+  });
+
+  it('erfindet keine Hoehenmeter', () => {
+    for(const w of gehoben.weeks) expect(w.tage.sa).not.toHaveProperty('hoehenmeter');
   });
 
   it('laesst alles ausserhalb der Wochen unberuehrt', () => {
@@ -115,7 +133,7 @@ describe('Die Zahlen bleiben', () => {
   /* Der Beweis ueber alles auf einmal: die Tageskarten aus dem migrierten Plan
      sind dieselben wie die aus der ausgelieferten Datei. */
   it('erzeugt dieselben Tageskarten wie die ausgelieferte Datei', () => {
-    const aus = createPlan(v3);
+    const aus = createPlan(v3OhneHm);
     for(let d = 0; d < 18 * 7; d++){
       const date = W.addDays(start, d);
       const a = D.buildDayInfo(plan, { ftp:null, lthr:null, hrmax:null }, date, start);
@@ -184,7 +202,7 @@ describe('loadPlan mit einem gespeicherten Plan der Fassung 2', () => {
     expect(r.json.schemaVersion).toBe(PLAN_SCHEMA_VERSION);
     /* Nicht die eingelesene Fassung: der Export soll die Datei liefern, mit
        der die App rechnet. */
-    expect(r.json).toEqual(v3);
+    expect(r.json).toEqual(v3OhneHm);
     expect(r.plan.weekCount).toBe(v2.weeks.length);
   });
 
@@ -210,7 +228,7 @@ describe('loadPlan mit einem gespeicherten Plan der Fassung 2', () => {
     const fetchImpl = async () => ({ ok:true, json: async () => structuredClone(v2) });
     const r = await loadPlan({ planOverride: async () => null }, fetchImpl);
     expect(r.source).toBe('default');
-    expect(r.json).toEqual(v3);
+    expect(r.json).toEqual(v3OhneHm);
   });
 });
 

@@ -331,6 +331,12 @@ function pvTage(err, t, feld, zonen){
 
   /* Samstag: die lange Ausfahrt und die Z3-Bloecke darin. */
   pvNum(err, t.sa.minutes, feld + '.sa.minutes', {min:0, int:true});
+  /* Hoehenmeter sind freiwillig: ein eigener Plan von vor dem 13.09.2026
+     kennt sie nicht und soll deshalb nicht abgelehnt werden. Steht das Feld
+     aber da, muss es eine Zahl sein. */
+  if(t.sa.hoehenmeter !== undefined){
+    pvNum(err, t.sa.hoehenmeter, feld + '.sa.hoehenmeter', {min:0, int:true});
+  }
   pvBlocks(err, t.sa.bloecke, feld + '.sa.bloecke');
 
   /* Sonntag: Zirkel und Beinblock, davor optional eine Fahrt. Der Beinblock
