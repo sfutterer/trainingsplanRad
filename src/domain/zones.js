@@ -429,7 +429,10 @@ function gleitenderMittel(werte, zeit, fensterSek){
      fensterSek   vorher ueber dieses Zeitfenster mitteln
      rollenUnter  Werte darunter zaehlen als Rollen, nicht als Zone. Sie
                   stehen in _rollen und fehlen in _total - die Anteile gelten
-                  damit auf die getretene Zeit. */
+                  damit auf die getretene Zeit.
+     maske        nur Messwerte mit maske[i] zaehlen - die gleichmaessig
+                  gefahrene Zeit aus steady.js. Was ausserhalb liegt, fehlt in
+                  _total und in _rollen; _total ist dann die Steady-Zeit. */
 export function zoneSeconds(bands, hrData, timeData, recordedSec, opts){
   const o = opts || {};
   const out = {};
@@ -485,6 +488,7 @@ export function zoneSeconds(bands, hrData, timeData, recordedSec, opts){
       if(dt > 60) dt = 60;
     }
     if(!Number.isFinite(v)) continue;
+    if(o.maske && !o.maske[i]) continue;
     if(o.rollenUnter != null && v < o.rollenUnter){ rollen += dt; continue; }
     const band = bands.find(b => v >= b.min && v < b.max);
     if(band){ out[band.key] += dt; counted += dt; }

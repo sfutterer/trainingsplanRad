@@ -21,6 +21,31 @@
 import { FTP_FAKTOR } from './test.js';
 import { zahl } from './zahlen.js';
 
+/* Die Gruende gegen eine Haerte-Bewertung als Satzende. Jeder nennt seine
+   Zahl - "der Drift spricht dagegen" ohne Wert waere ein Freispruch ohne
+   Begruendung. */
+function gegenGruende(vorbehalte, ohneLeistung){
+  const g = (vorbehalte || []).map(v => {
+    if(v.art === 'drift'){
+      return (v.icu ? 'Entkopplung ' : 'Drift aus Puls und Tempo ') + (v.wert > 0 ? '+' : '')
+        + zahl(v.wert, 1) + ' % – bis 5 % war die Fahrt nicht zu hart';
+    }
+    if(v.art === 'grenze'){
+      return 'Median ' + Math.round(v.median) + ' bpm liegt im Toleranzband ±' + v.band
+        + ' bpm um die Z2-Grenze bei ' + v.grenze + ' bpm, und die LTHR ist nicht durch einen '
+        + 'ausbelasteten Test bestätigt – der Anteil misst hier die Grenze, nicht die Fahrt';
+    }
+    if(v.art === 'ampeln'){
+      return 'nur ' + v.steadyMin + ' min gleichmäßig gefahren – der Anteil stammt aus Stop-and-go';
+    }
+    return null;
+  }).filter(Boolean);
+  if(ohneLeistung){
+    g.push('keine Leistungsdaten – die primäre Steuergröße fehlt, der Puls ist nur die Hilfsgröße');
+  }
+  return g.length ? '. Dagegen spricht: ' + g.join('; ') + '.' : '.';
+}
+
 export const T = {
 
   /* ---- Ruhetag und optionale Fahrten ---- */
@@ -93,9 +118,33 @@ export const T = {
 
   /* ---- Arbeitsweg ---- */
 
-  pendelZuHart: ueber =>
-    ueber + ' % der Zeit über Z2. Auf dem Arbeitsweg heißt das meist Zeitdruck – der '
-    + 'Ankunftspuffer von 15 min ist Teil des Trainings, nicht Komfort.',
+  /* Seit dem 15.09.2026 ein Pruefhinweis und kein Urteil - Begruendung an
+     commuteIntensityNotes. Was gegen eine Haerte-Bewertung spricht, steht
+     dabei; sonst liest sich der Hinweis weiter wie der Befund, der er nicht
+     mehr ist. */
+  pendelUeberZ2: (ueber, vorbehalte, ohneLeistung) =>
+    'Anteil über Z2 erhöht (' + ueber + ' %) – Zeitdruck oder Ankunftspuffer prüfen. '
+    + 'Auf dem Arbeitsweg keine Härte-Bewertung aus Zonenanteilen'
+    + gegenGruende(vorbehalte, ohneLeistung),
+
+  /* Dieselbe Lage auf einer Grundlagen- oder Erholungsfahrt: der Anteil ist
+     ueber der Vorgabe, aber etwas spricht dagegen, ihn als Befund zu lesen. */
+  ueberZ2OhneBefund: (ueber, erlaubt, vorbehalte, ohneLeistung) =>
+    ueber + ' % der Zeit über Z2, vorgesehen sind rund ' + erlaubt + ' %. Kein Befund „zu hart“'
+    + gegenGruende(vorbehalte, ohneLeistung),
+
+  steadyBasis: (steady, gesamt, kmh, sek) =>
+    'Zonenanteile über ' + steady + ' von ' + gesamt + ' min gleichmäßig gefahrener Zeit – '
+    + 'Stop-and-go nicht mitgezählt (nur Abschnitte ab ' + sek + ' s durchgehend über '
+    + kmh + ' km/h).',
+
+  steadyZuKurz: (steady, gesamt, kmh, sek) =>
+    'Nur ' + steady + ' von ' + gesamt + ' min gleichmäßig gefahren (Abschnitte ab ' + sek
+    + ' s über ' + kmh + ' km/h) – zu wenig für einen Zonenanteil, er ist über die ganze '
+    + 'Fahrt gerechnet und entsprechend von Ampeln und Anfahrten geprägt.',
+
+  pruefFazit: ueber =>
+    'Kein Befund, aber ein Prüfhinweis: ' + ueber + ' % über Z2 auf dem Arbeitsweg.',
 
   pendelPasst: (inZ2, ueber) =>
     inZ2 + ' % in Z2, ' + ueber + ' % darüber. Passt für den Arbeitsweg.',
@@ -245,7 +294,8 @@ export const T = {
     'Ohne Leistungsdaten – Zonen aus dem Puls gegen die Coggan-Bänder der LTHR. Ab Woche 5 '
     + 'zählt sonst die Zeit in der Watt-Zone; dieses Rad hat keinen Leistungsmesser. Der '
     + 'Puls antwortet träge und mit Verzögerung, die Anteile sind deshalb weicher als bei '
-    + 'einer Wattmessung.',
+    + 'einer Wattmessung. Die Bewertung ist vorläufig, und die Fahrt zählt nicht in den '
+    + 'Effizienzfaktor.',
 
   zonenNochUebergang:
     'Zonen noch gegen die Übergangsbänder gezählt – es fehlen FTP und LTHR. Die '

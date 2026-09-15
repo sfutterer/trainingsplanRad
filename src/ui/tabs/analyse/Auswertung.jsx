@@ -59,8 +59,14 @@ export function Fazit({ fazit, kompakt }){
   if(!fazit) return null;
   return (
     <div class={'fazit ' + fazit.urteil}>
-      <div class="fazit-kopf">Fazit</div>
+      <div class="fazit-kopf">{fazit.vorlaeufig ? 'Fazit · vorläufig' : 'Fazit'}</div>
       <div class="fazit-satz">{fazit.satz}</div>
+      {fazit.vorlaeufig && (
+        <div class="fazit-vorbehalt">
+          Ohne Leistungsdaten gewertet: ab Woche 5 ist die Leistung die primäre Steuergröße,
+          hier stand nur der Puls zur Verfügung.
+        </div>
+      )}
       {!kompakt && fazit.gruende.length > 0 && (
         <ul>{fazit.gruende.map((g, i) => <li key={i}>{g.text}</li>)}</ul>
       )}

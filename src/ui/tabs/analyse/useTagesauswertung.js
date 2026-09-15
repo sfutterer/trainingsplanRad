@@ -38,7 +38,7 @@
    der schnellen Runde als eine Meldung. */
 
 import { useEffect, useState } from 'preact/hooks';
-import { apiKey, plan, thresholds, startDate, store } from '../../../state/store.js';
+import { apiKey, plan, thresholds, startDate, store, testLog } from '../../../state/store.js';
 import { fetchStreams, spurMitHoehe, fetchWellness } from '../../../data/icu.js';
 import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
 import { ladeWege, untergrundCode, untergrundAusCode } from '../../../data/osm.js';
@@ -46,6 +46,7 @@ import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn,
          setzeUntergrund, markiereDoppelt } from '../../../domain/strecke.js';
 import { zoneSeconds, zonenBaender, hatLeistungsstrom,
          WATT_FENSTER_SEK, ROLLEN_WATT } from '../../../domain/zones.js';
+import { steadyMaske, driftAus, pulsMedian, lthrBestaetigt } from '../../../domain/steady.js';
 import { isoDayLocal, toMidnight, weekNumberFor } from '../../../domain/week.js';
 import { isRide } from '../../../domain/analysis.js';
 import { verfassungAus } from '../../../domain/wellness.js';
@@ -85,6 +86,31 @@ function sekunden(a){
    sich wie eine. */
 function tagesKennung(acts){
   return (acts || []).map(a => a.id).join(',');
+}
+
+/* Was eine Verteilung nach Puls braucht, damit die Bewertung ihr nicht mehr
+   glaubt als sie traegt - Begruendung in domain/steady.js.
+
+     _steady          dieselbe Verteilung nur ueber die gleichmaessige Zeit
+     _drift           Drift aus Tempo je Schlag; nur ohne Leistung, mit
+                      Leistung rechnet intervals.icu die Entkopplung selbst
+     _hfMedian        Median des Pulses ueber die Fahrt
+     _z2Grenze        Obergrenze Z2 in bpm
+     _lthrBestaetigt  LTHR aus einem ausbelasteten Test
+
+   Nur fuer den Puls. Die Leistung antwortet ohne Verzoegerung: der Antritt an
+   der Ampel ist dort echte Arbeit und kein nachhinkender Kreislauf, und
+   Rollzeit wird bei ihr schon getrennt gezaehlt. */
+function pulsVorbehalte(z, bands, hr, zeit, dauer, tempo, hatWatt, th, tests){
+  const maske = zeit && tempo ? steadyMaske(zeit, tempo.data) : null;
+  if(maske){
+    z._steady = zoneSeconds(bands, hr.data, zeit, dauer, { maske });
+    z._drift = hatWatt ? null : driftAus(zeit, hr.data, tempo.data, maske);
+  }
+  z._hfMedian = pulsMedian(hr.data, zeit);
+  const z2 = bands.find(b => b.key === 'z2');
+  z._z2Grenze = z2 ? z2.max : null;
+  z._lthrBestaetigt = lthrBestaetigt(th, tests);
 }
 
 export function useTagesauswertung(acts){
@@ -138,7 +164,7 @@ export function useTagesauswertung(acts){
       for(const a of fahrten){
         let streams = null;
         try {
-          streams = await fetchStreams(key, a.id, 'heartrate,watts,time,latlng,altitude');
+          streams = await fetchStreams(key, a.id, 'heartrate,watts,time,latlng,altitude,velocity_smooth');
         } catch(e){
           fehlt.push('Streams zu „' + (a.name || a.type) + '" (' + e.message + ')');
         }
@@ -146,6 +172,7 @@ export function useTagesauswertung(acts){
 
         const hol = t => (streams || []).find(s => s.type === t);
         const hr = hol('heartrate'), tm = hol('time'), watt = hol('watts');
+        const tempo = hol('velocity_smooth');
         const zeit = tm && Array.isArray(tm.data) ? tm.data : null;
         const dauer = a.icu_recording_time || a.elapsed_time || a.moving_time || 0;
 
@@ -167,6 +194,8 @@ export function useTagesauswertung(acts){
              gescheitert. */
           zonenById[a.id]._quelle = quelle;
           zonenById[a.id]._wattAusgefallen = quelle !== 'watt' && wk >= p.cogganFromWeek;
+          if(quelle !== 'watt') pulsVorbehalte(zonenById[a.id], bands, hr, zeit, dauer, tempo,
+                                               hatWatt, th, testLog.value);
         }
 
         /* Die Form des latlng-Streams liegt nicht fest - das Umrechnen auf

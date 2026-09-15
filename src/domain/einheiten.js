@@ -15,7 +15,7 @@
 
    Rein: kein DOM, keine Uhr, kein fetch. */
 
-import { isRide, isStrength } from './analysis.js';
+import { isRide, isStrength, istPendel } from './analysis.js';
 import { zonenAusAktivitaet } from './verlauf.js';
 
 /* Ab dieser Dauer ist eine Fahrt die lange Ausfahrt.
@@ -49,6 +49,15 @@ const HART_ANTEIL = 0.15;
 export function artDerAktivitaet(a){
   if(!a) return 'sonstige';
   if(!isRide(a.type)) return isStrength(a.type) ? 'rumpf' : 'sonstige';
+
+  /* Der Arbeitsweg ist Grundlage, gleich was die Pulszonen sagen.
+
+     Am 15.09.2026 stand der verlaengerte Hinweg als "Intervalle" in der
+     Liste: 31 % der Zeit oberhalb der zweiten Pulszone von intervals.icu, bei
+     einem Median von 133 bpm gegen eine Grenze von 135. Auf dem Arbeitsweg
+     fuellen Ampeln und Anfahrten genau dieses Band - und Intervalle faehrt
+     dort niemand, der Plan raet ausdruecklich davon ab. */
+  if(istPendel(a)) return 'z2';
 
   const min = (a.moving_time || a.elapsed_time || 0) / 60;
   if(min >= LANG_MINUTEN) return 'lang';

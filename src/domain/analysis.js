@@ -23,6 +23,7 @@ import { legDoneRounds, legAborts } from './core.js';
 import { isoDayLocal } from './week.js';
 import { T } from './texte.js';
 import { stundenText } from './zeit.js';
+import { STEADY, GRENZBAND_BPM } from './steady.js';
 
 export function isRide(type){
   return /ride|cycl|bike|biking|spinning/i.test(type || '');
@@ -125,6 +126,78 @@ export const ENTKOPPLUNG_GUT = 5;
 function entkopplungVon(act){
   const d = act && act.decoupling;
   return Number.isFinite(d) ? d : null;
+}
+
+/* Eine Pendelfahrt, so wie intervals.icu sie fuehrt: der Haken "commute" oder
+   der Untertyp COMMUTE. Der Trainingsplan verlangt das Taggen ausdruecklich -
+   mit Gepaeck, im Berufsverkehr und zu fester Uhrzeit ist die Fahrt mit keiner
+   anderen vergleichbar. */
+export function istPendel(act){
+  return !!(act && (act.commute === true || /commute/i.test(act.sub_type || '')));
+}
+
+/* Unter so viel gleichmaessiger Zeit ist ein Zonenanteil keine Aussage mehr
+   ueber die Fahrt, sondern ueber die Ampeln. Dieselben 15 min, unter denen
+   der Plan ein Driftdrittel nicht ueberinterpretiert. */
+const STEADY_MIN_SEK = 15 * 60;
+
+/* Gegen welche Verteilung ein Anteil gerechnet wird.
+
+   Ueber die gleichmaessige Zeit, wenn es sie gibt - siehe steady.js. Ohne
+   Tempostrom bleibt es die ganze Fahrt, wie bisher. */
+function anteilsZonen(z){
+  const s = z && z._steady;
+  return s && s._total >= STEADY_MIN_SEK ? s : z;
+}
+
+/* Die Fahrt lief ohne die primaere Steuergroesse: ab Woche 5 zaehlt Leistung,
+   und hier wurde nach Puls gezaehlt. */
+function ohneLeistung(z){
+  return !!(z && (z._quelle === 'hf-coggan' || z._wattAusgefallen));
+}
+
+/* Was gegen eine Haerte-Bewertung aus Zonenanteilen spricht.
+
+     drift      Entkopplung oder Drift bis 5 %. Von intervals.icu, sonst aus
+                Tempo je Schlag ueber die gleichmaessige Zeit.
+     grenze     der Median der Fahrt liegt hoechstens 3 bpm neben der
+                Z2-Obergrenze, und die LTHR ist nicht aus einem
+                ausbelasteten Test. Dann misst der Anteil die Grenze.
+     ampeln     ein Tempostrom war da, aber weniger als 15 min davon waren
+                gleichmaessig gefahren.
+
+   Die fehlende Leistung steht bewusst nicht in der Liste: sie macht eine
+   Bewertung vorlaeufig, aber nicht falsch - sonst waere auf dem Trekkingrad
+   ab Woche 5 nie wieder etwas zu hart. */
+function haerteVorbehalte(f){
+  const z = f.zones || {};
+  const out = [];
+  const icu = entkopplungVon(f.act);
+  const eigen = z._drift && Number.isFinite(z._drift.prozent) ? z._drift.prozent : null;
+  const drift = icu != null ? icu : eigen;
+  if(drift != null && drift <= ENTKOPPLUNG_GUT){
+    out.push({ art: 'drift', wert: drift, icu: icu != null });
+  }
+  if(!z._lthrBestaetigt && z._hfMedian > 0 && z._z2Grenze > 0
+     && Math.abs(z._hfMedian - z._z2Grenze) <= GRENZBAND_BPM){
+    out.push({ art: 'grenze', median: z._hfMedian, grenze: z._z2Grenze, band: GRENZBAND_BPM });
+  }
+  if(z._steady && z._steady._total < STEADY_MIN_SEK){
+    out.push({ art: 'ampeln', steadyMin: Math.round(z._steady._total / 60) });
+  }
+  return out;
+}
+
+/* Worauf sich der Anteil stuetzt. Ohne diese Zeile waere "38 % ueber Z2" eine
+   Zahl ohne Nenner - ob 84 oder 20 min, sieht niemand. */
+function steadyNotiz(f){
+  const z = f.zones;
+  if(!z || !z._steady) return [];
+  const steady = Math.round(z._steady._total / 60);
+  const gesamt = Math.round((f.sec || z._total) / 60);
+  return [{ kind: 'info', text: z._steady._total >= STEADY_MIN_SEK
+    ? T.steadyBasis(steady, gesamt, STEADY.minKmh, STEADY.minSek)
+    : T.steadyZuKurz(steady, gesamt, STEADY.minKmh, STEADY.minSek) }];
 }
 
 /* Setzt den Status herab und zieht das Badge mit. Ohne das behielte eine
@@ -251,7 +324,15 @@ function fahrtTeile(rides, zonesById){
    Aufzeichnung selbst - und eine Funktion, die Zonen bekommt und danach die
    Fahrt sucht, haette sie sich von irgendwo herholen muessen. */
 function jeFahrt(fn){
-  return f => (f.zones && f.zones._total > 300 ? fn(f) : []);
+  return f => (f.zones && f.zones._total > 300 ? fn(f).concat(steadyNotiz(f)) : []);
+}
+
+/* Eine Pendelfahrt wird wie der Arbeitsweg bewertet, an welchem Tag sie auch
+   liegt: keine Haerte-Bewertung aus Zonenanteilen. Sonst traefe der
+   verlaengerte Hinweg an einem getauschten Tag wieder die Regel, die fuer
+   eine Grundlagenfahrt ohne Ampeln und ohne Gepaeck gemacht ist. */
+function oderPendel(row, fn){
+  return f => (istPendel(f.act) ? commuteIntensityNotes(row, f) : fn(f));
 }
 
 function fahrtenNotizen(row, teile, sollMin, minimum, intensitaet){
@@ -269,6 +350,10 @@ function fahrtenNotizen(row, teile, sollMin, minimum, intensitaet){
       f.notes.push({ kind:'info', text: T.fahrtUeberZiel(mehrere, kum, sollMin, minimum) });
     }
     if(intensitaet) f.notes.push(...intensitaet(f));
+    /* Ohne Leistung ab Woche 5 ist jede Bewertung dieser Fahrt vorlaeufig -
+       nicht nur ein Nebensatz in der Herkunftsnotiz, sondern am Fazit
+       sichtbar. Nur wo tatsaechlich bewertet wurde. */
+    if(intensitaet && ohneLeistung(f.zones) && f.zones._total > 300) row.vorlaeufig = true;
     const quelle = zonenQuelleNote(f.zones);
     if(quelle) f.notes.push(quelle);
     const aufz = recordingNote(f.zones);
@@ -291,10 +376,14 @@ function fertig(row){
 }
 
 function lockerNotes(row, f){
-  const z = f.zones;
+  const z = anteilsZonen(f.zones);
   const locker = pct((z.unter || 0) + (z.z1 || 0) + (z.z2 || 0), z._total);
   const hart = pct((z.z3 || 0) + (z.z4 || 0) + (z.z5 || 0), z._total);
   if(hart > 25){
+    const vorbehalt = haerteVorbehalte(f);
+    if(vorbehalt.length){
+      return [{ kind:'info', text: T.ueberZ2OhneBefund(hart, 25, vorbehalt, ohneLeistung(f.zones)) }];
+    }
     downgrade(row, 'zu hart');
     return [{ kind:'bad', text: T.lockerZuHart(hart) }];
   }
@@ -307,7 +396,7 @@ function lockerNotes(row, f){
 function easyRideNotes(row, teile, sollMin){
   const ist = Math.round(row.rideSec / 60);
   const km = row.rideKm >= 1 ? ' (' + row.rideKm.toFixed(1) + ' km)' : '';
-  fahrtenNotizen(row, teile, 0, false, jeFahrt(z => lockerNotes(row, z)));
+  fahrtenNotizen(row, teile, 0, false, jeFahrt(oderPendel(row, z => lockerNotes(row, z))));
   return [{ kind:'', text: T.optionaleFahrt(ist, km, sollMin) }];
 }
 
@@ -348,17 +437,25 @@ function legNotes(row, legSessions, t){
 }
 
 /* Pendelfahrten am Dienstag und Mittwoch: die Solldauer ist eine Untergrenze.
-   Zu lang ist kein Fehler und darf keine Warnung ausloesen. Bewertet wird
-   stattdessen die Intensitaet - ueber 20 % der Zeit oberhalb Z2 heisst, der
-   Weg wurde unter Zeitdruck gefahren. */
+   Zu lang ist kein Fehler und darf keine Warnung ausloesen.
+
+   Die Intensitaet wird geprueft, aber seit dem 15.09.2026 nicht mehr
+   beurteilt. Ueber 20 % der Zeit oberhalb Z2 bleibt ein Hinweis auf Zeitdruck -
+   als Frage an den Fahrer, nicht als "zu hart". Die Fahrt an dem Tag: 84 min
+   Trekkingrad, Median 133 bpm gegen eine Z2-Grenze von 135, Drift 3,4 %, und
+   38 % "ueber Z2". Auf dem Arbeitsweg kommt alles zusammen, was einen
+   Pulsanteil verfaelscht - Ampeln, Gepaeck, Verkehr, kein Leistungsmesser -,
+   und der Plan braucht von ihm den Umfang, nicht die Zonenpraezision. Die
+   Gruende, die gegen eine Haerte-Bewertung sprechen, stehen im Satz dabei. */
 function commuteIntensityNotes(row, f){
   const notes = [];
-  const zones = f.zones;
-  if(!zones || !zones._total || zones._total <= 300) return notes;
+  if(!f.zones || !f.zones._total || f.zones._total <= 300) return notes;
+  const zones = anteilsZonen(f.zones);
   const ueber = pct((zones.z3 || 0) + (zones.z4 || 0) + (zones.z5 || 0), zones._total);
   if(ueber > 20){
-    downgrade(row, 'zu hart');
-    notes.push({ kind:'bad', text: T.pendelZuHart(ueber) });
+    const gegen = haerteVorbehalte(f);
+    row.pruefHinweis = { ueber, vorbehalte: gegen, ohneLeistung: ohneLeistung(f.zones) };
+    notes.push({ kind:'info', text: T.pendelUeberZ2(ueber, gegen, ohneLeistung(f.zones)) });
   } else {
     notes.push({ kind:'good', text: T.pendelPasst(pct(zones.z2 || 0, zones._total), ueber) });
   }
@@ -405,7 +502,7 @@ function mergeZones(plan, rides, zonesById){
    sind in den Wochen 6, 10 und 14 Z3-Bloecke geplant, deren Anteil ist
    zusaetzlich erlaubt. */
 function z2Notes(row, f, t){
-  const zones = f.zones;
+  const zones = anteilsZonen(f.zones);
   const notes = [];
   const total = zones._total;
   const anteil = pct(zones.z2 || 0, total);
@@ -434,12 +531,19 @@ function z2Notes(row, f, t){
      wurden.
 
      Der Trainingsplan fuehrt die Entkopplung ohnehin als laufende Kontrolle;
-     hier bekommt sie zum ersten Mal eine Stimme in der Tagesbewertung. */
-  const ent = entkopplungVon(f.act);
-  const stichtDurch = !t.hardMinutes && ent != null && ent <= ENTKOPPLUNG_GUT;
+     hier bekommt sie zum ersten Mal eine Stimme in der Tagesbewertung.
 
-  if(ueber > erlaubt && stichtDurch){
-    notes.push({ kind:'good', text: T.z2EntkopplungSticht(ueber, erlaubt, ent, ENTKOPPLUNG_GUT) });
+     Seit dem 15.09.2026 mit zwei weiteren Stimmen, und auch ohne Leistung:
+     fehlt der Wert von intervals.icu, gilt der Drift aus Tempo je Schlag, und
+     ein Median im Toleranzband um die Z2-Grenze macht den Anteil ebenso
+     unbelastbar - siehe haerteVorbehalte. */
+  const vorbehalt = t.hardMinutes ? [] : haerteVorbehalte(f);
+  const nurEntkopplung = vorbehalt.length === 1 && vorbehalt[0].art === 'drift' && vorbehalt[0].icu;
+
+  if(ueber > erlaubt && nurEntkopplung){
+    notes.push({ kind:'good', text: T.z2EntkopplungSticht(ueber, erlaubt, vorbehalt[0].wert, ENTKOPPLUNG_GUT) });
+  } else if(ueber > erlaubt && vorbehalt.length){
+    notes.push({ kind:'info', text: T.ueberZ2OhneBefund(ueber, erlaubt, vorbehalt, ohneLeistung(f.zones)) });
   } else if(ueber > erlaubt){
     downgrade(row, 'zu hart');
     notes.push({ kind:'bad', text: T.z2ZuHart(ueber, sehrHart, erlaubt) });
@@ -676,7 +780,7 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
 
   fahrtenNotizen(row, teile, t.minutes || 0, false,
     t.commute ? jeFahrt(z => commuteIntensityNotes(row, z))
-              : t.zone === 'z2' ? jeFahrt(z => z2Notes(row, z, t)) : null);
+              : t.zone === 'z2' ? jeFahrt(oderPendel(row, z => z2Notes(row, z, t))) : null);
 
   return fertig(row);
 }

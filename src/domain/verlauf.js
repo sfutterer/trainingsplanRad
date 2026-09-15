@@ -25,7 +25,7 @@
    Parameter herein, damit sich jede Aussage mit einer synthetischen Reihe
    nachpruefen laesst. */
 
-import { isRide, ENTKOPPLUNG_GUT } from './analysis.js';
+import { isRide, istPendel, ENTKOPPLUNG_GUT } from './analysis.js';
 import { tagNr, kurzTag } from './week.js';
 import { median, zahl } from './zahlen.js';
 
@@ -209,7 +209,17 @@ export function effizienzFenster(th){
    Eine Reihe fuehrt genau eine Einheit. Waehrend der ersten Wochen kommen
    Wattwerte nur fuer manche Fahrten; die Reihen zu mischen haette bei jedem
    Wechsel einen Sprung erzeugt, den niemand als Einheitenwechsel erkennt.
-   Deshalb: sobald genug Fahrten Watt haben, zaehlen nur diese. */
+   Deshalb: sobald genug Fahrten Watt haben, zaehlen nur diese.
+
+   Seit dem 15.09.2026 fallen zwei Gruppen ganz heraus:
+
+     Pendelfahrten   mit Gepaeck, im Berufsverkehr, auf dem Trekkingrad - der
+                     Plan sagt, ihre Werte sind mit dem Samstag nicht
+                     vergleichbar, und laesst sie deshalb taggen.
+     ohne Leistung   ab opts.leistungAbIso, dem ersten Tag, an dem Leistung die
+                     primaere Steuergroesse ist. Davor bleibt die Reihe aus
+                     Tempo je Schlag stehen - sie ist alles, was die Wochen 1
+                     bis 4 hergeben. */
 export function effizienzSerie(acts, th, opts){
   const o = opts || {};
   const minSec = o.minSec || VERLAUF.ef.minSec;
@@ -217,12 +227,17 @@ export function effizienzSerie(acts, th, opts){
   const fenster = effizienzFenster(th);
 
   const fahrten = (acts || []).filter(a => a && isRide(a.type));
-  const verworfen = { kurz: 0, ohnePuls: 0, ausserhalb: 0, ohneWert: 0 };
+  const verworfen = { kurz: 0, ohnePuls: 0, ausserhalb: 0, ohneWert: 0, pendel: 0, ohneLeistung: 0 };
   const roh = [];
 
   for(const a of fahrten){
     const sec = a.moving_time || a.elapsed_time || 0;
     const hf = a.average_heartrate || 0;
+    if(istPendel(a)){ verworfen.pendel++; continue; }
+    if(o.leistungAbIso && String(a.start_date_local || '').slice(0, 10) >= o.leistungAbIso
+       && !(a.icu_weighted_avg_watts > 0 || a.average_watts > 0)){
+      verworfen.ohneLeistung++; continue;
+    }
     if(sec < minSec){ verworfen.kurz++; continue; }
     if(!(hf > 0)){ verworfen.ohnePuls++; continue; }
     if(fenster && (hf < fenster.min || hf > fenster.max)){ verworfen.ausserhalb++; continue; }
@@ -284,6 +299,8 @@ export function effizienzSerie(acts, th, opts){
     (verworfen.ausserhalb ? ' · ' + verworfen.ausserhalb + ' außerhalb des Pulsfensters' : '') +
     (verworfen.ohnePuls ? ' · ' + verworfen.ohnePuls + ' ohne Puls' : '') +
     (verworfen.ohneWert ? ' · ' + verworfen.ohneWert + ' ohne Watt und ohne Strecke' : '') +
+    (verworfen.pendel ? ' · ' + verworfen.pendel + ' Pendelfahrt' + (verworfen.pendel === 1 ? '' : 'en') : '') +
+    (verworfen.ohneLeistung ? ' · ' + verworfen.ohneLeistung + ' ohne Leistungsdaten ab Woche 5' : '') +
     (wattReihe && roh.length > mitWatt.length ? ' · ' + (roh.length - mitWatt.length) + ' ohne Wattwert' : '') + '.';
 
   return {
@@ -584,7 +601,7 @@ export function rumpfSerie(coreLog, startIso){
 export function verlaufBericht(quellen){
   const q = quellen || {};
   return {
-    effizienz:   effizienzSerie(q.acts, q.thresholds),
+    effizienz:   effizienzSerie(q.acts, q.thresholds, { leistungAbIso: q.leistungAbIso }),
     entkopplung: entkopplungSerie(q.acts),
     tests:       testSerie(q.testLog, q.interimLog),
     umfang:      umfangSerie(q.wochen),

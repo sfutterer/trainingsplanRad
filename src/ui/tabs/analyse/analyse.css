@@ -171,6 +171,8 @@
 .fazit-kopf{ font-size: 11px; font-weight: 700; letter-spacing: .1em;
   text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
 .fazit-satz{ font-size: 14.5px; font-weight: 600; line-height: 1.45; }
+.fazit-vorbehalt{ font-size: 13px; line-height: 1.45; margin-top: 6px;
+  color: var(--on-surface-var); font-style: italic; }
 .fazit ul{ margin: 8px 0 0; padding-left: 18px; }
 .fazit li{ font-size: 13.5px; line-height: 1.5; margin-top: 5px; color: var(--on-surface-var); }
 .fazit-mass{ font-size: 11px; font-weight: 700; letter-spacing: .08em;

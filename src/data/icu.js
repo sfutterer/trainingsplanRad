@@ -16,7 +16,11 @@ const ICU_FIELDS = [
      fuer jede Fahrt die Streams nachladen, nur um eine Kurve zu zeichnen.
      Fehlt eines der Felder im Konto, sagt die Ansicht das, statt eine leere
      Kurve wie fehlendes Training aussehen zu lassen. */
-  'average_watts','icu_weighted_avg_watts','decoupling','icu_hr_zone_times'
+  'average_watts','icu_weighted_avg_watts','decoupling','icu_hr_zone_times',
+  /* Pendelfahrt oder nicht. Ohne die beiden Felder ordnete die Liste den
+     Arbeitsweg vom 15.09.2026 als Intervalltag ein und die Auswertung
+     beurteilte ihn als Grundlagenfahrt. */
+  'commute','sub_type'
 ].join(',');
 
 function authHeader(key){

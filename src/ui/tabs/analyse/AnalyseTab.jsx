@@ -32,7 +32,7 @@ import { plan, thresholds, startDate, apiKey, coreLog, testLog, interimLog,
          today, varianten } from '../../../state/store.js';
 import { fetchActivities } from '../../../data/icu.js';
 import { streckenFazit } from '../../../domain/fazit.js';
-import { isoDayLocal, toMidnight, tagUndDatum } from '../../../domain/week.js';
+import { isoDayLocal, toMidnight, tagUndDatum, weekStartFor } from '../../../domain/week.js';
 import { compareDay, weekTotals, buildReport, fmtMin, pct,
          tagesGruppen } from '../../../domain/analysis.js';
 import { T } from '../../../domain/texte.js';
@@ -369,9 +369,11 @@ function TestKarte({ tests }){
 }
 
 function Verlaufsansicht({ acts, wochen, verbunden, range, setRange, laedt }){
-  const th = thresholds.value, start = startDate.value;
+  const p = plan.value, th = thresholds.value, start = startDate.value;
   const b = verlaufBericht({
     acts, thresholds: th, wochen,
+    /* Ab hier zaehlt eine Fahrt ohne Leistung nicht mehr in den Effizienzfaktor. */
+    leistungAbIso: start && p ? isoDayLocal(weekStartFor(p.cogganFromWeek, start)) : null,
     testLog: testLog.value, interimLog: interimLog.value, coreLog: coreLog.value,
     startIso: start ? isoDayLocal(start) : null, verbunden
   });

@@ -201,6 +201,14 @@ export function streckenFazit(row, bilanz, wetter, verfassung){
   } else if(schlecht.length){
     urteil = 'abweichung';
     satz = schlecht[0].text;
+  } else if(row && row.pruefHinweis){
+    /* Der Arbeitsweg lag ueber der 20-%-Marke. Seit dem 15.09.2026 kein
+       Urteil mehr, aber auch kein gruenes "passt" - die Frage nach dem
+       Zeitdruck bleibt eine Frage an den Fahrer. */
+    urteil = 'erklaert';
+    satz = T.pruefFazit(row.pruefHinweis.ueber);
+    massnahmen.push('Auf die Uhr schauen, nicht auf den Puls: wer den Ankunftspuffer von 15 min ' +
+      'einplant, muss auf dem Arbeitsweg nichts aufholen. Der Weg liefert Umfang, keinen Intensitätsreiz.');
   } else if(row && row.umfangUeber){
     /* Der Tag ist nicht falsch gefahren, aber er ist deutlich laenger geworden
        als vorgesehen - und das stand bis zum 04.09.2026 nirgends, weil "laenger
@@ -228,6 +236,9 @@ export function streckenFazit(row, bilanz, wetter, verfassung){
   return {
     urteil,
     satz,
+    /* Ab Woche 5 ohne Leistung gewertet - die Bewertung laeuft dann auf der
+       Hilfsgroesse und sagt das sichtbar, statt als Feststellung dazustehen. */
+    vorlaeufig: !!(row && row.vorlaeufig),
     last: last.punkte,
     gruende: last.teile,
     planNotizen: ((row && row.notes) || []).slice(),

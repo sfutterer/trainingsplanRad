@@ -258,10 +258,16 @@ describe('Arbeitsweg am Dienstag', () => {
     expect(texte(row)).toContain('Passt für den Arbeitsweg');
   });
 
-  it('stuft den Arbeitsweg bei Zeitdruck herab', () => {
+  /* Bis zum 15.09.2026 hiess das "zu hart". Seitdem ein Pruefhinweis: auf dem
+     Arbeitsweg verfaelschen Ampeln, Gepaeck und Verkehr den Pulsanteil, und
+     der Plan braucht von ihm den Umfang - siehe steady.test.js. */
+  it('gibt dem Arbeitsweg bei hohem Anteil einen Pruefhinweis statt eines Urteils', () => {
     const row = tag(DI, [fahrt(60)], { a1: zonen({ z2: 1200, z3: 1800, z4: 600 }) });
-    expect(row.badge).toBe('zu hart');
-    expect(texte(row)).toContain('Zeitdruck');
+    expect(row.status).toBe('ok');
+    expect(row.badge).not.toBe('zu hart');
+    expect(row.notes.filter(n => n.kind === 'bad')).toEqual([]);
+    expect(texte(row)).toContain('Zeitdruck oder Ankunftspuffer prüfen');
+    expect(row.pruefHinweis.ueber).toBe(67);
   });
 });
 
@@ -419,7 +425,7 @@ describe('Fahrten eines Tages nacheinander', () => {
      75 %. */
   it('bewertet die Intensitaet je Fahrt statt ueber den Tag gemittelt', () => {
     const row = zwei(90, 20, zonen({ z2: 5400 }), zonen({ z2: 300, z4: 900 }));
-    expect(row.badge).toBe('zu hart');
+    expect(row.badge).not.toBe('zu hart');
     expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toContain('Passt für den Arbeitsweg');
     expect(row.fahrten[1].notes.map(n => n.text).join(' ')).toContain('Zeitdruck');
   });
