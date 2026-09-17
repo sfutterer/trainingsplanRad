@@ -10,12 +10,22 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 6, Stand 11.09.2026.** Eine Grundsatzentscheidung: **Es wird das ganze Jahr
-> draußen gefahren, keine Rolle.** Folgen an drei Stellen: Abschnitt 4.11 ordnet den
-> Donnerstag neu — tagsüber, sonst im Dunkeln auf bekannter Strecke, in den Samstag nur
-> noch bei schlechtem Wetter. Der Retest am 03.12. startet um **14:00 statt 16:21**
-> (Abschnitt 2a, Details in `SCHWELLENTESTS.md`). Der Merkposten „Rolle“ in Abschnitt 8
-> entfällt. Alles andere aus Fassung 5 bleibt unverändert.
+> **Fassung 7, Stand 17.09.2026.** Der 5-Minuten-Referenzwert vom 17.09. liegt bei
+> **254 W = 132 % der Test-FTP** und überschreitet die 118-%-Gegenprobe deutlich. Die
+> FTP von 192 W ist damit belegt zu niedrig. Entscheidung: **kein vorgezogener Retest**,
+> stattdessen wird eine **Arbeits-FTP von 206 W** eingeführt, die ausschließlich die
+> Zielwerte der Qualitätseinheiten steuert (Abschnitt 1, „Arbeits-FTP"). Die Testwerte
+> 192 W und 163 bpm bleiben in intervals.icu und in der App stehen, damit die drei Tests
+> vergleichbar bleiben. **Z2 ändert sich nicht.** Weiter: HFmax-Annahme 180 durch den
+> gemessenen Wert **171 bpm** ersetzt, Ruhepuls-Regel im Wellness-Gate präzisiert,
+> Testhistorie und VO2max-Tabelle ausgefüllt, Streckenregel für Maximalversuche ergänzt.
+> Begründungen in Abschnitt 9d.
+>
+> Fassung 6 (11.09.2026) brachte: **Es wird das ganze Jahr draußen gefahren, keine
+> Rolle.** Abschnitt 4.11 ordnet den Donnerstag neu — tagsüber, sonst im Dunkeln auf
+> bekannter Strecke, in den Samstag nur noch bei schlechtem Wetter. Der Retest am 03.12.
+> startet um **14:00 statt 16:21** (Abschnitt 2a, Details in `SCHWELLENTESTS.md`). Der
+> Merkposten „Rolle“ in Abschnitt 8 entfällt.
 >
 > Fassung 5 (09.09.2026) brachte: Erhaltungsreiz Phase 3 als 3 × 3 min bei 108–115 % FTP,
 > eingebettet in die Z2-Einheit am Donnerstag, statt 6 × 30 s am Mittwoch.
@@ -29,7 +39,7 @@ Plan muss dieses Dokument mitgezogen werden.
 > danach wird ein neuer Plan geschrieben.
 >
 > Begründungen der Änderungen in Abschnitt 9 (Fassung 3), 9a (Fassung 4),
-> 9b (Fassung 5) und 9c (Fassung 6).
+> 9b (Fassung 5), 9c (Fassung 6) und 9d (Fassung 7).
 
 ---
 
@@ -52,6 +62,33 @@ liegen **seit Ende August vor**, also früher als ursprünglich geplant. Bis zum
 Schwellentest am 10.09. werden Wattwerte **nur mitgeschrieben, nicht zur Steuerung
 verwendet** — ohne FTP fehlt der Bezugswert. Ab Woche 5 sind sie die primäre
 Steuergröße der Qualitätseinheiten.
+
+### Arbeits-FTP 206 W (neu in Fassung 7)
+
+Zwei Zahlen mit zwei verschiedenen Aufgaben:
+
+| Größe | Wert | Wofür |
+|---|---|---|
+| **Test-FTP** | **192 W** (10.09.) | intervals.icu, App, Zonenmodell, Vergleich der drei Tests, Trainingslast |
+| **Arbeits-FTP** | **206 W** | **nur** die Zielwatt der Qualitätseinheiten: Do-Intervalle und Sa-Blöcke |
+
+**Woher die 206 W stammen:** der 5-Minuten-Maximalwert vom 17.09. mit 254 W (132 % der
+Test-FTP, Gegenprobe bei 118 %) und die eFTP, die nach derselben Einheit von 196 auf
+206 W gesprungen ist. Beide Wege zeigen auf denselben Bereich.
+
+**Was die Arbeits-FTP nicht ist:** kein Testwert und kein Eintrag in intervals.icu. Sie
+wird **nicht** in die Settings geschrieben, weil sonst die Trainingslast-Historie und die
+Vergleichbarkeit der drei Testtermine brechen. Der nächste offizielle Wert entsteht am
+22.10.
+
+**Preis dieser Entscheidung:** Solange die FTP in intervals.icu auf 192 W steht, rechnet
+die Plattform die Trainingslast etwa 7 % zu hoch. CTL, ATL und TSB sind dadurch leicht
+überzeichnet. Das ist hinnehmbar, weil die Steuerung ohnehin über Umfangsdeckel und
+Wellness-Gate läuft — aber es ist beim Lesen der Fitness-Seite mitzudenken.
+
+**Z2 bleibt unverändert.** Die Grundlagenzone hängt an LT1, nicht an einem Prozentsatz
+der FTP, und der Arbeitspunkt um 139 W bei Puls 128–135 ist durch ein Decoupling von
+−0,9 % am 12.09. belegt. Details unter „Zonen ab Woche 5".
 
 **Struktur:** Woche 1–4 im 3:1-Rhythmus, **ab Woche 5 im 2:1-Rhythmus**.
 
@@ -167,6 +204,12 @@ Zweistufig, weil die klassischen Modellwerte bei niedriger CTL nicht tragen:
 | **unter 20** | Umfangsdeckel + Wellness-Gate. TSB wird beobachtet, aber **nicht** als Auslöser verwendet — bei CTL 10 ist ein TSB über −10 rechnerisch kaum erreichbar |
 | **ab 20** | Zusätzlich: liegt TSB sieben Tage in Folge unter −20, ist die Folgewoche eine Erholungswoche, unabhängig von der Wochennummer |
 
+**Stand 17.09.2026: CTL 20,8 — die zweite Stufe ist ab sofort aktiv.** Der TSB zählt
+damit als Auslöser: sieben Tage in Folge unter −20 machen die Folgewoche zur
+Erholungswoche. Am 17.09. liegt der TSB bei −25. Woche 7 (26.09.–02.10.) ist ohnehin
+Erholungswoche, der Zeitpunkt passt also. Zu bedenken: Solange die FTP auf 192 W steht,
+fällt die gerechnete Last etwas zu hoch und der TSB damit etwas zu tief aus.
+
 Ergänzend gilt weiterhin: zwei rote Wellness-Tage hintereinander → gesamte Woche als
 Erholungswoche.
 
@@ -199,8 +242,10 @@ sind nicht ein mal 60.
 - **Ankunftspuffer 15 min.** Zeitdruck macht aus einer Z2-Fahrt zuverlässig eine
   Z3-Fahrt. Der Puffer ist Teil des Trainings.
 - **Gepäck auf den Gepäckträger, nicht in den Rucksack.**
-- **Wattwerte mit Gepäck sind nicht mit denen vom Samstag vergleichbar.** Pendelfahrten
-  in intervals.icu als `commute` taggen.
+- **Die Pendeltage laufen auf dem Trekkingrad**, das keinen Leistungs- und
+  Kadenzsensor hat. Diese Fahrten tragen weder Watt noch Trittfrequenz — das ist so
+  gewollt und kein Datenverlust. In intervals.icu als `commute` **und** mit dem Vermerk
+  „kein Powermeter" taggen, damit sie eFTP- und EF-Trends nicht verfälschen.
 - **Ab Oktober:** Dunkelheit, Kälte und Nebel im Morgenverkehr. Beleuchtung und Reifen
   gehören dann zur Planung; bei niedrigen Temperaturen braucht die Fahrt länger, bis
   sie wirklich Z2 ist.
@@ -225,6 +270,11 @@ Dekaden-Aufteilung hat sich als falsch erwiesen; die HFmax-Annahme selbst trägt
 
 **Der Arbeitsbereich 128–135 ist belegt, die Obergrenze 142 nicht.** Grundlagenfahrten
 werden in 128–135 gefahren. 142 ist eine harte Grenze, kein Ziel.
+
+**Nachtrag Fassung 7:** Die hier zugrunde gelegte HFmax von 180 bpm war eine Annahme. Am
+17.09. wurden 171 bpm gemessen. Die Bänder bleiben als historische Fassung stehen — ab
+Woche 5 gelten ohnehin die Coggan-Zonen aus der LTHR, und der Arbeitsbereich 128–135
+deckt sich mit deren oberer Z2-Hälfte.
 
 #### Woher die Korrektur kommt
 
@@ -313,30 +363,55 @@ gerechnet werden.
 5. **Verpflegung notieren.** Ab 90 min Fahrzeit ohne Kohlenhydratzufuhr ist der Drift
    nicht mehr sauber der Intensität zuzuordnen.
 
-### Zonen ab Woche 5 — Zielmodell
+### Zonen ab Woche 5 — gesetzt seit 10.09.
 
-Nach dem Test am 10.09. werden beide Zonensätze nach Coggan gesetzt, in intervals.icu
-**und** in der App identisch. Damit wird `icu_hr_zone_times` wieder verwendbar.
+Beide Zonensätze stehen nach Coggan, in intervals.icu **und** in der App identisch.
+Damit ist `icu_hr_zone_times` wieder verwendbar.
 
-**Herzfrequenz, % LTHR:**
+**Leistung, aus der Test-FTP 192 W:**
 
-| Zone | % LTHR | Verwendung |
+| Zone | % FTP | Watt | Verwendung |
+|---|---|---|---|
+| Z1 | 0–55 % | 1–105 | Intervallpausen, optionale Fahrten |
+| **Z2** | **56–75 %** | **106–144** | **Di, Mi, Sa — Grundlagenausdauer** |
+| Z3 | 76–90 % | 145–172 | Samstagsblöcke |
+| Z4 | 91–105 % | 173–201 | Schwellenblöcke Phase 4 |
+| Z5 | 106–120 % | 202–230 | VO2max-Intervalle Phase 2 |
+| SS | 84–97 % | 161–186 | Sweetspot, nur Woche 7 |
+
+**Herzfrequenz, aus der Schwellen-HF 163 bpm:**
+
+| Zone | % LTHR | bpm |
 |---|---|---|
-| Z1 | < 68 % | Erholung, optionale Fahrten |
-| Z2 | 69–83 % | Grundlagenausdauer |
-| Z3 | 84–94 % | Tempo |
-| Z4 | 95–105 % | Schwelle (Phase 4) |
-| Z5 | > 106 % | VO2max |
+| Z1 | 0–67 % | 0–110 |
+| **Z2** | **68–83 %** | **111–135** |
+| Z3 | 83–94 % | 136–153 |
+| Z4 | 94–104 % | 154–170 |
+| Z5 | 105 %+ | 171+ |
 
-**Leistung, % FTP:**
+**Die LTHR ist 163, nicht der Protokollwert 152.** Der Ø-Puls der 20 Testminuten enthält
+die Anlaufminuten; die letzten fünf Minuten lagen bei 159,6 bpm, der Test war mit RPE 7–8
+nicht ausbelastet, und die Gegenprobe über Leistung stützt 163. Der Protokollwert wird in
+`SCHWELLENTESTS.md` dokumentiert, aber nicht zur Zonenbildung verwendet. **Die
+Testcheckliste in Abschnitt 2a ist entsprechend zu lesen:** Der erhobene Ø-Puls wandert in
+die Historie, der zur Zonenbildung eingetragene Wert kann davon abweichen und ist dann mit
+Begründung zu vermerken.
 
-| Zone | % FTP | Verwendung |
+**HFmax: mindestens 171 bpm**, gemessen am Ende des 5-min-Maximalversuchs am 17.09. Die
+frühere Annahme von 180 bpm ist damit ersetzt. In intervals.icu ist Max HR auf den
+höchsten je gemessenen Wert zu setzen; jede weitere Intervalleinheit kann ihn anheben.
+
+**Zielwatt der Qualitätseinheiten — aus der Arbeits-FTP 206 W:**
+
+| Einheit | Vorgabe | Watt |
 |---|---|---|
-| Z1 | < 55 % | Intervallpausen, optionale Fahrten |
-| Z2 | 56–75 % | Grundlagenausdauer |
-| Z3 | 76–90 % | Samstagsblöcke |
-| Z4 | 91–105 % | Schwelle (Phase 4) |
-| Z5 | 106–120 % | VO2max (Phase 2) |
+| Do-Intervalle Phase 2 | 108–115 % | **222–237** |
+| Sa-Blöcke Woche 6, 9, 12 | 80–88 % | **165–181** |
+| Do-Erhaltungsreiz Phase 3 | 108–115 % | **222–237** |
+| Do-Schwellenblöcke Phase 4 | 90–95 % | **185–196** |
+
+Diese vier Zeilen sind die **einzige** Stelle, an der die Arbeits-FTP wirkt. Gilt ab
+sofort und bis zum Retest am 22.10.; danach ersetzt der neue Testwert beide Spalten.
 
 **Für Grundlagenfahrten sticht der Sprechtest die Zahl.** Ganze Sätze müssen möglich
 sein, Atmung merklich vertieft, aber ruhig und rhythmisch. Wird das Sprechen kurzatmig,
@@ -347,15 +422,21 @@ der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band
 
 | Einheit | Primär | Kontrolle |
 |---|---|---|
-| Di Z2 | Sprechtest, HF 128–135 | Ø-Watt beobachten, nicht steuern |
-| Mi Z2 kurz | Sprechtest, bewusst darunter | — |
-| Do Intervalle (ab W5) | **Watt** | HF nur am Intervallende |
+| Di Z2 (Trekkingrad, kein Powermeter) | Sprechtest, HF 128–135 | — |
+| Mi Z2 kurz (Trekkingrad) | Sprechtest, bewusst darunter | — |
+| Do Intervalle (ab W5) | **222–237 W** | Atmung sticht die Zahl; HF nur am Intervallende |
 | Do Intervalle (bis W4) | Atmung, HF ab Minute 3 | — |
-| Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **Watt** für die 3 × 3 min | HF nur am Intervallende |
-| Do Schwelle (Phase 4) | **Watt** | HF sollte in Z4 einpendeln |
-| Sa Basis | HF Z2 + Sprechtest | Decoupling nach der Fahrt |
-| Sa Blöcke | Watt 80–88 % FTP | HF steigt langsam, ist normal |
+| Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **222–237 W** für die 3 × 3 min | HF nur am Intervallende |
+| Do Schwelle (Phase 4) | **185–196 W** | HF sollte in Z4 einpendeln |
+| Sa Basis | Watt 106–144, Arbeitspunkt ~139 | Sprechtest, Decoupling nach der Fahrt |
+| Sa Blöcke | **165–181 W** | HF steigt langsam, ist normal |
 | Fr/So optional | HF unter Z2-Obergrenze | — |
+
+**Die beiden Bürotage laufen auf dem Trekkingrad und liefern keine Watt- und
+Kadenzwerte.** Fehlende Leistungsdaten an Di und Mi sind kein Aufzeichnungsfehler. Dort
+steuern Sprechtest und Puls, und die Kadenzarbeit ist dort frei von jeder
+Leistungsvorgabe. Wattbasierte Kennzahlen — Efficiency Factor, eFTP, Zeit in Watt-Z2 —
+entstehen nur an Do und Sa auf dem Cube Nuroad.
 
 ### Trittfrequenz
 
@@ -368,6 +449,21 @@ der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band
 
 Liegt die selbstgewählte Kadenz deutlich darunter (60–75 ist bei Einsteigern normal),
 in 5er-Schritten über vier bis sechs Wochen herantasten, nicht erzwingen.
+
+**Der Kadenz-Gang-Konflikt im Flachen (neu in Fassung 7).** Der 1×12-Antriebsstrang des
+Cube springt zwischen benachbarten Gängen um bis zu 50 % in der Übersetzung. Der belegte
+Z2-Arbeitspunkt ist **Gang 8 bei 80–82 rpm, rund 139 W**. Dieselbe Übersetzung mit
+85–90 rpm ergibt überschlägig 155–165 W und damit Z3 — im festen Gang sind Kadenz und
+Leistung gekoppelt, mehr Umdrehungen heißen mehr Watt.
+
+- **Auf der Z2-Fahrt hat die Leistung Vorrang vor der Kadenz.** 80–82 rpm sind dort kein
+  Fehler.
+- **Lösungsansatz:** einen Gang leichter bei höherer Kadenz. **Zu prüfen am Sa 19.09.**
+  in der ersten Fahrthälfte: Gang 7, 88–92 rpm, drei Minuten gleichmäßig, dann den
+  Rundenschnitt gegen 139 W halten. Liegt er bei 115–145 W, ist das der neue
+  Arbeitspunkt; liegt er bei 100–110 W, ist der Sprung zu groß und Gang 8 bleibt.
+- **Der Ort für reine Kadenzarbeit** ist die Kadenzpyramide am Mittwoch im leichten Gang
+  sowie die Pendelfahrten auf dem Trekkingrad, wo ohnehin keine Wattvorgabe gilt.
 
 **Kein Kraftausdauertraining mit niedriger Kadenz** (großer Gang, 50–60 rpm) in diesem
 Plan. Grund ist die muskuläre Belastung: hohe Pedalkräfte auf noch untrainierter
@@ -438,6 +534,13 @@ Schlaf < 6 h in zwei Nächten hintereinander
   → Donnerstag wird 60 min Z2
   → Samstag ohne Blöcke
 ```
+
+**Welcher Ruhepuls zählt (neu in Fassung 7):** Garmin berechnet den Ruhepuls
+serverseitig und liefert ihn nach der Synchronisierung mit ein bis zwei Stunden
+Verzögerung nach. Der am Morgen sichtbare Wert des laufenden Tages ist deshalb oft noch
+unfertig. **Maßgeblich ist der abgeschlossene Wert des Vortags** aus intervals.icu,
+verglichen mit dem Sieben-Tage-Schnitt. Liegt der Wert des laufenden Tages bereits vor
+und ist er deutlich höher, zählt der höhere von beiden.
 
 Nach fieberhaftem Infekt mindestens so viele lockere Tage wie Krankheitstage, bevor
 wieder Intensität gefahren wird.
@@ -527,6 +630,10 @@ Belastung und Pause.
 Einfahren immer 15 min, Ausrollen 12 min. Die Wiederholungszahl in Phase 2 ist **fest
 bei 5** — die Progression läuft über die Leistung, nicht über mehr Wiederholungen.
 
+**Alle Prozentangaben dieser Tabelle beziehen sich seit Fassung 7 auf die Arbeits-FTP
+206 W**, nicht auf die Test-FTP: 108–115 % sind **222–237 W**, 95 % sind **196 W**,
+90–95 % sind **185–196 W**. Herleitung in Abschnitt 1.
+
 **Ausnahme Woche 5:** Der 5-min-Maximalversuch für die VO2max-Referenz zählt als erste
 Wiederholung, deshalb folgen nur noch 4 × 4 min. Details und Begründung in Abschnitt 2a.
 Wird der Referenzwert nicht erhoben, gilt die reguläre Struktur 5 × 4 min.
@@ -566,7 +673,11 @@ Z2-Tag mehr und **das Decoupling der Woche fällt als Kennzahl aus.**
 **Samstag:** Basis Z2. **Z3-Blöcke nur in den Wochen 6, 9 und 12** — jeweils die zweite
 Belastungswoche eines 2:1-Paars, und nicht in Phase 4, wo der Donnerstag bereits die
 Schwellenarbeit trägt. Dann 2 × 12 min in der **zweiten Hälfte** der Fahrt mit 8 min
-lockerem Rollen dazwischen. Einfahren 15 min, Ausrollen 10 min.
+lockerem Rollen dazwischen, **165–181 W** (80–88 % der Arbeits-FTP). Einfahren 15 min,
+Ausrollen 10 min.
+
+**Kontrolle über die Atmung:** merklich vertieft, Sprechen nur noch in kurzen Sätzen.
+Mit Werten um 145–155 W wäre der Block faktisch eine Z2-Fahrt mit anderem Etikett.
 
 ### Ausführungsregeln Intervalle
 
@@ -671,6 +782,36 @@ niedrig. Dann rückt der Retest nach vorn (zusammen mit dem eFTP-Kriterium weite
 Runden-Durchschnittsleistung schauen, nicht auf den Momentanwert. Die letzten zwei
 Minuten sollen sich anfühlen wie „gerade noch".
 
+**Strecke — neu in Fassung 7: kein Gefälle im Maximalversuch.** Flach oder gleichmäßig
+ansteigend, und ausdrücklich **ohne abfallendes letztes Drittel**. Bei rund 40 km/h
+wächst der Luftwiderstand so stark, dass die Leistung bergab von selbst wegbricht: Man
+tritt ins Leere, bevor man reagieren kann. Lässt sich ein Gefälle nicht vermeiden,
+rechtzeitig zwei Gänge hochschalten, bevor die Wattzahl fällt, nicht danach.
+
+### Ergebnis des 5-min-Versuchs vom 17.09.2026
+
+| Größe | Wert |
+|---|---|
+| Ø Leistung 5 min | **254 W** |
+| Anteil der Test-FTP 192 W | **132 %** |
+| W/kg (7-Tage-Schnitt 95,5 kg) | 2,66 |
+| Ø HF letzte 60 s | 169,6 bpm |
+| Max HF der Einheit | **171 bpm** — neuer Höchstwert, ersetzt die Annahme 180 |
+| Verlauf | Minute 0–3: 224 W · Minute 3–4,5: ~308 W · letzte 30 s: 252 W |
+
+Der Abfall am Schluss ist **kein Ermüdungseinbruch**: Der Abschnitt fiel dort leicht ab,
+die Leistung brach streckenbedingt weg. Daraus folgt die Streckenregel oben — und dass
+auch die 254 W eine Untergrenze sind.
+
+**Die Gegenprobe ist damit ausgelöst:** 254 W liegen deutlich über den 227 W (118 % der
+Test-FTP). Die FTP von 192 W ist zu niedrig. Zur Folge daraus siehe „Einordnung des
+ersten Testwerts" weiter unten und Abschnitt 9d.
+
+**Die 4 × 4 min derselben Einheit** wurden mit 210 / 221 / 222 / 227 W gefahren, Ø HF am
+Intervallende 154 / 159 / 157 / 161 bpm. Kein Leistungsabfall, die letzte Wiederholung
+war die stärkste — das Pacing war sauber, und die Vorgabe 207–221 W war zu niedrig
+angesetzt.
+
 **Strecke:** 20 min ohne Ampel, Kreuzung, Abfahrt oder Gegenverkehr, flach oder
 gleichmäßig ansteigend. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad,
 gleicher Reifendruck — sonst ist der Retest nicht vergleichbar.
@@ -713,7 +854,8 @@ kein voller Qualitätstag, Sonntag davor ohne Beinblock, Dienstag kurz, Mittwoch
 
 Alle vier Punkte müssen zutreffen:
 
-1. **Ruhepuls** höchstens 5 bpm über dem Sieben-Tage-Schnitt
+1. **Ruhepuls** höchstens 5 bpm über dem Sieben-Tage-Schnitt — maßgeblich ist der
+   abgeschlossene Wert des Vortags, siehe Wellness-Gate in Abschnitt 1
 2. **Kein Muskelkater** in den Oberschenkeln
 3. Zwei Nächte hintereinander mindestens 7 Stunden Schlaf
 4. Kein Infekt im Anflug, unter 30 °C, kein Sturm
@@ -762,13 +904,27 @@ in dieselbe Richtung nach unten: fehlende Pacing-Erfahrung mit Powermeter, ein T
 
 Praktische Folgen:
 
-- Fühlen sich die Intervalle in Phase 2 bei 108–115 % dieser FTP zu leicht an, wird nach
-  Atmung gefahren, nicht nach der Zahl.
-- Die **eFTP** auf der Power-Seite von intervals.icu ist ab Woche 6 der Gegencheck.
-  Zieht sie deutlich über den Testwert, war der Test zu niedrig, und ein früherer Retest
-  ist sinnvoll.
+- Fühlen sich die Intervalle in Phase 2 zu leicht an, wird nach Atmung gefahren, nicht
+  nach der Zahl.
+- Die **eFTP** auf der Power-Seite von intervals.icu ist der laufende Gegencheck.
 - Der Retest am 22.10. wird einen Teil seines Zuwachses aus Testkompetenz beziehen, nicht
   nur aus Form. Das ist normal und kein Grund, den Zuwachs kleinzurechnen.
+
+**Bestätigt am 17.09.** Beide Gegenchecks haben angeschlagen: der 5-min-Wert mit 132 %
+der Test-FTP und die eFTP mit einem Sprung von 196 auf 206 W. Die wahre FTP liegt bei
+rund 206 W.
+
+**Entscheidung (Fassung 7): kein vorgezogener Retest.** Stattdessen die Arbeits-FTP von
+206 W aus Abschnitt 1, die ausschließlich die Zielwatt der Qualitätseinheiten hebt. Der
+vorgezogene Test wäre die lehrbuchmäßige Antwort, kostet aber einen kompletten
+Testanlauf, also eine VO2max-Einheit in Woche 6 und einen Testtag in Woche 7 — und
+liefert nur die Zahl, die aus 5-min-Wert und eFTP bereits ablesbar ist. Der reguläre
+Termin am 22.10. liegt ohnehin nur fünf Wochen entfernt und bleibt unverändert.
+
+**Was das kostet und wo die Grenze liegt:** Bis zum 22.10. laufen Trainingslast und Zonen
+auf einer um rund 7 % zu niedrigen FTP. Zieht die eFTP bis Woche 8 über **215 W**, ist die
+Entscheidung neu zu prüfen — dann ist der Abstand zwischen Zahlenwerk und Wirklichkeit
+groß genug, dass der Testanlauf sich lohnt.
 
 ### Checkliste unmittelbar nach dem Test
 
@@ -785,9 +941,13 @@ Praktische Folgen:
 
 | Datum | Woche | Ø-Watt 20 min | FTP | LTHR | Ø-Kadenz | Gewicht | Bedingungen |
 |---|---|---|---|---|---|---|---|
-| 10.09.2026 | 4 | | | | | | |
-| 22.10.2026 | 10 | | | | | | |
-| 03.12.2026 | 16 | | | | | | |
+| **10.09.2026** | 4 | **202,6 W** | **192 W** | 152 erhoben / **163 gesetzt** | 86 rpm | 95,7 kg | 21,6 °C, teils bewölkt, Wind 2,5 km/h Ost, trocken, Start 16:21, Cube Nuroad, 2,5 bar. RPE 7–8, negativer Split +5,7 % |
+| 22.10.2026 | 10 | | | | | | Start 16:21 |
+| 03.12.2026 | 16 | | | | | | Start 14:00, siehe 9c |
+
+Die ausführliche Fassung mit Pacing, Rundenverlauf und Schlussfolgerungen steht in
+`SCHWELLENTESTS.md`. **Beide Tabellen sind identisch zu führen** — weicht eine ab, gilt
+`SCHWELLENTESTS.md`.
 
 ### VO2max-Referenz (5-Minuten-Wert)
 
@@ -795,7 +955,7 @@ Getrennt geführt, weil der Wert nicht mehr am Testtag erhoben wird.
 
 | Datum | Woche | Ø-Watt 5 min | % der aktuellen FTP | Bemerkung |
 |---|---|---|---|---|
-| 17.09.2026 | 5 | | | erste Wiederholung der ersten Intervalleinheit |
+| **17.09.2026** | 5 | **254 W** | **132 %** | Gegenprobe überschritten. Ungleichmäßiges Pacing, Gefälle im Schlussteil — Wert ist eine Untergrenze. Max HF 171 |
 | | | | | |
 
 ### Laufende Kontrolle zwischen den Tests
@@ -1274,6 +1434,27 @@ Aus Fassung 6 (11.09.2026):
     ohne Datenfolge. Die abweichende Startzeit am 03.12. gehört ins Feld „Bedingungen“
     der Testhistorie (Punkt 20).
 
+Aus Fassung 7 (17.09.2026):
+
+25. **Zweiter FTP-Wert in `plan.json`.** Neben dem Testwert (`ftp`, 192) trägt die Datei
+    eine `arbeits_ftp` (206) mit Datum und Herkunft. Zonen, Zonenanzeige und
+    Trainingslast rechnen weiter gegen `ftp`; **nur die Zielwatt der `work`-Schritte und
+    der Samstagsblöcke** rechnen gegen `arbeits_ftp`. Fehlt der Wert, gilt `ftp` — dann
+    zeigt die App die alten Zahlen und nicht etwa keine.
+26. **Herkunft anzeigen.** An der Zielwattangabe muss ablesbar sein, gegen welchen Wert
+    gerechnet wurde. Ohne das steht in vier Wochen eine Zahl da, deren Grundlage niemand
+    mehr rekonstruiert — dasselbe Problem wie bei den Testbedingungen (Punkt 20).
+27. **HFmax 171 statt 180.** Der Wert steckt in den Übergangsbändern der Wochen 1–4 und
+    in der Kennzahl „HF am Intervallende" (≥ 90 % HFmax). Er ist als
+    fortgeschriebener Höchstwert zu führen, nicht als Konstante.
+28. **Z2-Warnungen der Analyse hängen an den falschen Bändern.** Die App prüft Z2 noch
+    gegen 128–135 bpm aus der Übergangsfassung, obwohl seit Woche 5 die Leistungszonen
+    gelten. Folge: Falschmeldungen an sauber gefahrenen Z2-Tagen. Zu ändern:
+    Zonenquelle ab Woche 5 auf Leistung, Pulsprüfung nur noch als Zweitkriterium, und
+    keine Warnung, wenn das Decoupling der Fahrt unter 5 % liegt. **An Di und Mi
+    (Trekkingrad, keine Watt) bleibt die Pulsprüfung die einzige Quelle** — fehlende
+    Leistungsdaten dort dürfen nicht als Fehler gemeldet werden.
+
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.
 
@@ -1378,14 +1559,17 @@ Der Key ist wie ein Passwort zu behandeln — er erlaubt Lese- **und** Schreibzu
 
 Settings → Sportart **Ride**:
 
-| Feld | Wert |
-|---|---|
-| FTP | Ø-Watt der 20 min × 0,95 |
-| Threshold HR (LTHR) | Ø-Puls der 20 min |
-| Max HR | höchster je gemessener Wert |
-| Power Zones | Coggan |
-| HR Zones | Coggan, % LTHR |
-| Load Priority | Power |
+| Feld | Wert | Stand 17.09.2026 |
+|---|---|---|
+| FTP | Ø-Watt der 20 min × 0,95, manuell | **192 W** |
+| Threshold HR (LTHR) | siehe Zonenabschnitt in Abschnitt 1 | **163 bpm** |
+| Max HR | höchster je gemessener Wert | **171 bpm** (17.09., ersetzt die Annahme 180) |
+| Power Zones | Coggan | |
+| HR Zones | Coggan, % LTHR | |
+| Load Priority | Power | |
+
+**Die Arbeits-FTP von 206 W wird hier nicht eingetragen.** Sie steht nur in diesem
+Dokument und in der App-Anzeige der Zielwatt; siehe Abschnitt 1.
 
 Zonenänderungen werden rückwirkend auf die Historie angewandt.
 
@@ -1475,10 +1659,10 @@ Werkzeugliste des Konnektors zugrunde legen.
 | Efficiency Factor NP ÷ Ø-HF | Di und Sa | Trend steigend | aerobe Basis wächst |
 | Leistungsabfall Wdh. 1 → letzte | Donnerstag | < 5 % | Pacing sauber |
 | Erste Wdh. über Zielband | Donnerstag | Warnung ab > 5 % darüber | zu hart gestartet |
-| HF am Intervallende | Donnerstag | ≥ 90 % HFmax in den letzten 60 s | Reiz erreicht |
-| Ø-Kadenz | alle | ≥ 85 rpm in Z2 | Technik |
+| HF am Intervallende | Donnerstag | ≥ 90 % HFmax in den letzten 60 s = **≥ 154 bpm** bei HFmax 171 | Reiz erreicht |
+| Ø-Kadenz | Do und Sa (Cube) | ≥ 85 rpm in Z2, siehe Kadenz-Gang-Konflikt in Abschnitt 1 | Technik |
 | Kadenzabfall im Intervall | Donnerstag | < 8 rpm | Ermüdung, Gang zu schwer |
-| Zeit in Watt-Z2 | Woche | Trend Richtung 300 min | Grundlagendosis |
+| Zeit in Watt-Z2 | Woche | Trend Richtung 300 min | Grundlagendosis. **Nur Do und Sa liefern Watt**; Di und Mi laufen auf dem Trekkingrad und sind über den Puls-Stream zu zählen |
 | Wochensumme gegen Deckel | Woche | ≤ Soll + 10 % | Überlastungsschutz |
 
 ### Krafteinheiten
@@ -1706,6 +1890,62 @@ Umrechnung entfällt.
 
 ---
 
+## 9d. Änderungen gegenüber Fassung 6
+
+### Anlass
+
+Die erste Intervalleinheit am 17.09. hat den VO2max-Referenzwert geliefert, und der fällt
+eindeutig aus.
+
+| Größe | Wert | Schwelle |
+|---|---|---|
+| 5-min-Maximalwert | **254 W** | Gegenprobe bei 118 % = 227 W |
+| Anteil der Test-FTP | **132 %** | — |
+| eFTP nach der Einheit | **206 W** | Testwert 192 W |
+| 4 × 4 min gefahren | 210 / 221 / 222 / 227 W | Vorgabe war 207–221 W |
+| Ø HF am Intervallende | 154 / 159 / 157 / 161 bpm | bei Max HF 171 |
+
+Die vier Wiederholungen liefen ohne Leistungsabfall, die letzte war die stärkste, und der
+Puls blieb am Intervallende moderat. Bezogen auf eine FTP um 206 W lagen sie bei
+102–110 % und damit am **unteren** Rand des VO2max-Bereichs. Der Plan hatte diesen Fall
+vorgesehen: Abschnitt 2a nennt den Testwert ausdrücklich eine Untergrenze und knüpft
+daran zwei Gegenchecks. Beide haben angeschlagen.
+
+### Die Änderung
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **Arbeits-FTP 206 W eingeführt** (Abschnitt 1), gültig bis zum Retest am 22.10. | Die Zielwatt der Qualitätseinheiten müssen auf der wahren Leistungsfähigkeit rechnen, sonst läuft Phase 2 fünf Wochen unterhalb des beabsichtigten Reizes |
+| 2 | **Kein vorgezogener Retest** | Ein Testanlauf kostet eine VO2max-Einheit in Woche 6 und einen Testtag in Woche 7 und liefert nur die Zahl, die aus 5-min-Wert und eFTP bereits ablesbar ist. Der reguläre Termin liegt fünf Wochen entfernt |
+| 3 | **Test-FTP 192 W bleibt in intervals.icu und App** | Die drei Testwerte sind nur vergleichbar, wenn zwischendurch kein geschätzter Wert eingetragen wird. Dieselbe Logik wie bei der Protokollgleichheit in Abschnitt 2a |
+| 4 | **Zielwatt neu:** Do-Intervalle 222–237 W, Sa-Blöcke 165–181 W, Phase-4-Schwelle 185–196 W | Prozentsätze unverändert, nur der Bezugswert wechselt |
+| 5 | **Z2 unverändert** bei 106–144 W, Arbeitspunkt ~139 W | Z2 hängt an LT1, nicht an einem Prozentsatz der FTP. Der Arbeitspunkt ist durch Decoupling −0,9 % am 12.09., Sprechtest und Puls 128–135 belegt. Ein rechnerisch angehobenes Band wäre unbelegt — und auf flacher Strecke wegen der Gangabstufung ohnehin kaum fahrbar |
+| 6 | **HFmax 171 statt Annahme 180** | Erstmals gemessen am Ende des 5-min-Versuchs. Verschiebt die Kennzahl „HF am Intervallende" auf ≥ 154 bpm |
+| 7 | **Streckenregel für Maximalversuche:** kein Gefälle im letzten Drittel | Der Leistungsabfall in den letzten 30 s des 17.09. war streckenbedingt, nicht muskulär. Bergab bricht die Leistung bei hoher Geschwindigkeit von selbst weg und verfälscht den Wert nach unten |
+| 8 | **Ruhepuls-Regel im Wellness-Gate präzisiert:** maßgeblich ist der abgeschlossene Vortageswert | Garmin berechnet den Ruhepuls serverseitig mit ein bis zwei Stunden Verzug. Der Morgenwert des laufenden Tages ist am Testmorgen regelmäßig noch unfertig |
+| 9 | **Kadenz-Gang-Konflikt dokumentiert** samt Prüfauftrag für den 19.09. | 85–90 rpm in Gang 8 ergeben 155–165 W und damit Z3. Ohne diese Notiz steht das Kadenzziel dauerhaft gegen das Leistungsziel |
+| 10 | **Trekkingrad an Di und Mi ausdrücklich vermerkt** | Fehlende Watt- und Kadenzwerte an den Pendeltagen sind eine Geräteeigenschaft, kein Aufzeichnungsfehler — und dürfen weder EF- noch eFTP-Trends verfälschen |
+| 11 | **Testhistorie und VO2max-Tabelle ausgefüllt**, Vorrang von `SCHWELLENTESTS.md` festgeschrieben | Beide Dokumente führten dieselbe Tabelle, eine davon leer |
+| 12 | **LTHR-Widerspruch aufgelöst:** erhobener Protokollwert 152, gesetzter Zonenwert 163, beides dokumentiert | Abschnitt 2a verlangte „LTHR = Ø-Puls der 20 min", gesetzt sind aber 163. Ohne die Klarstellung widersprechen sich Checkliste und Zonentabelle |
+
+### Die Grenze der Entscheidung
+
+**Zieht die eFTP bis Woche 8 über 215 W, wird der vorgezogene Retest neu geprüft.** Dann
+ist der Abstand zwischen eingetragenem Wert und Wirklichkeit so groß, dass auch die
+Trainingslast-Rechnung spürbar danebenliegt.
+
+### Bewusst **nicht** geändert
+
+- **Die Zonen in intervals.icu.** Sie bleiben auf 192 W und 163 bpm. Die Trainingslast
+  rechnet dadurch etwa 7 % zu hoch; das ist der bewusst gewählte Preis.
+- **Die Retesttermine 22.10. und 03.12.** samt Protokoll, Strecke, Rad und Reifendruck.
+- **Wochenstruktur, Umfänge, Umfangsdeckel und Erholungswochen.**
+- **Die Vorgabe „Atmung sticht die Zahl".** Sie gilt für die Arbeits-FTP genauso wie
+  zuvor für die Test-FTP — die 206 W sind eine begründete Schätzung, kein Messwert.
+- **Der Sprechtest als oberste Instanz für Z2.**
+
+---
+
 ## 10. Beweglichkeit, Koordination und Knochenreiz
 
 Eigenständiger, radunabhängiger Block. Beweglichkeit und Koordination verlieren mit
@@ -1781,6 +2021,7 @@ Bewusst **nicht** in `plan.json` und damit nicht in der App.
 |---|---|
 | Ausgangsgewicht | 102,2 kg (01.07.2026) |
 | Erste belastbare Messung | 97,6 kg (17.08.2026) |
+| Stand 17.09.2026 (Sieben-Tage-Schnitt) | 95,5 kg |
 | Zielgewicht Woche 16 (04.12.2026) | 87 kg |
 | Zielkorridor Abnahmerate | 500–650 g/Woche |
 | Protein | 1,6–2,2 g/kg → bei 96 kg: 155–212 g/Tag |
