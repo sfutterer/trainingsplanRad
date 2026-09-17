@@ -16,9 +16,10 @@ Plan muss dieses Dokument mitgezogen werden.
 > stattdessen wird eine **Arbeits-FTP von 206 W** eingeführt, die ausschließlich die
 > Zielwerte der Qualitätseinheiten steuert (Abschnitt 1, „Arbeits-FTP"). Die Testwerte
 > 192 W und 163 bpm bleiben in intervals.icu und in der App stehen, damit die drei Tests
-> vergleichbar bleiben. **Z2 ändert sich nicht.** Weiter: HFmax-Annahme 180 durch den
-> gemessenen Wert **171 bpm** ersetzt, Ruhepuls-Regel im Wellness-Gate präzisiert,
-> Testhistorie und VO2max-Tabelle ausgefüllt, Streckenregel für Maximalversuche ergänzt.
+> vergleichbar bleiben. **Z2 ändert sich nicht.** Weiter: das Intervallkriterium hängt
+> jetzt an der belegten LTHR statt an der unbekannten HFmax, die Ruhepuls-Regel im
+> Wellness-Gate ist präzisiert, Testhistorie und VO2max-Tabelle sind ausgefüllt, und für
+> Maximalversuche gilt eine Streckenregel.
 > Begründungen in Abschnitt 9d.
 >
 > Fassung 6 (11.09.2026) brachte: **Es wird das ganze Jahr draußen gefahren, keine
@@ -271,10 +272,11 @@ Dekaden-Aufteilung hat sich als falsch erwiesen; die HFmax-Annahme selbst trägt
 **Der Arbeitsbereich 128–135 ist belegt, die Obergrenze 142 nicht.** Grundlagenfahrten
 werden in 128–135 gefahren. 142 ist eine harte Grenze, kein Ziel.
 
-**Nachtrag Fassung 7:** Die hier zugrunde gelegte HFmax von 180 bpm war eine Annahme. Am
-17.09. wurden 171 bpm gemessen. Die Bänder bleiben als historische Fassung stehen — ab
-Woche 5 gelten ohnehin die Coggan-Zonen aus der LTHR, und der Arbeitsbereich 128–135
-deckt sich mit deren oberer Z2-Hälfte.
+**Nachtrag Fassung 7:** Die hier zugrunde gelegte HFmax von 180 bpm ist und bleibt eine
+Annahme; der höchste aufgezeichnete Wert liegt bisher bei 171 bpm, erreicht ohne
+Ausbelastung. Die Bänder bleiben als historische Fassung stehen — ab Woche 5 gelten
+ohnehin die Coggan-Zonen aus der LTHR, und der Arbeitsbereich 128–135 deckt sich mit
+deren oberer Z2-Hälfte.
 
 #### Woher die Korrektur kommt
 
@@ -397,9 +399,19 @@ Testcheckliste in Abschnitt 2a ist entsprechend zu lesen:** Der erhobene Ø-Puls
 die Historie, der zur Zonenbildung eingetragene Wert kann davon abweichen und ist dann mit
 Begründung zu vermerken.
 
-**HFmax: mindestens 171 bpm**, gemessen am Ende des 5-min-Maximalversuchs am 17.09. Die
-frühere Annahme von 180 bpm ist damit ersetzt. In intervals.icu ist Max HR auf den
-höchsten je gemessenen Wert zu setzen; jede weitere Intervalleinheit kann ihn anheben.
+**Zur HFmax: Sie ist nicht bekannt, und sie wird auch nicht gebraucht.** Der höchste
+bisher aufgezeichnete Wert sind **171 bpm** vom 17.09., erreicht am Ende eines
+5-min-Versuchs, der streckenbedingt abfiel — also ohne echte Ausbelastung. Er ist damit
+eine Untergrenze und **kein Ersatz für die Annahme von 180 bpm**: Ein niedrigerer
+Nicht-Messwert würde jede daran hängende Schwelle nach unten verzerren.
+
+**Folge (neu in Fassung 7): Kontrollgrößen hängen an der LTHR, nicht an der HFmax.** Die
+163 bpm sind belegt und stabil, die HFmax ist es nicht. Das Feld „Max HR" in
+intervals.icu bleibt bei der Annahme 180 und steuert in diesem Setup nichts — die
+Pulszonen kommen aus der LTHR, die Trainingslast aus der Leistung. Aufgezeichnete
+Höchstwerte werden in der Testhistorie mitgeführt. Eine belastbare HFmax entstünde nur
+aus einer bewussten Ausbelastung, etwa 30 s All-out am Ende eines harten Intervalls am
+Berg. Das ist nicht vorgesehen, weil keine Steuergröße davon abhängt.
 
 **Zielwatt der Qualitätseinheiten — aus der Arbeits-FTP 206 W:**
 
@@ -796,7 +808,7 @@ rechtzeitig zwei Gänge hochschalten, bevor die Wattzahl fällt, nicht danach.
 | Anteil der Test-FTP 192 W | **132 %** |
 | W/kg (7-Tage-Schnitt 95,5 kg) | 2,66 |
 | Ø HF letzte 60 s | 169,6 bpm |
-| Max HF der Einheit | **171 bpm** — neuer Höchstwert, ersetzt die Annahme 180 |
+| Max HF der Einheit | **171 bpm** — höchster bisher aufgezeichneter Wert, keine Ausbelastung, keine HFmax |
 | Verlauf | Minute 0–3: 224 W · Minute 3–4,5: ~308 W · letzte 30 s: 252 W |
 
 Der Abfall am Schluss ist **kein Ermüdungseinbruch**: Der Abschnitt fiel dort leicht ab,
@@ -1444,9 +1456,11 @@ Aus Fassung 7 (17.09.2026):
 26. **Herkunft anzeigen.** An der Zielwattangabe muss ablesbar sein, gegen welchen Wert
     gerechnet wurde. Ohne das steht in vier Wochen eine Zahl da, deren Grundlage niemand
     mehr rekonstruiert — dasselbe Problem wie bei den Testbedingungen (Punkt 20).
-27. **HFmax 171 statt 180.** Der Wert steckt in den Übergangsbändern der Wochen 1–4 und
-    in der Kennzahl „HF am Intervallende" (≥ 90 % HFmax). Er ist als
-    fortgeschriebener Höchstwert zu führen, nicht als Konstante.
+27. **Kennzahl „HF am Intervallende" auf die LTHR umstellen:** ≥ 163 bpm statt
+    ≥ 90 % HFmax. Die HFmax ist unbekannt, und je nach Annahme (171 oder 180) fällt
+    dieselbe Einheit einmal bestanden und einmal durchgefallen aus. Das Feld „Max HR"
+    bleibt bei 180 und darf keine Schwelle mehr speisen; aufgezeichnete Höchstwerte
+    laufen in die Testhistorie.
 28. **Z2-Warnungen der Analyse hängen an den falschen Bändern.** Die App prüft Z2 noch
     gegen 128–135 bpm aus der Übergangsfassung, obwohl seit Woche 5 die Leistungszonen
     gelten. Folge: Falschmeldungen an sauber gefahrenen Z2-Tagen. Zu ändern:
@@ -1563,7 +1577,7 @@ Settings → Sportart **Ride**:
 |---|---|---|
 | FTP | Ø-Watt der 20 min × 0,95, manuell | **192 W** |
 | Threshold HR (LTHR) | siehe Zonenabschnitt in Abschnitt 1 | **163 bpm** |
-| Max HR | höchster je gemessener Wert | **171 bpm** (17.09., ersetzt die Annahme 180) |
+| Max HR | Annahme, steuert in diesem Setup nichts | **180 bpm unverändert** — der höchste aufgezeichnete Wert 171 (17.09., ohne Ausbelastung) gehört in die Testhistorie, nicht in dieses Feld |
 | Power Zones | Coggan | |
 | HR Zones | Coggan, % LTHR | |
 | Load Priority | Power | |
@@ -1659,7 +1673,7 @@ Werkzeugliste des Konnektors zugrunde legen.
 | Efficiency Factor NP ÷ Ø-HF | Di und Sa | Trend steigend | aerobe Basis wächst |
 | Leistungsabfall Wdh. 1 → letzte | Donnerstag | < 5 % | Pacing sauber |
 | Erste Wdh. über Zielband | Donnerstag | Warnung ab > 5 % darüber | zu hart gestartet |
-| HF am Intervallende | Donnerstag | ≥ 90 % HFmax in den letzten 60 s = **≥ 154 bpm** bei HFmax 171 | Reiz erreicht |
+| HF am Intervallende | Donnerstag | **≥ 163 bpm** in den letzten 60 s, also ≥ 100 % LTHR | Reiz erreicht. Bezug ist die LTHR, nicht die unbekannte HFmax |
 | Ø-Kadenz | Do und Sa (Cube) | ≥ 85 rpm in Z2, siehe Kadenz-Gang-Konflikt in Abschnitt 1 | Technik |
 | Kadenzabfall im Intervall | Donnerstag | < 8 rpm | Ermüdung, Gang zu schwer |
 | Zeit in Watt-Z2 | Woche | Trend Richtung 300 min | Grundlagendosis. **Nur Do und Sa liefern Watt**; Di und Mi laufen auf dem Trekkingrad und sind über den Puls-Stream zu zählen |
@@ -1903,7 +1917,7 @@ eindeutig aus.
 | Anteil der Test-FTP | **132 %** | — |
 | eFTP nach der Einheit | **206 W** | Testwert 192 W |
 | 4 × 4 min gefahren | 210 / 221 / 222 / 227 W | Vorgabe war 207–221 W |
-| Ø HF am Intervallende | 154 / 159 / 157 / 161 bpm | bei Max HF 171 |
+| Ø HF am Intervallende | 154 / 159 / 157 / 161 bpm | Ziel ≥ 163 bpm (LTHR), knapp verfehlt |
 
 Die vier Wiederholungen liefen ohne Leistungsabfall, die letzte war die stärkste, und der
 Puls blieb am Intervallende moderat. Bezogen auf eine FTP um 206 W lagen sie bei
@@ -1920,7 +1934,7 @@ daran zwei Gegenchecks. Beide haben angeschlagen.
 | 3 | **Test-FTP 192 W bleibt in intervals.icu und App** | Die drei Testwerte sind nur vergleichbar, wenn zwischendurch kein geschätzter Wert eingetragen wird. Dieselbe Logik wie bei der Protokollgleichheit in Abschnitt 2a |
 | 4 | **Zielwatt neu:** Do-Intervalle 222–237 W, Sa-Blöcke 165–181 W, Phase-4-Schwelle 185–196 W | Prozentsätze unverändert, nur der Bezugswert wechselt |
 | 5 | **Z2 unverändert** bei 106–144 W, Arbeitspunkt ~139 W | Z2 hängt an LT1, nicht an einem Prozentsatz der FTP. Der Arbeitspunkt ist durch Decoupling −0,9 % am 12.09., Sprechtest und Puls 128–135 belegt. Ein rechnerisch angehobenes Band wäre unbelegt — und auf flacher Strecke wegen der Gangabstufung ohnehin kaum fahrbar |
-| 6 | **HFmax 171 statt Annahme 180** | Erstmals gemessen am Ende des 5-min-Versuchs. Verschiebt die Kennzahl „HF am Intervallende" auf ≥ 154 bpm |
+| 6 | **Kennzahl „HF am Intervallende" jetzt ≥ 163 bpm (100 % LTHR)** statt ≥ 90 % HFmax; Max HR bleibt bei der Annahme 180 | Die HFmax ist unbekannt. Die 171 bpm vom 17.09. entstanden ohne Ausbelastung und wären als HFmax eine Verzerrung nach unten, die Annahme 180 ist ebenso unbelegt. Ein Kriterium darf nicht an einer Zahl hängen, die je nach Annahme um 8 bpm springt — die LTHR ist belegt und stabil |
 | 7 | **Streckenregel für Maximalversuche:** kein Gefälle im letzten Drittel | Der Leistungsabfall in den letzten 30 s des 17.09. war streckenbedingt, nicht muskulär. Bergab bricht die Leistung bei hoher Geschwindigkeit von selbst weg und verfälscht den Wert nach unten |
 | 8 | **Ruhepuls-Regel im Wellness-Gate präzisiert:** maßgeblich ist der abgeschlossene Vortageswert | Garmin berechnet den Ruhepuls serverseitig mit ein bis zwei Stunden Verzug. Der Morgenwert des laufenden Tages ist am Testmorgen regelmäßig noch unfertig |
 | 9 | **Kadenz-Gang-Konflikt dokumentiert** samt Prüfauftrag für den 19.09. | 85–90 rpm in Gang 8 ergeben 155–165 W und damit Z3. Ohne diese Notiz steht das Kadenzziel dauerhaft gegen das Leistungsziel |

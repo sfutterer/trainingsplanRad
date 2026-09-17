@@ -2,14 +2,19 @@
 
 Begleitdokument zu `TRAININGSPLAN.md`, Abschnitt 2a.
 
-**Stand:** 17.09.2026, nach dem 5-min-Referenzwert. **Fassung 5.**
+**Stand:** 17.09.2026, nach dem 5-min-Referenzwert. **Fassung 6.**
 
-Änderung gegenüber Fassung 4: Der VO2max-Referenzwert vom 17.09. ist eingetragen
+Änderung gegenüber Fassung 5: Die 171 bpm vom 17.09. sind **keine HFmax**, sondern der
+höchste bisher aufgezeichnete Wert, erreicht ohne Ausbelastung. Kontrollgrößen hängen
+deshalb an der belegten LTHR und nicht an einer angenommenen HFmax: Die Kennzahl „HF am
+Intervallende" ist **≥ 163 bpm**, und das Feld „Max HR" in intervals.icu bleibt bei der
+Annahme 180, wo es nichts steuert (Abschnitt 5). Angepasst in den Abschnitten 5 und 6.
+
+Fassung 5 (17.09.2026) brachte: Der VO2max-Referenzwert vom 17.09. ist eingetragen
 (Abschnitt 6) und überschreitet die Gegenprobe deutlich. Die Folge ist **kein
 vorgezogener Retest**, sondern eine **Arbeits-FTP von 206 W**, die ausschließlich die
-Zielwatt der Qualitätseinheiten steuert (Abschnitt 4.6). Weiter: HFmax **171 bpm**
-gemessen statt der Annahme 180, Streckenregel für Maximalversuche (Abschnitt 6), zwei
-offene Punkte in Abschnitt 5 erledigt. Herleitung in `TRAININGSPLAN.md` Fassung 7,
+Zielwatt der Qualitätseinheiten steuert (Abschnitt 4.6). Dazu die Streckenregel für
+Maximalversuche in Abschnitt 6. Herleitung in `TRAININGSPLAN.md` Fassung 7,
 Abschnitt 9d.
 
 Fassung 4 (11.09.2026) brachte: Startzeit des Retests am 03.12. auf **14:00** festgelegt
@@ -277,11 +282,14 @@ vorgezogene Retest neu zu prüfen.
 - **Vorgezogener Retest — entschieden (Fassung 5): nein.** Der 5-min-Wert vom 17.09. hat
   die Gegenprobe überschritten; die Antwort darauf ist die Arbeits-FTP aus Abschnitt 4.6.
   Wieder offen wird der Punkt nur, wenn die eFTP bis Woche 8 über 215 W zieht.
-- **HFmax mindestens 171 bpm — erledigt (Fassung 5).** Gemessen am Ende des
-  5-min-Versuchs am 17.09., damit ist die Annahme von 180 bpm ersetzt. Als
-  fortgeschriebener Höchstwert zu führen: In intervals.icu steht Max HR auf 171, und jede
-  weitere Intervalleinheit kann den Wert anheben. Die Kennzahl „HF am Intervallende"
-  liegt damit bei ≥ 154 bpm.
+- **HFmax weiter unbekannt — und nicht gebraucht (Fassung 6).** Der höchste
+  aufgezeichnete Wert sind 171 bpm vom 17.09., erreicht am Ende eines streckenbedingt
+  abfallenden 5-min-Versuchs, also ohne Ausbelastung. Als HFmax gesetzt würde er jede
+  daran hängende Schwelle nach unten verzerren; die Annahme 180 ist ebenso unbelegt.
+  Deshalb: **Die Kennzahl „HF am Intervallende" ist ≥ 163 bpm (100 % LTHR)**, das Feld
+  „Max HR" bleibt bei 180 und steuert nichts, und aufgezeichnete Höchstwerte laufen in
+  die Testhistorie. Eine belastbare HFmax entstünde nur aus einer bewussten
+  Ausbelastung — nicht vorgesehen, weil keine Steuergröße davon abhängt.
 - **Dezembertermin — erledigt (Fassung 4).** Start 14:00 statt 16:21, Strecke bleibt,
   siehe Abschnitt 2. Offen ist nur, den Donnerstagnachmittag rechtzeitig freizuhalten.
 - **Runden erreichen intervals.icu nicht.** Die Lap-Marken des Edge 540 liegen in Garmin
@@ -289,8 +297,9 @@ vorgezogene Retest neu zu prüfen.
   Rundenansicht, Auswertung über Distanzgrenzen. Funktioniert exakt.
 - **Garmin zeigt eine geschätzte FTP von 229 W.** Automatische Schätzung, beruht auf der
   ungeprüften HFmax-Annahme. FTP in Garmin manuell auf 192 W setzen, sonst liegen die am
-  Edge angezeigten Zonen um 19 % daneben. Die gemessene HFmax von 171 stützt die
-  Schätzung nicht — sie liegt unter der Annahme, aus der die 229 W entstanden sind.
+  Edge angezeigten Zonen um 19 % daneben. Der aufgezeichnete Höchstwert von 171 bpm
+  stützt die Schätzung nicht — er liegt unter der Annahme, aus der die 229 W entstanden
+  sind.
 
 ---
 
@@ -301,7 +310,7 @@ Intervalleinheit.
 
 | Datum | Woche | Ø-Watt 5 min | % der aktuellen FTP | Bemerkung |
 |---|---|---|---|---|
-| **17.09.2026** | 5 | **254 W** | **132 %** | Gegenprobe überschritten. Ungleichmäßiges Pacing, Gefälle im Schlussteil — Wert ist eine Untergrenze. Max HF 171 |
+| **17.09.2026** | 5 | **254 W** | **132 %** | Gegenprobe überschritten. Ungleichmäßiges Pacing, Gefälle im Schlussteil — Wert ist eine Untergrenze. Höchster Puls der Einheit 171 |
 
 **Gegenprobe:** Liegt der Wert über 118 % der Test-FTP, also über **227 W**, war der Test
 zu niedrig. **Am 17.09. überschritten** — die Folge daraus steht in Abschnitt 4.6.
@@ -314,15 +323,18 @@ zu niedrig. **Am 17.09. überschritten** — die Folge daraus steht in Abschnitt
 | Anteil der Test-FTP 192 W | **132 %** |
 | W/kg (Sieben-Tage-Schnitt 95,5 kg) | 2,66 |
 | Ø HF letzte 60 s | 169,6 bpm |
-| **Max HF der Einheit** | **171 bpm** — neuer Höchstwert |
+| **Max HF der Einheit** | **171 bpm** — höchster bisher aufgezeichneter Wert, ohne Ausbelastung, keine HFmax |
 | Verlauf | Minute 0–3: 224 W · Minute 3–4,5: ~308 W · letzte 30 s: 252 W |
 
 Die anschließenden 4 × 4 min liefen mit 210 / 221 / 222 / 227 W, Ø HF am Intervallende
 154 / 159 / 157 / 161 bpm. Kein Leistungsabfall, die letzte Wiederholung war die
-stärkste — das Pacing war sauber, und die Vorgabe 207–221 W lag zu niedrig.
+stärkste — das Pacing war sauber, und die Vorgabe 207–221 W lag zu niedrig. Das
+Intervallkriterium **≥ 163 bpm** am Intervallende wurde knapp verfehlt.
 
-**Nebenprodukt:** Der höchste Herzfrequenzwert dieser Einheit ist die erste belastbare
-Schätzung der tatsächlichen HFmax. Am 17.09. sind das 171 bpm.
+**Kein Nebenprodukt HFmax.** Der höchste Herzfrequenzwert dieser Einheit — 171 bpm — ist
+eine Untergrenze und keine HFmax, weil der Versuch streckenbedingt abfiel und nicht
+ausbelastet endete. Er wird hier mitgeführt, speist aber keine Schwelle; siehe
+Abschnitt 5.
 
 ### Strecke für Maximalversuche — kein Gefälle im letzten Drittel
 
