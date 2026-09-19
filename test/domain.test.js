@@ -290,7 +290,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: 'd0869e04d715eb61', len: 183495 });
+      .toEqual({ hash: '23d0b93d15c3572f', len: 183985 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -314,7 +314,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '3a3d477def5acc84', len: 164202 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '9bfe268607524afa', len: 164650 });
   });
 });
 
@@ -1110,9 +1110,12 @@ describe('Leistungsbaender', () => {
   it('setzt die Grenzen aus FTP und plan.json', () => {
     const b = Z.powerBands(plan, th);
     const z2 = b.find(x => x.key === 'z2');
-    /* 56 % von 192 W. Die Obergrenze ist der Beginn von Z3 (76 %). */
-    expect(z2.min).toBe(Math.round(192 * 0.56));
-    expect(z2.max).toBe(Math.round(192 * 0.76));
+    /* Wie im Trainingsplan: Z2 106-144 W, Z3 beginnt bei 145. Gezaehlt wird
+       min <= v < max, also bis 144,99 W. */
+    expect(z2.min).toBe(106);
+    expect(z2.max).toBe(145);
+    expect(Z.wattText(plan, th, 'z2')).toBe('106–144 W');
+    expect(Z.wattText(plan, th, 'z5')).toBe('202–230 W');
     /* Die Ø-Leistung der Fahrt vom 12.09. liegt darin. */
     expect(139).toBeGreaterThanOrEqual(z2.min);
     expect(139).toBeLessThan(z2.max);

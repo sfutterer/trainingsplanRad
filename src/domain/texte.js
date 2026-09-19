@@ -262,6 +262,72 @@ export const T = {
   z2Passt: (anteil, basis) =>
     anteil + ' % in Z2, ' + basis + ' % in Z1–Z2. Passt.',
 
+  /* ---- Abschnitte einer Fahrt mit Leistungsmesser (seit 19.09.2026) ----
+
+     Die Zeit ueber Z2 steht getrennt nach Z2-Anteil und geplanten Bloecken -
+     eine Summe ueber beide ist die Zahl, die die Fehlwarnung erzeugt hat. */
+  z2Anteil: (min, ueberMin, ueberPct, watt, z2Max) =>
+    'Z2-Anteil: ' + min + ' min, davon ' + ueberMin + ' min über Z2 (' + ueberPct
+    + ' %, über ' + z2Max + ' W, 30-s-geglättet) · Ø ' + Math.round(watt) + ' W.',
+
+  z2Rahmen: (ein, aus) =>
+    'Nicht bewertet: ' + ein + ' min Einfahren und ' + aus + ' min Ausrollen; Stillstand ist herausgerechnet.',
+
+  entkopplungZ2: (ent, grenze, min) =>
+    'Decoupling Pw:HR im Z2-Anteil ' + (ent.prozent > 0 ? '+' : '') + zahl(ent.prozent, 1) + ' % über '
+    + min + ' min (' + Math.round(ent.erste.watt) + ' → ' + Math.round(ent.zweite.watt) + ' W bei '
+    + Math.round(ent.erste.hf) + ' → ' + Math.round(ent.zweite.hf) + ' bpm)'
+    + (ent.prozent <= grenze ? ' – bis ' + grenze + ' % trägt die Grundlage diese Dauer.'
+                             : ' – über ' + grenze + ' %: der Puls stieg bei gleicher Leistung, oberhalb der aeroben Schwelle gefahren.'),
+
+  entkopplungFehlt: min =>
+    'Decoupling nicht berechnet – der Z2-Anteil vor dem ersten Block ist ' + min
+    + ' min lang oder ohne Puls, für zwei belastbare Hälften zu wenig.',
+
+  z2ZuHartAbschnitt: gruende =>
+    'Zu hart für eine Grundlagenfahrt: ' + gruende.join('; ') + '. Das kostet die Erholung für den Qualitätstag.',
+
+  z2OhneBefund: (gruende, ent, grenze) =>
+    gruende.join('; ') + ' – aber das Decoupling liegt bei ' + (ent > 0 ? '+' : '') + zahl(ent, 1)
+    + ' %, bis ' + grenze + ' % gibt es keine Warnung (Plan-Punkt 28).',
+
+  z2UnterBand: (watt, min) =>
+    'Ø ' + Math.round(watt) + ' W im Z2-Anteil liegt unter dem Z2-Band ab ' + min + ' W – eher Z1 als Grundlage.',
+
+  bloecke: (n, min, watt, band, quelle) =>
+    'Geplante Blöcke: ' + n + ' × ' + min + ' min, Ø ' + Math.round(watt) + ' W (Ziel ' + band.min + '–'
+    + band.max + ' W, ' + band.prozent + ' der ' + (band.ftp.quelle === 'arbeit' ? 'Arbeits-FTP ' : 'Test-FTP ')
+    + band.ftp.watt + ' W)' + (quelle === 'fenster'
+      ? ' – keine passenden Runden, deshalb die stärksten ' + min + '-min-Fenster der zweiten Fahrthälfte.'
+      : ' – aus den Runden der Aufzeichnung.'),
+
+  blockEinzeln: (nr, watt, hf, kadenz) =>
+    'Block ' + nr + ': Ø ' + Math.round(watt) + ' W' + (hf ? ', ' + Math.round(hf) + ' bpm' : '')
+    + (kadenz ? ', ' + Math.round(kadenz) + ' rpm' : '') + '.',
+
+  blockZuWeich: (nr, watt, min) =>
+    'Block ' + nr + ' zu weich: Ø ' + Math.round(watt) + ' W, Ziel ab ' + min
+    + ' W. Mit Werten darunter ist der Block faktisch eine Z2-Fahrt mit anderem Etikett.',
+
+  blockZuHart: (nr, watt, max) =>
+    'Block ' + nr + ' zu hart: Ø ' + Math.round(watt) + ' W, Ziel bis ' + max + ' W.',
+
+  bloeckeFehlen: (reps, min) =>
+    'Geplant waren ' + reps + ' × ' + min + ' min Block – in der Aufzeichnung keine gefunden.',
+
+  pauseHart: (nr, watt, max) =>
+    'Pause nach Block ' + nr + ' mit Ø ' + Math.round(watt) + ' W über Z2 (' + max + ' W) – das Rollen dazwischen soll locker sein.',
+
+  kadenzZ2: (ist, ziel) =>
+    'Ø-Kadenz im Z2-Anteil ' + Math.round(ist) + ' rpm (Ziel ' + ziel + ', die Leistung hat Vorrang).',
+
+  kadenzZ2Niedrig: (ist, ziel) =>
+    'Ø-Kadenz im Z2-Anteil ' + Math.round(ist) + ' rpm, unter ' + ziel
+    + '. Einen Gang leichter, solange die Leistung im Z2-Band bleibt.',
+
+  kadenzBlock: (ist, ziel) =>
+    'Ø-Kadenz in den Blöcken ' + Math.round(ist) + ' rpm, Ziel ' + ziel + '.',
+
   z3Block: (ist, soll) =>
     'Z3-Blockzeit: ' + ist + ' min erreicht, geplant waren rund ' + soll + ' min.',
 

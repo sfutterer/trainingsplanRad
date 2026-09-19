@@ -72,6 +72,7 @@ export function createPlan(json){
     cogganBands: json.heartRateZones.cogganBands,
     cogganFromWeek: json.heartRateZones.cogganFromWeek,
     powerZones,
+    arbeitsFtp: json.arbeits_ftp || null,
     zoneKeys, zoneLabel,
 
     cadence: json.cadenceTargets,

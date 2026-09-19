@@ -39,7 +39,7 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { apiKey, plan, thresholds, startDate, store, testLog } from '../../../state/store.js';
-import { fetchStreams, spurMitHoehe, fetchWellness } from '../../../data/icu.js';
+import { fetchStreams, spurMitHoehe, fetchWellness, fetchIntervals } from '../../../data/icu.js';
 import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
 import { ladeWege, untergrundCode, untergrundAusCode } from '../../../data/osm.js';
 import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn,
@@ -47,6 +47,7 @@ import { baueAbschnitte, zeichenGruppen, streckenBilanz, untergrundAn,
 import { zoneSeconds, zonenBaender, hatLeistungsstrom,
          WATT_FENSTER_SEK, ROLLEN_WATT } from '../../../domain/zones.js';
 import { steadyMaske, driftAus, pulsMedian, lthrBestaetigt } from '../../../domain/steady.js';
+import { abschnittsRahmen, abschnittsAuswertung } from '../../../domain/abschnitte.js';
 import { isoDayLocal, toMidnight, weekNumberFor } from '../../../domain/week.js';
 import { isRide } from '../../../domain/analysis.js';
 import { verfassungAus } from '../../../domain/wellness.js';
@@ -164,7 +165,7 @@ export function useTagesauswertung(acts){
       for(const a of fahrten){
         let streams = null;
         try {
-          streams = await fetchStreams(key, a.id, 'heartrate,watts,time,latlng,altitude,velocity_smooth');
+          streams = await fetchStreams(key, a.id, 'heartrate,watts,time,latlng,altitude,velocity_smooth,cadence');
         } catch(e){
           fehlt.push('Streams zu „' + (a.name || a.type) + '" (' + e.message + ')');
         }
@@ -196,6 +197,28 @@ export function useTagesauswertung(acts){
           zonenById[a.id]._wattAusgefallen = quelle !== 'watt' && wk >= p.cogganFromWeek;
           if(quelle !== 'watt') pulsVorbehalte(zonenById[a.id], bands, hr, zeit, dauer, tempo,
                                                hatWatt, th, testLog.value);
+        }
+
+        /* Mit Leistung wird die Fahrt nach Abschnitten bewertet - Einfahren,
+           Bloecke, Pausen, Z2-Anteil, Ausrollen. Die Runden braucht es nur in
+           einer Blockwoche; sonst gibt es keine Bloecke zu erkennen, und der
+           Abruf waere umsonst. Faellt er aus, sucht abschnitte.js die Bloecke
+           selbst. */
+        if(quelle === 'watt' && zonenById[a.id] && zeit){
+          const istSamstag = new Date(a.start_date_local).getDay() === 6;
+          const rahmen = abschnittsRahmen(p, th, wk, istSamstag);
+          let runden = null;
+          if(rahmen && rahmen.bloeckeSoll){
+            try { runden = await fetchIntervals(key, a.id); }
+            catch(e){ fehlt.push('Runden zu „' + (a.name || a.type) + '" (' + e.message + ')'); }
+            if(weg) return;
+          }
+          const kad = hol('cadence');
+          const abschnitte = abschnittsAuswertung(rahmen, {
+            zeit, watt: watt.data, puls: hr && hr.data, tempoMs: tempo && tempo.data,
+            kadenz: kad && kad.data
+          }, runden);
+          if(abschnitte) zonenById[a.id]._abschnitte = abschnitte;
         }
 
         /* Die Form des latlng-Streams liegt nicht fest - das Umrechnen auf

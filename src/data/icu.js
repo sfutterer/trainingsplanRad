@@ -55,6 +55,14 @@ export function fetchStreams(key, id, types){
   return icuFetch('/activity/' + id + '/streams.json?types=' + (types || 'heartrate,time'), key);
 }
 
+/* Die Runden einer Aktivitaet, wie intervals.icu sie fuehrt - Runden vom
+   Geraet oder aus einem strukturierten Workout. Die Auswertung erkennt daran
+   die Samstagsbloecke; ohne Runden sucht sie selbst. */
+export async function fetchIntervals(key, id){
+  const r = await icuFetch('/activity/' + id + '/intervals', key);
+  return r && Array.isArray(r.icu_intervals) ? r.icu_intervals : [];
+}
+
 export function fetchWellness(key, fromIso, toIso){
   return icuFetch('/athlete/0/wellness?oldest=' + fromIso + '&newest=' + toIso, key);
 }

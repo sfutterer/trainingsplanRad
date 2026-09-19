@@ -24,6 +24,7 @@ import { isoDayLocal } from './week.js';
 import { T } from './texte.js';
 import { stundenText } from './zeit.js';
 import { STEADY, GRENZBAND_BPM } from './steady.js';
+import { ABSCHNITT } from './abschnitte.js';
 
 export function isRide(type){
   return /ride|cycl|bike|biking|spinning/i.test(type || '');
@@ -498,10 +499,113 @@ function mergeZones(plan, rides, zonesById){
   return merged;
 }
 
+/* ---- Grundlagenfahrt mit Leistungsmesser, nach Abschnitten ----
+
+   Seit dem 19.09.2026. Die Zahlen kommen aus abschnitte.js und haengen an
+   den Zonen der Fahrt als _abschnitte - dort steht auch, warum die Fahrt
+   vorher zerlegt wird. Hier steht nur das Urteil:
+
+     zu hart    nur, wenn das Decoupling des Z2-Anteils ueber 5 % liegt.
+                Laesst es sich nicht rechnen, entscheiden Ø-Leistung des
+                Z2-Anteils ueber der Z2-Obergrenze oder mehr als 10 % seiner
+                Zeit darueber. Liegt es bei hoechstens 5 %, gibt es keine
+                Warnung, was die Zaehlung auch sagt - Plan-Punkt 28. Die
+                Gruende stehen dann trotzdem da, als Hinweis.
+     Bloecke    gegen ihr eigenes Ziel aus der Arbeits-FTP, nie als
+                Ueberschreitung von Z2. Zu weich oder zu hart ist ein Hinweis
+                und setzt den Tag nicht herab.
+     Pause      nur ein Hinweis, wenn sie im Schnitt ueber Z2 lag.
+     Kadenz     auf dem Cube in Z2 gegen die Untergrenze 80 rpm - darunter
+                ein Hinweis, unter 85 kein Fehler (Fassung 8). */
+const minuten = s => Math.round(s / 60);
+
+function abschnittNotes(row, a){
+  const notes = [];
+  const z2 = a.z2Band;
+  const anteil = a.z2.sek > 0 ? a.z2.ueberSek / a.z2.sek : 0;
+  const gruende = [];
+  if(a.z2.watt > z2.max){
+    gruende.push('Ø ' + Math.round(a.z2.watt) + ' W im Z2-Anteil über ' + z2.max + ' W');
+  }
+  if(anteil > ABSCHNITT.ueberZ2Anteil){
+    gruende.push(pct(a.z2.ueberSek, a.z2.sek) + ' % des Z2-Anteils über Z2, zulässig sind '
+                 + Math.round(ABSCHNITT.ueberZ2Anteil * 100) + ' %');
+  }
+  const ent = a.entkopplung;
+  const entHoch = !!ent && ent.prozent > ENTKOPPLUNG_GUT;
+  const zuHart = entHoch || (!ent && gruende.length > 0);
+
+  notes.push({ kind: zuHart ? 'bad' : gruende.length ? 'info' : 'good',
+               text: T.z2Anteil(minuten(a.z2.sek), minuten(a.z2.ueberSek), pct(a.z2.ueberSek, a.z2.sek),
+                                a.z2.watt, z2.max) });
+  notes.push(ent
+    ? { kind: entHoch ? 'bad' : 'good', text: T.entkopplungZ2(ent, ENTKOPPLUNG_GUT, minuten(ent.sek)) }
+    : { kind: 'info', text: T.entkopplungFehlt(minuten(a.driftSek)) });
+
+  if(zuHart){
+    downgrade(row, 'zu hart');
+    const alle = entHoch
+      ? ['Decoupling ' + (ent.prozent > 0 ? '+' : '') + String(Math.round(ent.prozent * 10) / 10).replace('.', ',')
+         + ' % über ' + ENTKOPPLUNG_GUT + ' %'].concat(gruende)
+      : gruende;
+    notes.push({ kind: 'bad', text: T.z2ZuHartAbschnitt(alle) });
+  } else if(gruende.length){
+    notes.push({ kind: 'info', text: T.z2OhneBefund(gruende, ent.prozent, ENTKOPPLUNG_GUT) });
+  } else if(a.z2.watt < z2.min){
+    notes.push({ kind: 'info', text: T.z2UnterBand(a.z2.watt, z2.min) });
+  }
+
+  const soll = a.bloeckeSoll;
+  if(soll){
+    if(!a.bloecke.length || !a.blockBand){
+      notes.push({ kind: '', text: T.bloeckeFehlen(soll.reps, soll.minutes) });
+    } else {
+      const sek = a.bloecke.reduce((n, b) => n + b.sek, 0);
+      const watt = a.bloecke.reduce((n, b) => n + (b.watt || 0) * b.sek, 0) / sek;
+      const bb = a.blockBand;
+      const ausserhalb = a.bloecke.filter(b => b.watt < bb.min || b.watt > bb.max);
+      notes.push({ kind: ausserhalb.length ? '' : 'good',
+                   text: T.bloecke(a.bloecke.length, minuten(sek / a.bloecke.length), watt, bb,
+                                   a.blockQuelle) });
+      notes.push({ kind: 'info',
+                   text: a.bloecke.map((b, i) => T.blockEinzeln(i + 1, b.watt, b.hf, b.kadenz)).join(' ') });
+      a.bloecke.forEach((b, i) => {
+        if(b.watt < bb.min) notes.push({ kind: '', text: T.blockZuWeich(i + 1, b.watt, bb.min) });
+        else if(b.watt > bb.max) notes.push({ kind: '', text: T.blockZuHart(i + 1, b.watt, bb.max) });
+      });
+      const kad = a.bloecke.reduce((n, b) => n + (b.kadenz || 0) * b.sek, 0) / sek;
+      const kz = a.kadenzZiel;
+      if(kz && kz.block && kad > 0 && (kad < kz.blockMin || kad > kz.blockMax)){
+        notes.push({ kind: 'info', text: T.kadenzBlock(kad, kz.block) });
+      }
+    }
+    a.pausen.forEach((p, i) => {
+      if(p.watt > z2.max) notes.push({ kind: 'info', text: T.pauseHart(i + 1, p.watt, z2.max) });
+    });
+  }
+
+  const kz = a.kadenzZiel;
+  if(kz && kz.z2 && a.z2.kadenz > 0){
+    notes.push(a.z2.kadenz < kz.z2Min
+      ? { kind: '', text: T.kadenzZ2Niedrig(a.z2.kadenz, kz.z2Min + ' rpm') }
+      : { kind: 'good', text: T.kadenzZ2(a.z2.kadenz, kz.z2) });
+  }
+  notes.push({ kind: 'info', text: T.z2Rahmen(minuten(a.einfahrenSek), minuten(a.ausrollenSek)) });
+  return notes;
+}
+
+/* Hat eine der Fahrten des Tages eine Auswertung nach Abschnitten? Dann
+   stehen die Bloecke an der Fahrt, und die Tageszeile mit der Z3-Zeit
+   entfaellt - sie zaehlte Z3 ueber die ganze Fahrt, Kuppen eingeschlossen. */
+function mitAbschnitten(teile){
+  return teile.some(f => f.zones && f.zones._abschnitte);
+}
+
 /* Die Zonen einer Grundlagenfahrt. Auf ihr ist schon Z3 zu hart; am Samstag
    sind in den Wochen 6, 10 und 14 Z3-Bloecke geplant, deren Anteil ist
    zusaetzlich erlaubt. */
 function z2Notes(row, f, t){
+  if(f.zones._abschnitte) return abschnittNotes(row, f.zones._abschnitte);
   const zones = anteilsZonen(f.zones);
   const notes = [];
   const total = zones._total;
@@ -773,7 +877,7 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
     row.zoneShare = pct(row.zones[t.zone] || 0, row.zones._total);
     if(!t.commute){
       row.notes.push(...(t.zone === 'z2'
-        ? z3BlockNote(row.zones, t)
+        ? (mitAbschnitten(teile) ? [] : z3BlockNote(row.zones, t))
         : intervallNotes(row, row.zones, t)));
     }
   }

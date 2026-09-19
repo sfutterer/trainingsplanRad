@@ -10,7 +10,17 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 7, Stand 17.09.2026.** Der 5-Minuten-Referenzwert vom 17.09. liegt bei
+> **Fassung 8, Stand 19.09.2026.** Der Gang-Test vom 19.09. ist ausgewertet: Gang 7 bei
+> 89 rpm liefert nur Ø 107 W, also den unteren Rand von Z2 statt ~139 W. **Auf dem Cube hat in Z2 die
+> Leistung Vorrang vor der Kadenz — Zielkadenz 80–85 rpm statt 85–90 rpm**, Arbeitspunkt
+> bleibt Gang 8 bei 80–82 rpm, rund 139 W. Kadenzarbeit über 85 rpm läuft auf dem
+> Trekkingrad und in der Kadenzpyramide. Begründung in Abschnitt 9e.
+> **Außerdem neu: Die Analyse bewertet Radeinheiten mit Leistungsmesser nach Abschnitten**
+> (Einfahren, geplante Blöcke, Blockpause, Z2-Anteil, Ausrollen) statt jede Sekunde über
+> 144 W gegen die Fahrt zu zählen. „Zu hart" gibt es nur noch über das Decoupling des
+> Z2-Anteils (App-Anforderung 30, Abschnitt 7).
+>
+> Fassung 7 (17.09.2026) brachte: Der 5-Minuten-Referenzwert vom 17.09. liegt bei
 > **254 W = 132 % der Test-FTP** und überschreitet die 118-%-Gegenprobe deutlich. Die
 > FTP von 192 W ist damit belegt zu niedrig. Entscheidung: **kein vorgezogener Retest**,
 > stattdessen wird eine **Arbeits-FTP von 206 W** eingeführt, die ausschließlich die
@@ -40,7 +50,7 @@ Plan muss dieses Dokument mitgezogen werden.
 > danach wird ein neuer Plan geschrieben.
 >
 > Begründungen der Änderungen in Abschnitt 9 (Fassung 3), 9a (Fassung 4),
-> 9b (Fassung 5), 9c (Fassung 6) und 9d (Fassung 7).
+> 9b (Fassung 5), 9c (Fassung 6), 9d (Fassung 7) und 9e (Fassung 8).
 
 ---
 
@@ -440,7 +450,7 @@ der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band
 | Do Intervalle (bis W4) | Atmung, HF ab Minute 3 | — |
 | Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **222–237 W** für die 3 × 3 min | HF nur am Intervallende |
 | Do Schwelle (Phase 4) | **185–196 W** | HF sollte in Z4 einpendeln |
-| Sa Basis | Watt 106–144, Arbeitspunkt ~139 | Sprechtest, Decoupling nach der Fahrt |
+| Sa Basis | Watt 106–144, Arbeitspunkt ~139 (Gang 8, 80–82 rpm) | Sprechtest, Decoupling nach der Fahrt |
 | Sa Blöcke | **165–181 W** | HF steigt langsam, ist normal |
 | Fr/So optional | HF unter Z2-Obergrenze | — |
 
@@ -454,26 +464,33 @@ entstehen nur an Do und Sa auf dem Cube Nuroad.
 
 | Situation | Ziel |
 |---|---|
-| Grundlage Z2 | 85–90 rpm |
+| Grundlage Z2, Cube (Do/Sa, Wattvorgabe) | **80–85 rpm** — die Leistung hat Vorrang |
+| Grundlage Z2, Trekkingrad (Di/Mi, keine Wattvorgabe) | 85–90 rpm |
 | Intervalle Z5 | 95–100 rpm |
 | Schwellenblöcke | 85–90 rpm |
 | Anstieg | nicht unter 70 rpm, notfalls Übersetzung anpassen |
 
 Liegt die selbstgewählte Kadenz deutlich darunter (60–75 ist bei Einsteigern normal),
-in 5er-Schritten über vier bis sechs Wochen herantasten, nicht erzwingen.
+in 5er-Schritten über vier bis sechs Wochen herantasten, nicht erzwingen. **Auf dem Cube
+in Z2 gilt die Untergrenze 80 rpm** — eine Kadenz unter 85 ist dort gewollt, kein
+Technikfehler (siehe unten).
 
-**Der Kadenz-Gang-Konflikt im Flachen (neu in Fassung 7).** Der 1×12-Antriebsstrang des
+**Der Kadenz-Gang-Konflikt im Flachen (Fassung 7, entschieden in Fassung 8).** Der 1×12-Antriebsstrang des
 Cube springt zwischen benachbarten Gängen um bis zu 50 % in der Übersetzung. Der belegte
 Z2-Arbeitspunkt ist **Gang 8 bei 80–82 rpm, rund 139 W**. Dieselbe Übersetzung mit
 85–90 rpm ergibt überschlägig 155–165 W und damit Z3 — im festen Gang sind Kadenz und
 Leistung gekoppelt, mehr Umdrehungen heißen mehr Watt.
 
-- **Auf der Z2-Fahrt hat die Leistung Vorrang vor der Kadenz.** 80–82 rpm sind dort kein
-  Fehler.
-- **Lösungsansatz:** einen Gang leichter bei höherer Kadenz. **Zu prüfen am Sa 19.09.**
-  in der ersten Fahrthälfte: Gang 7, 88–92 rpm, drei Minuten gleichmäßig, dann den
-  Rundenschnitt gegen 139 W halten. Liegt er bei 115–145 W, ist das der neue
-  Arbeitspunkt; liegt er bei 100–110 W, ist der Sprung zu groß und Gang 8 bleibt.
+- **Auf der Z2-Fahrt hat die Leistung Vorrang vor der Kadenz.** Zielkadenz auf dem Cube
+  ist **80–85 rpm**. Lieber unter 85 rpm treten und die Zielleistung treffen, als mit
+  85–90 rpm in Z3 zu rutschen.
+- **Geprüft am Sa 19.09. (Gang-Test):** Gang 7 mit 89 rpm (Median), 3,4 min gleichmäßig,
+  ergab **Ø 107 W** (Median 112 W) gegen den Arbeitspunkt 139 W. Das liegt im
+  Ablehnungsband 100–110 W: Der Sprung zwischen Gang 7 und 8 ist zu groß, einen
+  Zwischengang für ~139 W bei höherer Kadenz gibt es im Flachen nicht. **Gang 8 bei
+  80–82 rpm bleibt der Z2-Arbeitspunkt.**
+- **Bei Gegenwind oder Rückenwind** verschiebt sich der passende Gang. Die Regel bleibt
+  dieselbe: den Gang wählen, in dem die Leistung bei 80–85 rpm im Z2-Band liegt.
 - **Der Ort für reine Kadenzarbeit** ist die Kadenzpyramide am Mittwoch im leichten Gang
   sowie die Pendelfahrten auf dem Trekkingrad, wo ohnehin keine Wattvorgabe gilt.
 
@@ -1469,6 +1486,43 @@ Aus Fassung 7 (17.09.2026):
     (Trekkingrad, keine Watt) bleibt die Pulsprüfung die einzige Quelle** — fehlende
     Leistungsdaten dort dürfen nicht als Fehler gemeldet werden.
 
+Aus Fassung 8 (19.09.2026):
+
+29. **Kadenzziel Z2 nach Rad trennen.** Für Z2 auf dem Cube (Do, Sa) zeigt die App
+    **80–85 rpm** und warnt nicht bei einer Kadenz unter 85, solange die Leistung im
+    Z2-Band liegt. Für Di und Mi (Trekkingrad) bleibt 85–90 rpm als Richtwert ohne
+    Prüfung, weil dort keine Kadenzdaten ankommen. Die Kennzahl „Ø-Kadenz" in der
+    Analyse prüft Z2 gegen 80 rpm als Untergrenze.
+30. **Analyse der Radeinheiten nach Abschnitten.** Anlass: Sa 19.09., Decoupling im
+    Z2-Teil −1,2 %, beide Blöcke im Ziel (172 / 171 W) — und trotzdem „zu hart", weil jede
+    Sekunde über 144 W zählte, geplante Blöcke und Kuppen im Gelände gleichermaßen.
+    Gilt für Fahrten mit Leistungsmesser (Cube, Do/Sa); Di/Mi auf dem Trekkingrad bleiben
+    bei der Pulsprüfung (Z2 ≤ 135 bpm), fehlende Watt- und Kadenzwerte sind dort kein Fehler.
+    - **Bezugswerte:** Z2-Band 106–144 W aus der **Test-FTP**; Blockziel Samstag
+      165–181 W (80–88 %) und Do-Intervalle 222–237 W (108–115 %) aus der **Arbeits-FTP**.
+    - **Glätten:** Zonenzeiten auf dem 30-s-Gleitmittel der Leistung. Stillstand
+      (0 W **und** unter 2 km/h) fällt aus allen Rechnungen heraus.
+    - **Abschnitte, in dieser Reihenfolge:** erste 15 min Einfahren und letzte 10 min
+      Ausrollen werden nicht bewertet. In Blockwochen (6, 9, 12) sind Runden aus
+      `GET /activity/{id}/intervals` mit 10–14 min und Ø ≥ 160 W die Blöcke; fehlen sie,
+      die zwei stärksten nicht überlappenden 12-min-Fenster der zweiten Fahrthälfte. Die
+      8 min nach jedem Block außer dem letzten sind Blockpause. Der Rest ist der Z2-Anteil.
+    - **Bewertung:** Blöcke nur gegen 165–181 W, nie als Z3/Z4-Überschreitung — Hinweis
+      „zu weich" / „zu hart" am Block. Blockpause: Hinweis nur bei Ø > 144 W. Z2-Anteil:
+      Zeit über 144 W (geglättet) wird gezählt.
+    - **„Zu hart" für die Einheit** nur bei Decoupling Pw:HR des Z2-Anteils > 5 %; lässt es
+      sich nicht rechnen, bei Ø-Leistung des Z2-Anteils > 144 W oder mehr als 10 % seiner
+      Zeit über 144 W. **Decoupling ≤ 5 % heißt: keine Warnung** (Punkt 28), die übrigen
+      Befunde stehen dann nur als Hinweis da.
+    - **Decoupling** nur über den Z2-Anteil ab Minute 15 bis zum Beginn des ersten Blocks
+      (ohne Blöcke: bis zum Ausrollen), Hälften nach Bewegungszeit:
+      (P/HF erste Hälfte − P/HF zweite Hälfte) ÷ P/HF erste Hälfte × 100.
+    - **Kadenz (nur Cube):** Z2-Anteil Ziel 80–85 rpm, Hinweis nur unter 80 rpm; Blöcke
+      Ziel 85–90 rpm.
+    - **Anzeige:** „Z2-Anteil: X min, davon Y min über Z2" und „Geplante Blöcke: 2 × 12 min,
+      Ø ___ W (Ziel 165–181)" getrennt. Keine Gesamtsumme „Zeit über Z2" mehr als
+      Warngrundlage.
+
 **Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
 gehört nicht in `plan.json`.
 
@@ -1651,11 +1705,18 @@ Werkzeugliste des Konnektors zugrunde legen.
 - **Dauer** gegen den Sollwert, Toleranz 15 %.
 - **Wochensumme gegen den Deckel.** Überschreitung um mehr als 10 % ist eine Warnung.
   Das ist in Fassung 3 neu und ersetzt die Ramp-Rate als Frühwarnung.
-- **Zonenverteilung** aus dem Puls-Stream gegen die Bänder aus Abschnitt 1.
+- **Zonenverteilung** aus dem Puls-Stream gegen die Bänder aus Abschnitt 1; ab Woche 5
+  auf Fahrten mit Leistungsmesser aus dem 30-s-geglätteten Leistungsstrom, und dort
+  **nach Abschnitten** bewertet (App-Anforderung 30).
 - **Z2-Tage:** Warnung bei mehr als 15 % der Zeit in Z4/Z5. Warnung auch, wenn unter
   40 % in Z2 und unter 75 % in Z1–Z2 liegen.
-- **Samstag:** in den Wochen 6, 9, 12 zusätzlich die erreichte Z3-Blockzeit gegen den
-  Sollwert. Sonst gilt der Samstag als Z2-Tag.
+- **Samstag:** in den Wochen 6, 9, 12 werden die Blöcke erkannt (Runden, sonst die zwei
+  stärksten 12-min-Fenster der zweiten Hälfte) und ihre Ø-Leistung gegen 165–181 W
+  geprüft — getrennt vom Z2-Anteil. Sonst gilt der Samstag als Z2-Tag.
+- **„Zu hart" an Z2-Tagen mit Leistungsmesser** nur, wenn das Decoupling des Z2-Anteils
+  über 5 % liegt (ohne Decoupling: Ø-Leistung des Z2-Anteils über 144 W oder mehr als
+  10 % seiner Zeit darüber). Die Regel zu Z4/Z5-Anteilen oben gilt nur noch für Fahrten
+  ohne Leistungsmesser.
 - **Donnerstag:** harte Zeit gegen `Wiederholungen × Minuten`. Bis Woche 4 zählt die
   Zone **unter** der Zielzone mit, weil der Puls dem Tritt nachhinkt. **Ab Woche 5 wird
   stattdessen die Zeit in der Watt-Zone gezählt.**
@@ -1669,12 +1730,12 @@ Werkzeugliste des Konnektors zugrunde legen.
 
 | Kennzahl | Einheit | Zielwert | Aussage |
 |---|---|---|---|
-| Decoupling Pw:HR | Samstag, Z2-Anteil | ≤ 5 % | Grundlage trägt diese Dauer |
+| Decoupling Pw:HR | Samstag, Z2-Anteil ab Minute 15 bis zum ersten Block | ≤ 5 % | Grundlage trägt diese Dauer; einziges Kriterium für „zu hart" |
 | Efficiency Factor NP ÷ Ø-HF | Di und Sa | Trend steigend | aerobe Basis wächst |
 | Leistungsabfall Wdh. 1 → letzte | Donnerstag | < 5 % | Pacing sauber |
 | Erste Wdh. über Zielband | Donnerstag | Warnung ab > 5 % darüber | zu hart gestartet |
 | HF am Intervallende | Donnerstag | **≥ 163 bpm** in den letzten 60 s, also ≥ 100 % LTHR | Reiz erreicht. Bezug ist die LTHR, nicht die unbekannte HFmax |
-| Ø-Kadenz | Do und Sa (Cube) | ≥ 85 rpm in Z2, siehe Kadenz-Gang-Konflikt in Abschnitt 1 | Technik |
+| Ø-Kadenz | Do und Sa (Cube) | **80–85 rpm in Z2** (Leistung hat Vorrang), 85–90 rpm in Schwellen- und Samstagsblöcken, siehe Kadenz-Gang-Konflikt in Abschnitt 1 | Technik |
 | Kadenzabfall im Intervall | Donnerstag | < 8 rpm | Ermüdung, Gang zu schwer |
 | Zeit in Watt-Z2 | Woche | Trend Richtung 300 min | Grundlagendosis. **Nur Do und Sa liefern Watt**; Di und Mi laufen auf dem Trekkingrad und sind über den Puls-Stream zu zählen |
 | Wochensumme gegen Deckel | Woche | ≤ Soll + 10 % | Überlastungsschutz |
@@ -1957,6 +2018,40 @@ Trainingslast-Rechnung spürbar danebenliegt.
 - **Die Vorgabe „Atmung sticht die Zahl".** Sie gilt für die Arbeits-FTP genauso wie
   zuvor für die Test-FTP — die 206 W sind eine begründete Schätzung, kein Messwert.
 - **Der Sprechtest als oberste Instanz für Z2.**
+
+---
+
+## 9e. Änderungen gegenüber Fassung 7
+
+### Anlass
+
+Der Prüfauftrag aus Fassung 7 (Abschnitt 1, Kadenz-Gang-Konflikt) wurde auf der
+Samstagsausfahrt am 19.09. erledigt.
+
+| Größe | Wert | Schwelle |
+|---|---|---|
+| Gang 7, Kadenz (Median) | **89 rpm** | Vorgabe 88–92 rpm |
+| Gang 7, Leistung | **Ø 107 W**, Median 112 W | neuer Arbeitspunkt ab 115 W, Ablehnung bei 100–110 W |
+| Referenz Gang 8 | ~139 W bei 80–82 rpm | Z2-Band 106–144 W |
+
+### Die Änderung
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **Zielkadenz Z2 auf dem Cube 80–85 rpm** statt 85–90 rpm | Gang 7 liefert bei Zielkadenz nur ~107 W und damit den unteren Rand von Z2, Gang 8 bei 85–90 rpm ergibt Z3. Beide Ziele zugleich sind im Flachen nicht erreichbar, die Leistung hat Vorrang |
+| 2 | **Gang 8 bei 80–82 rpm bleibt Z2-Arbeitspunkt** | Belegt durch Decoupling −0,9 % (12.09.) und −1,2 % (19.09., Z2-Anteil) |
+| 3 | **Kadenzziel nach Rad getrennt** | Auf dem Trekkingrad gibt es keine Wattvorgabe, dort bleibt 85–90 rpm als Richtwert und die Kadenzarbeit sinnvoll |
+| 4 | **Kennzahl Ø-Kadenz in Abschnitt 7 angepasst:** Z2 auf dem Cube gegen 80 rpm Untergrenze | Sonst meldet die Analyse jede korrekt gefahrene Z2-Einheit als Technikfehler |
+| 5 | **Analyse nach Abschnitten** (App-Anforderung 30): Einfahren und Ausrollen ohne Bewertung, Blöcke gegen ihr eigenes Ziel, „zu hart" nur über das Decoupling des Z2-Anteils | Die Ausfahrt vom 19.09. wurde mit −1,2 % Decoupling und zwei Blöcken im Ziel als „zu hart" gemeldet, weil Blöcke und Geländespitzen in dieselbe Zählung liefen |
+
+### Bewusst **nicht** geändert
+
+- **Kadenzziele für Intervalle (95–100 rpm) und Blöcke (85–90 rpm).** In den
+  Samstagsblöcken am 19.09. lag die Kadenz bei ~87 rpm und 172 W — dort passt der Gang.
+- **Die Untergrenze 70 rpm am Anstieg.**
+- **Die Kadenzpyramide am Mittwoch** als Ort für reine Kadenzarbeit.
+- **Kein Kraftausdauertraining mit niedriger Kadenz.** 80–85 rpm sind kein
+  Kraftausdauerreiz, die Regel gegen 50–60 rpm bleibt unberührt.
 
 ---
 

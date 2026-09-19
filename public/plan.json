@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "planName": "Trainingsplan Radfahren – Fassung 5",
+  "planName": "Trainingsplan Radfahren – Fassung 8",
   "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
     "bearbeiten": "Zahlen und Texte hier aendern und die Datei speichern. Den Service Worker erzeugt vite-plugin-pwa beim Bauen; er nimmt plan.json selbsttaetig in den Precache. Eine Fassungsnummer von Hand gibt es nicht mehr.",
@@ -23,7 +23,9 @@
     "wiederholungenInWeeks": "Das tage.do-Objekt steht in mehreren Wochen woertlich gleich da. Das ist Absicht und kein Copy-Paste-Rest: jede Woche bleibt fuer sich lesbar, und nichts kann sich gegeneinander verschieben.",
     "unbekannteSchluessel": "Die Pruefung meldet Schluessel der obersten Ebene, die sie nicht kennt. Ein Tippfehler in einem optionalen Feld wurde vorher stillschweigend verworfen, und die App rechnete mit dem Standardwert weiter - das widerspricht dem Grundsatz, lieber gar keine Zahl zu zeigen als eine falsche.",
     "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach.",
-    "migration": "Ein Plan der Fassung 2 wird beim Laden auf Fassung 3 gehoben: die Wochentage im Feldnamen (tuesdayMinutes, saturdayBlocks …) werden zu einem Objekt je Tag unter weeks[].tage."
+    "migration": "Ein Plan der Fassung 2 wird beim Laden auf Fassung 3 gehoben: die Wochentage im Feldnamen (tuesdayMinutes, saturdayBlocks …) werden zu einem Objekt je Tag unter weeks[].tage.",
+    "arbeitsFtp": "arbeits_ftp ist die Arbeits-FTP aus Fassung 7 des Trainingsplans. Sie steuert ausschliesslich die Zielwatt der Qualitaetseinheiten: die Prozentangaben der Donnerstage (power, effort) und saturdayRide.blockPower. Zonen, Zonenanzeige und Auswertung gegen Z2 rechnen weiter mit der Test-FTP aus dem Schwellentest. Fehlt das Feld, gilt die Test-FTP. seit und herkunft stehen an jeder Zielwattangabe, bis nennt den Retest, der sie abloest.",
+    "kadenz": "cadenceTargets.byZone gilt fuer das Cube (Do, Sa) - dort hat in Z2 die Leistung Vorrang, deshalb 80-85 rpm (Fassung 8). cadenceTargets.trekkingrad ueberschreibt einzelne Zonen fuer Di und Mi auf dem Trekkingrad, wo keine Wattvorgabe gilt und keine Kadenzdaten ankommen."
   },
   "recoveryWeeks": [
     4,
@@ -1058,14 +1060,23 @@
       "maxFactor": 1.2
     }
   },
+  "arbeits_ftp": {
+    "watt": 206,
+    "seit": "2026-09-17",
+    "bis": "2026-10-22",
+    "herkunft": "5-min-Wert 254 W am 17.09. (132 % der Test-FTP) und eFTP 206 W nach derselben Einheit"
+  },
   "cadenceTargets": {
     "fromWeek": 3,
     "byZone": {
       "z1": null,
-      "z2": "85–90 rpm",
+      "z2": "80–85 rpm",
       "z3": "85–90 rpm",
       "z4": "85–90 rpm",
       "z5": "95–100 rpm"
+    },
+    "trekkingrad": {
+      "z2": "85–90 rpm"
     }
   },
   "speedEstimate": {
@@ -1076,7 +1087,12 @@
   },
   "saturdayRide": {
     "warmupMinutes": 15,
-    "cooldownMinutes": 10
+    "cooldownMinutes": 10,
+    "blockPower": {
+      "minFactor": 0.8,
+      "maxFactor": 0.88
+    },
+    "blockCadence": "85–90 rpm"
   },
   "fridayOptional": {
     "minMinutes": 30,

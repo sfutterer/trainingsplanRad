@@ -411,7 +411,7 @@ export { PV_TEXT_KEYS };
 const PV_TOP_KEYS = [
   'schemaVersion', 'planName', 'documentation',
   'recoveryWeeks', 'weeklyVolumeCapPercent', 'phaseNames', 'weeks', 'winterBlock',
-  'heartRateZones', 'powerZones', 'cadenceTargets', 'speedEstimate',
+  'heartRateZones', 'powerZones', 'arbeits_ftp', 'cadenceTargets', 'speedEstimate',
   'saturdayRide', 'fridayOptional', 'intervalTimer', 'thresholdTest', 'testTaper',
   'coreCircuit', 'legBlock', 'mobilityFlow', 'coordination', 'boneStimulus', 'texts'
 ];
@@ -541,6 +541,21 @@ export function planValidate(p){
   if(pvObj(err, p.cadenceTargets, 'cadenceTargets')){
     pvNum(err, p.cadenceTargets.fromWeek, 'cadenceTargets.fromWeek', {min:1, int:true});
     pvObj(err, p.cadenceTargets.byZone, 'cadenceTargets.byZone');
+    /* Fassung 8: Z2 auf dem Trekkingrad hat ein eigenes Kadenzziel. Optional -
+       fehlt es, gilt byZone auch dort. */
+    if(p.cadenceTargets.trekkingrad != null){
+      pvObj(err, p.cadenceTargets.trekkingrad, 'cadenceTargets.trekkingrad');
+    }
+  }
+
+  /* Die Arbeits-FTP aus Fassung 7. Optional: fehlt sie, gilt die Test-FTP, und
+     die App zeigt die alten Zahlen statt keiner. Steht sie da, dann mit Datum
+     und Herkunft - eine Zielwattangabe ohne ihre Grundlage ist in vier Wochen
+     nicht mehr nachzuvollziehen. */
+  if(p.arbeits_ftp != null && pvObj(err, p.arbeits_ftp, 'arbeits_ftp')){
+    pvNum(err, p.arbeits_ftp.watt, 'arbeits_ftp.watt', {min:1});
+    pvStr(err, p.arbeits_ftp.seit, 'arbeits_ftp.seit');
+    pvStr(err, p.arbeits_ftp.herkunft, 'arbeits_ftp.herkunft');
   }
 
   if(pvObj(err, p.speedEstimate, 'speedEstimate')){
@@ -553,6 +568,15 @@ export function planValidate(p){
   if(pvObj(err, p.saturdayRide, 'saturdayRide')){
     pvNum(err, p.saturdayRide.warmupMinutes, 'saturdayRide.warmupMinutes', {min:0});
     pvNum(err, p.saturdayRide.cooldownMinutes, 'saturdayRide.cooldownMinutes', {min:0});
+    const bp = p.saturdayRide.blockPower;
+    if(bp != null && pvObj(err, bp, 'saturdayRide.blockPower')){
+      pvNum(err, bp.minFactor, 'saturdayRide.blockPower.minFactor', {min:0});
+      pvNum(err, bp.maxFactor, 'saturdayRide.blockPower.maxFactor', {min:0});
+      if(bp.maxFactor < bp.minFactor){
+        err.push('saturdayRide.blockPower: maxFactor liegt unter minFactor.');
+      }
+    }
+    if(p.saturdayRide.blockCadence != null) pvStr(err, p.saturdayRide.blockCadence, 'saturdayRide.blockCadence');
   }
 
   if(pvObj(err, p.fridayOptional, 'fridayOptional')){

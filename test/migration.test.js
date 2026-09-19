@@ -37,6 +37,18 @@ function ohneHoehenmeter(p){
   const k = structuredClone(p);
   for(const w of k.weeks) delete w.tage.sa.hoehenmeter;
   delete k.winterBlock.tage.sa.hoehenmeter;
+  /* Ebenso wenig die Felder aus Fassung 7 und 8 des Trainingsplans: die
+     Arbeits-FTP, das Blockziel am Samstag und das Kadenzziel nach Rad. Ein
+     gehobener Plan hat sie nicht und rechnet dann mit der Test-FTP und dem
+     Kadenzziel, das in ihm steht. */
+  delete k.arbeits_ftp;
+  delete k.saturdayRide.blockPower;
+  delete k.saturdayRide.blockCadence;
+  delete k.cadenceTargets.trekkingrad;
+  k.cadenceTargets.byZone.z2 = '85–90 rpm';
+  delete k.documentation.arbeitsFtp;
+  delete k.documentation.kadenz;
+  k.planName = 'Trainingsplan Radfahren – Fassung 5';
   return k;
 }
 const v3OhneHm = ohneHoehenmeter(v3);

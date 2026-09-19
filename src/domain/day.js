@@ -53,8 +53,9 @@ import {
   thursdayDateFor, isoDayLocal
 } from './week.js';
 import {
-  zoneText, zoneSpan, targetText, withCadence, wattText,
-  estimateDistance, showsDistance, cadenceText
+  zoneText, zoneSpan, targetText, withCadence,
+  estimateDistance, showsDistance, cadenceText, cadenceTextTrekking,
+  mitZielwatt, blockWattBand, ftpHerkunft
 } from './zones.js';
 import { coreWorkSeconds, coreRestSeconds, coreRounds, coreMinutes, legRounds,
          rundenText } from './core.js';
@@ -235,12 +236,12 @@ const TIMER_TEST       = { art:'test',       ziel:'test',       label:'Testablau
 
 /* Die Eckwerte einer Radeinheit in immer derselben Reihenfolge: zuerst, was
    man vor dem Losfahren wissen muss, dann was nur eine Schaetzung ist. */
-function rideKennzahlen(plan, th, week, minutes, zone){
+function rideKennzahlen(plan, th, week, minutes, zone, trekking){
   const out = [
     { label:'Dauer',    wert: minutes + ' min' },
     { label:'Zielzone', wert: targetText(plan, th, zone, week) }
   ];
-  const cad = cadenceText(plan, zone, week);
+  const cad = trekking ? cadenceTextTrekking(plan, zone, week) : cadenceText(plan, zone, week);
   if(cad) out.push({ label:'Trittfrequenz', wert: cad });
   if(showsDistance(plan, week)){
     out.push({ label:'Distanz', wert:'ca. ' + estimateDistance(plan, minutes, week) + ' km' });
@@ -335,7 +336,7 @@ function testZone(plan, th, zone, week){
    Einfahren und Ausrollen behalten ihr Band: Z1 ist eine Obergrenze, die man
    einhalten kann und soll. */
 function schrittZiel(plan, th, s, week){
-  return s.effort || testZone(plan, th, s.zone, week);
+  return s.effort ? mitZielwatt(plan, th, s.effort) : testZone(plan, th, s.zone, week);
 }
 
 /* Beweglichkeit und Koordination haengen an keiner Woche und an keiner Phase.
@@ -441,7 +442,7 @@ function montag(c){
    plan.json und nicht als Phasenregel hier: massgeblich ist der Abstand zum
    Qualitaetstag, und der haengt daran, was am Donnerstag steht. */
 function dienstag(c){
-  const { plan, th, week, T, z2 } = c;
+  const { plan, th, week, T, z2Trekking } = c;
   const tag = c.tag('di');
   const dur = tag.minutes;
   const beine = tag.legRounds || 0;
@@ -451,9 +452,9 @@ function dienstag(c){
     title: beine > 0 ? 'Rad – Grundlagenausdauer (Z2) + Beinblock' : 'Rad – Grundlagenausdauer (Z2)',
     einheiten: [einheit({
       art:'z2', titel:'Rad – Grundlagenausdauer (Z2)',
-      kennzahlen: rideKennzahlen(plan, th, week, dur, 'z2'),
+      kennzahlen: rideKennzahlen(plan, th, week, dur, 'z2', true),
       bloecke: [
-        { label:'Grundlagenfahrt', wert:`${dur} min · ${z2()}`, hinweis:T.tuesdayCommute }
+        { label:'Grundlagenfahrt', wert:`${dur} min · ${z2Trekking()}`, hinweis:T.tuesdayCommute }
       ]
     })],
     /* legRounds steht auch am Dienstag im Soll, sobald die Woche eine zweite
@@ -501,7 +502,7 @@ function beinEinheit(c, runden, nachsatz, zeit){
    nachbaute. Jetzt gilt der Plantext, und der Nachsatz am Block nennt nur
    noch die Tageszeit. */
 function mittwoch(c){
-  const { plan, th, week, phase, exCount, T, z2 } = c;
+  const { plan, th, week, phase, exCount, T, z2Trekking } = c;
   const dur = c.tag('mi').minutes;
   const rounds = plan.circuit.wednesdayRounds;
   const zirkel = circuitBlock(plan, week, rounds, 'Rumpf-Zirkel (verkürzt)', 'Abends.');
@@ -522,12 +523,12 @@ function mittwoch(c){
   if(dur > 0){
     const lockerer = phase === 3 ? T.wednesdayEasyPhase3 : T.wednesdayEasyDefault;
     info = { type:'ride', title:'Rad – kurzes Z2 (Arbeitsweg) + Rumpf' };
-    const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
+    const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2', true);
     /* Die Dauer ist eine Untergrenze, keine Vorgabe - das muss schon in der
        Kennzahl stehen und nicht erst im Hinweis darunter. */
     kennzahlen[0] = { label:'Dauer', wert:`mindestens ${dur} min` };
     const bloecke = [
-      { label:'Fahrt (Arbeitsweg)', wert:`mindestens ${dur} min direkte Strecke · ${z2()}`,
+      { label:'Fahrt (Arbeitsweg)', wert:`mindestens ${dur} min direkte Strecke · ${z2Trekking()}`,
         hinweis:`${T.wednesdayMinimum} ${lockerer}` }
     ];
 
@@ -647,14 +648,14 @@ function donnerstag(c){
     })];
   } else {
     const zt = withCadence(plan, targetText(plan, th, t.zone, week), t.zone, week);
-    const pw = t.power ? ` (${t.power})` : '';
+    const pw = t.power ? ` (${mitZielwatt(plan, th, t.power)})` : '';
     info = { type:'interval', title:t.title };
     const kennzahlen = [
       { label:'Dauer',           wert: t.minutes + ' min' },
       { label:'Wiederholungen',  wert:`${t.reps} × ${t.workMin} min` },
       { label:'Zielzone',        wert: targetText(plan, th, t.zone, week) }
     ];
-    if(t.power) kennzahlen.push({ label:'Leistung', wert: t.power });
+    if(t.power) kennzahlen.push({ label:'Leistung', wert: mitZielwatt(plan, th, t.power) });
     const cad = cadenceText(plan, t.zone, week);
     if(cad) kennzahlen.push({ label:'Trittfrequenz', wert: cad });
     info.einheiten = [einheit({
@@ -721,9 +722,13 @@ function samstag(c){
   const dur = c.tag('sa').minutes;
   const bl = saturdayBlocks(plan, week);
   const sr = plan.saturdayRide;
+  /* Die Bloecke rechnen seit Fassung 7 gegen die Arbeits-FTP, und die
+     Grundlage steht dabei - siehe arbeitsFtp in zones.js. */
+  const bw = bl ? blockWattBand(plan, th) : null;
   const bz = bl
-    ? (wattText(plan, th, 'z3')
-        ? `${zoneText(plan, th, 'z3', week)} · 80–88 % FTP`
+    ? (bw
+        ? `${bw.min}–${bw.max} W · ${bw.prozent} ${ftpHerkunft(bw.ftp)}` +
+          (sr.blockCadence ? ` · ${sr.blockCadence}` : '')
         : zoneText(plan, th, 'z3', week))
     : null;
 
@@ -732,7 +737,7 @@ function samstag(c){
   const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
   if(bl){
     kennzahlen.push({ label:'Blöcke',
-      wert:`${bl.reps} × ${bl.minutes} min ${zoneText(plan, th, 'z3', week)}` });
+      wert:`${bl.reps} × ${bl.minutes} min ` + (bw ? `${bw.min}–${bw.max} W` : zoneText(plan, th, 'z3', week)) });
   }
 
   const lang = [{ label:'Einfahren', wert:`${sr.warmupMinutes} min` }];
@@ -1079,7 +1084,14 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
     winter: isWinterBlock(plan, week),
     exCount: plan.circuit.exercises.length,
     T: plan.texts,
-    z2: () => withCadence(plan, targetText(plan, th, 'z2', week), 'z2', week)
+    z2: () => withCadence(plan, targetText(plan, th, 'z2', week), 'z2', week),
+    /* Di und Mi laufen auf dem Trekkingrad: kein Leistungsmesser, und die
+       Kadenz hat dort ihr eigenes Ziel (Fassung 8). */
+    z2Trekking: () => {
+      const c = cadenceTextTrekking(plan, 'z2', week);
+      const t = targetText(plan, th, 'z2', week);
+      return c ? t + ' · ' + c : t;
+    }
   };
 
   /* Jeder Tag bringt seinen Sollwert selbst mit.

@@ -249,15 +249,28 @@ export function zonenGrund(plan, th, week){
    das behandelt zoneSeconds getrennt. */
 export function powerBands(plan, th){
   if(!hasFtp(th)) return null;
-  const keys = Object.keys(plan.powerZones)
-    .sort((a, b) => plan.powerZones[a][0] - plan.powerZones[b][0]);
-  const w = f => Math.round(th.ftp * f);
+  const keys = wattSchluessel(plan);
   return keys.map((k, i) => ({
     key: k,
     label: plan.zoneLabel[k] || k.toUpperCase(),
-    min: w(plan.powerZones[k][0]),
-    max: i + 1 < keys.length ? w(plan.powerZones[keys[i + 1]][0]) : OPEN_TOP
+    min: i === 0 ? 0 : wattGrenze(plan, th, keys[i - 1]) + 1,
+    max: i + 1 < keys.length ? wattGrenze(plan, th, k) + 1 : OPEN_TOP
   }));
+}
+
+function wattSchluessel(plan){
+  return Object.keys(plan.powerZones)
+    .sort((a, b) => plan.powerZones[a][0] - plan.powerZones[b][0]);
+}
+
+/* Die Obergrenze einer Wattzone in ganzen Watt, so wie der Trainingsplan sie
+   schreibt: abgerundet, und die naechste Zone beginnt ein Watt darueber. Bei
+   192 W ist das Z1 bis 105, Z2 106-144, Z3 145-172, Z4 173-201, Z5 ab 202.
+   Bis zum 19.09.2026 stand hier die Untergrenze aus minFactor, gerundet - und
+   damit Z2 108-144 W in der App gegen 106-144 W im Plan. Zwei Zahlen fuer
+   dieselbe Zone, und die Auswertung zaehlte gegen die dritte (bis 146). */
+function wattGrenze(plan, th, key){
+  return Math.floor(th.ftp * plan.powerZones[key][1] + 1e-9);
 }
 
 /* ---- Woraus die Zonenverteilung gerechnet wird ----
@@ -335,7 +348,10 @@ export function zoneSpan(plan, th, from, to, week){
 export function wattText(plan, th, key){
   const z = plan.powerZones[key];
   if(!hasFtp(th) || !z) return null;
-  return Math.round(th.ftp * z[0]) + '–' + Math.round(th.ftp * z[1]) + ' W';
+  const keys = wattSchluessel(plan);
+  const i = keys.indexOf(key);
+  const min = i > 0 ? wattGrenze(plan, th, keys[i - 1]) + 1 : Math.round(th.ftp * z[0]);
+  return min + '–' + wattGrenze(plan, th, key) + ' W';
 }
 
 export function targetText(plan, th, key, week){
@@ -392,7 +408,7 @@ export function hatLeistungsstrom(data){
    Fenster, dessen Laenge von der Aufzeichnung abhaengt, glaettet jede Fahrt
    anders. Zwei Zeiger, weil beide Fenstergrenzen mit i monoton wachsen -
    ueber die ganze Fahrt bleibt es damit linear. */
-function gleitenderMittel(werte, zeit, fensterSek){
+export function gleitenderMittel(werte, zeit, fensterSek){
   const n = werte.length;
   const halb = fensterSek / 2;
   const out = new Array(n);
@@ -499,4 +515,84 @@ export function zoneSeconds(bands, hrData, timeData, recordedSec, opts){
   out._takt = takt;
   out._samples = n;
   return out;
+}
+
+/* ---- Arbeits-FTP (Fassung 7) ----
+
+   Zwei FTP-Werte mit zwei Aufgaben. Die Test-FTP aus dem Schwellentest traegt
+   die Zonen, die Zonenanzeige und die Bewertung gegen Z2 - Z2 haengt an LT1
+   und nicht an einem Prozentsatz, und die drei Tests bleiben nur so
+   vergleichbar. Die Arbeits-FTP aus plan.json traegt ausschliesslich die
+   Zielwatt der Qualitaetseinheiten: die Prozentangaben am Donnerstag und die
+   Bloecke am Samstag.
+
+   Fehlt sie, gilt die Test-FTP - dann stehen die alten Zahlen da und nicht
+   etwa keine. Die Herkunft wandert mit, weil sie an jeder Zielwattangabe
+   stehen muss: eine Zahl, deren Grundlage niemand mehr rekonstruiert, ist
+   dasselbe Problem wie ein Test ohne Bedingungen. */
+export function arbeitsFtp(plan, th){
+  const a = plan && plan.arbeitsFtp;
+  if(a && a.watt > 0){
+    return { watt: a.watt, quelle: 'arbeit', seit: a.seit || null, bis: a.bis || null,
+             herkunft: a.herkunft || null };
+  }
+  if(hasFtp(th)) return { watt: th.ftp, quelle: 'test', seit: null, bis: null, herkunft: null };
+  return null;
+}
+
+/* "Arbeits-FTP 206 W" oder "Test-FTP 192 W" - die Grundlage in drei Worten. */
+export function ftpHerkunft(af){
+  if(!af) return '';
+  return (af.quelle === 'arbeit' ? 'Arbeits-FTP ' : 'Test-FTP ') + af.watt + ' W';
+}
+
+/* Z2 in Watt, so wie der Trainingsplan es schreibt: 106-144 W bei 192 W,
+   aus der Test-FTP und nicht aus der Arbeits-FTP. */
+export function z2WattBand(plan, th){
+  if(!hasFtp(th) || !plan.powerZones.z1 || !plan.powerZones.z2) return null;
+  return { min: wattGrenze(plan, th, 'z1') + 1, max: wattGrenze(plan, th, 'z2') };
+}
+
+/* Das Ziel der Samstagsbloecke, 80-88 % der Arbeits-FTP. */
+export function blockWattBand(plan, th){
+  const bp = plan.saturdayRide && plan.saturdayRide.blockPower;
+  const af = arbeitsFtp(plan, th);
+  if(!bp || !af) return null;
+  return { min: Math.round(af.watt * bp.minFactor), max: Math.round(af.watt * bp.maxFactor),
+           prozent: Math.round(bp.minFactor * 100) + '–' + Math.round(bp.maxFactor * 100) + ' %',
+           ftp: af };
+}
+
+/* Eine Prozentangabe aus plan.json in Watt: "108–115 % FTP" wird zu
+   "222–237 W", "ca. 95 % FTP" zu "196 W". Gerechnet gegen die Arbeits-FTP.
+   null, wenn im Text keine Prozentangabe auf die FTP steht oder keine FTP da
+   ist - dann bleibt der Text allein stehen. */
+export function prozentWatt(plan, th, text){
+  const af = arbeitsFtp(plan, th);
+  if(!af || typeof text !== 'string') return null;
+  const spanne = text.match(/(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)\s*%\s*FTP/);
+  const zahl = s => parseFloat(s.replace(',', '.'));
+  if(spanne){
+    return Math.round(af.watt * zahl(spanne[1]) / 100) + '–' +
+           Math.round(af.watt * zahl(spanne[2]) / 100) + ' W';
+  }
+  const eins = text.match(/(\d+(?:[.,]\d+)?)\s*%\s*FTP/);
+  return eins ? Math.round(af.watt * zahl(eins[1]) / 100) + ' W' : null;
+}
+
+/* Die Prozentangabe mit ihren Watt und deren Grundlage:
+   "108–115 % FTP = 222–237 W aus Arbeits-FTP 206 W". */
+export function mitZielwatt(plan, th, text){
+  const w = prozentWatt(plan, th, text);
+  return w ? text + ' = ' + w + ' aus ' + ftpHerkunft(arbeitsFtp(plan, th)) : text;
+}
+
+/* Kadenzziel auf dem Trekkingrad (Di, Mi). Fassung 8 trennt nach Rad: auf dem
+   Cube hat in Z2 die Leistung Vorrang und das Ziel ist 80-85 rpm, auf dem
+   Trekkingrad gibt es keine Wattvorgabe, dort bleibt 85-90 rpm als
+   Richtwert. */
+export function cadenceTextTrekking(plan, key, week){
+  if(week < plan.cadence.fromWeek) return null;
+  const t = plan.cadence.trekkingrad;
+  return (t && t[key]) || plan.cadence.byZone[key] || null;
 }
