@@ -13,12 +13,16 @@
    Haken je Tag waere schnell gebaut, wuerde aber eine Auswertung
    versprechen, die es nicht gibt.
 
-   Die zweistufige Progression steht als zwei nummerierte Stufen und nicht als
-   Fliesstext: sie ist eine Freischaltregel - die zweite Stufe gilt erst, wenn
-   die erste sauber gelingt - und keine Steigerung, die mit der Woche
-   weiterrueckt. Sie steht als letzte Karte, weil sie einmal gelesen und dann
-   fuer Wochen nicht mehr angesehen wird; bisher lag sie zwischen Kopf und
-   Uebungen mitten im Weg.
+   Die Progression steht als nummerierte Stufen und nicht als Fliesstext: sie
+   ist eine Freischaltregel - eine Stufe gilt erst, wenn die vorige sauber
+   gelingt - und keine Steigerung, die mit der Woche weiterrueckt. Sie steht
+   als letzte Karte, weil sie einmal gelesen und dann fuer Wochen nicht mehr
+   angesehen wird; bisher lag sie zwischen Kopf und Uebungen mitten im Weg.
+
+   Wie viele Stufen es sind, sagt der Plan und nicht der Code. Vorher stand
+   "zwei Stufen" fest in der Zeile, waehrend die Liste darunter schon aus dem
+   Plan kam - Fassung 9 hat eine dritte Stufe ergaenzt, und die Ueberschrift
+   haette weiter zwei behauptet.
 
    Der gefuehrte Ablauf liegt in Koerperablauf.jsx, gemeinsam mit dem der
    Beweglichkeit. Hier zaehlt die Uhr an drei der vier Uebungen, denn hier steht
@@ -33,6 +37,15 @@ import { koordinationsRest } from '../../../domain/day.js';
 import { Baustein } from './Baustein.jsx';
 import { useKoerperablauf } from './Koerperablauf.jsx';
 
+/* Nur die Zahlwoerter, die hier je vorkommen koennen: eine Freischaltregel mit
+   mehr als einer Handvoll Stufen waere keine mehr. Darueber hinaus die Ziffer,
+   damit die Zeile nicht leer bleibt. */
+const ZAHLWORT = ['keine', 'eine', 'zwei', 'drei', 'vier', 'fünf'];
+
+function stufenzahl(n){
+  return (ZAHLWORT[n] || String(n)) + (n === 1 ? ' Stufe' : ' Stufen');
+}
+
 export function Koordination({ onOpen }){
   const c = plan.value.coordination;
   const uebungen = c.exercises;
@@ -44,6 +57,8 @@ export function Koordination({ onOpen }){
   const rest = koordinationsRest(plan.value, today.value, startDate.value);
   const istHeute = rest === 0;
   const inTagen = rest == null ? null : (rest === 0 ? 0 : rhythmus - rest);
+
+  const stufenWort = stufenzahl(c.progression.length);
 
   const naechster = inTagen === 1 ? 'morgen'
     : inTagen === 2 ? 'übermorgen'
@@ -67,7 +82,7 @@ export function Koordination({ onOpen }){
       hinweise={[c.placement, c.scope]}
       schluss={
         <div class="card">
-          <div class="row"><span>Freischaltregel</span><b>zwei Stufen</b></div>
+          <div class="row"><span>Freischaltregel</span><b>{stufenWort}</b></div>
           <p class="hint">
             Keine Wochenprogression: erst weiterrücken, wenn die aktuelle Stufe sauber gelingt.
           </p>

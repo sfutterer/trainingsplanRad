@@ -10,7 +10,14 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 8, Stand 19.09.2026.** Der Gang-Test vom 19.09. ist ausgewertet: Gang 7 bei
+> **Fassung 9, Stand 20.09.2026.** Im Koordinationsblock (Abschnitt 10) ersetzt die
+> **einbeinige Standwaage** den Diagonalgang. Der Diagonalgang ist für einen Sportler mit
+> unauffälligem Gangbild unterschwellig und stammt aus der Rehabilitation, nicht aus dem
+> Training. Der Block bestand damit aus drei statischen Stehübungen plus Gehen — die
+> dynamische einbeinige Kontrolle fehlte. **Sonst keine Änderung:** Rad, Kraft, Ernährung
+> und Mobility-Flow bleiben unberührt. Begründung in Abschnitt 9f.
+>
+> Fassung 8 (19.09.2026) brachte: Der Gang-Test vom 19.09. ist ausgewertet: Gang 7 bei
 > 89 rpm liefert nur Ø 107 W, also den unteren Rand von Z2 statt ~139 W. **Auf dem Cube hat in Z2 die
 > Leistung Vorrang vor der Kadenz — Zielkadenz 80–85 rpm statt 85–90 rpm**, Arbeitspunkt
 > bleibt Gang 8 bei 80–82 rpm, rund 139 W. Kadenzarbeit über 85 rpm läuft auf dem
@@ -50,7 +57,7 @@ Plan muss dieses Dokument mitgezogen werden.
 > danach wird ein neuer Plan geschrieben.
 >
 > Begründungen der Änderungen in Abschnitt 9 (Fassung 3), 9a (Fassung 4),
-> 9b (Fassung 5), 9c (Fassung 6), 9d (Fassung 7) und 9e (Fassung 8).
+> 9b (Fassung 5), 9c (Fassung 6), 9d (Fassung 7), 9e (Fassung 8) und 9f (Fassung 9).
 
 ---
 
@@ -2055,6 +2062,50 @@ Samstagsausfahrt am 19.09. erledigt.
 
 ---
 
+## 9f. Änderungen gegenüber Fassung 8
+
+### Anlass
+
+Rückmeldung des Sportlers am 20.09.2026: Der Diagonalgang im Koordinationsblock bietet
+keinerlei Herausforderung.
+
+Der Einwand ist berechtigt. Diagonalgang ist langsames Gehen mit bewusst geführtem
+Armschwung. Bei unauffälligem Gangbild liegt der Reiz unterhalb der
+Wahrnehmungsschwelle — die Übung stammt aus der Rehabilitation und aus der Arbeit mit
+neurologisch oder altersbedingt gestörten Gangbildern. Für den Zweck dieses Blocks,
+Koordination zu erhalten, solange sie vorhanden ist, ist sie zu leicht.
+
+Dazu kommt ein struktureller Mangel: Von vier Übungen waren drei statische Stehübungen,
+die vierte Gehen. **Dynamische einbeinige Kontrolle fehlte vollständig** — genau die
+Fähigkeit, die beim Treppabgehen, beim Absteigen vom Rad und beim Abfangen eines
+Stolperns gebraucht wird und die mit dem Alter zuerst verloren geht.
+
+### Die Änderung
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | Übung 3 des Koordinationsblocks: **einbeinige Standwaage („Airplane")** statt Diagonalgang, 5 Wdh. je Seite, ca. 5 s absenken und 5 s aufrichten | Einbeinige Standfläche bei bewegtem Schwerpunkt. Fordert Propriozeption, Gesäßmuskulatur und Rumpf gleichzeitig, ohne nennenswerte Last |
+| 2 | **Kurzanleitung und Abbruchkriterium** direkt unter der Tabelle ergänzt | Erste Übung des Blocks, bei der die Ausführung über den Nutzen entscheidet: dreht das Becken auf, ist die Balanceanforderung weg |
+| 3 | **Progressionsregel um eine dritte Stufe ergänzt** | Der Block hatte bisher keinen Steigerungsweg für die dynamische Übung |
+
+### Bewusst **nicht** geändert
+
+- **Step-downs von der Treppenstufe** wären der stärkere Reiz und passten zum Ziel
+  „im Alltag fit bleiben". Sie fallen trotzdem raus: exzentrische Beinarbeit alle zwei
+  Tage interferiert mit dem Beinblock am Sonntag und mit dem Qualitätstag. Der
+  Koordinationsblock soll weiterhin **keine Erholung kosten** (Abschnitt 10,
+  Einleitung). Die Standwaage erfüllt diese Bedingung, Step-downs nicht.
+- **Die übrigen drei Übungen** des Koordinationsblocks und die Dosierung „alle zwei Tage".
+- **Der Mobility-Flow.** Zum 90/90-Wechsel und zum Ausfallschritt mit Rotation liegen
+  Rückmeldungen vor; sie sind in dieser Fassung **noch offen** und bewusst unverändert.
+- **Der Rumpf-Zirkel.** Die Wirksamkeit des Bird Dog wird zunächst über die Ausführung
+  geprüft, bevor an der Übung etwas geändert wird.
+- **Keine App-Anforderung.** Abschnitt 10 ist ausdrücklich nicht Teil des App-Protokolls
+  (Abschnitt 10, „Abgrenzung"). Die Änderung erzeugt keinen Code- und keinen
+  `plan.json`-Bedarf.
+
+---
+
 ## 10. Beweglichkeit, Koordination und Knochenreiz
 
 Eigenständiger, radunabhängiger Block. Beweglichkeit und Koordination verlieren mit
@@ -2083,8 +2134,21 @@ Statisches Dehnen davon direkt nach der Fahrt, solange der Muskel warm ist.
 |---|---|---|---|
 | 1 | Einbeinstand, Augen zu | 3 × 20–30 s je Seite | Propriozeption |
 | 2 | Einbeinstand + Kopfdrehungen | 2 × 20 s je Seite | Vestibularis |
-| 3 | Diagonalgang, kontralateraler Arm-Bein-Schwung, betont langsam | 20 Schritte | Koordination |
+| 3 | Einbeinige Standwaage („Airplane"), betont langsam | 5 Wdh. je Seite | einbeinige Kontrolle, Hüfte, Propriozeption |
 | 4 | Tandemstand auf instabiler Unterlage, ggf. Ball werfen/fangen | 2 × 30 s | Gleichgewicht unter Zusatzreiz |
+
+**Einbeinige Standwaage („Airplane") — Ausführung.** Auf einem Bein stehen, Standknie
+minimal gebeugt. Oberkörper nach vorn kippen und gleichzeitig das freie Bein nach hinten
+strecken, bis Rumpf und Bein eine waagerechte Linie bilden. **Die Hüfte bleibt
+geschlossen** — das Becken darf nicht zur freien Seite aufdrehen, sonst fällt die
+Balanceanforderung weg. Ca. 5 s absenken, kurz halten, ca. 5 s aufrichten.
+
+*Steigerung:* Arme seitlich ausstrecken → Arme über Kopf → Augen schließen.
+*Abbruch:* Sobald das Becken aufdreht oder der Fuß absetzt, ist der Satz zu Ende.
+
+**Warum keine Step-downs von der Treppenstufe:** inhaltlich der stärkere Reiz, aber
+exzentrische Beinarbeit alle zwei Tage interferiert mit dem Beinblock am Sonntag. Der
+Block soll weiterhin keine Erholung kosten. Die Standwaage erfüllt diese Bedingung.
 
 ### 2–3 × pro Woche — Knochenreiz (unter 1 min)
 
@@ -2112,6 +2176,8 @@ einbeinig, wenige Wiederholungen je Seite.
 
 1. Einbeinstand mit geschlossenen Augen > 30 s sauber je Seite → instabile Unterlage
 2. Tandemstand auf instabiler Unterlage stabil → zusätzlich Augen schließen
+3. Standwaage 5 Wdh. je Seite ohne Absetzen und ohne Aufdrehen des Beckens → Arme
+   seitlich, danach Arme über Kopf, danach Augen schließen
 
 ### Abgrenzung
 

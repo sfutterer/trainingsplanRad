@@ -1760,7 +1760,8 @@
     "scope": "Kein Eintrag im App-Protokoll und keine Auswertung über intervals.icu – reine Körpergewichtsübungen ohne Aufzeichnung.",
     "progression": [
       "Einbeinstand mit geschlossenen Augen über 30 s sauber je Seite → instabile Unterlage ergänzen",
-      "Tandemstand auf instabiler Unterlage stabil → zusätzlich die Augen schließen"
+      "Tandemstand auf instabiler Unterlage stabil → zusätzlich die Augen schließen",
+      "Standwaage 5 Wdh. je Seite ohne Absetzen und ohne Aufdrehen des Beckens → Arme seitlich, danach Arme über Kopf, danach Augen schließen"
     ],
     "exercises": [
       {
@@ -1793,18 +1794,20 @@
         "goal": "Ziel: Fordert das Gleichgewichtsorgan zusätzlich – auf dem Rad ist der Schulterblick genau diese Bewegung."
       },
       {
-        "key": "crossCrawl",
-        "name": "Diagonalgang mit kontralateralem Arm-Bein-Schwung",
-        "dosage": "20 Schritte",
-        "focus": "Koordination",
-        "image": "assets/Diagonalgang.webp",
+        "key": "singleLegAirplane",
+        "name": "Einbeinige Standwaage („Airplane“)",
+        "dosage": "5 Wdh. je Seite",
+        "focus": "einbeinige Kontrolle, Hüfte, Propriozeption",
+        "image": "assets/Standwaage.webp",
         "steps": [
-          "Betont langsam gehen und jeden Schritt einzeln setzen",
-          "Gegenüberliegenden Arm und Bein gleichzeitig weit nach vorn führen",
-          "Knie deutlich anheben und kurz auf dem Standbein verharren",
-          "Blick geradeaus, Rumpf bleibt aufrecht und ruhig"
+          "Auf ein Bein stellen, Standknie minimal gebeugt",
+          "Oberkörper nach vorn kippen und gleichzeitig das freie Bein nach hinten strecken",
+          "Am tiefsten Punkt bilden Rumpf und freies Bein eine waagerechte Linie",
+          "Die Hüfte bleibt geschlossen – das Becken darf nicht zur freien Seite aufdrehen",
+          "Betont langsam: etwa 5 s absenken, kurz halten, etwa 5 s aufrichten",
+          "Dreht das Becken auf oder setzt der Fuß ab, ist der Satz zu Ende"
         ],
-        "goal": "Ziel: Übt das über Kreuz laufende Zusammenspiel von Arm und Bein – dieselbe Ansteuerung, die den Tritt rund macht."
+        "goal": "Ziel: Einbeinige Kontrolle bei bewegtem Schwerpunkt – dieselbe Fähigkeit, die beim Treppabgehen, beim Absteigen vom Rad und beim Abfangen eines Stolperns gebraucht wird."
       },
       {
         "key": "tandemUnstable",

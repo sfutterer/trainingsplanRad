@@ -57,7 +57,7 @@ describe('Zeitdosierung im echten Plan', () => {
     expect(zeitSekunden(plan.mobility.exercises[0])).toBe(60);
   });
 
-  it('Koordination: alles ausser dem Diagonalgang laeuft gegen die Uhr', () => {
+  it('Koordination: alles ausser der Standwaage laeuft gegen die Uhr', () => {
     const mit = plan.coordination.exercises.filter(istZeitgesteuert).map(e => e.key);
     expect(mit).toEqual(['singleLegEyesClosed', 'singleLegHeadTurns', 'tandemUnstable']);
   });
@@ -89,8 +89,8 @@ describe('Haltefolge einer Uebung', () => {
   });
 
   it('laesst eine Uebung ohne Zeitdosierung ohne Folge', () => {
-    const gehen = plan.coordination.exercises.find(e => e.key === 'crossCrawl');
-    expect(buildHoldSequence(gehen)).toBe(null);
+    const standwaage = plan.coordination.exercises.find(e => e.key === 'singleLegAirplane');
+    expect(buildHoldSequence(standwaage)).toBe(null);
   });
 
   it('gibt einer einzelnen Haltezeit weder Satz- noch Seitenzaehler', () => {

@@ -48,6 +48,13 @@ function ohneHoehenmeter(p){
   k.cadenceTargets.byZone.z2 = '85–90 rpm';
   delete k.documentation.arbeitsFtp;
   delete k.documentation.kadenz;
+  /* Und nicht den Koordinationsblock aus Fassung 9: dort ersetzt die einbeinige
+     Standwaage den Diagonalgang, und die Freischaltregel hat eine dritte Stufe
+     bekommen. Ein gehobener Plan der Fassung 2 bringt weiterhin den
+     Diagonalgang und zwei Stufen mit - die Migration tauscht keine Uebung aus
+     und erfindet keine Stufe. */
+  k.coordination.exercises[2] = structuredClone(v2.coordination.exercises[2]);
+  k.coordination.progression = structuredClone(v2.coordination.progression);
   k.planName = 'Trainingsplan Radfahren – Fassung 5';
   return k;
 }
