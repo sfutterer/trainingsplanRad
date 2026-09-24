@@ -18,6 +18,7 @@ import { fahrtAbschnitte, abschnittsRahmen, abschnittsAuswertung, entkopplung, A
   from '../src/domain/abschnitte.js';
 import * as Z from '../src/domain/zones.js';
 import { planValidate } from '../src/domain/schema.js';
+import * as W from '../src/domain/week.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
 const plan = createPlan(json);
@@ -90,30 +91,61 @@ describe('Bezugswerte aus plan.json', () => {
     expect(Z.z2WattBand(plan, TH)).toEqual({ min: 106, max: 144 });
   });
 
-  it('die Samstagsbloecke haengen an der Arbeits-FTP: 165-181 W', () => {
-    const b = Z.blockWattBand(plan, TH);
-    expect([b.min, b.max]).toEqual([165, 181]);
-    expect(b.ftp).toMatchObject({ watt: 206, quelle: 'arbeit' });
+  /* Die Bloecke vom 19.09. sind gegen 165-181 W aus der Arbeits-FTP 206 W
+     gefahren. Seit Fassung 11 steht die Arbeits-FTP bei 215 W - das Band der
+     Woche 6 steht deshalb als festes zielwatt in plan.json, sonst faellt die
+     gefahrene Einheit nachtraeglich durch ein Band, das es an diesem Tag nicht
+     gab. Die Wochen 9 und 12 rechnen weiter aus dem Prozentsatz. */
+  it('die Samstagsbloecke der Woche 6 bleiben bei 165-181 W', () => {
+    const b = Z.blockWattBand(plan, TH, W.saturdayBlockData(plan, 6));
+    expect([b.min, b.max, b.quelle]).toEqual([165, 181, 'plan']);
+    expect(b.herkunft).toContain('Arbeits-FTP 206 W');
   });
 
-  it('die Do-Intervalle ebenso: 222-237 W, mit Herkunft', () => {
-    expect(Z.prozentWatt(plan, TH, '108–115 % FTP')).toBe('222–237 W');
-    expect(Z.mitZielwatt(plan, TH, '108–115 % FTP'))
-      .toBe('108–115 % FTP = 222–237 W aus Arbeits-FTP 206 W');
-    expect(Z.prozentWatt(plan, TH, '90–95 % FTP')).toBe('185–196 W');
-    expect(Z.prozentWatt(plan, TH, 'ca. 95 % FTP')).toBe('196 W');
+  it('die Samstagsbloecke der Woche 9 rechnen gegen 215 W: 172-189 W', () => {
+    const b = Z.blockWattBand(plan, TH, W.saturdayBlockData(plan, 9));
+    expect([b.min, b.max, b.quelle]).toEqual([172, 189, 'prozent']);
+    expect(b.herkunft).toBe('80–88 % der Arbeits-FTP 215 W');
+  });
+
+  it('die Do-Intervalle ab Woche 8 stehen fest bei 240-250 W', () => {
+    const b = Z.zielband(plan, TH, W.thursdayData(plan, 8));
+    expect([b.min, b.max, b.text, b.quelle]).toEqual([240, 250, '240–250 W', 'plan']);
+    expect(b.herkunft).toContain('112–116 % der Arbeits-FTP 215 W');
+  });
+
+  it('Woche 7 fest bei 196 W, Phase 4 gerechnet bei 194-204 W', () => {
+    const w7 = Z.zielband(plan, TH, W.thursdayData(plan, 7));
+    expect([w7.min, w7.max, w7.text]).toEqual([196, 196, '196 W']);
+    const w15 = Z.zielband(plan, TH, W.thursdayData(plan, 15));
+    expect([w15.min, w15.max, w15.quelle]).toEqual([194, 204, 'prozent']);
+    expect(w15.herkunft).toBe('90–95 % der Arbeits-FTP 215 W');
+  });
+
+  /* Die VO2max-Variante der Woche 5 ist derselbe Tag in zweiter Form - ihre
+     vier Wiederholungen tragen deshalb dasselbe Band. Nur der Maximalversuch
+     bleibt ohne: er ist der Messwert, und eine Obergrenze daran waere eine
+     Vorgabe fuer eine Messung. */
+  it('die Wiederholungen der Woche-5-Variante tragen das Band des Tages', () => {
+    const v = W.thursdayData(plan, 5).variante;
+    const arbeit = v.steps.filter(s => s.type === 'work');
+    expect(arbeit.map(s => s.effort || Z.zielband(plan, TH, s).text))
+      .toEqual(['alles geben', '222–237 W', '222–237 W', '222–237 W', '222–237 W']);
   });
 
   it('ohne arbeits_ftp gilt die Test-FTP - alte Zahlen statt keiner', () => {
     const ohne = createPlan(Object.assign(structuredClone(json), { arbeits_ftp: undefined }));
     expect(Z.arbeitsFtp(ohne, TH)).toMatchObject({ watt: 192, quelle: 'test' });
-    expect(Z.mitZielwatt(ohne, TH, '108–115 % FTP')).toBe('108–115 % FTP = 207–221 W aus Test-FTP 192 W');
-    expect(Z.mitZielwatt(ohne, { ftp: null }, '108–115 % FTP')).toBe('108–115 % FTP');
+    const b = Z.prozentBand(ohne, TH, '108–115 % FTP');
+    expect(b.text).toBe('207–221 W');
+    expect(b.herkunft).toBe('108–115 % der Test-FTP 192 W');
+    expect(Z.prozentBand(ohne, { ftp: null }, '108–115 % FTP')).toBe(null);
   });
 
   it('die Samstagskarte der Woche 6 nennt das Blockziel und seine Grundlage', () => {
     const txt = JSON.stringify(D_info(SA_W6));
-    expect(txt).toContain('165–181 W · 80–88 % Arbeits-FTP 206 W · 85–90 rpm');
+    expect(txt).toContain('165–181 W · 85–90 rpm');
+    expect(txt).toContain('80–88 % der Arbeits-FTP 206 W');
   });
 
   it('Kadenz Z2: 80-85 rpm auf dem Cube, 85-90 rpm auf dem Trekkingrad', () => {
@@ -129,6 +161,15 @@ describe('Bezugswerte aus plan.json', () => {
     delete k.arbeits_ftp.herkunft;
     expect(planValidate(k).join(' ')).toContain('arbeits_ftp.herkunft');
     expect(planValidate(json)).toEqual([]);
+  });
+
+  it('beanstandet ein zielwatt ohne Herkunft und ein verdrehtes Band', () => {
+    const ohneHerkunft = structuredClone(json);
+    delete ohneHerkunft.weeks[7].tage.do.zielwatt.herkunft;
+    expect(planValidate(ohneHerkunft).join(' ')).toContain('.do.zielwatt.herkunft');
+    const verdreht = structuredClone(json);
+    verdreht.weeks[7].tage.do.zielwatt.max = 200;
+    expect(planValidate(verdreht).join(' ')).toContain('min 240 liegt über max 200');
   });
 });
 
@@ -216,7 +257,7 @@ describe('Urteil ueber die Fahrt vom 19.09.', () => {
   it('weist Z2-Anteil und Bloecke getrennt aus', () => {
     expect(t).toMatch(/Z2-Anteil: \d+ min, davon \d+ min über Z2/);
     expect(t).toMatch(/Geplante Blöcke: 2 × 12 min, Ø 17[12] W/);
-    expect(t).toContain("(Ziel 165–181 W, 80–88 % der Arbeits-FTP 206 W)");
+    expect(t).toContain("(Ziel 165–181 W, 80–88 % der Arbeits-FTP 206 W (bis 24.09.2026))");
   });
 
   it('zeigt keine Z3-Summe ueber die ganze Fahrt mehr', () => {

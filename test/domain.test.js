@@ -286,11 +286,11 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: 'e8d1cf03c128d27d', len: 16049 });
+      .toEqual({ hash: '558f0d69270abce0', len: 17076 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '23d0b93d15c3572f', len: 183985 });
+      .toEqual({ hash: '3e64b57869590190', len: 185219 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -314,7 +314,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '9bfe268607524afa', len: 164650 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '62285bd0b7c6e98f', len: 164755 });
   });
 });
 
@@ -450,7 +450,13 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
       const t = D.thursdayPlan(plan, w);
       const hart = t.steps.filter(s => s.type === 'work');
       expect(hart.map(s => s.minutes)).toEqual([3, 3, 3]);
-      expect(hart.every(s => s.zone === 'z5' && s.effort === '108–115 % FTP')).toBe(true);
+      /* Seit Fassung 11 traegt der Reiz sein Zielband in Watt und keinen
+         Prozentsatz mehr: 240-250 W werden ueber das Pulskriterium
+         nachgesteuert, und ein nachgesteuerter Wert ist keine runde
+         Prozentzahl mehr. */
+      expect(hart.every(s => s.zone === 'z5' && s.effort == null)).toBe(true);
+      expect(hart.map(s => Z.zielband(plan, Z.NO_THRESHOLDS, s).text)).toEqual(
+        ['240–250 W', '240–250 W', '240–250 W']);
       /* Die Pausen dazwischen, nicht danach: 3 x 3 min Belastung und 2 x 3 min
          Pause sind die 15 min, die der Trainingsplan nennt. */
       expect(D.schritteMinuten(t.steps.filter(s => s.type === 'work' || s.type === 'rest')))
@@ -619,7 +625,7 @@ describe('Testanlauf', () => {
     expect(geplant.reps).toBe(5);
     expect(info.target).toEqual({ sport:'ride', zone:'z4', minutes:43,
                                  hardMinutes:12, reps:2, repMinutes:6,
-                                 ablauf:'2× 6 min' });
+                                 ablauf:'2× 6 min', band: null });
     expect(info.showTestBtn).toBe(true);
     expect(info.showIntervalBtn).toBe(false);
   });

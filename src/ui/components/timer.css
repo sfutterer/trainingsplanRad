@@ -40,6 +40,15 @@
   margin-top: 6px; font-size: 12px; font-weight: 600;
   padding: 3px 10px; border-radius: 999px; background: var(--surface-3);
 }
+/* Die Herkunft des Zielbands, unter dem Ring. Bewusst klein und gedaempft:
+   sie gehoert dazu, darf dem Ring aber kaum Hoehe nehmen - deshalb zwei
+   Zeilen, danach wird abgeschnitten. */
+.zonequelle{
+  flex: none; margin: 6px auto 0; max-width: 32ch; text-align: center;
+  font-size: 11px; line-height: 1.3; color: var(--muted);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
 .zone.z-z1{ color: var(--z1); } .zone.z-z2{ color: var(--z2); }
 .zone.z-z3{ color: var(--z3); } .zone.z-z4{ color: var(--z4); }
 .zone.z-z5{ color: var(--z5); }

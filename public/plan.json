@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "planName": "Trainingsplan Radfahren – Fassung 8",
+  "planName": "Trainingsplan Radfahren – Fassung 11",
   "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
     "bearbeiten": "Zahlen und Texte hier aendern und die Datei speichern. Den Service Worker erzeugt vite-plugin-pwa beim Bauen; er nimmt plan.json selbsttaetig in den Precache. Eine Fassungsnummer von Hand gibt es nicht mehr.",
@@ -24,8 +24,9 @@
     "unbekannteSchluessel": "Die Pruefung meldet Schluessel der obersten Ebene, die sie nicht kennt. Ein Tippfehler in einem optionalen Feld wurde vorher stillschweigend verworfen, und die App rechnete mit dem Standardwert weiter - das widerspricht dem Grundsatz, lieber gar keine Zahl zu zeigen als eine falsche.",
     "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach.",
     "migration": "Ein Plan der Fassung 2 wird beim Laden auf Fassung 3 gehoben: die Wochentage im Feldnamen (tuesdayMinutes, saturdayBlocks …) werden zu einem Objekt je Tag unter weeks[].tage.",
-    "arbeitsFtp": "arbeits_ftp ist die Arbeits-FTP aus Fassung 7 des Trainingsplans. Sie steuert ausschliesslich die Zielwatt der Qualitaetseinheiten: die Prozentangaben der Donnerstage (power, effort) und saturdayRide.blockPower. Zonen, Zonenanzeige und Auswertung gegen Z2 rechnen weiter mit der Test-FTP aus dem Schwellentest. Fehlt das Feld, gilt die Test-FTP. seit und herkunft stehen an jeder Zielwattangabe, bis nennt den Retest, der sie abloest.",
-    "kadenz": "cadenceTargets.byZone gilt fuer das Cube (Do, Sa) - dort hat in Z2 die Leistung Vorrang, deshalb 80-85 rpm (Fassung 8). cadenceTargets.trekkingrad ueberschreibt einzelne Zonen fuer Di und Mi auf dem Trekkingrad, wo keine Wattvorgabe gilt und keine Kadenzdaten ankommen."
+    "arbeitsFtp": "arbeits_ftp ist die Arbeits-FTP aus Fassung 7 des Trainingsplans, seit Fassung 11 bei 215 W. Sie steuert ausschliesslich die Zielwatt der Qualitaetseinheiten: die Prozentangaben der Donnerstage (power, effort) und saturdayRide.blockPower. Zonen, Zonenanzeige und Auswertung gegen Z2 rechnen weiter mit der Test-FTP aus dem Schwellentest. Fehlt das Feld, gilt die Test-FTP. seit und herkunft stehen an jeder Zielwattangabe, bis nennt den Retest, der sie abloest.",
+    "kadenz": "cadenceTargets.byZone gilt fuer das Cube (Do, Sa) - dort hat in Z2 die Leistung Vorrang, deshalb 80-85 rpm (Fassung 8). cadenceTargets.trekkingrad ueberschreibt einzelne Zonen fuer Di und Mi auf dem Trekkingrad, wo keine Wattvorgabe gilt und keine Kadenzdaten ankommen.",
+    "zielwatt": "zielwatt steht an einem tage.do, an einem work-Schritt und an tage.sa.bloecke und nennt das Zielband in Watt direkt: min, max und herkunft. Es hat Vorrang vor jedem Prozentsatz und ist der Weg fuer alles, was sich nicht als Prozentsatz der heutigen Arbeits-FTP schreiben laesst. Fassung 11 brauchte ihn dreimal: das Donnerstagsband 240-250 W wird ueber das Pulskriterium in 5-W-Schritten nachgesteuert und ist deshalb keine Prozentzahl mehr; der Donnerstag der Erholungswoche 7 steht fest bei 196 W, weil 95 % der neuen Arbeits-FTP kitzeln wuerden; und die gefahrenen Wochen 5, 6 behalten ihre Baender aus der Arbeits-FTP 206 W, denn die Analyse eines gefahrenen Tages muss gegen die Vorgabe rechnen, die an ihm galt. min gleich max heisst ein fester Wert und keine Spanne. Wo zielwatt fehlt, rechnet die App den Prozentsatz gegen die heutige arbeits_ftp - so bleiben Phase 4 (90-95 %) und die Samstagsbloecke der Wochen 9 und 12 (80-88 %) automatisch richtig."
   },
   "recoveryWeeks": [
     4,
@@ -223,13 +224,17 @@
           "reps": 5,
           "workMinutes": 4,
           "restMinutes": 4,
-          "power": "108–115 % FTP",
+          "zielwatt": {
+            "min": 222,
+            "max": 237,
+            "herkunft": "108–115 % der Arbeits-FTP 206 W (bis 24.09.2026)"
+          },
           "variante": {
             "id": "vo2max-referenz",
             "title": "Rad – VO2max-Referenz + Intervalle",
             "frage": "Den 5-Minuten-Referenzwert heute erheben?",
             "ergebnis": "vo2max5",
-            "steering": "5 min alles geben, danach 108–115 % FTP",
+            "steering": "5 min alles geben, danach 222–237 W",
             "note": "Der Maximalversuch ist selbst ein VO2max-Reiz und zählt als erste Wiederholung – deshalb folgen nur noch vier statt fünf. Der Wert ist Kür: wird er nicht erhoben, gilt die Regelstruktur 5 × 4 min. Der Ablauf steht deshalb fest: eine Messung, die sich zurechtlegen lässt, ist keine.",
             "steps": [
               {
@@ -263,6 +268,11 @@
                 "type": "work",
                 "label": "Intervall 1 / 4",
                 "short": "Intervall 1/4",
+                "zielwatt": {
+                  "min": 222,
+                  "max": 237,
+                  "herkunft": "108–115 % der Arbeits-FTP 206 W (bis 24.09.2026)"
+                },
                 "minutes": 4,
                 "zone": "z5",
                 "rep": 1,
@@ -281,6 +291,11 @@
                 "type": "work",
                 "label": "Intervall 2 / 4",
                 "short": "Intervall 2/4",
+                "zielwatt": {
+                  "min": 222,
+                  "max": 237,
+                  "herkunft": "108–115 % der Arbeits-FTP 206 W (bis 24.09.2026)"
+                },
                 "minutes": 4,
                 "zone": "z5",
                 "rep": 2,
@@ -299,6 +314,11 @@
                 "type": "work",
                 "label": "Intervall 3 / 4",
                 "short": "Intervall 3/4",
+                "zielwatt": {
+                  "min": 222,
+                  "max": 237,
+                  "herkunft": "108–115 % der Arbeits-FTP 206 W (bis 24.09.2026)"
+                },
                 "minutes": 4,
                 "zone": "z5",
                 "rep": 3,
@@ -317,6 +337,11 @@
                 "type": "work",
                 "label": "Intervall 4 / 4",
                 "short": "Intervall 4/4",
+                "zielwatt": {
+                  "min": 222,
+                  "max": 237,
+                  "herkunft": "108–115 % der Arbeits-FTP 206 W (bis 24.09.2026)"
+                },
                 "minutes": 4,
                 "zone": "z5",
                 "rep": 4,
@@ -370,7 +395,11 @@
           "reps": 5,
           "workMinutes": 4,
           "restMinutes": 4,
-          "power": "108–115 % FTP"
+          "zielwatt": {
+            "min": 222,
+            "max": 237,
+            "herkunft": "108–115 % der Arbeits-FTP 206 W (bis 24.09.2026)"
+          }
         },
         "sa": {
           "minutes": 160,
@@ -381,7 +410,12 @@
           "bloecke": {
             "reps": 2,
             "minutes": 12,
-            "restMinutes": 8
+            "restMinutes": 8,
+            "zielwatt": {
+              "min": 165,
+              "max": 181,
+              "herkunft": "80–88 % der Arbeits-FTP 206 W (bis 24.09.2026)"
+            }
           }
         },
         "so": {
@@ -414,7 +448,11 @@
           "reps": 4,
           "workMinutes": 3,
           "restMinutes": 3,
-          "power": "ca. 95 % FTP"
+          "zielwatt": {
+            "min": 196,
+            "max": 196,
+            "herkunft": "fest, rund 91 % der Arbeits-FTP 215 W (Erholungswoche, Fassung 11)"
+          }
         },
         "sa": {
           "minutes": 100,
@@ -454,7 +492,11 @@
           "reps": 5,
           "workMinutes": 4,
           "restMinutes": 4,
-          "power": "108–115 % FTP"
+          "zielwatt": {
+            "min": 240,
+            "max": 250,
+            "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+          }
         },
         "sa": {
           "minutes": 165,
@@ -494,7 +536,11 @@
           "reps": 5,
           "workMinutes": 4,
           "restMinutes": 4,
-          "power": "108–115 % FTP"
+          "zielwatt": {
+            "min": 240,
+            "max": 250,
+            "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+          }
         },
         "sa": {
           "minutes": 175,
@@ -595,11 +641,15 @@
               "type": "work",
               "label": "Erhaltungsreiz 1 / 3",
               "short": "Reiz 1/3",
+              "zielwatt": {
+                "min": 240,
+                "max": 250,
+                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+              },
               "minutes": 3,
               "zone": "z5",
               "rep": 1,
               "reps": 3,
-              "effort": "108–115 % FTP",
               "note": "Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max. Der Puls ist erst am Blockende aussagekräftig – gesteuert wird über die Leistung."
             },
             {
@@ -615,11 +665,15 @@
               "type": "work",
               "label": "Erhaltungsreiz 2 / 3",
               "short": "Reiz 2/3",
+              "zielwatt": {
+                "min": 240,
+                "max": 250,
+                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+              },
               "minutes": 3,
               "zone": "z5",
               "rep": 2,
-              "reps": 3,
-              "effort": "108–115 % FTP"
+              "reps": 3
             },
             {
               "type": "rest",
@@ -634,11 +688,15 @@
               "type": "work",
               "label": "Erhaltungsreiz 3 / 3",
               "short": "Reiz 3/3",
+              "zielwatt": {
+                "min": 240,
+                "max": 250,
+                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+              },
               "minutes": 3,
               "zone": "z5",
               "rep": 3,
-              "reps": 3,
-              "effort": "108–115 % FTP"
+              "reps": 3
             },
             {
               "type": "ride",
@@ -709,11 +767,15 @@
               "type": "work",
               "label": "Erhaltungsreiz 1 / 3",
               "short": "Reiz 1/3",
+              "zielwatt": {
+                "min": 240,
+                "max": 250,
+                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+              },
               "minutes": 3,
               "zone": "z5",
               "rep": 1,
               "reps": 3,
-              "effort": "108–115 % FTP",
               "note": "Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max. Der Puls ist erst am Blockende aussagekräftig – gesteuert wird über die Leistung."
             },
             {
@@ -729,11 +791,15 @@
               "type": "work",
               "label": "Erhaltungsreiz 2 / 3",
               "short": "Reiz 2/3",
+              "zielwatt": {
+                "min": 240,
+                "max": 250,
+                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+              },
               "minutes": 3,
               "zone": "z5",
               "rep": 2,
-              "reps": 3,
-              "effort": "108–115 % FTP"
+              "reps": 3
             },
             {
               "type": "rest",
@@ -748,11 +814,15 @@
               "type": "work",
               "label": "Erhaltungsreiz 3 / 3",
               "short": "Reiz 3/3",
+              "zielwatt": {
+                "min": 240,
+                "max": 250,
+                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+              },
               "minutes": 3,
               "zone": "z5",
               "rep": 3,
-              "reps": 3,
-              "effort": "108–115 % FTP"
+              "reps": 3
             },
             {
               "type": "ride",
@@ -1061,10 +1131,10 @@
     }
   },
   "arbeits_ftp": {
-    "watt": 206,
-    "seit": "2026-09-17",
+    "watt": 215,
+    "seit": "2026-09-24",
     "bis": "2026-10-22",
-    "herkunft": "5-min-Wert 254 W am 17.09. (132 % der Test-FTP) und eFTP 206 W nach derselben Einheit"
+    "herkunft": "Pulskriterium Do 17.09./24.09., 4-min-Wert 268 W"
   },
   "cadenceTargets": {
     "fromWeek": 3,

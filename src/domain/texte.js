@@ -295,9 +295,8 @@ export const T = {
     'Ø ' + Math.round(watt) + ' W im Z2-Anteil liegt unter dem Z2-Band ab ' + min + ' W – eher Z1 als Grundlage.',
 
   bloecke: (n, min, watt, band, quelle) =>
-    'Geplante Blöcke: ' + n + ' × ' + min + ' min, Ø ' + Math.round(watt) + ' W (Ziel ' + band.min + '–'
-    + band.max + ' W, ' + band.prozent + ' der ' + (band.ftp.quelle === 'arbeit' ? 'Arbeits-FTP ' : 'Test-FTP ')
-    + band.ftp.watt + ' W)' + (quelle === 'fenster'
+    'Geplante Blöcke: ' + n + ' × ' + min + ' min, Ø ' + Math.round(watt) + ' W (Ziel ' + band.text
+    + (band.herkunft ? ', ' + band.herkunft : '') + ')' + (quelle === 'fenster'
       ? ' – keine passenden Runden, deshalb die stärksten ' + min + '-min-Fenster der zweiten Fahrthälfte.'
       : ' – aus den Runden der Aufzeichnung.'),
 
@@ -338,6 +337,75 @@ export const T = {
   hartKurz: (hart, ziel, zone, soll, ablauf) =>
     'Nur ' + hart + ' min hart gefahren (davon ' + ziel + ' min in ' + zone + '), geplant '
     + 'waren ' + soll + ' min als ' + ablauf + '. Intervalle abgebrochen oder Zone nicht erreicht?',
+
+  /* ---- Wiederholungen des Donnerstags und die Nachsteuerung (seit 24.09.2026)
+
+     Die Zahlen kommen aus wiederholungen.js; dort steht auch, welche Haelfte
+     der Ausfuehrungsregel 7 messbar ist und welche nicht. Hier stehen die
+     Saetze - einer je Wiederholung, einer ueber die Serie, einer mit dem
+     Hinweis fuer das naechste Mal. */
+  wdhReihe: (n, soll, band, quelle) =>
+    'Wiederholungen: ' + n + ' von ' + soll + ' erkannt, Ziel ' + band.text
+    + (band.herkunft ? ' (' + band.herkunft + ')' : '')
+    + (quelle === 'fenster'
+      ? ' – keine passenden Runden, deshalb die stärksten Fenster der Solldauer.'
+      : ' – aus den Runden der Aufzeichnung.'),
+
+  wdhEinzeln: (w, lthr) =>
+    'Wdh. ' + w.nr + ': Ø ' + Math.round(w.watt) + ' W'
+    + (w.hfEnde > 0
+      ? ', letzte 60 s Ø ' + Math.round(w.hfEnde) + ' bpm'
+        + (lthr ? (w.hfEnde >= lthr ? ' (≥ LTHR)' : ' (unter LTHR ' + lthr + ')') : '')
+      : ', ohne Puls')
+    + '.',
+
+  /* Der Hinweis fuer das naechste Mal. Ein Satz je Grund, weil die Gruende
+     verschiedene Dinge sagen: "+5 W" ist eine Empfehlung, "ohne Puls" ist ein
+     fehlender Messwert, und "Band nicht gehalten" ist ein Befund ueber die
+     gefahrene Einheit und nicht ueber die Vorgabe. */
+  wdhHinweis: (h, band, lthr) => {
+    const neu = h.neu ? h.neu.min + '–' + h.neu.max + ' W' : null;
+    const schluss = h.maximalversuch
+      ? ' Wdh. ' + h.maximalversuch + ' zählt als Maximalversuch und nicht mit; bewertet sind '
+        + 'Wdh. ' + h.bewertet.join(' und ') + '.'
+      : h.bewertet.length ? ' Bewertet sind Wdh. ' + h.bewertet.join(' und ') + '.' : '';
+    if(h.grund === 'pulsTief'){
+      return 'Nächstes Mal ' + neu + ': das Pulskriterium (≥ ' + lthr + ' bpm in den letzten '
+        + '60 s) blieb unerreicht, obwohl das Band ' + band.text + ' gehalten wurde – nach '
+        + 'Ausführungsregel 7 ein Schritt von 5 W nach oben.' + schluss;
+    }
+    if(h.grund === 'einbruch'){
+      return 'Nächstes Mal ' + neu + ': die Leistung brach zur letzten Wiederholung ein ('
+        + Math.round(h.einbruch.letzte) + ' W gegen Ø ' + Math.round(h.einbruch.schnitt)
+        + ' W davor, mehr als 5 %) – nach Ausführungsregel 7 ein Schritt von 5 W nach unten.'
+        + schluss;
+    }
+    if(h.grund === 'pulsHoch'){
+      return 'Der Puls lag ab Wdh. 2 über der LTHR (' + lthr + ' bpm). Regel 7 nennt dafür '
+        + neu + ' – aber nur, wenn auch die Atmung am Limit war, und das sieht keine '
+        + 'Aufzeichnung. Atmung sticht die Zahl: war sie es nicht, bleibt das Band bei '
+        + band.text + '.' + schluss;
+    }
+    if(h.grund === 'bandNichtGehalten'){
+      return 'Das Pulskriterium blieb unerreicht, das Band ' + band.text + ' aber auch – '
+        + 'damit sagt die Einheit nichts über die Vorgabe. Band halten und noch einmal '
+        + 'fahren.' + schluss;
+    }
+    if(h.grund === 'imBand'){
+      return 'Band halten: ' + band.text + ' passt, das Pulskriterium ist erreicht, ohne dass '
+        + 'die Serie einbricht.' + schluss;
+    }
+    if(h.grund === 'ohnePuls'){
+      return 'Band halten: ' + band.text + '. Ohne Puls in den letzten Wiederholungen '
+        + 'entscheidet das Kriterium nichts.' + schluss;
+    }
+    if(h.grund === 'ohneLthr'){
+      return 'Keine Nachsteuerung: das Kriterium hängt an der LTHR, und die steht noch nicht '
+        + 'aus einem ausbelasteten Schwellentest fest.';
+    }
+    return 'Keine Nachsteuerung: zu wenige bewertbare Wiederholungen in der Aufzeichnung.'
+      + schluss;
+  },
 
   /* ---- Aufzeichnung ---- */
 

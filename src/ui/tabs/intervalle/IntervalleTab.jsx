@@ -54,7 +54,8 @@ import { useEffect, useState } from 'preact/hooks';
 import { plan, thresholds, week, settings, startDate, today, varianten } from '../../../state/store.js';
 import { buildIntervalSequence, buildStepSequence, intervalDefaults,
          totalSeconds } from '../../../domain/timer/sequences.js';
-import { hrBands, usesCoggan, zoneText, wattText, cadenceText } from '../../../domain/zones.js';
+import { hrBands, usesCoggan, zoneText, cadenceText, zielband,
+         zielbandZeile, wattText } from '../../../domain/zones.js';
 /* Ring, Vorschau und Zonenkarte teilt sich dieser Bereich mit dem Ablauf im
    Testbereich - siehe Schrittansicht.jsx. */
 import { Schrittbuehne, Schrittvorschau, Zonenkarte } from '../../components/Schrittansicht.jsx';
@@ -78,6 +79,9 @@ export function IntervalleTab(){
     ? { warmMin: vorgabe.warmMin, workMin: vorgabe.workMin, restMin: vorgabe.restMin,
         coolMin: vorgabe.coolMin, reps: vorgabe.reps, zoneKey: vorgabe.zoneKey }
     : null);
+  /* Das Zielband des Tages, nicht aus cfg: die Zeiten dieses Timers darf man
+     verstellen, das Ziel nicht. */
+  const band = vorgabe.mode === 'intervals' ? zielband(p, th, vorgabe.plan) : null;
   const [cfg, setCfg] = useState(ausVorgabe);
 
   const testmodus = vorgabe.mode === 'test';
@@ -100,7 +104,7 @@ export function IntervalleTab(){
   function sequenz(){
     if(nurZ2 || zumTest) return [];
     if(folge) return buildStepSequence(p, th, w, vorgabe.steps);
-    return buildIntervalSequence(p, th, w, cfg);
+    return buildIntervalSequence(p, th, w, { ...cfg, band });
   }
 
   const uhr = useSchrittTimer({ kennung: 'intervalle', voice: s.voice, sequenz });
@@ -128,7 +132,9 @@ export function IntervalleTab(){
                           : st.zone && st.zone.key === 'z4' ? 'Schwelle' : 'Tempo');
 
   const kadenz = cfg ? cadenceText(p, cfg.zoneKey, w) : null;
-  const watt = cfg ? wattText(p, th, cfg.zoneKey) : null;
+  /* Ohne Zielband bleibt das Wattband der Zone stehen - in Phase 1 gibt der
+     Plan keine Leistung vor, und dann ist es die einzige Zahl, die es gibt. */
+  const watt = band ? band.text : cfg ? wattText(p, th, cfg.zoneKey) : null;
 
   /* Schwellentest und Testanlauf laufen im Testbereich und nicht hier.
 
@@ -221,7 +227,11 @@ export function IntervalleTab(){
                 {cfg.reps}× {cfg.workMin} min {zoneText(p, th, cfg.zoneKey, w)}
                 {watt ? ' · ' + watt : ''}
               </b></div>
-              {vorgabe.plan.power && <div class="row"><span>Leistung</span><b>{vorgabe.plan.power}</b></div>}
+              {band
+                ? <div class="row"><span>Leistung</span><b>{zielbandZeile(band)}</b></div>
+                : vorgabe.plan.power
+                ? <div class="row"><span>Leistung</span><b>{vorgabe.plan.power}</b></div>
+                : null}
               {kadenz && <div class="row"><span>Trittfrequenz</span><b>{kadenz}</b></div>}
             </>
           )}

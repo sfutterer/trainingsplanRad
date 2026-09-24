@@ -75,7 +75,8 @@ als Schrittliste, wie ihn der Schwellentest schon immer hatte:
           { "type": "warm",  "label": "Einfahren",    "short": "…", "minutes": 10, "zone": "z12" },
           { "type": "ride",  "label": "Grundlage Z2", "short": "…", "minutes": 25, "zone": "z2" },
           { "type": "work",  "label": "Erhaltungsreiz 1 / 3", "short": "…",
-            "minutes": 3, "zone": "z5", "rep": 1, "reps": 3, "effort": "108–115 % FTP" },
+            "minutes": 3, "zone": "z5", "rep": 1, "reps": 3,
+            "zielwatt": { "min": 240, "max": 250, "herkunft": "112–116 % der Arbeits-FTP 215 W" } },
           …
         ] }
 ```
@@ -90,6 +91,51 @@ Analyse und steht ohne Angabe auf `"intervalle"`.
 
 Damit braucht ein Tag mit eingebetteten Blöcken, ungleichen Wiederholungen oder
 gemischten Zonen keine Codeänderung mehr – nur einen Eintrag in dieser Datei.
+
+### Zwei FTP-Werte und die Zielbänder
+
+Neben dem Testwert (`ftp` in den Schwellen, aus dem Schwellentest) trägt
+`plan.json` eine `arbeits_ftp` mit Datum und Herkunft. Zonen, Zonenanzeige und
+Trainingslast rechnen weiter gegen den Testwert – Z2 hängt an LT1, und die
+Tests bleiben nur so vergleichbar. Die Arbeits-FTP trägt **ausschließlich** die
+Zielwatt der Qualitätseinheiten. Fehlt sie, gilt der Testwert; dann stehen die
+alten Zahlen da und nicht etwa keine.
+
+Ein Zielband entsteht auf zwei Wegen, und das feste hat Vorrang:
+
+| Weg | Wo | Wofür |
+|---|---|---|
+| Prozentsatz | `do.power`, `sa.bloecke` über `saturdayRide.blockPower` | bleibt von sich aus richtig, wenn sich die Arbeits-FTP ändert |
+| `zielwatt` | an `tage.do`, an einem `work`-Schritt, an `tage.sa.bloecke` | alles, was sich als Prozentsatz der **heutigen** Arbeits-FTP nicht richtig schreiben lässt |
+
+`zielwatt` ist `{ min, max, herkunft }`; `min` gleich `max` heißt ein fester
+Wert und keine Spanne. `herkunft` ist Pflicht, weil ein festes Band seine
+Grundlage nicht mitrechnen kann – sie steht am Ring, auf der Tageskarte und in
+der Analyse neben der Zahl. Drei Fälle brauchen den festen Weg: ein Band, das
+in 5-W-Schritten nachgesteuert wird und deshalb keine runde Prozentzahl mehr
+ist; ein bewusst niedrig gehaltener Wert in einer Erholungswoche; und die schon
+gefahrenen Wochen, deren Analyse gegen die Vorgabe rechnen muss, die an ihrem
+Tag galt.
+
+Das Band ersetzt in Ring und Karte das Wattband der Zone – das kommt aus dem
+Testwert und ist an einem Intervalltag die falsche Zahl. Der Puls bleibt als
+Zone stehen, ohne Watt: er wird erst am Intervallende gelesen.
+
+### Nachsteuerung des Donnerstagsbands
+
+Zu einem Intervalltag mit Zielband zerlegt `src/domain/wiederholungen.js` die
+Aufzeichnung in ihre Wiederholungen – aus den Runden von intervals.icu, sonst
+aus den stärksten Fenstern der Solldauer – und nennt je Wiederholung Ø-Leistung
+und den Ø-Puls der **letzten 60 s**. Daraus folgt ein Hinweis für das nächste
+Mal: +5 W, wenn das Band gehalten wurde und der Puls die LTHR nicht erreicht;
+−5 W bei einem Leistungseinbruch über 5 % zur letzten Wiederholung; sonst Band
+halten. Eine bewusst schnellere Schlusswiederholung zählt nicht mit.
+
+Die App **ändert `plan.json` nicht selbst.** Der Hinweis steht in der Analyse,
+die Anpassung bleibt eine bewusste Entscheidung – wie beim Schwellentest, dessen
+Ergebnis auch nicht von selbst in die Zonen wandert. Und wo die Regel eine nicht
+messbare Bedingung nennt („die Atmung am Limit"), sagt die App das und
+entscheidet nicht.
 
 ### Schemafassung und Migration
 
@@ -481,6 +527,14 @@ in dem Hin- und Rückweg sich gegenseitig aufheben.
 Am Tag bleibt, was in Minuten und nicht in Anteilen zählt: die harte Zeit eines
 Intervalltages und die Z3-Blöcke des Samstags. Sie auf zwei Fahrten zu
 verteilen hieße, dieselbe Vorgabe zweimal ganz zu verlangen.
+
+Mit Leistungsmesser wird die Fahrt vorher **zerlegt**, statt jede Sekunde über
+Z2 gegen sie zu zählen: die lange Ausfahrt in Einfahren, Blöcke, Blockpausen,
+Z2-Anteil und Ausrollen (`src/domain/abschnitte.js`), der Intervalltag in seine
+Wiederholungen (`src/domain/wiederholungen.js`). Ein Block wird nur gegen sein
+eigenes Zielband bewertet und nie als Z3-Überschreitung; eine Wiederholung
+gegen ihr Zielband und das Pulskriterium der letzten 60 s. Eine Zahl über die
+ganze Fahrt kann nicht unterscheiden, ob Zeit über Z2 gewollt war.
 
 Die Spur wird in Abschnitte von rund 150 m geschnitten und jeder Abschnitt
 einzeln bewertet: Gegenwindanteil aus Fahrtrichtung gegen die Windrichtung

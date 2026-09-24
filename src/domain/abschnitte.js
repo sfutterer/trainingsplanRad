@@ -41,13 +41,13 @@ export const ABSCHNITT = {
 
 /* Abstand bis zum naechsten Messwert, gedeckelt wie in zones.js: eine Luecke
    in der Aufzeichnung ist keine Fahrzeit. */
-function dtAn(zeit, i){
+export function dtAn(zeit, i){
   const d = i + 1 < zeit.length ? zeit[i + 1] - zeit[i] : 1;
   if(!(d > 0)) return 0;
   return d > 60 ? 60 : d;
 }
 
-function mittel(proben, feld, nurPositiv){
+export function mittel(proben, feld, nurPositiv){
   let s = 0, n = 0;
   for(const p of proben){
     const v = p[feld];
@@ -57,7 +57,7 @@ function mittel(proben, feld, nurPositiv){
   return n > 0 ? s / n : null;
 }
 
-function sekunden(proben){
+export function sekunden(proben){
   return proben.reduce((n, p) => n + p.dt, 0);
 }
 
@@ -86,7 +86,7 @@ function rundenBloecke(proben, runden){
    Bis zum Beginn des Ausrollens, wenn dafuer Platz ist; sonst bis zum Ende.
    Zwei Zeiger ueber die Bewegungszeit, die Fensterenergie als Differenz zweier
    Praefixsummen - linear ueber die Fahrt. */
-function fensterBloecke(proben, anzahl, fensterSek, von, bis){
+export function fensterBloecke(proben, anzahl, fensterSek, von, bis){
   const kandidaten = [];
   const n = proben.length;
   const praefix = new Array(n + 1);
@@ -139,19 +139,19 @@ export function entkopplung(proben){
   return { prozent: (a.ef - b.ef) / a.ef * 100, erste: a, zweite: b, sek: gesamt };
 }
 
-/* Die Fahrt zerlegen und je Abschnitt rechnen.
+/* Die Messwerte einer Fahrt auf der Bewegungszeit, geglaettet.
 
-     zeit, watt, puls, tempoMs, kadenz   die Streams, gleich lang; nur zeit
-                                         und watt sind Pflicht
-     runden        icu_intervals der Aktivitaet, oder null
-     bloecke       { reps, minutes, restMinutes } aus dem Plan, oder null -
-                   ohne Blockwoche gibt es keine Bloecke, auch wenn Runden da
-                   sind
-     einfahrenSek, ausrollenSek
-     z2Max         Obergrenze Z2 in Watt, gegen die der Z2-Anteil zaehlt
+   Ausgezogen, weil der Donnerstag dieselbe Vorarbeit braucht wie der Samstag:
+   Stillstand heraus, eine Zeitachse, die nur Fahrzeit zaehlt, und die
+   geglaettete Leistung darauf. Zwei Fassungen davon waeren zwei Fassungen der
+   Frage, was als gefahrene Minute zaehlt - und die Zahlen beider Auswertungen
+   liefen auseinander, ohne dass es jemand merkte.
 
-   null, wenn es keinen Leistungsstrom gibt. */
-export function fahrtAbschnitte(o){
+     zeit, watt            Pflicht, gleich lang
+     puls, tempoMs, kadenz optional, dann gleich lang wie watt
+
+   null, wenn es keinen brauchbaren Leistungsstrom gibt. */
+export function fahrtProben(o){
   const zeit = o.zeit, watt = o.watt;
   const n = Array.isArray(watt) ? watt.length : 0;
   if(!n || !Array.isArray(zeit) || zeit.length !== n) return null;
@@ -174,13 +174,33 @@ export function fahrtAbschnitte(o){
                   hf: puls ? puls[i] : null, kadenz: kadenz ? kadenz[i] : null });
     t += dt;
   }
-  const bewegt = t;
   if(!proben.length) return null;
 
   /* Geglaettet auf der Bewegungszeit - ein Stillstand an der Ampel zieht so
      das Mittel davor und danach nicht auf null. */
   const glatt = gleitenderMittel(proben.map(p => p.watt), proben.map(p => p.t), WATT_FENSTER_SEK);
   proben.forEach((p, i) => { p.glatt = glatt[i]; });
+
+  return { proben, bewegt: t, stillSek, hatPuls: !!puls };
+}
+
+/* Die Fahrt zerlegen und je Abschnitt rechnen.
+
+     zeit, watt, puls, tempoMs, kadenz   die Streams, gleich lang; nur zeit
+                                         und watt sind Pflicht
+     runden        icu_intervals der Aktivitaet, oder null
+     bloecke       { reps, minutes, restMinutes } aus dem Plan, oder null -
+                   ohne Blockwoche gibt es keine Bloecke, auch wenn Runden da
+                   sind
+     einfahrenSek, ausrollenSek
+     z2Max         Obergrenze Z2 in Watt, gegen die der Z2-Anteil zaehlt
+
+   null, wenn es keinen Leistungsstrom gibt. */
+export function fahrtAbschnitte(o){
+  const gefahren = fahrtProben(o);
+  if(!gefahren) return null;
+  const { proben, bewegt, stillSek } = gefahren;
+  const puls = gefahren.hatPuls;
 
   const einEnde = Math.min(o.einfahrenSek || 0, bewegt);
   const ausAnfang = Math.max(einEnde, bewegt - (o.ausrollenSek || 0));
@@ -270,7 +290,7 @@ export function abschnittsRahmen(plan, th, week, istSamstag){
   const blockKad = rpmSpanne(sr.blockCadence);
   return {
     z2Band,
-    blockBand: b ? blockWattBand(plan, th) : null,
+    blockBand: b ? blockWattBand(plan, th, b) : null,
     bloeckeSoll: b ? { reps: b.reps, minutes: b.minutes, restMinutes: b.restMinutes } : null,
     einfahrenSek: (sr.warmupMinutes || 0) * 60,
     ausrollenSek: (sr.cooldownMinutes || 0) * 60,

@@ -5,7 +5,7 @@ import { repTarget } from '../core.js';
 import { zeitDosis } from '../koerper.js';
 import { thursdayPlan, thursdayAnlauf, anlaufSchritte, schrittSekunden,
          varianteFuer } from '../day.js';
-import { zoneText, zoneSpan, wattText } from '../zones.js';
+import { zoneText, zoneSpan, wattText, zielband } from '../zones.js';
 
 /* Ein Zonenetikett fuer die Anzeige im Timer. z12 ist die Spanne beim
    Einfahren und hat kein eigenes Band. */
@@ -13,6 +13,33 @@ function timerZone(plan, th, key, week){
   if(key === 'z12') return { label: zoneSpan(plan, th, 'z1', 'z2', week), cls: 'z2', key: 'z12' };
   const w = wattText(plan, th, key);
   return { label: zoneText(plan, th, key, week) + (w ? ' · ' + w : ''), cls: key, key };
+}
+
+/* Das Etikett eines Belastungsschritts mit Zielband.
+
+   Hier stand bis zum 24.09.2026 das Wattband der Zone, und das ist an einem
+   Intervalltag die falsche Zahl: es kommt aus der Test-FTP, also standen am
+   Ring 202–230 W, waehrend die Vorgabe des Tages 222–237 W lautete
+   (Plan-Punkt 32). Zwei Wattbereiche in einer Zeile, von denen einer nicht
+   gilt, sind auf dem Rad schlimmer als keiner.
+
+   Jetzt traegt der Schritt sein Zielband und die Herkunft darunter. Das
+   Pulsband faellt dabei weg - dasselbe, was ein `effort` schon immer tat:
+   gesteuert wird ueber die Leistung, der Puls wird erst am Intervallende
+   gelesen. */
+function zielZone(plan, th, key, week, band){
+  const z = timerZone(plan, th, key, week);
+  return { ...z, label: band.text, herkunft: band.herkunft || null };
+}
+
+/* Woran sich ein Schritt im Timer bemisst: Zielband, sonst Anstrengung, sonst
+   das Pulsband seiner Zone. Dieselbe Rangfolge wie auf der Tageskarte - siehe
+   schrittZiel in day.js. */
+function schrittZone(plan, th, s, week){
+  const band = zielband(plan, th, s);
+  if(band) return zielZone(plan, th, s.zone, week, band);
+  const z = timerZone(plan, th, s.zone, week);
+  return s.effort ? { ...z, label: s.effort } : z;
 }
 
 export function buildCircuitSequence(plan, { workSec, restSec, roundRestSec, rounds }){
@@ -67,11 +94,11 @@ export function buildStepSequence(plan, th, week, steps){
   const seq = [{ type:'prep', label:'Bereit machen', short:'Bereit machen',
                  duration: plan.interval.prepSeconds, zone: Zn('z1') }];
   for(const s of steps){
-    /* Nennt der Schritt eine Anstrengung, traegt sie die Beschriftung und das
-       Pulsband verschwindet - die Zone bleibt fuer die Farbe des Rings. Auf
-       dem Rad liest man genau diese eine Zeile, und dort darf keine Zahl
-       stehen, die nicht angesteuert werden soll. */
-    const zone = s.effort ? { ...Zn(s.zone), label: s.effort } : Zn(s.zone);
+    /* Nennt der Schritt ein Zielband oder eine Anstrengung, traegt sie die
+       Beschriftung und das Pulsband verschwindet - die Zone bleibt fuer die
+       Farbe des Rings. Auf dem Rad liest man genau diese eine Zeile, und dort
+       darf keine Zahl stehen, die nicht angesteuert werden soll. */
+    const zone = schrittZone(plan, th, s, week);
     seq.push({ type:s.type, label:s.label, short:s.short, duration: schrittSekunden(s),
                zone, rep:s.rep, reps:s.reps, note:s.note, say:s.say });
   }
@@ -83,12 +110,15 @@ export function buildTestSequence(plan, th, week){
   return buildStepSequence(plan, th, week, plan.thresholdTest.steps);
 }
 
-export function buildIntervalSequence(plan, th, week, { warmMin, workMin, restMin, coolMin, reps, zoneKey }){
+/* `band` ist das Zielband des geplanten Tages und kommt aus intervalDefaults.
+   Die Zeiten dieses Timers darf man verstellen, das Ziel nicht: es steht im
+   Plan, und eine Uhr ist kein Ort, an dem eine Wattvorgabe entsteht. */
+export function buildIntervalSequence(plan, th, week, { warmMin, workMin, restMin, coolMin, reps, zoneKey, band }){
   const Zn = k => timerZone(plan, th, k, week);
   const warm = Math.round(warmMin * 60), work = Math.round(workMin * 60);
   const rest = Math.round(restMin * 60), cool = Math.round(coolMin * 60);
   const n = Math.max(1, Math.round(reps));
-  const wz = Zn(zoneKey), z1 = Zn('z1');
+  const wz = band ? zielZone(plan, th, zoneKey, week, band) : Zn(zoneKey), z1 = Zn('z1');
 
   const seq = [{ type:'prep', label:'Bereit machen', short:'Bereit machen',
                  duration: plan.interval.prepSeconds, zone: z1 }];

@@ -553,38 +553,108 @@ export function z2WattBand(plan, th){
   return { min: wattGrenze(plan, th, 'z1') + 1, max: wattGrenze(plan, th, 'z2') };
 }
 
-/* Das Ziel der Samstagsbloecke, 80-88 % der Arbeits-FTP. */
-export function blockWattBand(plan, th){
+/* ---- Zielbaender der Qualitaetseinheiten ----
+
+   Ein Zielband hat immer dieselbe Gestalt, egal woher es kommt:
+
+     min, max   die Grenzen in Watt; min gleich max heisst ein fester Wert
+     text       "240–250 W" oder "196 W" - was auf dem Rad abgelesen wird
+     herkunft   "112–116 % der Arbeits-FTP 215 W" - Plan-Punkt 26
+     quelle     'plan' fuer ein Band aus der Datei, 'prozent' fuer ein
+                gerechnetes
+
+   Die eine Gestalt ist der Punkt: Ring, Tageskarte, Timer und Analyse zeigen
+   dasselbe Band, und keiner von ihnen muss wissen, auf welchem der beiden
+   Wege es entstanden ist. */
+function band(min, max, herkunft, quelle){
+  const a = Math.round(min), b = Math.round(max);
+  return { min: a, max: b, herkunft, quelle,
+           text: a === b ? a + ' W' : a + '–' + b + ' W' };
+}
+
+/* Zwei Wege zu einem Zielband, und das feste Band hat Vorrang.
+
+   Der Regelfall ist der Prozentsatz: er rechnet gegen die Arbeits-FTP und
+   bleibt damit von sich aus richtig, wenn sie sich aendert - deshalb stehen
+   die Samstagsbloecke (80-88 %) und die Schwellenbloecke der Phase 4
+   (90-95 %) weiterhin so in der Datei.
+
+   Das feste Band aus plan.json kam mit Fassung 11 dazu, fuer die drei Faelle,
+   die sich als Prozentsatz der heutigen Arbeits-FTP nicht mehr richtig
+   schreiben lassen:
+
+     die Donnerstage ab Woche 8    240-250 W, in 5-W-Schritten ueber das
+                                   Pulskriterium nachgesteuert - nach zwei
+                                   Schritten ist das keine runde Prozentzahl
+                                   mehr, und die Prozentzahl war ohnehin nur
+                                   die Herleitung
+     der Donnerstag der Woche 7    fest 196 W; 95 % der neuen Arbeits-FTP
+                                   waeren 204 W, und die Erholungswoche soll
+                                   gerade nichts kitzeln
+     die gefahrenen Wochen 5, 6    222-237 W aus der Arbeits-FTP 206 W. Die
+                                   Analyse eines gefahrenen Tages muss gegen
+                                   die Vorgabe rechnen, die an ihm galt -
+                                   sonst faellt der Samstag vom 19.09. mit
+                                   171 W nachtraeglich durch ein Band, das es
+                                   an diesem Tag nicht gab
+
+   Die Herkunft ist beim festen Band Pflichtangabe in der Datei und wird beim
+   gerechneten aus dem Prozentsatz und der Arbeits-FTP gebildet. In beiden
+   Faellen steht sie am Band, nicht daneben. */
+export function zielband(plan, th, spec){
+  const z = spec && spec.zielwatt;
+  if(z && z.min > 0){
+    return band(z.min, z.max > 0 ? z.max : z.min, z.herkunft || null, 'plan');
+  }
+  return prozentBand(plan, th, spec && (spec.power || spec.effort));
+}
+
+/* Eine Prozentangabe aus plan.json als Band: "108–115 % FTP" wird bei einer
+   Arbeits-FTP von 206 W zu 222-237 W, "ca. 95 % FTP" zu 196 W. null, wenn im
+   Text keine Prozentangabe auf die FTP steht oder keine FTP da ist - dann
+   bleibt der Text allein stehen. */
+export function prozentBand(plan, th, text){
+  const af = arbeitsFtp(plan, th);
+  if(!af || typeof text !== 'string') return null;
+  const zahl = s => parseFloat(s.replace(',', '.'));
+  const her = (a, b) => (b == null ? Math.round(a) : Math.round(a) + '–' + Math.round(b))
+                        + ' % der ' + ftpHerkunft(af);
+  const spanne = text.match(/(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)\s*%\s*FTP/);
+  if(spanne){
+    const von = zahl(spanne[1]), bis = zahl(spanne[2]);
+    return band(af.watt * von / 100, af.watt * bis / 100, her(von, bis), 'prozent');
+  }
+  const eins = text.match(/(\d+(?:[.,]\d+)?)\s*%\s*FTP/);
+  if(!eins) return null;
+  const p = zahl(eins[1]);
+  return band(af.watt * p / 100, af.watt * p / 100, her(p), 'prozent');
+}
+
+/* Das Ziel der Samstagsbloecke: 80-88 % der Arbeits-FTP, oder das feste Band
+   am Blockeintrag der Woche. `bloecke` ist tage.sa.bloecke - ohne Bloecke
+   gibt es kein Blockziel. */
+export function blockWattBand(plan, th, bloecke){
+  const z = bloecke && bloecke.zielwatt;
+  if(z && z.min > 0){
+    return band(z.min, z.max > 0 ? z.max : z.min, z.herkunft || null, 'plan');
+  }
   const bp = plan.saturdayRide && plan.saturdayRide.blockPower;
   const af = arbeitsFtp(plan, th);
   if(!bp || !af) return null;
-  return { min: Math.round(af.watt * bp.minFactor), max: Math.round(af.watt * bp.maxFactor),
-           prozent: Math.round(bp.minFactor * 100) + '–' + Math.round(bp.maxFactor * 100) + ' %',
-           ftp: af };
+  return band(af.watt * bp.minFactor, af.watt * bp.maxFactor,
+              Math.round(bp.minFactor * 100) + '–' + Math.round(bp.maxFactor * 100) +
+              ' % der ' + ftpHerkunft(af), 'prozent');
 }
 
-/* Eine Prozentangabe aus plan.json in Watt: "108–115 % FTP" wird zu
-   "222–237 W", "ca. 95 % FTP" zu "196 W". Gerechnet gegen die Arbeits-FTP.
-   null, wenn im Text keine Prozentangabe auf die FTP steht oder keine FTP da
-   ist - dann bleibt der Text allein stehen. */
-export function prozentWatt(plan, th, text){
-  const af = arbeitsFtp(plan, th);
-  if(!af || typeof text !== 'string') return null;
-  const spanne = text.match(/(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)\s*%\s*FTP/);
-  const zahl = s => parseFloat(s.replace(',', '.'));
-  if(spanne){
-    return Math.round(af.watt * zahl(spanne[1]) / 100) + '–' +
-           Math.round(af.watt * zahl(spanne[2]) / 100) + ' W';
-  }
-  const eins = text.match(/(\d+(?:[.,]\d+)?)\s*%\s*FTP/);
-  return eins ? Math.round(af.watt * zahl(eins[1]) / 100) + ' W' : null;
-}
+/* Das Band als eine Zeile: "240–250 W · 112–116 % der Arbeits-FTP 215 W".
 
-/* Die Prozentangabe mit ihren Watt und deren Grundlage:
-   "108–115 % FTP = 222–237 W aus Arbeits-FTP 206 W". */
-export function mitZielwatt(plan, th, text){
-  const w = prozentWatt(plan, th, text);
-  return w ? text + ' = ' + w + ' aus ' + ftpHerkunft(arbeitsFtp(plan, th)) : text;
+   Wo der Platz fuer zwei Zeilen reicht - am Ring und an der Blockzeile der
+   Tageskarte - steht die Herkunft klein darunter statt hinter einem
+   Mittelpunkt. Beides zeigt dasselbe; getrennt gehalten, weil auf dem Rad nur
+   die erste Haelfte gelesen wird. */
+export function zielbandZeile(b){
+  if(!b) return null;
+  return b.herkunft ? b.text + ' · ' + b.herkunft : b.text;
 }
 
 /* Kadenzziel auf dem Trekkingrad (Di, Mi). Fassung 8 trennt nach Rad: auf dem

@@ -39,11 +39,27 @@ export function Buehne({ ring, dosis, bild, zurueck, haupt, weiter, ende }){
     <>
     <div class="uebungsblock">
       {ring ? (
-        <ProgressRing
-          fraction={ring.fraction} color={ring.color} phase={ring.phase}
-          time={ring.time} exercise={ring.exercise} meta={ring.meta}
-          zone={ring.zone}
-          onTap={haupt && !haupt.disabled ? haupt.onClick : undefined} />
+        <>
+          <ProgressRing
+            fraction={ring.fraction} color={ring.color} phase={ring.phase}
+            time={ring.time} exercise={ring.exercise} meta={ring.meta}
+            zone={ring.zone}
+            onTap={haupt && !haupt.disabled ? haupt.onClick : undefined} />
+          {/* Woher die Vorgabe im Ring kommt: "112–116 % der Arbeits-FTP
+              215 W". Eine Zahl, deren Grundlage niemand mehr rekonstruiert,
+              ist dasselbe Problem wie ein Test ohne Bedingungen - Plan-Punkt
+              26.
+
+              Unter dem Ring und nicht in ihm: im Ring stand die Zeile
+              zwischen den Kreisbogen und war dort auf einem 375er Geraet
+              schon bei "108–115 % der Arbeits-FTP 206 W (bis 24.09.2026)"
+              angeschnitten. Die Vorgabe selbst - zwei Zahlen und ein W -
+              bleibt drinnen, wo sie waehrend der Fahrt hingehoert; die
+              Herkunft liest man einmal davor und braucht dafuer die ganze
+              Breite. */}
+          {ring.zone && ring.zone.herkunft
+            ? <div class="zonequelle">{ring.zone.herkunft}</div> : null}
+        </>
       ) : dosis ? (
         <div class="dosisbuehne">
           <span class="phase">{dosis.phase}</span>

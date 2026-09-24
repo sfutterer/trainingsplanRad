@@ -55,7 +55,7 @@ import {
 import {
   zoneText, zoneSpan, targetText, withCadence,
   estimateDistance, showsDistance, cadenceText, cadenceTextTrekking,
-  mitZielwatt, blockWattBand, ftpHerkunft
+  zielband, zielbandZeile, blockWattBand
 } from './zones.js';
 import { coreWorkSeconds, coreRestSeconds, coreRounds, coreMinutes, legRounds,
          rundenText } from './core.js';
@@ -99,6 +99,10 @@ export function thursdayPlan(plan, week){
     reps: t.reps, workMin: t.workMinutes, restMin: t.restMinutes,
     title: t.title,
     power: t.power == null ? null : t.power,
+    /* Unverändert weitergereicht, damit zielband() daraus dasselbe Band
+       rechnet wie aus dem Tag selbst - Tageskarte, Timer und Auswertung
+       greifen auf verschiedenen Wegen darauf zu. */
+    zielwatt: t.zielwatt || null,
     minutes: plan.interval.warmupMinutes + t.reps * t.workMinutes +
              (t.reps - 1) * t.restMinutes + plan.interval.cooldownMinutes
   };
@@ -334,9 +338,14 @@ function testZone(plan, th, zone, week){
    nicht mehr.
 
    Einfahren und Ausrollen behalten ihr Band: Z1 ist eine Obergrenze, die man
-   einhalten kann und soll. */
+   einhalten kann und soll.
+
+   Ein Zielband in Watt sticht beides: wo die Leistung die Steuergroesse ist,
+   steht sie da, samt ihrer Grundlage. */
 function schrittZiel(plan, th, s, week){
-  return s.effort ? mitZielwatt(plan, th, s.effort) : testZone(plan, th, s.zone, week);
+  const b = zielband(plan, th, s);
+  if(b) return zielbandZeile(b);
+  return s.effort ? s.effort : testZone(plan, th, s.zone, week);
 }
 
 /* Beweglichkeit und Koordination haengen an keiner Woche und an keiner Phase.
@@ -647,15 +656,25 @@ function donnerstag(c){
       ]
     })];
   } else {
-    const zt = withCadence(plan, targetText(plan, th, t.zone, week), t.zone, week);
-    const pw = t.power ? ` (${mitZielwatt(plan, th, t.power)})` : '';
+    /* Steht ein Zielband in Watt da, ist es die Vorgabe - und das Wattband der
+       Zielzone verschwindet. Es kommt aus der Test-FTP und ist an einem
+       Intervalltag genau die falsche Zahl: am 24.09.2026 stand dort 202–230 W,
+       das Z5-Band der Test-FTP 192 W, waehrend die Vorgabe des Tages bei
+       222–237 W lag (Plan-Punkt 32). Der Puls bleibt als Zone stehen, ohne
+       Watt: er wird erst am Intervallende gelesen. */
+    const b = zielband(plan, th, t);
+    const zt = b
+      ? withCadence(plan, `${b.text} · ${zoneText(plan, th, t.zone, week)}`, t.zone, week)
+      : withCadence(plan, targetText(plan, th, t.zone, week), t.zone, week);
     info = { type:'interval', title:t.title };
     const kennzahlen = [
       { label:'Dauer',           wert: t.minutes + ' min' },
       { label:'Wiederholungen',  wert:`${t.reps} × ${t.workMin} min` },
-      { label:'Zielzone',        wert: targetText(plan, th, t.zone, week) }
+      { label:'Zielzone',        wert: b ? zoneText(plan, th, t.zone, week)
+                                        : targetText(plan, th, t.zone, week) }
     ];
-    if(t.power) kennzahlen.push({ label:'Leistung', wert: mitZielwatt(plan, th, t.power) });
+    if(b) kennzahlen.push({ label:'Leistung', wert: zielbandZeile(b) });
+    else if(t.power) kennzahlen.push({ label:'Leistung', wert: t.power });
     const cad = cadenceText(plan, t.zone, week);
     if(cad) kennzahlen.push({ label:'Trittfrequenz', wert: cad });
     info.einheiten = [einheit({
@@ -663,8 +682,9 @@ function donnerstag(c){
       bloecke: [
         { label:'Einfahren',
           wert:`${plan.interval.warmupMinutes} min · ${zoneSpan(plan, th, 'z1', 'z2', week)}` },
-        { label:`${t.reps}× ${t.workMin} min Belastung`, wert:`${zt}${pw}`,
-          hinweis:`Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
+        { label:`${t.reps}× ${t.workMin} min Belastung`, wert: zt,
+          hinweis:(b && b.herkunft ? b.herkunft + '. ' : '') +
+                  `Rollender Start, Bewertungsfenster ab Minute ${t.phase === 1 ? 3 : 2}. ` +
                   T.thursdayIntervalTail },
         { label:'Pause',
           wert:`je ${t.restMin} min locker · ${zoneText(plan, th, 'z1', week)}`,
@@ -686,8 +706,12 @@ function donnerstag(c){
     info.target = { sport:'ride', zone:'z2', minutes: t.minutes,
                     km: estimateDistance(plan, t.minutes, week) };
   } else {
+    /* Das Zielband wandert in den Sollwert: die Auswertung des Donnerstags
+       vergleicht die gefahrenen Wiederholungen dagegen und leitet daraus die
+       Nachsteuerung ab - siehe wiederholungen.js. */
     info.target = { sport:'ride', zone: t.zone, minutes: t.minutes,
-                    hardMinutes: t.reps * t.workMin, reps: t.reps, repMinutes: t.workMin };
+                    hardMinutes: t.reps * t.workMin, reps: t.reps, repMinutes: t.workMin,
+                    band: zielband(plan, th, t) };
   }
 
   info.wellness = { rolle:'entscheidung', donnerstag: t.kind };
@@ -723,12 +747,11 @@ function samstag(c){
   const bl = saturdayBlocks(plan, week);
   const sr = plan.saturdayRide;
   /* Die Bloecke rechnen seit Fassung 7 gegen die Arbeits-FTP, und die
-     Grundlage steht dabei - siehe arbeitsFtp in zones.js. */
-  const bw = bl ? blockWattBand(plan, th) : null;
+     Grundlage steht dabei - siehe zielband in zones.js. */
+  const bw = bl ? blockWattBand(plan, th, saturdayBlockData(plan, week)) : null;
   const bz = bl
     ? (bw
-        ? `${bw.min}–${bw.max} W · ${bw.prozent} ${ftpHerkunft(bw.ftp)}` +
-          (sr.blockCadence ? ` · ${sr.blockCadence}` : '')
+        ? bw.text + (sr.blockCadence ? ` · ${sr.blockCadence}` : '')
         : zoneText(plan, th, 'z3', week))
     : null;
 
@@ -737,7 +760,7 @@ function samstag(c){
   const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2');
   if(bl){
     kennzahlen.push({ label:'Blöcke',
-      wert:`${bl.reps} × ${bl.minutes} min ` + (bw ? `${bw.min}–${bw.max} W` : zoneText(plan, th, 'z3', week)) });
+      wert:`${bl.reps} × ${bl.minutes} min ` + (bw ? bw.text : zoneText(plan, th, 'z3', week)) });
   }
 
   const lang = [{ label:'Einfahren', wert:`${sr.warmupMinutes} min` }];
@@ -749,7 +772,8 @@ function samstag(c){
                 hinweis: bl ? undefined : T.saturdayPureZ2 });
     if(bl){
       lang.push({ label:`${bl.reps}× ${bl.minutes} min Block`, wert: bz,
-        hinweis:`In der zweiten Hälfte der Fahrt, ${bl.restMinutes} min lockeres Rollen dazwischen.` });
+        hinweis:(bw && bw.herkunft ? bw.herkunft + '. ' : '') +
+                `In der zweiten Hälfte der Fahrt, ${bl.restMinutes} min lockeres Rollen dazwischen.` });
     }
   }
   lang.push({ label:'Ausrollen', wert:`${sr.cooldownMinutes} min` });
@@ -902,7 +926,12 @@ function schrittTag(c, sess, timer){
     target: { sport:'ride', zone, minutes: Math.round(gesamt / 60),
               hardMinutes: Math.round(hart / 60),
               reps: arbeit.length, repMinutes: schrittSekunden(arbeit[0]) / 60,
-              ablauf: ablaufText(arbeit.map(schrittSekunden)) }
+              ablauf: ablaufText(arbeit.map(schrittSekunden)),
+              /* Das Band des ersten Arbeitsschritts steht fuer die Folge: in
+                 einer Einheit haben alle Reize dasselbe Ziel, und wo das
+                 einmal nicht gilt, ist der erste der, an dem die Nachsteuerung
+                 haengt. */
+              band: zielband(plan, th, arbeit[0]) }
   };
 }
 

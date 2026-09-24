@@ -106,6 +106,7 @@ function pvThursday(err, t, feld, zonen){
     if(t.power != null && typeof t.power !== 'string'){
       err.push(feld + '.power muss ein Text oder null sein.');
     }
+    pvZielwatt(err, t.zielwatt, feld + '.zielwatt');
   } else if(t.kind === 'z2' || t.kind === 'test'){
     pvNum(err, t.minutes, feld + '.minutes', {min:0});
   } else if(t.kind === 'steps'){
@@ -201,6 +202,9 @@ function pvSteps(err, steps, feld, zonen){
        Steuergroesse ist, waere ein bpm-Bereich als Vorgabe falsch - beim
        Schwellentest sogar zirkulaer, denn er erzeugt die LTHR erst. */
     if(s.effort != null) pvStr(err, s.effort, f + '.effort');
+    /* Und wo die Steuergroesse eine Wattzahl ist, steht sie als Band da -
+       dasselbe Feld wie am Tag und an den Samstagsbloecken. */
+    pvZielwatt(err, s.zielwatt, f + '.zielwatt');
     const hatMin = typeof s.minutes === 'number';
     const hatSek = typeof s.seconds === 'number';
     if(hatMin === hatSek){
@@ -257,6 +261,32 @@ function pvBlocks(err, b, feld){
   pvNum(err, b.reps, feld + '.reps', {min:1, int:true});
   pvNum(err, b.minutes, feld + '.minutes', {min:1});
   pvNum(err, b.restMinutes, feld + '.restMinutes', {min:0});
+  pvZielwatt(err, b.zielwatt, feld + '.zielwatt');
+}
+
+/* Ein Zielband in Watt, direkt in der Datei statt als Prozentsatz.
+
+   Optional, und wo es fehlt, rechnet die App den Prozentsatz gegen die
+   Arbeits-FTP - das ist der Regelfall und bleibt es. Gebraucht wird das feste
+   Band fuer alles, was sich als Prozentsatz der heutigen Arbeits-FTP nicht
+   mehr richtig schreiben laesst; Fassung 11 des Trainingsplans brauchte es
+   dreimal, die Begruendungen stehen unter documentation.zielwatt.
+
+   herkunft ist Pflicht, wo das Band steht: eine Zahl, deren Grundlage niemand
+   mehr rekonstruiert, ist dasselbe Problem wie ein Test ohne Bedingungen -
+   Plan-Punkt 26. Der Prozentsatz laesst seine Grundlage mitrechnen, ein festes
+   Band kann das nicht, also muss es sie mitschreiben.
+
+   min gleich max heisst ein fester Wert und keine Spanne. */
+function pvZielwatt(err, z, feld){
+  if(z === null || z === undefined) return;
+  if(!pvObj(err, z, feld)) return;
+  const min = pvNum(err, z.min, feld + '.min', {min:1});
+  const max = pvNum(err, z.max, feld + '.max', {min:1});
+  if(min && max && z.max < z.min){
+    err.push(feld + ': min ' + z.min + ' liegt über max ' + z.max + '.');
+  }
+  pvStr(err, z.herkunft, feld + '.herkunft');
 }
 
 /* Ein an einen Tag angehaengter kurzer Reiz - in Fassung 3 der Erhaltungsreiz

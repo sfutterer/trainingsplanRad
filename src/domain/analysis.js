@@ -680,6 +680,13 @@ function z3BlockNote(zones, t){
 function intervallNotes(row, zones, t){
   const soll = t.hardMinutes || 0;
   if(!soll) return [];
+  /* Liegen die Wiederholungen einzeln vor, sind sie der genauere Massstab:
+     "harte Minuten" ueber die ganze Einheit sagen nicht, ob das Zielband
+     getroffen wurde, und genau das war der Befund vom 24.09.2026 - fuenf
+     saubere Wiederholungen, gutes Urteil, und das Band lag trotzdem 15 W zu
+     tief (Plan-Punkt 33). Die harte Zeit steht weiterhin oben; darunter die
+     Wiederholungen und der Hinweis fuer das naechste Mal. */
+  const wdhNotes = wiederholungNotes(row);
 
   const ziel = t.zone;
   const darunter = ziel === 'z5' ? 'z4' : ziel === 'z4' ? 'z3' : 'z2';
@@ -693,10 +700,41 @@ function intervallNotes(row, zones, t){
   const zone = ziel.toUpperCase();
 
   if(hartMin >= soll * 0.7){
-    return [{ kind:'good', text: T.hartErreicht(hartMin, zielMin, zone, soll, ablauf) }];
+    return [{ kind:'good', text: T.hartErreicht(hartMin, zielMin, zone, soll, ablauf) },
+            ...wdhNotes];
   }
   downgrade(row, t.test ? 'Test kurz' : 'Intervalle kurz');
-  return [{ kind:'bad', text: T.hartKurz(hartMin, zielMin, zone, soll, ablauf) }];
+  return [{ kind:'bad', text: T.hartKurz(hartMin, zielMin, zone, soll, ablauf) }, ...wdhNotes];
+}
+
+/* ---- Wiederholungen des Donnerstags und die Nachsteuerung ----
+
+   Seit dem 24.09.2026, App-Punkt 33 des Trainingsplans. Die Zahlen kommen aus
+   wiederholungen.js und haengen an den Zonen der Fahrt als _wiederholungen -
+   dieselbe Anbindung wie die Abschnitte des Samstags.
+
+   Am Tag und nicht je Fahrt: eine Intervalleinheit ist eine Fahrt, und ueber
+   zwei Fahrten verteilt waere die Serie keine Serie mehr. Liegen doch zwei
+   Fahrten mit Wiederholungen vor, zaehlt die erste - sie ist die geplante
+   Einheit, die zweite die Zusatzfahrt.
+
+   Der Hinweis setzt den Tag nicht herab. Eine Einheit, die das Band gehalten
+   hat, ist gut gefahren; dass das Band zu tief liegt, ist eine Aussage ueber
+   die Vorgabe und nicht ueber den Fahrer. */
+function wiederholungNotes(row){
+  const f = (row.fahrten || []).find(x => x.zones && x.zones._wiederholungen);
+  if(!f) return [];
+  const a = f.zones._wiederholungen;
+  const notes = [
+    { kind:'info', text: T.wdhReihe(a.wdh.length, a.soll, a.band, a.quelle) },
+    { kind:'info', text: a.wdh.map(w => T.wdhEinzeln(w, a.lthr)).join(' ') }
+  ];
+  const h = a.hinweis;
+  if(h && h.grund !== 'ohneBand'){
+    notes.push({ kind: h.richtung === 'halten' ? 'good' : '',
+                 text: T.wdhHinweis(h, a.band, a.lthr) });
+  }
+  return notes;
 }
 
 /* Der Rumpftag: Zirkel, Beinblock und am Mittwoch zusaetzlich die Fahrt. */

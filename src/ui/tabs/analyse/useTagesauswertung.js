@@ -38,7 +38,7 @@
    der schnellen Runde als eine Meldung. */
 
 import { useEffect, useState } from 'preact/hooks';
-import { apiKey, plan, thresholds, startDate, store, testLog } from '../../../state/store.js';
+import { apiKey, plan, thresholds, startDate, store, testLog, varianten } from '../../../state/store.js';
 import { fetchStreams, spurMitHoehe, fetchWellness, fetchIntervals } from '../../../data/icu.js';
 import { ladeWetter, stundenIndex, windZurZeit } from '../../../data/wetter.js';
 import { ladeWege, untergrundCode, untergrundAusCode } from '../../../data/osm.js';
@@ -48,6 +48,8 @@ import { zoneSeconds, zonenBaender, hatLeistungsstrom,
          WATT_FENSTER_SEK, ROLLEN_WATT } from '../../../domain/zones.js';
 import { steadyMaske, driftAus, pulsMedian, lthrBestaetigt } from '../../../domain/steady.js';
 import { abschnittsRahmen, abschnittsAuswertung } from '../../../domain/abschnitte.js';
+import { wiederholungsRahmen, wiederholungsAuswertung } from '../../../domain/wiederholungen.js';
+import { buildDayInfo } from '../../../domain/day.js';
 import { isoDayLocal, toMidnight, weekNumberFor } from '../../../domain/week.js';
 import { isRide } from '../../../domain/analysis.js';
 import { verfassungAus } from '../../../domain/wellness.js';
@@ -207,18 +209,28 @@ export function useTagesauswertung(acts){
         if(quelle === 'watt' && zonenById[a.id] && zeit){
           const istSamstag = new Date(a.start_date_local).getDay() === 6;
           const rahmen = abschnittsRahmen(p, th, wk, istSamstag);
+          /* Der Qualitaetstag wird nicht nach Abschnitten, sondern nach
+             Wiederholungen bewertet: sein Zielband haengt seit Fassung 11 am
+             Pulskriterium, und das liest sich je Wiederholung - siehe
+             wiederholungen.js. Das Soll kommt aus dem Tag und nicht aus der
+             Woche, damit die gewaehlte Variante mitzaehlt: am Donnerstag der
+             Woche 5 sind es mit dem Maximalversuch vier Wiederholungen und
+             ohne ihn fuenf. */
+          const wdhRahmen = wiederholungsRahmen(
+            buildDayInfo(p, th, new Date(a.start_date_local), start, varianten.value).target, th);
           let runden = null;
-          if(rahmen && rahmen.bloeckeSoll){
+          if((rahmen && rahmen.bloeckeSoll) || wdhRahmen){
             try { runden = await fetchIntervals(key, a.id); }
             catch(e){ fehlt.push('Runden zu „' + (a.name || a.type) + '" (' + e.message + ')'); }
             if(weg) return;
           }
           const kad = hol('cadence');
-          const abschnitte = abschnittsAuswertung(rahmen, {
-            zeit, watt: watt.data, puls: hr && hr.data, tempoMs: tempo && tempo.data,
-            kadenz: kad && kad.data
-          }, runden);
+          const stroeme = { zeit, watt: watt.data, puls: hr && hr.data,
+                            tempoMs: tempo && tempo.data, kadenz: kad && kad.data };
+          const abschnitte = abschnittsAuswertung(rahmen, stroeme, runden);
           if(abschnitte) zonenById[a.id]._abschnitte = abschnitte;
+          const wdh = wiederholungsAuswertung(wdhRahmen, stroeme, runden);
+          if(wdh) zonenById[a.id]._wiederholungen = wdh;
         }
 
         /* Die Form des latlng-Streams liegt nicht fest - das Umrechnen auf
