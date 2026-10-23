@@ -10,62 +10,48 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 11, Stand 24.09.2026.** **Die Zielwatt der Donnerstagsintervalle steigen auf
-> 240–250 W, die Arbeits-FTP von 206 auf 215 W.** Anlass: zwei Intervalleinheiten in Folge
-> (17.09., 24.09.) haben das Pulskriterium „≥ 163 bpm in den letzten 60 s" bei Leistungen
-> bis 239 W verfehlt, und am 24.09. kamen nach vier Wiederholungen noch 268 W über 4 min —
-> mehr als der 5-min-Referenzwert von 254 W. Die Anhebung ist bewusst vorsichtig: Die
-> Leistungskurve ist kurz stark und lang flach (3 min 279 W, 20 min 202 W), ein Teil der
-> Kurzzeitleistung kommt aus der anaeroben Reserve und nicht aus der Schwelle. **Neu ist
-> eine Nachsteuerregel** über das Pulskriterium in 5-W-Schritten. Erholungswoche 7, Z2,
-> Test-FTP 192 W, Zonen und Retesttermine bleiben unverändert. Begründung in Abschnitt 9h.
+> **Fassung 12, Stand 22.10.2026.** **Retest ausgewertet: 234,7 W über 20 min → FTP 223 W,
+> LTHR 166 bpm.** Die Arbeits-FTP entfällt — Test-FTP und Zielwatt rechnen wieder auf
+> demselben Wert. **Neue Zielwatt:** Do-Intervalle 250–260 W, Sa-Blöcke 178–196 W,
+> Phase-4-Schwelle 201–212 W. **Z2 folgt jetzt der FTP:** Coggan-Z2 123–167 W, für lange
+> Fahrten gilt ein **Arbeitsbereich von Ø 135–150 W**, gesteuert über den Durchschnitt,
+> kontrolliert über das Decoupling. Die feste Regel „Z2 106–144 W unabhängig von der FTP"
+> ist aufgehoben. Das Pulskriterium der Intervalle hängt an **166 bpm**. **Woche 10 war
+> keine Erholungswoche** (Entscheidung nach Erkältungspause), nächste Erholungswoche
+> bleibt Woche 13. Der Anlauf zum 22.10. ist in Abschnitt 2a dokumentiert, der Test in der
+> Testhistorie. Begründung in Abschnitt 9i.
 >
-> Fassung 10 (23.09.2026) brachte: **Der Dienstag ist ab sofort eine feste Größe:**
-> dieselbe lange Pendelstrecke, Soll 90 min, in jeder Belastungswoche bis Woche 15. Er
-> wird nicht mehr verlängert — die verfügbare Zeit vor Arbeitsbeginn ist ausgeschöpft
-> (22.09.: 96 min Fahrzeit, 100 min brutto). **Die Wochensummen ändern sich nicht:** der
-> Plan hat den Dienstag ab Woche 6 ohnehin bei 90 min gehalten, die Steigerung lief schon
-> bisher über Samstag, Donnerstag und den Mittwoch in Phase 3. Fassung 10 macht das
-> verbindlich, schließt den Vorbehalt aus Abschnitt 9 und nimmt den Dienstag aus allen
-> Ausgleichs- und Verlängerungsoptionen. Begründung in Abschnitt 9g.
+> Fassung 11 (24.09.2026) brachte: **Die Zielwatt der Donnerstagsintervalle stiegen auf
+> 240–250 W, die Arbeits-FTP von 206 auf 215 W.** Anlass: zwei Intervalleinheiten in Folge
+> (17.09., 24.09.) hatten das Pulskriterium „≥ 163 bpm in den letzten 60 s" bei Leistungen
+> bis 239 W verfehlt, und am 24.09. kamen nach vier Wiederholungen noch 268 W über 4 min.
+> Neu war eine Nachsteuerregel über das Pulskriterium in 5-W-Schritten. Begründung in
+> Abschnitt 9h.
+>
+> Fassung 10 (23.09.2026) brachte: **Der Dienstag ist eine feste Größe:** dieselbe lange
+> Pendelstrecke, Soll 90 min, in jeder Belastungswoche bis Woche 15. Er wird nicht mehr
+> verlängert — die verfügbare Zeit vor Arbeitsbeginn ist ausgeschöpft. Die Wochensummen
+> änderten sich nicht. Begründung in Abschnitt 9g.
 >
 > Fassung 9 (20.09.2026) brachte: Im Koordinationsblock (Abschnitt 10) ersetzt die
-> **einbeinige Standwaage** den Diagonalgang. Der Diagonalgang ist für einen Sportler mit
-> unauffälligem Gangbild unterschwellig und stammt aus der Rehabilitation, nicht aus dem
-> Training. Der Block bestand damit aus drei statischen Stehübungen plus Gehen — die
-> dynamische einbeinige Kontrolle fehlte. **Sonst keine Änderung:** Rad, Kraft, Ernährung
-> und Mobility-Flow bleiben unberührt. Begründung in Abschnitt 9f.
+> **einbeinige Standwaage** den Diagonalgang. Begründung in Abschnitt 9f.
 >
-> Fassung 8 (19.09.2026) brachte: Der Gang-Test vom 19.09. ist ausgewertet: Gang 7 bei
-> 89 rpm liefert nur Ø 107 W, also den unteren Rand von Z2 statt ~139 W. **Auf dem Cube hat in Z2 die
-> Leistung Vorrang vor der Kadenz — Zielkadenz 80–85 rpm statt 85–90 rpm**, Arbeitspunkt
-> bleibt Gang 8 bei 80–82 rpm, rund 139 W. Kadenzarbeit über 85 rpm läuft auf dem
-> Trekkingrad und in der Kadenzpyramide. Begründung in Abschnitt 9e.
-> **Außerdem neu: Die Analyse bewertet Radeinheiten mit Leistungsmesser nach Abschnitten**
-> (Einfahren, geplante Blöcke, Blockpause, Z2-Anteil, Ausrollen) statt jede Sekunde über
-> 144 W gegen die Fahrt zu zählen. „Zu hart" gibt es nur noch über das Decoupling des
-> Z2-Anteils (App-Anforderung 30, Abschnitt 7).
+> Fassung 8 (19.09.2026) brachte: **Auf dem Cube hat in Z2 die Leistung Vorrang vor der
+> Kadenz — Zielkadenz 80–85 rpm statt 85–90 rpm**, Arbeitspunkt Gang 8 bei 80–82 rpm.
+> Außerdem: **Die Analyse bewertet Radeinheiten mit Leistungsmesser nach Abschnitten**
+> (App-Anforderung 30). Begründung in Abschnitt 9e.
 >
-> Fassung 7 (17.09.2026) brachte: Der 5-Minuten-Referenzwert vom 17.09. liegt bei
-> **254 W = 132 % der Test-FTP** und überschreitet die 118-%-Gegenprobe deutlich. Die
-> FTP von 192 W ist damit belegt zu niedrig. Entscheidung: **kein vorgezogener Retest**,
-> stattdessen wird eine **Arbeits-FTP von 206 W** eingeführt, die ausschließlich die
-> Zielwerte der Qualitätseinheiten steuert (Abschnitt 1, „Arbeits-FTP"). Die Testwerte
-> 192 W und 163 bpm bleiben in intervals.icu und in der App stehen, damit die drei Tests
-> vergleichbar bleiben. **Z2 ändert sich nicht.** Weiter: das Intervallkriterium hängt
-> jetzt an der belegten LTHR statt an der unbekannten HFmax, die Ruhepuls-Regel im
-> Wellness-Gate ist präzisiert, Testhistorie und VO2max-Tabelle sind ausgefüllt, und für
-> Maximalversuche gilt eine Streckenregel.
-> Begründungen in Abschnitt 9d.
+> Fassung 7 (17.09.2026) brachte: 5-min-Referenzwert 254 W = 132 % der Test-FTP, Einführung
+> der **Arbeits-FTP 206 W** für die Zielwatt der Qualitätseinheiten, kein vorgezogener
+> Retest, Intervallkriterium an der LTHR statt an der HFmax, präzisierte Ruhepuls-Regel,
+> Streckenregel für Maximalversuche. Begründungen in Abschnitt 9d.
 >
 > Fassung 6 (11.09.2026) brachte: **Es wird das ganze Jahr draußen gefahren, keine
-> Rolle.** Abschnitt 4.11 ordnet den Donnerstag neu — tagsüber, sonst im Dunkeln auf
-> bekannter Strecke, in den Samstag nur noch bei schlechtem Wetter. Der Retest am 03.12.
-> startet um **14:00 statt 16:21** (Abschnitt 2a, Details in `SCHWELLENTESTS.md`). Der
-> Merkposten „Rolle“ in Abschnitt 8 entfällt.
+> Rolle.** Abschnitt 4.11 ordnet den Donnerstag neu. Der Retest am 03.12. startet um
+> **14:00 statt 16:21**. Begründung in Abschnitt 9c.
 >
-> Fassung 5 (09.09.2026) brachte: Erhaltungsreiz Phase 3 als 3 × 3 min bei 108–115 % FTP,
-> eingebettet in die Z2-Einheit am Donnerstag, statt 6 × 30 s am Mittwoch.
+> Fassung 5 (09.09.2026) brachte: Erhaltungsreiz Phase 3 als 3 × 3 min, eingebettet in die
+> Z2-Einheit am Donnerstag, statt 6 × 30 s am Mittwoch.
 >
 > Fassung 4 (04.09.2026) brachte: 5-Minuten-All-out aus dem Schwellentest gestrichen,
 > VO2max-Referenz auf Do 17.09. verlegt, Testdauer 65 → 55 min.
@@ -76,8 +62,8 @@ Plan muss dieses Dokument mitgezogen werden.
 > danach wird ein neuer Plan geschrieben.
 >
 > Begründungen der Änderungen in Abschnitt 9 (Fassung 3), 9a (Fassung 4),
-> 9b (Fassung 5), 9c (Fassung 6), 9d (Fassung 7), 9e (Fassung 8), 9f (Fassung 9) und
-> 9g (Fassung 10).
+> 9b (Fassung 5), 9c (Fassung 6), 9d (Fassung 7), 9e (Fassung 8), 9f (Fassung 9),
+> 9g (Fassung 10), 9h (Fassung 11) und 9i (Fassung 12).
 
 ---
 
@@ -95,51 +81,26 @@ Langfristiges Fernziel außerhalb dieses Plans: lange Touren mit ausgeprägtem
 Höhenprofil, und Leistungsfähigkeit im Alltag bis ins hohe Alter. Dieser Plan ist die
 Grundlagenphase dafür, nicht die Vorbereitung auf ein konkretes Ereignis.
 
-**Sensorik:** Herzfrequenz durchgehend (Handgelenk). Leistungs- und Trittfrequenzmesser
-liegen **seit Ende August vor**, also früher als ursprünglich geplant. Bis zum
-Schwellentest am 10.09. werden Wattwerte **nur mitgeschrieben, nicht zur Steuerung
-verwendet** — ohne FTP fehlt der Bezugswert. Ab Woche 5 sind sie die primäre
-Steuergröße der Qualitätseinheiten.
+**Sensorik:** Herzfrequenz durchgehend. Leistungs- und Trittfrequenzmesser am Cube Nuroad
+**seit Ende August**. Seit dem Schwellentest am 10.09. sind Wattwerte die primäre
+Steuergröße der Qualitätseinheiten und der langen Ausfahrt.
 
-### Arbeits-FTP 215 W (eingeführt in Fassung 7, angehoben in Fassung 11)
+### FTP 223 W — ein Wert für alles (seit Fassung 12)
 
-Zwei Zahlen mit zwei verschiedenen Aufgaben:
+**Seit dem Retest am 22.10. gibt es wieder nur eine FTP: 223 W.** Sie steht in
+intervals.icu, in der App, im Zonenmodell und ist zugleich die Bezugsgröße aller
+Zielwatt.
 
-| Größe | Wert | Wofür |
-|---|---|---|
-| **Test-FTP** | **192 W** (10.09.) | intervals.icu, App, Zonenmodell, Vergleich der drei Tests, Trainingslast |
-| **Arbeits-FTP** | **215 W** (seit 24.09., zuvor 206 W) | **nur** die Zielwatt der Qualitätseinheiten: Do-Intervalle und Sa-Blöcke |
+**Die Arbeits-FTP ist aufgehoben.** Sie war von Fassung 7 bis 11 eine Hilfsgröße, weil
+der erste Test (192 W) belegt zu niedrig lag: Fassung 7 setzte sie auf 206 W, Fassung 11
+auf 215 W, jeweils nur für die Zielwatt der Qualitätseinheiten. Der Retest liegt mit
+223 W noch 8 W darüber — die Arbeits-FTP war also eher vorsichtig als zu hoch angesetzt.
 
-**Woher die 215 W stammen (Fassung 11):** Die erste Arbeits-FTP von 206 W ergab sich am
-17.09. aus dem 5-min-Wert (254 W, 132 % der Test-FTP) und der eFTP (Sprung von 196 auf
-206 W). Zwei Intervalleinheiten später zeigt sich, dass auch 206 W zu tief rechnen: Bei
-Leistungen bis 239 W erreicht der Puls in der letzten Intervallminute die LTHR nicht, und
-am 24.09. gelangen nach vier Wiederholungen noch 268 W über 4 min. 215 W liegen zwischen
-den Anhaltspunkten, ohne die Kurzzeitleistung zu überbewerten: eFTP 206 W, Test-FTP
-192 W aus einem nicht ausbelasteten Test, 10-min-Bestwert 208 W, 20-min-Bestwert 202 W —
-und auf der anderen Seite rund 75–85 % einer 5-min-Leistung um 265–270 W, also
-200–230 W. **Die langen Werte bremsen bewusst:** Die Leistungskurve ist kurz stark
-(1 min 347 W, 3 min 279 W) und lang flach. Eine FTP aus den kurzen Werten hochzurechnen,
-würde Samstagsblöcke und Schwellenarbeit zu hart ansetzen.
-
-**Die Donnerstagsintervalle hängen seit Fassung 11 nicht mehr allein am Prozentsatz,
-sondern am Pulskriterium.** Das Zielband 240–250 W entspricht 112–116 % der Arbeits-FTP
-und wird über die Nachsteuerregel in Abschnitt 2 („Ausführungsregeln Intervalle", Regel 7)
-in 5-W-Schritten angepasst.
-
-**Was die Arbeits-FTP nicht ist:** kein Testwert und kein Eintrag in intervals.icu. Sie
-wird **nicht** in die Settings geschrieben, weil sonst die Trainingslast-Historie und die
-Vergleichbarkeit der drei Testtermine brechen. Der nächste offizielle Wert entsteht am
-22.10.
-
-**Preis dieser Entscheidung:** Solange die FTP in intervals.icu auf 192 W steht, rechnet
-die Plattform die Trainingslast gemessen an der Arbeits-FTP 215 W etwa 12 % zu hoch.
-CTL, ATL und TSB sind dadurch überzeichnet. Das ist hinnehmbar, weil die Steuerung ohnehin über Umfangsdeckel und
-Wellness-Gate läuft — aber es ist beim Lesen der Fitness-Seite mitzudenken.
-
-**Z2 bleibt unverändert.** Die Grundlagenzone hängt an LT1, nicht an einem Prozentsatz
-der FTP, und der Arbeitspunkt um 139 W bei Puls 128–135 ist durch ein Decoupling von
-−0,9 % am 12.09. belegt. Details unter „Zonen ab Woche 5".
+**Warum der Testwert jetzt trägt:** Der Test vom 22.10. war ausbelastet (Max HF 180,
+Ø 172 bpm in den letzten 5 min) und gleichmäßig gefahren (5-min-Abschnitte 236 / 233 /
+232 / 237 W). Die Unsicherheit, die der erste Test hatte — fehlende Pacing-Erfahrung,
+keine Ausbelastung —, fällt damit weg. Einzelheiten in der Testhistorie (Abschnitt 2a)
+und in Abschnitt 9i.
 
 **Struktur:** Woche 1–4 im 3:1-Rhythmus, **ab Woche 5 im 2:1-Rhythmus**.
 
@@ -148,8 +109,16 @@ der FTP, und der Arbeitspunkt um 139 W bei Puls 128–135 ist durch ein Decoupli
 - **Phase 3 (Woche 11–13):** Grundlagenblock mit Erhaltungsreiz.
 - **Phase 4 (Woche 14–16):** Schwellenblock, 3 × 10–12 min. Woche 16 mit Retest.
 
-**Erholungswochen: 4, 7, 10, 13, 16.** Reduzierter Umfang **und** reduzierte Intensität.
+**Erholungswochen: 4, 7, 13, 16.** Reduzierter Umfang **und** reduzierte Intensität.
 Keine Z5-Arbeit, keine Blöcke am Samstag, kein Beinblock am Dienstag.
+
+**Woche 10 war keine Erholungswoche (Fassung 12).** Woche 8 fiel durch eine Erkältung
+weitgehend aus und war faktisch eine Pause. Eine Erholungswoche direkt danach wäre zu
+früh gekommen. Woche 10 blieb deshalb Testwoche mit Testanlauf, aber ohne reduzierten
+Umfang; die lange Ausfahrt lag am Sonntag. Die nächste Erholungswoche ist Woche 13 wie
+geplant. **Absicherung:** Die Wochen 9 bis 12 sind vier Belastungswochen in Folge. Die
+TSB-Regel aus der Erholungssteuerung (sieben Tage unter −20 → Folgewoche Erholung) und
+das Wellness-Gate gelten deshalb in Woche 11 und 12 ausdrücklich als Auslöser.
 
 Die alte Formel `week % 4 === 0` gilt **nicht mehr**. Die Erholungswochen stehen als
 feste Liste.
@@ -171,9 +140,9 @@ langen Ausfahrt und endet mit dem optionalen Freitag.
 | 5 | 12.09. – 18.09.2026 | 2 |
 | 6 | 19.09. – 25.09.2026 | 2 · Samstag mit Blöcken |
 | **7** | 26.09. – 02.10.2026 | 2 · Erholung |
-| 8 | 03.10. – 09.10.2026 | 2 |
+| 8 | 03.10. – 09.10.2026 | 2 · faktisch Pause (Erkältung) |
 | 9 | 10.10. – 16.10.2026 | 2 · Samstag mit Blöcken |
-| **10** | 17.10. – 23.10.2026 | 2 · Erholung · **Retest Do 22.10.** |
+| 10 | 17.10. – 23.10.2026 | 2 · **Retest Do 22.10.** · keine Erholungswoche (Fassung 12) |
 | 11 | 24.10. – 30.10.2026 | 3 · **Zeitumstellung 25.10.** |
 | 12 | 31.10. – 06.11.2026 | 3 · Samstag mit Blöcken |
 | **13** | 07.11. – 13.11.2026 | 3 · Erholung |
@@ -200,13 +169,13 @@ Plananzeige, Timer-Voreinstellungen und Analyse mit einer falschen Woche.
 | Samstag | Lange Ausfahrt, Basis Z2 |
 | Sonntag | Rumpf **voll** + Beinblock + optional Z1-Fahrt |
 
-Der Tausch Mittwoch ↔ Sonntag ist bewusst: die anstrengendere Krafteinheit liegt jetzt
+Der Tausch Mittwoch ↔ Sonntag ist bewusst: die anstrengendere Krafteinheit liegt
 direkt vor dem Ruhetag Montag, und der Tag vor dem Qualitätstag Donnerstag ist leicht.
 
 ### Ist-Stand nach drei Wochen (Stand 30.08.2026)
 
-Grundlage aller Änderungen in dieser Fassung. Zahlen aus intervals.icu, Wochenbuckets
-laufen dort **Mo–So** und sind gegen die Planwochen (Sa–Fr) versetzt.
+Grundlage der Änderungen in Fassung 3. Zahlen aus intervals.icu, Wochenbuckets laufen
+dort **Mo–So** und sind gegen die Planwochen (Sa–Fr) versetzt.
 
 | Woche (Mo–So) | Radzeit | Load | CTL | ATL | TSB |
 |---|---|---|---|---|---|
@@ -215,28 +184,20 @@ laufen dort **Mo–So** und sind gegen die Planwochen (Sa–Fr) versetzt.
 | 24.–29.08. | 351 min | 241 | 9,9 | 35,9 | **−26,0** |
 
 **Befund 1 — Die Zonenkorrektur hat sofort gewirkt.** Anteil der Fahrzeit oberhalb Z2:
-55 % in der ersten Woche, 10 % in der zweiten. Grundlagenausdauer entsteht ab jetzt
-tatsächlich.
+55 % in der ersten Woche, 10 % in der zweiten.
 
 **Befund 2 — Der Ist-Umfang liegt über dem Plan.** Geplant waren 266 und 326 Minuten,
-gefahren wurden 364 und 351. Ursache ist unter anderem, dass `WED_MIN` als Mindestwert
-definiert ist und die Streckenwahl „im Zweifel länger" lautet. Siehe Umfangsdeckel unten.
+gefahren wurden 364 und 351. Siehe Umfangsdeckel unten.
 
-**Befund 3 — TSB −26 bei CTL 10.** Die Ermüdung liegt beim 3,6-Fachen der Grundlast.
-Die Ramp-Rate von 4,9 bzw. 5,1 liegt formal auf der Obergrenze aus Fassung 2, diese
-Regel stammt aber aus dem Leistungssport und meint eine CTL von 60–80. Bei CTL 10 sind
-+5 Punkte eine Verdopplung der Grundlast pro Woche. **Die Ramp-Rate-Regel ist bei dieser
-CTL nicht aussagekräftig** und wird durch den Umfangsdeckel ersetzt.
+**Befund 3 — TSB −26 bei CTL 10.** Die Ramp-Rate-Regel ist bei dieser CTL nicht
+aussagekräftig und wird durch den Umfangsdeckel ersetzt.
 
 **Befund 4 — Gewicht.** Die erste belastbare Messung ist der 17.08. (97,6 kg); der Wert
-102,2 kg vom 01.07. und 15.08. ist zweimal identisch und stammt vermutlich aus einer
-einzigen Eingabe. Der scheinbare Sturz von 4,6 kg ist ein Messartefakt, kein
-Gewichtsverlust. Seit dem 17.08. wird täglich gewogen: rund **700 g pro Woche**. Siehe
+102,2 kg vom 01.07. und 15.08. stammt vermutlich aus einer einzigen Eingabe. Siehe
 Abschnitt 11.
 
 **Befund 5 — Gelände.** 173 und 308 Höhenmeter pro Woche auf 114 bzw. 119 km. Die
-Annahme flacher Referenzstrecken trägt, die Datengrundlage für die Driftanalyse ist
-sauber.
+Annahme flacher Referenzstrecken trägt.
 
 ### Umfangsdeckel
 
@@ -244,22 +205,20 @@ sauber.
 Planwert plus höchstens 10 %. Wird er überschritten, wird in der Folgewoche gekürzt,
 nicht kompensiert.
 
-Das ersetzt die Ramp-Rate-Regel als primäre Absicherung, solange die CTL unter 20 liegt.
-
 ### Erholungssteuerung
 
 Zweistufig, weil die klassischen Modellwerte bei niedriger CTL nicht tragen:
 
 | CTL | Steuerung |
 |---|---|
-| **unter 20** | Umfangsdeckel + Wellness-Gate. TSB wird beobachtet, aber **nicht** als Auslöser verwendet — bei CTL 10 ist ein TSB über −10 rechnerisch kaum erreichbar |
+| **unter 20** | Umfangsdeckel + Wellness-Gate. TSB wird beobachtet, aber **nicht** als Auslöser verwendet |
 | **ab 20** | Zusätzlich: liegt TSB sieben Tage in Folge unter −20, ist die Folgewoche eine Erholungswoche, unabhängig von der Wochennummer |
 
-**Stand 17.09.2026: CTL 20,8 — die zweite Stufe ist ab sofort aktiv.** Der TSB zählt
-damit als Auslöser: sieben Tage in Folge unter −20 machen die Folgewoche zur
-Erholungswoche. Am 17.09. liegt der TSB bei −25. Woche 7 (26.09.–02.10.) ist ohnehin
-Erholungswoche, der Zeitpunkt passt also. Zu bedenken: Solange die FTP auf 192 W steht,
-fällt die gerechnete Last etwas zu hoch und der TSB damit etwas zu tief aus.
+**Seit 17.09.2026 (CTL über 20) ist die zweite Stufe aktiv.** Mitte Oktober liegt die
+CTL um 30. Bis Fassung 11 lief die Trainingslast auf der Test-FTP 192 W und fiel dadurch
+rund 12–16 % zu hoch aus. **Ab dem 22.10. rechnet intervals.icu mit 223 W** — Load, CTL
+und ATL fallen ab dann niedriger aus als zuvor bei gleicher Arbeit. Das ist eine
+Korrektur der Rechnung, kein Formverlust, und beim Lesen der Fitness-Seite mitzudenken.
 
 Ergänzend gilt weiterhin: zwei rote Wellness-Tage hintereinander → gesamte Woche als
 Erholungswoche.
@@ -267,8 +226,7 @@ Erholungswoche.
 ### Arbeitsweg als Trainingsbestandteil
 
 Dienstag und Mittwoch sind Bürotage. Nur der Hinweg wird gefahren, mit Gepäck.
-Direkte Strecke ca. 13 km; die Streckenwahl ist so angelegt, dass in Z2 mindestens
-die Solldauer zusammenkommt — **gesteuert wird über die Zeit, nicht über die Distanz.**
+Direkte Strecke ca. 13 km; **gesteuert wird über die Zeit, nicht über die Distanz.**
 
 | Tag | Strecke | Charakter |
 |---|---|---|
@@ -276,17 +234,14 @@ die Solldauer zusammenkommt — **gesteuert wird über die Zeit, nicht über die
 | **Mittwoch** | direkt, ca. 13 km | bewusst der lockerste Fahrtag der Woche |
 
 **Warum der Mittwoch kurz bleibt:** Er ist der einzige Fahrtag direkt vor dem
-Qualitätstag Donnerstag. Irgendein Tag muss der leichteste sein — das ist dieser.
-Unteres bis mittleres Z2, nicht am Sprechtest-Limit.
+Qualitätstag Donnerstag. Unteres bis mittleres Z2, nicht am Sprechtest-Limit.
 
 **Ausnahme Phase 3 (Woche 11–12):** Dort ist der Donnerstag selbst eine Z2-Einheit und
 braucht keine Schonung davor. Der Mittwoch wächst auf 60 min — **reines Z2, ohne
-Zusatzreiz.** Der Erhaltungsreiz hängt seit Fassung 5 am Donnerstag, nicht mehr am
-Mittwoch (Begründung in Abschnitt 9b).
+Zusatzreiz.** Der Erhaltungsreiz hängt seit Fassung 5 am Donnerstag.
 
 **Zusammenhängend statt aufgeteilt.** Eine gestreckte Hinfahrt schlägt zwei kürzere
-Fahrten deutlich: der mitochondriale Reiz braucht die Dauer am Stück, zwei mal 30 min
-sind nicht ein mal 60.
+Fahrten deutlich: der mitochondriale Reiz braucht die Dauer am Stück.
 
 **Praktische Randbedingungen:**
 
@@ -302,44 +257,36 @@ sind nicht ein mal 60.
   sie wirklich Z2 ist.
 - **Der Dienstag ist gedeckelt durch die verfügbare Zeit, nicht durch den Plan**
   (Fassung 10). Soll 90 min; **85–100 min Fahrzeit gelten als planmäßig.** Die Strecke
-  wird nicht mehr verlängert, auch nicht zum Ausgleich einer anderen ausgefallenen
-  Einheit. Braucht die Fahrt bei Gegenwind, Kälte oder Dunkelheit länger, wird **die
-  Strecke gekürzt, nicht die Abfahrt vorverlegt** — der Ankunftspuffer von 15 min hat
-  Vorrang. Eine kürzere Dienstagsfahrt wird nicht kompensiert.
-- **In Erholungswochen** (7, 10, 13, 16) bleibt der Dienstag bei 50 min, also eine
-  kürzere Variante der Strecke. Kürzen ist jederzeit möglich; die Grenze betrifft nur
-  das Verlängern.
+  wird nicht verlängert, auch nicht zum Ausgleich einer anderen ausgefallenen Einheit.
+  Braucht die Fahrt länger, wird **die Strecke gekürzt, nicht die Abfahrt vorverlegt**.
+  Eine kürzere Dienstagsfahrt wird nicht kompensiert.
+- **In Erholungswochen** (7, 13, 16) bleibt der Dienstag bei 50 min. In Testwochen
+  gilt der Testanlauf aus Abschnitt 2a.
 
-### Pulszonen — Übergangsfassung (Woche 1 bis 4)
+### Pulszonen — Übergangsfassung (Woche 1 bis 4, historisch)
 
-**Korrigiert am 22.08.2026, methodisch nachgeschärft am 23.08.2026.** Die ursprünglichen
-Bänder waren glatte %HFmax-Dekaden bei einer angenommenen HFmax von 180 bpm. Die
-Dekaden-Aufteilung hat sich als falsch erwiesen; die HFmax-Annahme selbst trägt vorerst.
+**Korrigiert am 22.08.2026, methodisch nachgeschärft am 23.08.2026.** Gültig bis zum
+ersten Test am 10.09.; seitdem gelten die Coggan-Zonen unten. Die Bänder bleiben als
+historische Fassung stehen, weil die Pendeltage auf dem Trekkingrad weiterhin mit dem
+belegten Arbeitsbereich 128–135 bpm gefahren werden.
 
-| Zone | bpm **(gültig)** | Verwendung |
+| Zone | bpm | Verwendung |
 |---|---|---|
 | unter Z1 | < 100 | Rollen, Pause |
 | Z1 | 100–128 | Erholung, Einfahren, optionale Fahrten |
 | **Z2 Arbeitsbereich** | **128–135** | **Grundlagenausdauer — hier fahren** |
-| Z2 Obergrenze | 135–142 | nur kurzzeitig, siehe unten |
+| Z2 Obergrenze | 135–142 | nur kurzzeitig |
 | Z3 | 142–155 | Tempo |
 | Z4 | 155–168 | Übergang, im Plan nicht angesteuert |
 | Z5 | > 168 | VO2max |
 
-**Der Arbeitsbereich 128–135 ist belegt, die Obergrenze 142 nicht.** Grundlagenfahrten
-werden in 128–135 gefahren. 142 ist eine harte Grenze, kein Ziel.
-
-**Nachtrag Fassung 7:** Die hier zugrunde gelegte HFmax von 180 bpm ist und bleibt eine
-Annahme; der höchste aufgezeichnete Wert liegt bisher bei 173 bpm (24.09.; zuvor 171 bpm), erreicht ohne
-Ausbelastung. Die Bänder bleiben als historische Fassung stehen — ab Woche 5 gelten
-ohnehin die Coggan-Zonen aus der LTHR, und der Arbeitsbereich 128–135 deckt sich mit
-deren oberer Z2-Hälfte.
+**Nachtrag Fassung 12:** Die damals zugrunde gelegte HFmax-Annahme von 180 bpm ist am
+22.10. im Retest erstmals tatsächlich erreicht worden. Der Arbeitsbereich 128–135 liegt
+in der HF-Z2 aus der neuen LTHR 166 (113–137 bpm).
 
 #### Woher die Korrektur kommt
 
 Datengrundlage: Samstagsausfahrt 22.08.2026, 143 min, 46,9 km, 113 hm, überwiegend flach.
-Unbefestigter Untergrund überwiegend im ersten Drittel. Letztes Drittel mit Ortschaften,
-Kreuzungen, Orientierung und einsetzender Dunkelheit.
 
 | Befund | Wert |
 |---|---|
@@ -353,14 +300,8 @@ Kreuzungen, Orientierung und einsetzender Dunkelheit.
 
 **Der Rechenfehler in den alten Bändern:** 130–135 bpm entsprechen 72–75 % der
 angenommenen HFmax von 180. Genau dort verortet die Literatur LT1 — nicht bei 60–70 %.
-Das alte Z2-Band lag eine ganze Dekade zu tief und beschrieb in Wahrheit
-Erholungsintensität.
 
-**Zum Wert 144:** kein Messfehler. Über den gesamten Stream gibt es keinen einzigen
-Sprung über 8 bpm/s, wie er für Kadenz-Lock oder Aussetzer der optischen Messung
-typisch wäre. Die elf kurzen Blöcke über 144 sehen nach echten Antritten aus.
-
-#### Driftanalyse — und warum die Obergrenze unsicher ist
+#### Driftanalyse
 
 Nach Herausfiltern aller Stop-and-go-Phasen (nur Segmente ≥ 120 s durchgehend
 > 15 km/h, zusammen 83 von 143 min):
@@ -371,124 +312,109 @@ Nach Herausfiltern aller Stop-and-go-Phasen (nur Segmente ≥ 120 s durchgehend
 | D2 | 34,8 min | 20,8 | 131,6 | 0,1578 |
 | D3 | 11,7 min | 20,0 | 132,2 | 0,1513 |
 
-**Drift D1 → D3: +6,5 %. Über die Hälften: +3,9 %.** Zielwert ist unter 5 %.
-
-**Einschränkung:** D3 stützt sich auf nur 11,7 min Steady-Zeit. Der Wert +6,5 % ist
-statistisch dünn und trägt weniger, als er wirkt.
-
-**Gegenprobe bei gleicher Geschwindigkeit,** früh gegen spät:
-
-| Geschwindigkeit | HF früh | HF spät | Δ |
-|---|---|---|---|
-| 16–18 km/h | 130,7 | 130,2 | −0,5 |
-| 18–20 km/h | 131,4 | 131,3 | −0,1 |
-| 20–22 km/h | 130,5 | 132,4 | +1,9 |
-| 22–24 km/h | 130,9 | 132,4 | +1,6 |
-
-Bei einer Fahrt von 2,4 h **oberhalb** LT1 wären 5 bis 10 Schläge Anstieg zu erwarten.
-Ein bis zwei sind es. Der Drift hat vermutlich andere Ursachen: längste Fahrt bisher,
-muskuläre Beschwerden im Oberschenkel ab der Hälfte, fehlende Verpflegung über 2,4 h,
-Abkühlung und Dunkelheit am Ende.
-
-**Schlussfolgerung:** Die untere Hälfte des Bandes ist belegt, die obere nicht. Deshalb
-128–135 als Arbeitsbereich.
-
-**Nächste Überprüfung:** Samstagsausfahrt konsequent bei 128–135 fahren. Fällt der Drift
-dann unter 5 %, ist die Obergrenze gefunden.
-
-#### Status dieser Bänder
-
-**Arbeitsannahme, kein gemessener Wert.** Sie stützt sich auf einen einzigen Datenpunkt,
-eine ungeprüfte HFmax und auf Geschwindigkeit als Ersatz für Leistung. Ab dem Testwert
-rechnet intervals.icu das Decoupling aus Watt, dann ist die Frage endgültig geklärt.
-
-Die Bänder gelten bis zum Test am 10.09.2026 und ersetzen bis dahin die alte Tabelle
-vollständig — auch rückwirkend in der Auswertung.
-
-**Wichtig für jede Auswertung:** Diese Bänder sind nicht die Zonen von intervals.icu.
-Dort sind die Zonen an der LTHR ausgerichtet, `icu_hr_zone_times` passt also **nicht**
-auf diese Tabelle. Zeit je Zone muss aus dem Puls-Stream gegen die Bänder oben
-gerechnet werden.
+**Drift D1 → D3: +6,5 %. Über die Hälften: +3,9 %.** D3 stützt sich auf nur 11,7 min
+Steady-Zeit und ist statistisch dünn. Die Gegenprobe bei gleicher Geschwindigkeit zeigte
+nur 1–2 Schläge Anstieg früh gegen spät.
 
 #### Methodenhinweis für künftige Driftanalysen
 
 1. **Nicht nur Hälften vergleichen** — Drittel zeigen Effekte, die die Zweiteilung
    verdeckt. Aber: Drittel mit unter 15 min Steady-Zeit nicht überinterpretieren.
 2. **Stop-and-go herausfiltern.** Nur Segmente ≥ 120 s durchgehend > 15 km/h werten.
-3. **Gegenprobe bei gleicher Geschwindigkeit** früh gegen spät. Das ist der belastbarere
-   Test als jede EF-Mittelung.
-4. **Untergrund und Streckenprofil notieren.** Ab Woche 5 entfällt das Problem, weil
-   Watt unabhängig davon sind.
+3. **Gegenprobe bei gleicher Geschwindigkeit** früh gegen spät.
+4. **Untergrund und Streckenprofil notieren.** Auf Fahrten mit Leistungsmesser entfällt
+   das Problem, weil Watt unabhängig davon sind.
 5. **Verpflegung notieren.** Ab 90 min Fahrzeit ohne Kohlenhydratzufuhr ist der Drift
    nicht mehr sauber der Intensität zuzuordnen.
+6. **Anstiege in einer Hälfte** (neu in Fassung 12) verzerren den Hälftenvergleich des
+   Decouplings. Liegt ein harter Anstieg nur in einer Hälfte, ist der Wert nicht
+   aussagekräftig (Beispiel So 18.10.).
 
-### Zonen ab Woche 5 — gesetzt seit 10.09.
+### Zonen — gesetzt seit 22.10.2026 (Fassung 12)
 
 Beide Zonensätze stehen nach Coggan, in intervals.icu **und** in der App identisch.
-Damit ist `icu_hr_zone_times` wieder verwendbar.
+intervals.icu zeigt die exakten Grenzen; die Tabellen hier sind auf ganze Watt bzw.
+Schläge gerundet.
 
-**Leistung, aus der Test-FTP 192 W:**
+**Leistung, aus der FTP 223 W:**
 
 | Zone | % FTP | Watt | Verwendung |
 |---|---|---|---|
-| Z1 | 0–55 % | 1–105 | Intervallpausen, optionale Fahrten |
-| **Z2** | **56–75 %** | **106–144** | **Di, Mi, Sa — Grundlagenausdauer** |
-| Z3 | 76–90 % | 145–172 | Samstagsblöcke |
-| Z4 | 91–105 % | 173–201 | Schwellenblöcke Phase 4 |
-| Z5 | 106–120 % | 202–230 | VO2max-Intervalle Phase 2 |
-| SS | 84–97 % | 161–186 | Sweetspot, nur Woche 7 |
+| Z1 | 0–55 % | 1–122 | Intervallpausen, optionale Fahrten |
+| **Z2** | **56–75 %** | **123–167** | **Di, Mi, Sa — Grundlagenausdauer**, Arbeitsbereich lange Fahrt Ø 135–150 W |
+| Z3 | 76–90 % | 168–200 | Samstagsblöcke |
+| Z4 | 91–105 % | 201–234 | Schwellenblöcke Phase 4 |
+| Z5 | 106–120 % | 235–267 | VO2max-Intervalle |
+| SS | 84–97 % | 187–216 | Sweetspot, derzeit nicht im Plan |
 
-**Herzfrequenz, aus der Schwellen-HF 163 bpm:**
+**Vorwerte aus der Test-FTP 192 W (10.09. bis 22.10.):** Z1 1–105, Z2 106–144, Z3 145–172,
+Z4 173–201, Z5 202–230 W.
+
+**Herzfrequenz, aus der Schwellen-HF 166 bpm:**
 
 | Zone | % LTHR | bpm |
 |---|---|---|
-| Z1 | 0–67 % | 0–110 |
-| **Z2** | **68–83 %** | **111–135** |
-| Z3 | 83–94 % | 136–153 |
-| Z4 | 94–104 % | 154–170 |
-| Z5 | 105 %+ | 171+ |
+| Z1 | 0–67 % | 0–112 |
+| **Z2** | **68–83 %** | **113–137** |
+| Z3 | 83–94 % | 138–156 |
+| Z4 | 94–104 % | 157–172 |
+| Z5 | 105 %+ | 173+ |
 
-**Die LTHR ist 163, nicht der Protokollwert 152.** Der Ø-Puls der 20 Testminuten enthält
-die Anlaufminuten; die letzten fünf Minuten lagen bei 159,6 bpm, der Test war mit RPE 7–8
-nicht ausbelastet, und die Gegenprobe über Leistung stützt 163. Der Protokollwert wird in
-`SCHWELLENTESTS.md` dokumentiert, aber nicht zur Zonenbildung verwendet. **Die
-Testcheckliste in Abschnitt 2a ist entsprechend zu lesen:** Der erhobene Ø-Puls wandert in
-die Historie, der zur Zonenbildung eingetragene Wert kann davon abweichen und ist dann mit
-Begründung zu vermerken.
+**Die LTHR ist 166, der Ø-Puls der 20 Testminuten am 22.10.** Anders als beim ersten
+Test sind erhobener Protokollwert und gesetzter Wert diesmal identisch: Der Test war
+ausbelastet (letzte 5 min Ø 172 bpm, Max 180). Beim ersten Test lag der Protokollwert bei
+152, gesetzt wurden 163, weil der Test nicht ausbelastet war. intervals.icu rechnet für
+seinen eigenen LTHR-Hinweis mit 98 % des 20-min-Pulses (hier 163); dieser Plan bleibt bei
+der Methode aus Abschnitt 2a, damit die drei Tests vergleichbar bleiben.
 
-**Zur HFmax: Sie ist nicht bekannt, und sie wird auch nicht gebraucht.** Der höchste
-bisher aufgezeichnete Wert sind **173 bpm** vom 24.09., erreicht am Ende der fünften
-4-min-Wiederholung bei 268 W (zuvor 171 bpm am 17.09.). Auch das war keine gezielte
-Ausbelastung mit Schlussspurt am Berg. Er ist damit eine Untergrenze und **kein Ersatz für die Annahme von 180 bpm**: Ein niedrigerer
-Nicht-Messwert würde jede daran hängende Schwelle nach unten verzerren.
+**Zur HFmax:** Im Retest wurden **180 bpm** erreicht, am Ende eines ausbelasteten
+20-min-Abschnitts. Das entspricht der bisherigen Annahme von 180 und ist jetzt ein
+Messwert — als Untergrenze, weil kein gezielter Maximalversuch am Berg gefahren wurde.
+Das Feld „Max HR" in intervals.icu bleibt bei 180. **Kontrollgrößen hängen weiter an der
+LTHR, nicht an der HFmax.**
 
-**Folge (neu in Fassung 7): Kontrollgrößen hängen an der LTHR, nicht an der HFmax.** Die
-163 bpm sind belegt und stabil, die HFmax ist es nicht. Das Feld „Max HR" in
-intervals.icu bleibt bei der Annahme 180 und steuert in diesem Setup nichts — die
-Pulszonen kommen aus der LTHR, die Trainingslast aus der Leistung. Aufgezeichnete
-Höchstwerte werden in der Testhistorie mitgeführt. Eine belastbare HFmax entstünde nur
-aus einer bewussten Ausbelastung, etwa 30 s All-out am Ende eines harten Intervalls am
-Berg. Das ist nicht vorgesehen, weil keine Steuergröße davon abhängt.
+### Z2 folgt der FTP (neu in Fassung 12)
 
-**Zielwatt der Qualitätseinheiten — aus der Arbeits-FTP 215 W (Fassung 11):**
+**Bis Fassung 11 galt Z2 fest bei 106–144 W, ausdrücklich unabhängig von der FTP.**
+Begründet war das mit LT1 und dem belegten Arbeitspunkt um 139 W (Decoupling −0,9 % am
+12.09.). Diese Regel ist aufgehoben.
+
+**Ab sofort:**
+
+- **Z2 ist die Coggan-Zone aus der aktuellen FTP**, derzeit **123–167 W**, und wandert
+  mit jedem Test mit.
+- **Arbeitsbereich für lange Fahrten: Ø 135–150 W.** Gemeint ist die
+  Durchschnittsleistung beim Treten, nicht der Momentanwert. Kurze Wellen, Anfahren und
+  Kuppen dürfen darüber liegen; gesteuert wird über den Schnitt, damit ein gleichmäßiger
+  Fahrfluss möglich bleibt.
+- **Bei vielen Stopps** zieht das Rollen den Gesamtschnitt nach unten. Der angezeigte
+  Ø inklusive Rollphasen liegt dann rund 5–10 W unter dem Schnitt beim Treten.
+- **Kontrolle über das Decoupling:** ≤ 5 % → der Arbeitsbereich trägt diese Dauer.
+  Liegen zwei lange Fahrten in Folge über 5 %, wird der Arbeitsbereich auf Ø 130–145 W
+  zurückgenommen.
+- **Der Sprechtest bleibt oberste Instanz.** Ganze Sätze müssen möglich sein. Wird das
+  Sprechen kurzatmig, ist LT1 überschritten — unabhängig von der Zahl.
+
+**Warum der Arbeitsbereich unter der Zonenobergrenze liegt:** Coggan-Z2 reicht bis
+75 % FTP und liegt oben oft über LT1. Belegt ist bisher der Bereich um 139 W; 150 W ist
+der Schritt, den die gestiegene FTP plausibel macht, 167 W ist es nicht.
+
+**Zielwatt der Qualitätseinheiten — aus der FTP 223 W (Fassung 12):**
 
 | Einheit | Vorgabe | Watt |
 |---|---|---|
-| Do-Intervalle Phase 2 | 112–116 % | **240–250**, Nachsteuerung über das Pulskriterium |
-| Do Woche 7 (Erholung) | fest | **~196** (≈ 91 %), bewusst nicht angehoben |
-| Sa-Blöcke Woche 9, 12 | 80–88 % | **172–189** |
-| Do-Erhaltungsreiz Phase 3 | 112–116 % | **240–250**, bzw. der zuletzt nachgesteuerte Wert |
-| Do-Schwellenblöcke Phase 4 | 90–95 % | **194–204** |
+| Do-Intervalle Phase 2 | 112–116 % | **250–260**, Nachsteuerung über das Pulskriterium |
+| Sa-Blöcke Woche 12 | 80–88 % | **178–196** |
+| Do-Erhaltungsreiz Phase 3 | 112–116 % | **250–260**, bzw. der zuletzt nachgesteuerte Wert |
+| Do-Schwellenblöcke Phase 4 | 90–95 % | **201–212** |
 
-Diese Zeilen sind die **einzige** Stelle, an der die Arbeits-FTP wirkt. Gilt ab dem
-24.09. und bis zum Retest am 22.10.; danach ersetzt der neue Testwert beide Spalten.
-**Vorwerte (Fassung 7 bis 10, Arbeits-FTP 206 W):** Do-Intervalle 222–237 W, Sa-Blöcke
-165–181 W, Schwelle 185–196 W.
+**Vorwerte:** Fassung 11 (Arbeits-FTP 215 W): Do-Intervalle 240–250 W, Sa-Blöcke
+172–189 W, Schwelle 194–204 W, Woche 7 fest ~196 W. Fassung 7 bis 10 (Arbeits-FTP 206 W):
+222–237 W, 165–181 W, 185–196 W.
 
-**Für Grundlagenfahrten sticht der Sprechtest die Zahl.** Ganze Sätze müssen möglich
-sein, Atmung merklich vertieft, aber ruhig und rhythmisch. Wird das Sprechen kurzatmig,
-ist LT1 überschritten — unabhängig davon, was die Zone sagt. Zweite Kontrollinstanz ist
-der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band lag.
+**Für Grundlagenfahrten sticht der Sprechtest die Zahl.** Zweite Kontrollinstanz ist
+der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn die Leistung im
+Arbeitsbereich lag.
 
 ### Steuergrößen je Einheit
 
@@ -496,19 +422,17 @@ der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band
 |---|---|---|
 | Di Z2 (Trekkingrad, kein Powermeter) | Sprechtest, HF 128–135 | — |
 | Mi Z2 kurz (Trekkingrad) | Sprechtest, bewusst darunter | — |
-| Do Intervalle (ab W6, Fassung 11) | **240–250 W**, Nachsteuerung ±5 W | Atmung sticht die Zahl; HF nur am Intervallende (≥ 163 bpm, letzte 60 s) |
-| Do Intervalle (bis W4) | Atmung, HF ab Minute 3 | — |
-| Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **240–250 W** (bzw. nachgesteuerter Wert) für die 3 × 3 min | HF nur am Intervallende |
-| Do Schwelle (Phase 4) | **194–204 W** | HF sollte in Z4 einpendeln |
-| Sa Basis | Watt 106–144, Arbeitspunkt ~139 (Gang 8, 80–82 rpm) | Sprechtest, Decoupling nach der Fahrt |
-| Sa Blöcke | **172–189 W** | HF steigt langsam, ist normal |
+| Do Intervalle Phase 2 | **250–260 W**, Nachsteuerung ±5 W | Atmung sticht die Zahl; HF nur am Intervallende (≥ 166 bpm, letzte 60 s) |
+| Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **250–260 W** (bzw. nachgesteuerter Wert) für die 3 × 3 min | HF nur am Intervallende |
+| Do Schwelle (Phase 4) | **201–212 W** | HF sollte in Z4 einpendeln |
+| Sa Basis | **Ø 135–150 W** beim Treten (Z2 123–167 W) | Sprechtest, Decoupling nach der Fahrt |
+| Sa Blöcke | **178–196 W** | HF steigt langsam, ist normal |
 | Fr/So optional | HF unter Z2-Obergrenze | — |
 
 **Die beiden Bürotage laufen auf dem Trekkingrad und liefern keine Watt- und
-Kadenzwerte.** Fehlende Leistungsdaten an Di und Mi sind kein Aufzeichnungsfehler. Dort
-steuern Sprechtest und Puls, und die Kadenzarbeit ist dort frei von jeder
-Leistungsvorgabe. Wattbasierte Kennzahlen — Efficiency Factor, eFTP, Zeit in Watt-Z2 —
-entstehen nur an Do und Sa auf dem Cube Nuroad.
+Kadenzwerte.** Fehlende Leistungsdaten an Di und Mi sind kein Aufzeichnungsfehler.
+Wattbasierte Kennzahlen — Efficiency Factor, eFTP, Zeit in Watt-Z2 — entstehen nur an Do
+und Sa auf dem Cube Nuroad.
 
 ### Trittfrequenz
 
@@ -520,35 +444,30 @@ entstehen nur an Do und Sa auf dem Cube Nuroad.
 | Schwellenblöcke | 85–90 rpm |
 | Anstieg | nicht unter 70 rpm, notfalls Übersetzung anpassen |
 
-Liegt die selbstgewählte Kadenz deutlich darunter (60–75 ist bei Einsteigern normal),
-in 5er-Schritten über vier bis sechs Wochen herantasten, nicht erzwingen. **Auf dem Cube
-in Z2 gilt die Untergrenze 80 rpm** — eine Kadenz unter 85 ist dort gewollt, kein
-Technikfehler (siehe unten).
+Liegt die selbstgewählte Kadenz deutlich darunter, in 5er-Schritten über vier bis sechs
+Wochen herantasten, nicht erzwingen. **Auf dem Cube in Z2 gilt die Untergrenze
+80 rpm.**
 
-**Der Kadenz-Gang-Konflikt im Flachen (Fassung 7, entschieden in Fassung 8).** Der 1×12-Antriebsstrang des
-Cube springt zwischen benachbarten Gängen um bis zu 50 % in der Übersetzung. Der belegte
-Z2-Arbeitspunkt ist **Gang 8 bei 80–82 rpm, rund 139 W**. Dieselbe Übersetzung mit
-85–90 rpm ergibt überschlägig 155–165 W und damit Z3 — im festen Gang sind Kadenz und
-Leistung gekoppelt, mehr Umdrehungen heißen mehr Watt.
+**Der Kadenz-Gang-Konflikt im Flachen (Fassung 7, entschieden in Fassung 8).** Der
+1×12-Antriebsstrang des Cube springt zwischen benachbarten Gängen um bis zu 50 % in der
+Übersetzung. Der belegte Arbeitspunkt ist **Gang 8 bei 80–82 rpm, rund 139 W**.
+Dieselbe Übersetzung mit 85–90 rpm ergibt überschlägig 155–165 W.
 
 - **Auf der Z2-Fahrt hat die Leistung Vorrang vor der Kadenz.** Zielkadenz auf dem Cube
-  ist **80–85 rpm**. Lieber unter 85 rpm treten und die Zielleistung treffen, als mit
-  85–90 rpm in Z3 zu rutschen.
-- **Geprüft am Sa 19.09. (Gang-Test):** Gang 7 mit 89 rpm (Median), 3,4 min gleichmäßig,
-  ergab **Ø 107 W** (Median 112 W) gegen den Arbeitspunkt 139 W. Das liegt im
-  Ablehnungsband 100–110 W: Der Sprung zwischen Gang 7 und 8 ist zu groß, einen
-  Zwischengang für ~139 W bei höherer Kadenz gibt es im Flachen nicht. **Gang 8 bei
-  80–82 rpm bleibt der Z2-Arbeitspunkt.**
+  ist **80–85 rpm**.
+- **Nachtrag Fassung 12:** Mit dem Arbeitsbereich Ø 135–150 W liegt Gang 8 bei
+  80–85 rpm mitten im Ziel. 155–165 W bei 85–90 rpm sind jetzt zwar noch Z2, liegen aber
+  über dem Arbeitsbereich — die Regel „unter 85 rpm bleiben" gilt deshalb weiter.
+- **Geprüft am Sa 19.09. (Gang-Test):** Gang 7 mit 89 rpm ergab **Ø 107 W** — einen
+  Zwischengang für ~139 W bei höherer Kadenz gibt es im Flachen nicht.
 - **Bei Gegenwind oder Rückenwind** verschiebt sich der passende Gang. Die Regel bleibt
-  dieselbe: den Gang wählen, in dem die Leistung bei 80–85 rpm im Z2-Band liegt.
+  dieselbe: den Gang wählen, in dem der Schnitt bei 80–85 rpm im Arbeitsbereich liegt.
 - **Der Ort für reine Kadenzarbeit** ist die Kadenzpyramide am Mittwoch im leichten Gang
-  sowie die Pendelfahrten auf dem Trekkingrad, wo ohnehin keine Wattvorgabe gilt.
+  sowie die Pendelfahrten auf dem Trekkingrad.
 
 **Kein Kraftausdauertraining mit niedriger Kadenz** (großer Gang, 50–60 rpm) in diesem
-Plan. Grund ist die muskuläre Belastung: hohe Pedalkräfte auf noch untrainierter
-Beinmuskulatur erzeugen einen Reiz, der mehrere Tage Erholung kostet und den
-Qualitätstag am Donnerstag entwertet. Die Rückmeldung nach den ersten Samstagsausfahrten
-bestätigt das — die Oberschenkel brauchen bereits ohne Zusatzreiz mehr als einen Tag.
+Plan. Hohe Pedalkräfte auf noch untrainierter Beinmuskulatur kosten mehrere Tage
+Erholung und entwerten den Qualitätstag.
 
 **Kadenzpyramide** als Teil des Einfahrens am Mittwoch, alle ein bis zwei Wochen:
 30 s je 90 / 100 / 110 / 120 / 110 / 100 / 90 rpm im leichten Gang, Puls bleibt in
@@ -556,51 +475,35 @@ Z1/Z2, nicht im Sattel hüpfen. Kostet 3,5 min.
 
 ### Höhenmeter — Einführung
 
-Bisher nahezu ausschließlich Flachstrecke (bestätigt: 2,6 hm/km im Ist-Stand).
 Höhenmeter sind ein eigener Trainingsreiz und werden **nicht zusätzlich zur laufenden
 Zeit-Progression** eingeführt, sondern als eigenständige, entkoppelte Variable:
 
-1. **Eine Variable zur Zeit.** Die Wochendauer steigt bereits. Höhenmeter gleichzeitig
-   draufzusetzen heißt Zeit, muskuläre Last und HF-Ausschläge parallel zu erhöhen —
-   kippt etwas, ist die Ursache nicht mehr zuzuordnen.
-2. **Zonenkalibrierung läuft noch.** Die Übergangsbänder stammen aus einer bewusst
-   flachen Referenzfahrt; Gelände ist als Störgröße für die Driftanalyse dokumentiert.
-3. **Kadenz am Berg.** Anstiege drücken die Kadenz nach unten. Ungewohnte Steigungen
-   ohne eingeübtes Kadenzmanagement sind das größere Risiko als die reine
-   Ausdauerbelastung.
+1. **Eine Variable zur Zeit.** Höhenmeter und Dauer nicht gleichzeitig steigern.
+2. **Gelände als Störgröße für die Driftanalyse** — mit Leistungsmesser deutlich
+   kleiner, aber nicht null.
+3. **Kadenz am Berg.** Ungewohnte Steigungen ohne eingeübtes Kadenzmanagement sind das
+   größere Risiko als die reine Ausdauerbelastung.
 
 **Vorgehen:**
 
-- **Bis Woche 4 (Test):** weiterhin flaches Gelände.
-- **Ab Woche 5 (Steuerung über Watt):** Höhenmeter **ersetzen** statt addieren — eine
-  flache Einheit gegen eine leicht hügelige mit ähnlicher Zeit tauschen.
-- **Einstieg klein:** 50–100 Hm in eine bestehende Ausfahrt einbauen, bevorzugt am
-  **Samstag**.
-- **Kadenz bewusst hochhalten**, nicht unter 70 rpm. Passende Übersetzung ist die
-  wirksamere Lösung als Disziplin am Berg.
+- **Ab Woche 5:** Höhenmeter **ersetzen** statt addieren — eine flache Einheit gegen eine
+  leicht hügelige mit ähnlicher Zeit tauschen.
+- **Einstieg klein**, bevorzugt am **Samstag**.
+- **Kadenz bewusst hochhalten**, nicht unter 70 rpm.
 - **Danach eigenständige Progression:** +50 Hm je Belastungswoche, unabhängig von der
   Zeit-Progression der Woche.
 
 **Hm-Band Samstag** (Hm je Ausfahrt, Reihen `SAT_HM_*` in Abschnitt 2):
 
-| Woche | 1–4 | 5 | 6 | **7** | 8 | 9 | **10** | 11 | 12 | **13** | 14 | 15 | **16** |
+| Woche | 1–4 | 5 | 6 | **7** | 8 | 9 | 10 | 11 | 12 | **13** | 14 | 15 | **16** |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Hm** | flach | 150–250 | 200–300 | **100–200** | 250–350 | 300–400 | **150–250** | 350–450 | 400–500 | **200–300** | 450–550 | 500–600 | **250–350** |
+| **Hm** | flach | 150–250 | 200–300 | **100–200** | 250–350 | 300–400 | 150–250 | 350–450 | 400–500 | **200–300** | 450–550 | 500–600 | **250–350** |
 
-**Ein Band statt eines Punktwerts.** Strecken gibt es nicht in 10er-Schritten; ein Band
-von 100 Hm lässt die Wahl zwischen mehreren echten Runden. Innerhalb des Bands ist jede
-Strecke dieselbe Einheit.
-
-**Warum nicht +10–15 %.** Die erste Fassung dieser Progression rechnete die 50–100 Hm als
-Gesamtwert und steigerte sie um 10–15 %. Das lag unter dem Ist-Stand: die flache
-Referenzfahrt vom 22.08. hatte bereits 113 Hm, 2,6 Hm/km ergeben auf einer Samstagsrunde
-rund 120 Hm. Die Einstiegs-Hm kommen deshalb **auf** die flache Basis, und die Steigerung
-läuft in festen 50-Hm-Schritten — am Anfang etwas schneller als 15 %, ab Woche 11
-innerhalb von 10–15 %. Der Anker ist eine real fahrbare Runde mit rund 300 Hm in Woche 6.
+**Woche 10** bleibt trotz entfallener Erholungswoche bei 150–250 Hm: Die lange Ausfahrt
+lag vier Tage vor dem Retest. Woche 11 setzt wie geplant mit 350–450 Hm auf Woche 9 auf.
 
 In den **Erholungswochen** beginnt das Band halb so hoch wie in der letzten
-Belastungswoche. Sie zählen für die Steigerung nicht mit — die nächste Belastungswoche
-setzt auf der letzten Belastungswoche auf.
+Belastungswoche. Sie zählen für die Steigerung nicht mit.
 
 ### Wellness-Gate
 
@@ -614,23 +517,12 @@ Schlaf < 6 h in zwei Nächten hintereinander
   → Samstag ohne Blöcke
 ```
 
-**Welcher Ruhepuls zählt (neu in Fassung 7):** Garmin berechnet den Ruhepuls
-serverseitig und liefert ihn nach der Synchronisierung mit ein bis zwei Stunden
-Verzögerung nach. Der am Morgen sichtbare Wert des laufenden Tages ist deshalb oft noch
-unfertig. **Maßgeblich ist der abgeschlossene Wert des Vortags** aus intervals.icu,
-verglichen mit dem Sieben-Tage-Schnitt. Liegt der Wert des laufenden Tages bereits vor
-und ist er deutlich höher, zählt der höhere von beiden.
+**Welcher Ruhepuls zählt (seit Fassung 7):** Maßgeblich ist der abgeschlossene Wert des
+Vortags aus intervals.icu, verglichen mit dem Sieben-Tage-Schnitt. Liegt der Wert des
+laufenden Tages bereits vor und ist er deutlich höher, zählt der höhere von beiden.
 
 Nach fieberhaftem Infekt mindestens so viele lockere Tage wie Krankheitstage, bevor
 wieder Intensität gefahren wird.
-
-### Geschwindigkeitsannahme
-
-Distanzangaben sind Schätzwerte, keine Vorgaben:
-`Geschwindigkeit = min(21 + 0,15 × (Woche − 1), 24)` km/h.
-
-**Gilt nur bis Woche 4.** Sobald Leistungsdaten vorliegen, sind Distanz- und
-Geschwindigkeitsschätzungen ohne Aussagewert und werden nicht mehr angezeigt.
 
 ---
 
@@ -647,7 +539,7 @@ Geschwindigkeitsschätzungen ohne Aussagewert und werden nicht mehr angezeigt.
 | **7** Erh. | 2 | 50 | 30 | 4×3 min Sweetspot → 48 | 100, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
 | 8 | 2 | 90 | 40 | 5×4 min Z5 → 63 | 165, reines Z2 | 40 | 3 Rd × 35 s / 20 s → 23 |
 | 9 | 2 | 90 | 40 | 5×4 min Z5 → 63 | 175 **+ 2×12 min Z3** | 40 | 3 Rd × 40 s / 20 s → 25 |
-| **10** Erh. | 2 | 50 | 30 | **Retest → 55** | 100, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
+| 10 Test | 2 | 50 | 30 + Öffner | **Retest → 55** | **150, reines Z2** (am So) | 25 | 2 Rd × 30 s / 25 s → 15 |
 | 11 | 3 | 90 | **60** | **70 min Z2 + 3×3 min Z5** | 170, reines Z2 | 40 | 3 Rd × 40 s / 20 s → 25 |
 | 12 | 3 | 90 | **60** | **75 min Z2 + 3×3 min Z5** | 180 **+ 2×12 min Z3** | 40 | 3 Rd × 40 s / 20 s → 25 |
 | **13** Erh. | 3 | 50 | 30 | 55 min Z2 | 105, reines Z2 | 25 | 2 Rd × 30 s / 25 s → 15 |
@@ -657,30 +549,31 @@ Geschwindigkeitsschätzungen ohne Aussagewert und werden nicht mehr angezeigt.
 
 Alle Werte in Minuten.
 
+**Woche 10 (Fassung 12):** Testwoche ohne Erholungsreduktion. Die Werte für Di, Mi und
+Do folgen dem Testanlauf (Abschnitt 2a), die lange Ausfahrt hat 150 statt 100 min und
+lag am Sonntag, weil der Samstag Rumpftag war. Die Rumpfdosis bleibt in der Testwoche
+reduziert, ohne Beinblock.
+
 ### Wochenumfang Rad und Deckel
 
 | Woche | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Soll** | 266 | 326 | 359 | **245** | **375** | 393 | 253 | 398 | 408 | **260** | 430 | 445 | 265 | 412 | 428 | **265** |
-| **Max (+10 %)** | 293 | 359 | 395 | **270** | **413** | 432 | 278 | 438 | 449 | **286** | 473 | 490 | 292 | 453 | 471 | **292** |
+| **Soll** | 266 | 326 | 359 | **245** | **375** | 393 | 253 | 398 | 408 | **310** | 430 | 445 | 265 | 412 | 428 | **265** |
+| **Max (+10 %)** | 293 | 359 | 395 | **270** | **413** | 432 | 278 | 438 | 449 | **341** | 473 | 490 | 292 | 453 | 471 | **292** |
 
-Die Steigerung je Belastungswoche liegt ab Woche 5 zwischen 1 und 6 %. Der Sprung von
-Woche 1 auf Woche 2 (+23 %) war der Einführung des Pendeltags geschuldet und einmalig.
+Woche 10 neu in Fassung 12 (bisher 260 / 286). Gefahren wurden rund 250 min: Die lange
+Ausfahrt endete am 18.10. nach 86 min mit einem Platten, der Dienstag fiel aus.
 
-**Der Dienstag trägt ab Woche 6 keine Steigerung mehr** (Fassung 10). Er steht in jeder
-Belastungswoche bei 90 min und macht damit 20–23 % der Wochensumme aus — ein fester
-Sockel. Die Progression kommt ausschließlich aus den anderen Tagen:
+**Der Dienstag trägt ab Woche 6 keine Steigerung mehr** (Fassung 10). Die Progression
+kommt aus den anderen Tagen:
 
 | Träger | Verlauf in den Belastungswochen | Beitrag |
 |---|---|---|
-| **Samstag** (Dauer) | 150 → 160 → 165 → 175 → 170 → 180 → 175 → 185 min | Hauptträger der Grundlage, +35 min über den Plan |
-| **Samstag** (Höhenmeter) | Band steigt von 150–250 auf 500–600 Hm | eigene Progression, bei gleicher Dauer (Abschnitt 1) |
-| **Donnerstag** | 63–65 → 70–75 (Phase 3) → 67–73 min (Phase 4) | Dauer in Phase 3, Intensitätsdauer in Phase 4 (3 × 10 → 3 × 12 min) |
+| **Samstag** (Dauer) | 150 → 160 → 165 → 175 → 170 → 180 → 175 → 185 min | Hauptträger der Grundlage |
+| **Samstag** (Höhenmeter) | Band steigt von 150–250 auf 500–600 Hm | eigene Progression, bei gleicher Dauer |
+| **Donnerstag** | 63–65 → 70–75 (Phase 3) → 67–73 min (Phase 4) | Dauer in Phase 3, Intensitätsdauer in Phase 4 |
 | **Mittwoch** | 40 → **60 min** in Woche 11–12 | dritter echter Grundlagentag in Phase 3 |
 | **Dienstag** | **90 min, konstant** | Sockel, keine Progression |
-
-Die Zahlen der Soll- und Deckelzeile bleiben dadurch unverändert — sie enthielten den
-Dienstag ab Woche 8 bereits als Konstante.
 
 **Z2-Summe pro Woche** ist die Kennzahl, die zählt — Zielgröße 300–400 min.
 
@@ -689,7 +582,7 @@ Dienstag ab Woche 8 bereits als Konstante.
 ```
 TUE_MIN     [60, 70, 80, 45, 85, 90, 50, 90, 90, 50, 90, 90, 50, 90, 90, 50]   # ab W6 fest, nie über 90 planen
 WED_MIN     [0, 40, 40, 30, 40, 40, 30, 40, 40, 30, 60, 60, 30, 40, 40, 30]
-SAT_MIN     [120, 130, 140, 90, 150, 160, 100, 165, 175, 100, 170, 180, 105, 175, 185, 105]
+SAT_MIN     [120, 130, 140, 90, 150, 160, 100, 165, 175, 150, 170, 180, 105, 175, 185, 105]
 SUN_MIN     [30, 30, 35, 25, 35, 40, 25, 40, 40, 25, 40, 40, 25, 40, 40, 25]
 CORE_WORK   [25, 30, 35, 25, 30, 35, 30, 35, 40, 30, 40, 40, 30, 40, 40, 30]
 CORE_ROUNDS [2, 2, 2, 2, 3, 3, 2, 3, 3, 2, 3, 3, 2, 3, 3, 2]
@@ -697,14 +590,15 @@ CORE_REST   [25, 25, 25, 25, 20, 20, 25, 20, 20, 25, 20, 20, 25, 20, 20, 25]
 LEG_ROUNDS  [2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 3, 2, 3, 3, 2]
 SAT_HM_VON  [0, 0, 0, 0, 150, 200, 100, 250, 300, 150, 350, 400, 200, 450, 500, 250]
 SAT_HM_BIS  SAT_HM_VON + 100 ab Woche 5
-RECOVERY    Wochen 4, 7, 10, 13, 16
+RECOVERY    Wochen 4, 7, 13, 16          # Woche 10 seit Fassung 12 entfernt
+TEST_WEEKS  Wochen 4, 10, 16
 ```
 
 `WED_MIN` ist ein **Mindestwert für den Tag**, aber die Wochensumme deckelt trotzdem.
-Längere Fahrzeit am Mittwoch ist zulässig, solange der Wochendeckel eingehalten wird.
 
 `CORE_*` gilt für den **Sonntag**. Der Mittwoch fährt immer **2 Runden** mit derselben
-Belastung und Pause.
+Belastung und Pause. In Testwochen gilt die reduzierte Rumpfdosis auch ohne
+Erholungswoche.
 
 **Donnerstag je Phase:**
 
@@ -712,92 +606,81 @@ Belastung und Pause.
 |---|---|---|---|
 | 1 | 1–3 | 4–5 × 5 min Z3, 3 min Pause | Tempo, pulsfreundliche Intervalllänge |
 | 1 | 4 | Schwellentest | FTP + LTHR |
-| 2 | **5** | **5 min maximal** (VO2max-Referenz) + **4 × 4 min**, 4 min Pause, 108–115 % FTP | VO2max + Referenzwert |
-| 2 | 6, 8, 9 | **5 × 4 min**, 4 min Pause, **240–250 W** (112–116 % Arbeits-FTP, ab Woche 8) | VO2max |
-| 2 | 7 | 4 × 3 min bei **~196 W** | Erholungswoche, kein Z5 |
+| 2 | **5** | **5 min maximal** (VO2max-Referenz) + **4 × 4 min**, 4 min Pause | VO2max + Referenzwert |
+| 2 | 6, 8, 9 | **5 × 4 min**, 4 min Pause (Woche 8 und 9: 240–250 W aus Arbeits-FTP 215 W) | VO2max |
+| 2 | 7 | 4 × 3 min bei ~196 W | Erholungswoche, kein Z5 |
 | 2 | 10 | Retest | FTP + LTHR |
-| 3 | 11–12 | 70–75 min Z2, darin **3 × 3 min bei 240–250 W** (112–116 %), 3 min Pause | dritter Grundlagentag + Erhaltungsreiz VO2max |
+| 3 | 11–12 | 70–75 min Z2, darin **3 × 3 min bei 250–260 W** (112–116 %), 3 min Pause | dritter Grundlagentag + Erhaltungsreiz VO2max |
 | 3 | 13 | 55 min Z2 | Erholungswoche |
-| 4 | 14–15 | 3 × 10–12 min bei 90–95 % FTP, 5 min Pause | Schwelle |
+| 4 | 14–15 | 3 × 10–12 min bei **201–212 W** (90–95 %), 5 min Pause | Schwelle |
 | 4 | 16 | Retest | FTP + LTHR |
 
-Einfahren immer 15 min, Ausrollen 12 min. Die Wiederholungszahl in Phase 2 ist **fest
-bei 5** — die Progression läuft über die Leistung, nicht über mehr Wiederholungen.
+Einfahren immer 15 min, Ausrollen 12 min. Die Wiederholungszahl in Phase 2 war **fest
+bei 5** — die Progression lief über die Leistung.
 
-**Alle Prozentangaben dieser Tabelle beziehen sich auf die Arbeits-FTP, seit Fassung 11
-215 W**, nicht auf die Test-FTP: 112–116 % sind **240–250 W**, 90–95 % sind
-**194–204 W**. Woche 7 bleibt fest bei **~196 W**. Herleitung in Abschnitt 1. In Woche 5
-und 6 galten noch 108–115 % von 206 W, also 222–237 W.
-
-**Ausnahme Woche 5:** Der 5-min-Maximalversuch für die VO2max-Referenz zählt als erste
-Wiederholung, deshalb folgen nur noch 4 × 4 min. Details und Begründung in Abschnitt 2a.
-Wird der Referenzwert nicht erhoben, gilt die reguläre Struktur 5 × 4 min.
+**Alle Prozentangaben dieser Tabelle beziehen sich seit Fassung 12 auf die FTP 223 W.**
+Phase 2 ist mit dem Retest abgeschlossen; weitere VO2max-Arbeit kommt nur noch als
+Erhaltungsreiz in Phase 3.
 
 **Erhaltungsreiz Phase 3 (Woche 11 und 12):** In die Z2-Einheit am Donnerstag werden
-**3 × 3 min bei 240–250 W (112–116 % der Arbeits-FTP) mit je 3 min lockerer Pause** eingebettet, insgesamt
-15 min. Grund: Phase 3 enthält sonst drei Wochen ohne jeden harten Reiz, und die VO2max
-bildet sich von allen Größen am schnellsten zurück. In der Erholungswoche 13 entfällt
-der Reiz.
+**3 × 3 min bei 250–260 W (112–116 % FTP) mit je 3 min lockerer Pause** eingebettet,
+insgesamt 15 min. Grund: Phase 3 enthält sonst drei Wochen ohne jeden harten Reiz, und
+die VO2max bildet sich von allen Größen am schnellsten zurück. In der Erholungswoche 13
+entfällt der Reiz.
 
 **Lage im Verlauf der Einheit:** nach mindestens 20 min Z2, nicht direkt nach dem
 Einfahren, und mit mindestens 15 min lockerem Ausrollen danach. Der Rest der Einheit
 bleibt Z2 nach Sprechtest.
 
 **Die Wochensumme ändert sich dadurch nicht** — die 15 min liegen *innerhalb* der 70
-bzw. 75 min. Das ist ein Nebeneffekt der Verlegung: in Fassung 4 hingen die 6 min am
-Mittwoch außerhalb der Summe und tauchten im Umfangsdeckel nicht auf.
+bzw. 75 min.
 
 **Warum am Donnerstag statt am Mittwoch:** Der Mittwoch ist eine Pendelfahrt mit Gepäck,
-zu fester Uhrzeit, im Berufsverkehr, in Woche 11–12 im Dunkeln und in der Kälte. Das ist
-die schlechteste denkbare Umgebung für einen Intensitätsreiz — und der Ankunftspuffer
-aus Abschnitt 1 wird dadurch aufgezehrt. Der Donnerstag ist die einzige freie
-Wochentagsfahrt: Strecke, Uhrzeit und Abbruch liegen vollständig in eigener Hand.
+zu fester Uhrzeit, im Berufsverkehr, in Woche 11–12 im Dunkeln und in der Kälte. Der
+Donnerstag ist die einzige freie Wochentagsfahrt.
 
 **Warum 3 × 3 min und nicht 6 × 30 s:** Sauerstoffaufnahme braucht rund zwei Minuten bis
-zum Vollausschlag. 30-Sekunden-Antritte sind ein neuromuskulärer und anaerober Reiz,
-kein VO2max-Reiz — sie erhalten nicht, was in Phase 2 aufgebaut wurde. Drei Minuten
-liefern etwa eine Minute nutzbare Zeit nahe VO2max je Wiederholung, in Summe rund 9 min
-harte Zeit pro Woche. Das ist etwa ein Drittel der Phase-2-Dosis (20 min) und liegt
-damit im Bereich, in dem Erhalt funktioniert: Intensität halten, Umfang darf fallen.
+zum Vollausschlag. Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max je
+Wiederholung, in Summe rund 9 min harte Zeit pro Woche — etwa ein Drittel der
+Phase-2-Dosis. Das reicht für den Erhalt.
 
 **Verschiebt sich der Donnerstag** (Wetter, Abschnitt 4.11), wandert der
 Erhaltungsreiz mit in die Einheit, in die der Donnerstag verlegt wird — bei Verlegung
 auf den Samstag in die zweite Hälfte der Ausfahrt. Der Samstag ist dann kein sauberer
 Z2-Tag mehr und **das Decoupling der Woche fällt als Kennzahl aus.**
 
-**Samstag:** Basis Z2. **Z3-Blöcke nur in den Wochen 6, 9 und 12** — jeweils die zweite
-Belastungswoche eines 2:1-Paars, und nicht in Phase 4, wo der Donnerstag bereits die
-Schwellenarbeit trägt. Dann 2 × 12 min in der **zweiten Hälfte** der Fahrt mit 8 min
-lockerem Rollen dazwischen, **172–189 W** (80–88 % der Arbeits-FTP 215 W; Woche 6 noch
-165–181 W). Einfahren 15 min,
-Ausrollen 10 min.
+**Samstag:** Basis Z2, Arbeitsbereich **Ø 135–150 W**. **Z3-Blöcke nur in den Wochen 6,
+9 und 12** — jeweils die zweite Belastungswoche eines 2:1-Paars, und nicht in Phase 4.
+Dann 2 × 12 min in der **zweiten Hälfte** der Fahrt mit 8 min lockerem Rollen
+dazwischen, **178–196 W** (80–88 % der FTP 223 W; Woche 9 noch 172–189 W, Woche 6
+165–181 W). Einfahren 15 min, Ausrollen 10 min.
 
 **Kontrolle über die Atmung:** merklich vertieft, Sprechen nur noch in kurzen Sätzen.
-Mit Werten um 145–155 W wäre der Block faktisch eine Z2-Fahrt mit anderem Etikett.
 
 ### Ausführungsregeln Intervalle
 
 1. **Rollender Start.** In der letzten Minute der Erholung das Tempo leicht anziehen.
-2. **Bewertungsfenster ist Minute 3 bis 5** (Phase 1) bzw. Minute 2 bis 4 (Phase 2).
+2. **Bewertungsfenster ist Minute 2 bis 4** (Phase 2) bzw. Minute 2 bis 3 (Phase 3).
    Der Puls davor ist bedeutungslos und darf keine Reaktion auslösen.
 3. **Atmung führt, Puls bestätigt.** Bei Widerspruch gewinnt die Atmung.
 4. **Die letzte Wiederholung ist die härteste.** Ist die erste die schwerste, war der
-   Start zu hart. Ziel ab Phase 2: Leistungsabfall Wdh. 1 → letzte unter 5 %.
+   Start zu hart. Ziel: Leistungsabfall Wdh. 1 → letzte unter 5 %.
 5. **Kadenz-Lock erkennen.** Fällt der Puls in der Erholung nicht binnen 60–90 s
-   merklich ab oder klebt er nahe der Trittfrequenz, misst die optische Messung die
-   Beine. Ab da nach Atmung fahren, Aufzeichnung verwerfen.
-6. **Uhr fest und höher tragen**, ein bis zwei Fingerbreit über dem Handgelenkknochen.
-7. **Nachsteuerregel für die Zielwatt (neu in Fassung 11).** Maßstab ist der Ø-Puls der
-   letzten 60 s jeder Wiederholung gegen die LTHR 163 bpm:
-   - **Erreichen die letzten zwei Wiederholungen die 163 bpm nicht**, obwohl das Band
-     gehalten wurde → nächste Intervalleinheit **+5 W** auf beide Grenzen.
+   merklich ab oder klebt er nahe der Trittfrequenz, ab da nach Atmung fahren und die
+   Aufzeichnung verwerfen.
+6. **Pulsgurt bzw. Uhr korrekt sitzend**, Messquelle über die Einheit nicht wechseln.
+7. **Nachsteuerregel für die Zielwatt (seit Fassung 11, Schwelle seit Fassung 12
+   166 bpm).** Maßstab ist der Ø-Puls der letzten 60 s jeder Wiederholung gegen die
+   LTHR 166 bpm:
+   - **Erreichen die letzten zwei Wiederholungen die 166 bpm nicht**, obwohl das Band
+     gehalten wurde → nächste Einheit **+5 W** auf beide Grenzen.
    - **Liegt der Puls schon ab Wdh. 2 darüber und ist die Atmung am Limit**, oder bricht
      die Leistung zur letzten Wiederholung um mehr als 5 % ein → **−5 W**.
    - Dazwischen bleibt das Band. Höchstens ein Schritt pro Woche, Erholungswochen
-     zählen nicht. Die Wiederholungen 1 und 2 dürfen unter 163 bpm bleiben — der Puls
-     steigt über die Serie ohnehin an.
+     zählen nicht.
    - Eine **gewollte schnellere Schlusswiederholung** („alles raus") ist erlaubt, fließt
-     aber nicht in die Nachsteuerung ein. Bewertet werden dann die Wiederholungen 3 und 4.
+     aber nicht in die Nachsteuerung ein.
+   - **In Phase 3 (3 × 3 min)** gilt die Regel sinngemäß für die Wiederholungen 2 und 3.
 
 ---
 
@@ -818,119 +701,64 @@ Gesamtdauer 55 min.
 
 - **FTP** = Ø-Watt der 20 min × 0,95
 - **LTHR** = Ø-Puls der 20 min
-- **Die VO2max-Referenzleistung wird hier nicht erhoben** — siehe „5-Minuten-Wert"
-  weiter unten.
+- **Die VO2max-Referenzleistung wird hier nicht erhoben.**
 
 #### Warum der 5-Minuten-All-out entfällt
 
 Das Originalprotokoll nach Coggan/Allen stellt einen 5-min-All-out mit 10 min Pause vor
-den 20-min-Abschnitt. Zweck: die anaerobe Kapazität leeren, damit die 20 min überwiegend
-aerob gefahren werden. Nur dafür ist der Faktor 0,95 kalibriert.
+den 20-min-Abschnitt, um die anaerobe Kapazität zu leeren. Für diesen Plan überwiegen
+die Nachteile: Die anaerobe Kapazität ist bei Einsteigern klein, die Pause reicht bei
+niedriger CTL nicht zur Erholung, und vor allem gilt die Pacing-Vorgabe aus dem
+Testanlauf nur für frische Beine. Ein All-out davor würde den Test wieder blind pacen.
 
-Für diesen Plan überwiegen die Nachteile:
+**Preis dieser Entscheidung:** Der Faktor 0,95 ist für das Originalprotokoll kalibriert;
+ohne Vorermüdung fällt die errechnete FTP minimal höher aus. Systematisch und über alle
+drei Tests gleich — für den Trendvergleich unkritisch.
 
-| Punkt | Konsequenz |
-|---|---|
-| Anaerobe Kapazität ist bei Einsteigern klein | Die Verzerrung, die der All-out beseitigen soll, ist ohnehin gering |
-| 10 min Pause reichen bei CTL um 10 nicht zur Laktatklärung | Trainierte räumen schneller ab. Der 20-min-Abschnitt startet mit Restlast |
-| **Die Pacing-Vorgabe stammt aus einer Einheit ohne Vorbelastung** | Die Werte aus dem Anlauf am 03.09. gelten für frische Beine. Nach einem All-out passen sie nicht mehr — der Test wäre wieder blind gepact |
-| Pacing-Fehler beim All-out selbst | Ein zu harter 5-min-Antritt reißt die 20 min ein. Der Testwert liegt dann noch weiter unter dem wahren Wert als ohnehin erwartet |
-
-Der dritte Punkt ist der entscheidende. Der Anlauf am 03.09. wurde eingeführt, um blindes
-Pacing zu vermeiden. Ein All-out davor würde diesen Gewinn wieder wegwerfen.
-
-**Preis dieser Entscheidung:** Der Faktor 0,95 ist streng genommen für das Originalprotokoll
-kalibriert. Ohne Vorermüdung fällt der Ø-Wattwert der 20 min minimal höher aus, die
-errechnete FTP damit ebenfalls. Bei einem Test, der ohnehin ausdrücklich als **Untergrenze**
-gilt, ist das unkritisch. Die eFTP ab Woche 6 bleibt der Gegencheck.
-
-**Verbindlich für alle drei Termine:** Der Ablauf muss am 10.09., 22.10. und 03.12.
-**identisch** sein, sonst sind die Tests nicht vergleichbar. Entweder überall ohne
-All-out oder überall mit. Diese Fassung legt fest: **überall ohne.**
+**Verbindlich für alle drei Termine:** Der Ablauf ist am 10.09., 22.10. und 03.12.
+**identisch** — überall ohne All-out.
 
 ### Der 5-Minuten-Wert (VO2max-Referenz)
 
-Der Wert wird **nicht** am Testtag erhoben, sondern als **erste Wiederholung der ersten
-Intervalleinheit am Do 17.09.** (Woche 5).
-
-| Schritt | Dauer |
-|---|---|
-| Einfahren, darin 3 × 1 min zügig | 15 min |
-| **5 min maximal** ← der Referenzwert | 5 min |
-| Locker rollen | 5 min |
-| 4 × 4 min bei 108–115 % FTP, 4 min Pause | 28 min |
-| Ausrollen | 12 min |
-
-Gesamtdauer 65 min. Ab Woche 6 gilt wieder die reguläre Struktur 5 × 4 min.
-
-**Warum dort und nicht am Testtag:** Der 5-min-Maximalversuch **ist** ein VO2max-Reiz und
-ersetzt deshalb die erste Wiederholung — er kostet keinen zusätzlichen Tag und keine
-zusätzliche Erholung. Frisch gefahren ist der Wert außerdem deutlich aussagekräftiger als
-nach 20 min Maximalbelastung.
-
-**Warum nicht am Samstag nach dem Test** (12.09., geprüft und verworfen):
-
-1. **Zu nah am Testtag.** Bei CTL um 10 kostet ein 20-min-Maximaltest zwei bis drei Tage.
-   Ein Ruhetag am Freitag reicht nicht, um am Samstag wirklich auszubelasten.
-2. **Der 12.09. ist die erste saubere Decoupling-Messung mit Watt.** Ein Maximalversuch
-   mitten in der Fahrt macht Decoupling und Efficiency Factor für diesen Samstag
-   unbrauchbar — dieselbe Logik wie in Abschnitt 4.8.
-3. **Die 150 min danach wären kein sauberes Z2 mehr.** Nach maximaler Ausbelastung liegt
-   der Puls für den Rest der Fahrt erhöht.
-
-**Der Wert ist Kür, nicht Pflicht.** Seine einzige Funktion ist der Plausibilitätscheck der
-108–115-%-Vorgabe. Ist der 17.09. zu voll, entfällt er ersatzlos und die Intervalle werden
-nach Atmung gefahren, wie in diesem Abschnitt ohnehin vorgesehen.
+Erhoben als **erste Wiederholung der ersten Intervalleinheit am Do 17.09.** (Woche 5),
+nicht am Testtag. Seine Funktion war der Plausibilitätscheck der Intervallvorgabe.
 
 **Gegenprobe:** Liegt der 5-min-Wert deutlich über 118 % der Test-FTP, war der Test zu
-niedrig. Dann rückt der Retest nach vorn (zusammen mit dem eFTP-Kriterium weiter unten).
+niedrig.
 
 **Pacing:** die ersten drei Minuten bewusst konservativer als das Ziel. Auf die
-Runden-Durchschnittsleistung schauen, nicht auf den Momentanwert. Die letzten zwei
-Minuten sollen sich anfühlen wie „gerade noch".
+Runden-Durchschnittsleistung schauen, nicht auf den Momentanwert.
 
-**Strecke — neu in Fassung 7: kein Gefälle im Maximalversuch.** Flach oder gleichmäßig
-ansteigend, und ausdrücklich **ohne abfallendes letztes Drittel**. Bei rund 40 km/h
-wächst der Luftwiderstand so stark, dass die Leistung bergab von selbst wegbricht: Man
-tritt ins Leere, bevor man reagieren kann. Lässt sich ein Gefälle nicht vermeiden,
-rechtzeitig zwei Gänge hochschalten, bevor die Wattzahl fällt, nicht danach.
+**Strecke — seit Fassung 7: kein Gefälle im Maximalversuch.** Flach oder gleichmäßig
+ansteigend, ohne abfallendes letztes Drittel. Lässt sich ein Gefälle nicht vermeiden,
+rechtzeitig zwei Gänge hochschalten, bevor die Wattzahl fällt.
 
 ### Ergebnis des 5-min-Versuchs vom 17.09.2026
 
 | Größe | Wert |
 |---|---|
 | Ø Leistung 5 min | **254 W** |
-| Anteil der Test-FTP 192 W | **132 %** |
+| Anteil der Test-FTP 192 W | **132 %** (gemessen an der FTP 223 W: 114 %) |
 | W/kg (7-Tage-Schnitt 95,5 kg) | 2,66 |
 | Ø HF letzte 60 s | 169,6 bpm |
-| Max HF der Einheit | **171 bpm** — höchster bisher aufgezeichneter Wert, keine Ausbelastung, keine HFmax |
+| Max HF der Einheit | 171 bpm |
 | Verlauf | Minute 0–3: 224 W · Minute 3–4,5: ~308 W · letzte 30 s: 252 W |
 
-Der Abfall am Schluss ist **kein Ermüdungseinbruch**: Der Abschnitt fiel dort leicht ab,
-die Leistung brach streckenbedingt weg. Daraus folgt die Streckenregel oben — und dass
-auch die 254 W eine Untergrenze sind.
-
-**Die Gegenprobe ist damit ausgelöst:** 254 W liegen deutlich über den 227 W (118 % der
-Test-FTP). Die FTP von 192 W ist zu niedrig. Zur Folge daraus siehe „Einordnung des
-ersten Testwerts" weiter unten und Abschnitt 9d.
-
-**Die 4 × 4 min derselben Einheit** wurden mit 210 / 221 / 222 / 227 W gefahren, Ø HF am
-Intervallende 154 / 159 / 157 / 161 bpm. Kein Leistungsabfall, die letzte Wiederholung
-war die stärkste — das Pacing war sauber, und die Vorgabe 207–221 W war zu niedrig
-angesetzt.
+Die Gegenprobe hatte damals ausgelöst: Die FTP von 192 W war zu niedrig. **Der Retest
+vom 22.10. hat das bestätigt** — gemessen an 223 W liegt der 5-min-Wert bei 114 % und
+damit im erwarteten Bereich.
 
 **Strecke:** 20 min ohne Ampel, Kreuzung, Abfahrt oder Gegenverkehr, flach oder
 gleichmäßig ansteigend. Immer dieselbe Strecke, ähnliche Uhrzeit, gleiches Rad,
-gleicher Reifendruck — sonst ist der Retest nicht vergleichbar.
+gleicher Reifendruck (2,5 bar) — sonst ist der Retest nicht vergleichbar.
 
-**Einzige festgelegte Ausnahme: Retest 03.12. mit Start 14:00 statt 16:21.** Sonnenuntergang
-ist dann gegen 16:25, die Fahrt dauert 1:31 h — mit 16:21 läge schon der Testabschnitt im
-Dunkeln. Strecke, Protokoll, Rad und Reifendruck bleiben identisch; die Uhrzeit ist die
-kleinste mögliche Abweichung und wird unter „Bedingungen“ vermerkt. Begründung in 9c,
-Details in `SCHWELLENTESTS.md`. Der 22.10. bleibt bei 16:21 (Rückkehr gegen 17:50,
-Sonnenuntergang gegen 18:20).
+**Festgelegte Ausnahme: Retest 03.12. mit Start 14:00 statt 16:21.** Sonnenuntergang ist
+dann gegen 16:25, die Fahrt dauert 1:31 h. Strecke, Protokoll, Rad und Reifendruck
+bleiben identisch; die Uhrzeit wird unter „Bedingungen" vermerkt. Begründung in 9c,
+Details in `SCHWELLENTESTS.md`. **Der 22.10. startete tatsächlich um 16:50**, der
+Testabschnitt lag gegen 17:15 bis 17:35, vor Sonnenuntergang.
 
-### Anlauf zum 10.09.2026 (verbindlich)
+### Anlauf zum 10.09.2026 (verbindlich, gefahren)
 
 | Datum | Tag | Einheit |
 |---|---|---|
@@ -944,40 +772,55 @@ Sonnenuntergang gegen 18:20).
 | **Do 10.09.** | W4 | **Test** |
 | Fr 11.09. | W4 | Ruhe oder 30 min Z1 |
 
-**Warum der 03.09. getauscht wird:** Fünf mal fünf Minuten Tempo eine Woche vor dem Test
-bringen keine Anpassung mehr, die bis zum 10.09. wirksam wird — Trainingsreize brauchen
-zwei bis drei Wochen. Sie kosten aber Erholung. Zwei mal sechs Minuten im angestrebten
-Testtempo liefern stattdessen eine Wattzahl, auf die im Test gezielt werden kann. Ohne
-das wird der erste Test blind gepaced, und blind gepacete Tests fallen zu niedrig aus.
+**Warum der Testtempo-Tag:** Zwei mal sechs Minuten im angestrebten Testtempo liefern
+eine Wattzahl, auf die im Test gezielt werden kann. Ohne das wird blind gepaced, und
+blind gepacete Tests fallen zu niedrig aus.
 
-**Warum die Öffner am 09.09.:** Nach zwei ruhigen Tagen fühlt sich das System träge an.
-Ein kurzer harter Reiz am Vortag stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen.
+**Warum die Öffner am Vortag:** Nach ruhigen Tagen fühlt sich das System träge an. Ein
+kurzer harter Reiz am Vortag stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen.
 
-**Derselbe Anlauf gilt sinngemäß für die Retests am 22.10. und 03.12.:** Woche davor
-kein voller Qualitätstag, Sonntag davor ohne Beinblock, Dienstag kurz, Mittwoch mit
-Öffnern.
+### Anlauf zum 22.10.2026 (gefahren, neu in Fassung 12)
+
+| Datum | Tag | Einheit |
+|---|---|---|
+| Mi 14.10. | W9 | Arbeitsweg direkt, 42 min, Ø HF 127 |
+| Do 15.10. | W9 | **Ruhetag** (Qualitätstag auf Freitag verlegt) |
+| Fr 16.10. | W9 | **Tempotest**: 15 min Einfahren, **2 × 6 min** mit **218 W** / **227 W**, HF letzte 2 min 155 / 160. Am selben Tag vorher Bikefitting mit Belastungsminuten auf der Rolle |
+| Sa 17.10. | W10 | Rumpf voll, **kein Beinblock** |
+| So 18.10. | W10 | lange Ausfahrt geplant 2:30 h Z2, 150–250 Hm — **nach 86 min wegen Platten beendet**, 182 Hm |
+| Mo 19.10. | W10 | Ruhe |
+| Di 20.10. | W10 | **ausgefallen** (zeitlich nicht möglich), nicht nachgeholt |
+| Mi 21.10. | W10 | **55 min mit Öffnern** (265 / 252 / 230 W je ~1 min), Rest Ø 114 W |
+| **Do 22.10.** | W10 | **Retest**, Pacing-Vorgabe 225 W |
+
+**Ableitung der Pacing-Vorgabe:** Block 2 des Tempotests mit 227 W bei HF 160 in den
+letzten 2 min, Selbsteinschätzung „20 min machbar, aber stark am Limit". Vorgabe 225 W
+konstant; gefahren wurden 234,7 W.
+
+**Abweichungen gegenüber dem ersten Anlauf:** Der Testtempo-Tag lag sechs statt sieben
+Tage vor dem Test, die lange Ausfahrt am Sonntag statt Samstag, und durch den Platten
+und den ausgefallenen Dienstag waren die vier Tage vor dem Test ruhiger als geplant.
+Beides wirkt eher in Richtung frischer Beine.
+
+**Derselbe Anlauf gilt sinngemäß für den Retest am 03.12.:** Woche davor kein voller
+Qualitätstag, sondern 2 × 6 min Testtempo; Tag vor der langen Ausfahrt ohne Beinblock;
+Dienstag kurz; Mittwoch mit Öffnern. Woche 16 ist zugleich Erholungswoche.
 
 ### Go/No-Go am Testmorgen
 
 Alle vier Punkte müssen zutreffen:
 
 1. **Ruhepuls** höchstens 5 bpm über dem Sieben-Tage-Schnitt — maßgeblich ist der
-   abgeschlossene Wert des Vortags, siehe Wellness-Gate in Abschnitt 1
+   abgeschlossene Wert des Vortags
 2. **Kein Muskelkater** in den Oberschenkeln
 3. Zwei Nächte hintereinander mindestens 7 Stunden Schlaf
 4. Kein Infekt im Anflug, unter 30 °C, kein Sturm
 
-**TSB wird bewusst nicht als Kriterium verwendet.** Bei einer CTL um 10 ist ein TSB über
-−10 rechnerisch kaum zu erreichen; ein solches Kriterium würde den Test dauerhaft
-blockieren. Realistisch liegt der TSB am 10.09. bei etwa −10 bis −13, und das ist in
-Ordnung.
+**TSB wird bewusst nicht als Kriterium verwendet.**
 
 ### Verschiebungsregel
 
-**Nach hinten, ohne Ersatzeinheit, ohne Tausch.** Die frühere Regel („auf den Samstag
-derselben Woche verschieben und mit der langen Ausfahrt tauschen") war falsch: Die
-Trainingswoche läuft Sa–Fr, der Samstag derselben Woche liegt also **vor** dem
-Donnerstag.
+**Nach hinten, ohne Ersatzeinheit, ohne Tausch.**
 
 | Fällt das Go/No-Go durch | |
 |---|---|
@@ -986,8 +829,7 @@ Donnerstag.
 | **Samstag** | **Test.** Er ersetzt die lange Ausfahrt der neuen Woche, kommt nicht dazu |
 | Sonntag | Rumpf-Zirkel, kein Beinblock |
 
-**Zweite Absage:** Test auf den Donnerstag der Folgewoche. Die betreffende Woche wird
-zur Grundlagenwoche, die Phase startet eine Woche später. Ein verschobener Testtermin
+**Zweite Absage:** Test auf den Donnerstag der Folgewoche. Ein verschobener Testtermin
 kostet fast nichts — ein unter schlechten Bedingungen gefahrener Test verzerrt die Zonen
 für den gesamten Folgeblock.
 
@@ -999,54 +841,31 @@ für den gesamten Folgeblock.
 | **FTP** = Ø-Watt × 0,95 | Rechnung | intervals.icu Settings + App |
 | **LTHR** = Ø-Puls der 20 min | Aktivität | intervals.icu Settings + App |
 | Ø-Kadenz der 20 min | Aktivität | Notiz |
-| Gewicht am Testtag | Waage | Wellness — sonst ist W/kg über die Tests nicht vergleichbar |
-| Bedingungen | selbst | Temperatur, Wind, Strecke, Rad, Reifendruck |
+| Gewicht am Testtag | Waage | Wellness |
+| Bedingungen | selbst | Temperatur, Wind, Strecke, Rad, Reifendruck, Startzeit |
 | RPE der letzten 5 min | selbst | 1–10; unter 9 heißt: nicht ausbelastet |
 
-### Einordnung des ersten Testwerts
+### Einordnung der Testwerte
 
-**Der Wert vom 10.09. ist eine Untergrenze, kein Messwert.** Drei Faktoren wirken alle
-in dieselbe Richtung nach unten: fehlende Pacing-Erfahrung mit Powermeter, ein TSB um
-−10, und ein Körper, der sich noch nie voll ausbelastet hat.
+**Der Wert vom 10.09. war eine Untergrenze.** Fehlende Pacing-Erfahrung, ein TSB um −10
+und ein Körper, der sich noch nie voll ausbelastet hatte, wirkten alle nach unten. Die
+Gegenchecks (5-min-Wert 132 %, eFTP-Sprung auf 206 W) haben das am 17.09. bestätigt, und
+der Plan hat mit der Arbeits-FTP (206, später 215 W) gegengesteuert.
 
-Praktische Folgen:
-
-- Fühlen sich die Intervalle in Phase 2 zu leicht an, wird nach Atmung gefahren, nicht
-  nach der Zahl.
-- Die **eFTP** auf der Power-Seite von intervals.icu ist der laufende Gegencheck.
-- Der Retest am 22.10. wird einen Teil seines Zuwachses aus Testkompetenz beziehen, nicht
-  nur aus Form. Das ist normal und kein Grund, den Zuwachs kleinzurechnen.
-
-**Bestätigt am 17.09.** Beide Gegenchecks haben angeschlagen: der 5-min-Wert mit 132 %
-der Test-FTP und die eFTP mit einem Sprung von 196 auf 206 W. Die wahre FTP liegt bei
-rund 206 W. **Nachtrag 24.09. (Fassung 11):** eher bei rund 215 W, siehe Abschnitt 9h.
-
-**Entscheidung (Fassung 7): kein vorgezogener Retest.** Stattdessen die Arbeits-FTP von
-206 W aus Abschnitt 1, die ausschließlich die Zielwatt der Qualitätseinheiten hebt. Der
-vorgezogene Test wäre die lehrbuchmäßige Antwort, kostet aber einen kompletten
-Testanlauf, also eine VO2max-Einheit in Woche 6 und einen Testtag in Woche 7 — und
-liefert nur die Zahl, die aus 5-min-Wert und eFTP bereits ablesbar ist. Der reguläre
-Termin am 22.10. liegt ohnehin nur fünf Wochen entfernt und bleibt unverändert.
-
-**Was das kostet und wo die Grenze liegt:** Bis zum 22.10. laufen Trainingslast und Zonen
-auf einer um rund 7 % zu niedrigen FTP. Zieht die eFTP bis Woche 8 über **215 W**, ist die
-Entscheidung neu zu prüfen — dann ist der Abstand zwischen Zahlenwerk und Wirklichkeit
-groß genug, dass der Testanlauf sich lohnt.
-
-**Stand Fassung 11:** Die eFTP steht weiter bei 206 W, die Arbeits-FTP ist trotzdem auf
-215 W gestiegen, weil das Pulskriterium der Donnerstage eindeutiger ist als die träge
-eFTP. Ein vorgezogener Retest ist damit endgültig vom Tisch: Der 22.10. liegt vier Wochen
-entfernt, bis dahin steuert Regel 7 der Ausführungsregeln in 5-W-Schritten nach.
+**Der Wert vom 22.10. ist ein belastbarer Messwert.** Ausbelastet (Max HF 180),
+gleichmäßig gepaced, nach vollständigem Testanlauf. Der Zuwachs von 192 auf 223 W
+(+16 %) setzt sich aus echtem Formgewinn und der zu niedrigen ersten Messung zusammen;
+gegenüber der zuletzt geschätzten Arbeits-FTP von 215 W beträgt er +4 %. **Für den
+Vergleich zum 03.12. ist der 22.10. die saubere Basis.**
 
 ### Checkliste unmittelbar nach dem Test
 
 1. FTP und LTHR in intervals.icu Settings → Ride eintragen
 2. Power Zones und HR Zones auf **Coggan** stellen, Load Priority auf **Power**
-3. FTP von automatisch auf **manuell** umstellen
-4. Dieselben fünf Grenzwerte in die App übernehmen
-5. Zeile in der Testhistorie ausfüllen
-6. Sprechtest-Puls aus der Übergangserhebung gegen die neue Z2-Obergrenze halten —
-   liegt er deutlich darunter, wird Z2 nach unten begrenzt
+3. FTP auf **manuell**
+4. Dieselben Grenzwerte in die App und auf den Edge übernehmen
+5. Zeile in der Testhistorie ausfüllen — hier und in `SCHWELLENTESTS.md`
+6. Z2-Arbeitsbereich gegen das Decoupling der nächsten langen Ausfahrt prüfen
 7. Am Folgetag locker oder frei
 
 ### Testhistorie
@@ -1054,8 +873,11 @@ entfernt, bis dahin steuert Regel 7 der Ausführungsregeln in 5-W-Schritten nach
 | Datum | Woche | Ø-Watt 20 min | FTP | LTHR | Ø-Kadenz | Gewicht | Bedingungen |
 |---|---|---|---|---|---|---|---|
 | **10.09.2026** | 4 | **202,6 W** | **192 W** | 152 erhoben / **163 gesetzt** | 86 rpm | 95,7 kg | 21,6 °C, teils bewölkt, Wind 2,5 km/h Ost, trocken, Start 16:21, Cube Nuroad, 2,5 bar. RPE 7–8, negativer Split +5,7 % |
-| 22.10.2026 | 10 | | | | | | Start 16:21 |
+| **22.10.2026** | 10 | **234,7 W** (NP 236) | **223 W** | **166** erhoben und gesetzt | 89 rpm | 91,8 kg | ca. 14 °C, meist bewölkt, Wind ~10 km/h, trocken, Start 16:50 (Testabschnitt ca. 17:15), Cube Nuroad, 2,5 bar. 5-min-Abschnitte 236 / 233 / 232 / 237 W, HF Ø 166, letzte 5 min 172, **Max 180**. Pacing-Vorgabe 225 W, um 10 W übertroffen. RPE nicht erfasst, Selbsteinschätzung vorab „stark am Limit" |
 | 03.12.2026 | 16 | | | | | | Start 14:00, siehe 9c |
+
+**Veränderung 10.09. → 22.10.:** +32 W im 20-min-Wert (+16 %), FTP 192 → 223 W, W/kg
+2,01 → 2,43 (+21 %, Gewicht −3,9 kg).
 
 Die ausführliche Fassung mit Pacing, Rundenverlauf und Schlussfolgerungen steht in
 `SCHWELLENTESTS.md`. **Beide Tabellen sind identisch zu führen** — weicht eine ab, gilt
@@ -1063,12 +885,12 @@ Die ausführliche Fassung mit Pacing, Rundenverlauf und Schlussfolgerungen steht
 
 ### VO2max-Referenz (5-Minuten-Wert)
 
-Getrennt geführt, weil der Wert nicht mehr am Testtag erhoben wird.
+Getrennt geführt, weil der Wert nicht am Testtag erhoben wird.
 
-| Datum | Woche | Ø-Watt 5 min | % der aktuellen FTP | Bemerkung |
+| Datum | Woche | Ø-Watt 5 min | % der FTP | Bemerkung |
 |---|---|---|---|---|
-| **17.09.2026** | 5 | **254 W** | **132 %** | Gegenprobe überschritten. Ungleichmäßiges Pacing, Gefälle im Schlussteil — Wert ist eine Untergrenze. Max HF 171 |
-| 24.09.2026 | 6 | — (4 min: **268 W**) | (4 min: 140 %) | Kein 5-min-Wert: fünfte Wiederholung der 5 × 4 min, nach vier Wiederholungen bei 222–239 W. Vorbelastet, also Untergrenze für 4 min. Ø HF letzte 60 s 168 bpm, Max HF **173** |
+| **17.09.2026** | 5 | **254 W** | 132 % von 192 / **114 % von 223** | Ungleichmäßiges Pacing, Gefälle im Schlussteil — Untergrenze. Max HF 171 |
+| 24.09.2026 | 6 | — (4 min: **268 W**) | (4 min: 120 % von 223) | Fünfte Wiederholung der 5 × 4 min, vorbelastet. Ø HF letzte 60 s 168 bpm, Max HF 173 |
 
 ### Laufende Kontrolle zwischen den Tests
 
@@ -1076,11 +898,11 @@ Wöchentlich nach der Samstagsausfahrt:
 
 | Größe | Wo | Was sie sagt |
 |---|---|---|
-| **Decoupling Pw:HR** | Aktivität Samstag | ≤ 5 % → Grundlage trägt diese Dauer |
-| **Efficiency Factor** | Aktivität Di und Sa | Trend über Wochen, nicht Einzelwert |
+| **Decoupling Pw:HR** | Aktivität Samstag | ≤ 5 % → Grundlage trägt diese Dauer und den Arbeitsbereich Ø 135–150 W |
+| **Efficiency Factor** | Aktivität Sa (Di nur über Puls und Zeit auf der festen Strecke) | Trend über Wochen, nicht Einzelwert |
 | **eFTP** | Power-Seite | Zwischenkontrolle |
 | **Wochenumfang** | Analyse-Tab | gegen den Deckel aus Abschnitt 2 |
-| **CTL / ATL / TSB** | Fitness-Seite | ab CTL 20 als Auslöser, davor nur beobachten |
+| **CTL / ATL / TSB** | Fitness-Seite | Auslöser für Erholungswochen; ab 22.10. auf FTP 223 W gerechnet |
 
 ---
 
@@ -1132,16 +954,16 @@ Pause zwischen den Übungen 30 s, zwischen den Runden 60 s.
 | 1–10 (Phase 1–2) | voll | — |
 | **11–12 (Phase 3)** | voll | **zweite Einheit**, 2 Runden am unteren Rand der Spanne |
 | **14–15 (Phase 4)** | voll | **Erhaltungsdosis**, 1–2 Runden am unteren Rand |
-| Erholungswochen 4, 7, 10, 13, 16 | unterer Rand, 2 Runden | entfällt |
+| Erholungswochen 4, 7, 13, 16 | unterer Rand, 2 Runden | entfällt |
+| Testwochen 4, 10, 16 | Tag vor der langen Ausfahrt der Testwoche: **kein Beinblock** | entfällt |
 
 **Warum erst ab Woche 11:** In Phase 1 und 2 ist der Donnerstag der Qualitätstag. Eine
-Beineinheit am Dienstagabend läge knapp 40 Stunden davor — zu wenig Abstand, um beides
-in Qualität zu fahren. In Phase 3 ist der Donnerstag selbst eine Z2-Einheit, damit fällt
-der Konflikt weg. In Phase 4 kehrt er zurück, deshalb dort nur Erhaltungsdosis.
+Beineinheit am Dienstagabend läge knapp 40 Stunden davor. In Phase 3 ist der Donnerstag
+selbst eine Z2-Einheit, damit fällt der Konflikt weg. In Phase 4 kehrt er zurück, deshalb
+dort nur Erhaltungsdosis.
 
 **Warum Erhaltungsdosis kein Rückschritt ist:** Kraft zu erhalten braucht deutlich
-weniger Reiz als Kraft aufzubauen. Ein bis zwei Sätze genügen, um das in Phase 3
-Aufgebaute über die Schwellenwochen zu retten.
+weniger Reiz als Kraft aufzubauen.
 
 #### Dosierung je Phase
 
@@ -1154,14 +976,13 @@ Aufgebaute über die Schwellenwochen zu retten.
 | — | Erholungswochen | unterer Rand der laufenden Phase | | | 2 |
 
 **Tempo durchgehend:** 3 s absenken, 1 s heben, keine Pause unten, kein Schwung.
-Das exzentrische Absenken ist der Reiz — schnelles Ablassen halbiert den Nutzen.
 
 #### Progressionsregel
 
 **Die Progression ist von den Phasengrenzen entkoppelt.** Weitergerückt wird, sobald das
 obere Ende der Wiederholungsspanne in allen Runden mit sauberer Form erreicht wurde, und
 das an zwei aufeinanderfolgenden Sonntagen — **auch wenn die Phase das noch nicht
-vorsieht.** Die Tabelle oben gibt den Einstieg vor, nicht die Obergrenze.
+vorsieht.**
 
 Reihenfolge der Steigerung:
 
@@ -1173,24 +994,17 @@ Reihenfolge der Steigerung:
 
 **Nicht** über das Tempo steigern und **nicht** über mehr Übungen.
 
-**Warum die Entkopplung:** Zusatzgewicht stand in Fassung 2 erst ab Woche 13. Bei
-laufendem Kaloriendefizit ist die Reizhöhe der entscheidende Faktor für den Muskelerhalt,
-und ein Defizit läuft ab Woche 1. Auf eine Phasengrenze zu warten verschenkt Wochen.
+**Warum die Entkopplung:** Bei laufendem Kaloriendefizit ist die Reizhöhe der
+entscheidende Faktor für den Muskelerhalt. Auf eine Phasengrenze zu warten verschenkt
+Wochen.
 
 #### Muskelkater-Regel
-
-Muskelkater in den Oberschenkeln am Sonntag ist in den ersten Wochen zu erwarten. Er
-kommt überwiegend nicht von der Samstagsausfahrt, sondern vom exzentrischen Absenken im
-Beinblock — ein Reiz, der beim Radfahren praktisch nicht vorkommt.
 
 | Zustand am Sonntag | Beinblock |
 |---|---|
 | frei | volle Spanne |
 | leichter, diffuser Muskelkater | **unteres Ende** der Wiederholungsspanne, volle Runden |
 | ausgeprägter Muskelkater | **entfällt**, nur Rumpf-Zirkel |
-
-Der Effekt klingt von selbst zurück: Nach zwei bis drei gleichartigen Belastungen
-reagiert die Muskulatur deutlich weniger. Nach etwa vier Wochen ist das Thema erledigt.
 
 **Wann es kein normaler Muskelkater ist:** einseitig statt symmetrisch, punktuell
 lokalisierbar statt diffus, scharf statt dumpf, in Ruhe vorhanden, beim Fahren
@@ -1247,8 +1061,8 @@ Bein ausstrecken, Rücken gerade, kein Hohlkreuz, Hüfte nicht verdrehen. Oben 1
 halten. Jede Wiederholung wechselt die Seite.
 *Ziel: Koordination und tiefe Rückenmuskulatur.*
 
-**Liegestütz** — Auf Zehen oder Knien, Körper gerade, Ellbogen nah am Körper.
-Ca. 2 s absenken, 1 s hochdrücken, kein Schwung.
+**Liegestütz** — Auf Zehen oder mit erhöhten Händen, Körper gerade, Ellbogen nah am
+Körper. Ca. 2 s absenken, 1 s hochdrücken, kein Schwung.
 *Ziel: Brust, Trizeps, Schultern — Armhaltung und Stützkraft am Lenker.*
 
 **Seitstütz links / rechts** — Auf einem Unterarm seitlich abstützen, Körper gestreckt,
@@ -1281,8 +1095,7 @@ langsam absenken.
 
 Nicht „zurückoptimieren":
 
-- **Haltezeit bei 40 s gedeckelt.** Längere Einzelhalte lassen bei Einsteigern die Form
-  zerfallen. Gesteigert wird über eine zusätzliche Runde.
+- **Haltezeit bei 40 s gedeckelt.** Gesteigert wird über eine zusätzliche Runde.
 - **Belastung : Pause mindestens 1 : 0,5.**
 - **Dead Bug und Bird Dog sind alternierend.**
 - **Kein Superman / keine Rückenextension.** Ersetzt durch das Hüftheben.
@@ -1302,9 +1115,9 @@ diese Grenze überschreitet:
 - Der **Freitag** ist der letzte Tag der laufenden Woche.
 - Der **Samstag** beginnt die neue Woche.
 
-Eine lange Ausfahrt „auf Freitag vorziehen" verschiebt sie damit in die **Vorwoche** und
-lädt diese doppelt. Ein Tausch Donnerstag ↔ Samstag verschiebt Umfang zwischen zwei
-Wochen. Beides ist zulässig, muss aber beim Umfangsdeckel berücksichtigt werden.
+Eine lange Ausfahrt „auf Freitag vorziehen" verschiebt sie damit in die **Vorwoche**.
+Ein Tausch Donnerstag ↔ Samstag verschiebt Umfang zwischen zwei Wochen. Beides ist
+zulässig, muss aber beim Umfangsdeckel berücksichtigt werden.
 
 ### 4.1 Invarianten
 
@@ -1327,7 +1140,7 @@ Beinblock → Rumpf → optionale Fahrten → Mittwoch → Dienstag
 | 2 und 4 | **Qualitätstag** | Intensitätsblöcke, die Intervalle sind der Zweck |
 
 Der Block aus Abschnitt 10 (Beweglichkeit, Koordination) steht **nicht** in dieser
-Reihenfolge — er kostet keine Erholung und hat keinen Grund, zuerst zu fallen.
+Reihenfolge.
 
 ### 4.3 Samstag: keine Zeit für die lange Ausfahrt
 
@@ -1336,7 +1149,7 @@ Reihenfolge — er kostet keine Erholung und hat keinen Grund, zuerst zu fallen.
 | **A1** | Kompletter Tagestausch mit Sonntag | **Beste Wahl.** Beide Tage bleiben in derselben Woche |
 | **A2** | Samstag verkürzt fahren, 70–90 statt 140 min | Gut |
 | **A3** | Auf Freitag vorziehen | **Verschiebt in die Vorwoche** (siehe 4.0). Nur in Phase 1 und 3 und nur, wenn die Vorwoche unter dem Deckel liegt |
-| **A4** | Streichen, Mittwoch verlängern | **Schlechtester Ersatz.** Der Reiz ist die Dauer am Stück. Der **Dienstag** wird dafür **nicht** verlängert (Fassung 10) |
+| **A4** | Streichen, Mittwoch verlängern | **Schlechtester Ersatz.** Der **Dienstag** wird dafür **nicht** verlängert (Fassung 10) |
 
 **Nicht** nur die Radfahrten tauschen und Rumpf plus Beinblock am Sonntag stehen lassen.
 Muss es so laufen: Beinblock weglassen, Zirkel machen.
@@ -1357,10 +1170,6 @@ Muss es so laufen: Beinblock weglassen, Zirkel machen.
 | **C2** | Ersatzlos streichen | **Völlig in Ordnung** |
 | **C3** | Auf Freitag schieben | Nur in Phase 1 und 3 |
 
-Seit Fassung 5 hängt der Erhaltungsreiz am **Donnerstag**, nicht mehr am Mittwoch. Ein
-ausgefallener Mittwoch kostet in Phase 3 also nur Umfang, keinen Reiz. Fällt dagegen der
-Donnerstag aus, siehe Abschnitt 4.8.
-
 ### 4.6 Beide Bürotage weg
 
 - **Dienstag** als freie Fahrt in voller Länge, **Mittwoch** streichen.
@@ -1372,7 +1181,7 @@ Die Z2-Summe sinkt um rund 40 min. **Nicht kompensieren.**
 
 | # | Option | Bewertung |
 |---|---|---|
-| **E1** | Do = Pendel-Z2, Qualität auf Freitag, lange Ausfahrt auf Sonntag | **Beste Wahl.** Fr Qualität, Sa frei, So lang — zwei Tage Abstand. Beachten: der Samstag gehört bereits zur Folgewoche |
+| **E1** | Do = Pendel-Z2, Qualität auf Freitag, lange Ausfahrt auf Sonntag | **Beste Wahl.** Fr Qualität, Sa frei oder Rumpf, So lang. Beachten: der Samstag gehört bereits zur Folgewoche. So gefahren am 16.–18.10. |
 | **E2** | Qualität auf Dienstag vorziehen, Do = Pendel-Z2 | **Nur wenn Dienstag Homeoffice ist** |
 | **E3** | Woche zur Grundlagenwoche machen, Qualität streichen | Phase 1 und 3 unkritisch. Phase 2/4: einmal verkraftbar |
 | **E4** | Intervalle auf dem Hinweg fahren | **Nicht empfohlen** |
@@ -1381,18 +1190,15 @@ Die Z2-Summe sinkt um rund 40 min. **Nicht kompensieren.**
 
 - **Phase 1:** streichen.
 - **Phase 2 und 4:** auf Freitag, lange Ausfahrt der Folgewoche auf Sonntag.
-- **Phase 3 (Woche 11–12, seit Fassung 5):** Der Z2-Umfang wird gestrichen, **die
-  3 × 3 min nicht.** Sie sind der einzige harte Reiz der Woche und wandern in die
-  zweite Hälfte der Samstagsausfahrt. Fallen sie zwei Wochen hintereinander aus, ist
-  Phase 3 faktisch reizfrei — dann in Woche 12 nachziehen, auch wenn der Umfang darunter
-  bleibt. In Woche 13 wird nichts nachgeholt.
+- **Phase 3 (Woche 11–12):** Der Z2-Umfang wird gestrichen, **die 3 × 3 min nicht.**
+  Sie sind der einzige harte Reiz der Woche und wandern in die zweite Hälfte der
+  Samstagsausfahrt. In Woche 13 wird nichts nachgeholt.
 - Alternativ die Intervalle in die Samstagsausfahrt integrieren. Dann ist der Samstag
   kein sauberer Z2-Tag mehr und **das Decoupling der Woche fällt als Kennzahl aus**.
 
 ### 4.9 Ganzes Wochenende weg
 
-**Woche als Erholungswoche behandeln**, danach normal weitermachen. Nicht nachholen, die
-Folgewoche nicht aufblähen.
+**Woche als Erholungswoche behandeln**, danach normal weitermachen. Nicht nachholen.
 
 ### 4.10 Wellness-Gate rot
 
@@ -1401,32 +1207,28 @@ Grundregel aus Abschnitt 1: Donnerstag wird 60 min Z2, Samstag ohne Blöcke.
 
 ### 4.11 Wetter und Tageslicht am Qualitätstag
 
-**Seit Fassung 6 wird das ganze Jahr draußen gefahren.** Dunkelheit ist deshalb kein
-Grund mehr, den Donnerstag zu verlegen — schlechtes Wetter schon.
+**Seit Fassung 6 wird das ganze Jahr draußen gefahren.**
 
 | Priorität | Donnerstag | Hinweis |
 |---|---|---|
 | **1** | **tagsüber fahren** (Gleitzeit, früherer Feierabend) | Regelfall, sobald es nach Feierabend dunkel ist |
-| **2** | im Dunkeln auf bekannter Strecke | tagsüber bereits gefahren, befestigt, verkehrsarm. Gilt auch für die Z4-Blöcke in Phase 4 |
+| **2** | im Dunkeln auf bekannter Strecke | tagsüber bereits gefahren, befestigt, verkehrsarm |
 | **3** | in den Samstag verlegen | **nur bei schlechtem Wetter** (Starkregen, Sturm, Glätte) |
 
 Bei Priorität 3:
 
-- Do ↔ Sa tauschen, **nur** wenn die lange Ausfahrt dann am Sonntag Platz hat. Beachten:
-  das verschiebt Umfang in die Folgewoche (4.0).
+- Do ↔ Sa tauschen, **nur** wenn die lange Ausfahrt dann am Sonntag Platz hat.
 - Sonst: Donnerstag zu Z2 machen, Intervalle in die zweite Hälfte der Samstagsausfahrt.
   **Das Decoupling der Woche fällt dann als Kennzahl aus.**
 
-**Warum diese Reihenfolge:** Bis Fassung 5 war die Verlegung in den Samstag ab Woche 11
-der Regelfall. Damit wäre in fast jeder Belastungswoche der Phasen 3 und 4 der Samstag
-kein sauberer Z2-Tag gewesen — und das Decoupling, die zentrale Grundlagenkennzahl
-zwischen den Tests, hätte genau in den Wochen vor dem letzten Retest gefehlt.
-
-### 4.12 Urlaub oder Reise, ganze Woche
+### 4.12 Urlaub, Reise oder Krankheit, ganze Woche
 
 - **Rumpf, Beinblock und der Block aus Abschnitt 10 brauchen kein Equipment.**
 - Radwoche komplett streichen.
-- **Wiedereinstieg mit einer Erholungswoche.**
+- **Nach Krankheit:** mindestens so viele lockere Tage wie Krankheitstage, bevor wieder
+  Intensität gefahren wird. Eine planmäßige Erholungswoche direkt nach einer
+  krankheitsbedingten Pause kann entfallen, wenn die Pause selbst schon eine war (so
+  entschieden für Woche 10, Fassung 12).
 
 ### 4.13 Auswirkung auf die Analyse
 
@@ -1452,22 +1254,22 @@ Ausrollen, Zonenanzeige und Sprachansage.
 
 **Analyse** — Abgleich der tatsächlichen Aktivitäten mit dem Plan, siehe Abschnitt 7.
 
-### Anpassungsbedarf für Fassung 3 bis 6
+### Anpassungsbedarf
 
 Was die App mitziehen muss, geordnet nach der Fassung, aus der die Anforderung stammt.
 
 Aus Fassung 3 (30.08.2026):
 
-1. **Erholungswochen als feste Liste** `[4, 7, 10, 13, 16]` statt `week % 4 === 0`.
-2. **Alle Reihen auf die neuen 16 Werte** aus Abschnitt 2 setzen, `LEG_ROUNDS` inklusive.
+1. **Erholungswochen als feste Liste** statt `week % 4 === 0` — seit Fassung 12
+   `[4, 7, 13, 16]` (siehe Punkt 34).
+2. **Alle Reihen auf die 16 Werte** aus Abschnitt 2 setzen, `LEG_ROUNDS` inklusive.
 3. **Phasengrenzen neu:** 1–4, 5–10, 11–13, 14–16.
 4. **Testwochen neu:** 4, 10, 16. `thursdayPlan()` entsprechend anpassen.
 5. **Samstag-Blöcke in Woche 6, 9, 12** (feste Liste statt Formel).
-6. **Erhaltungsreiz** an der **Donnerstagskarte** in Woche 11 und 12 anzeigen
-   (bis Fassung 4 stand er an der Mittwochskarte, siehe Punkt 22).
+6. **Erhaltungsreiz** an der **Donnerstagskarte** in Woche 11 und 12 anzeigen.
 7. **Zweite Beineinheit** an der Dienstagskarte in Woche 11, 12, 14, 15.
 8. **Umfangsdeckel** in der Analyse: Warnung, wenn die Wochensumme den Planwert um mehr
-   als 10 % überschreitet. Das ist neu — bisher gab es nur eine Warnung nach unten.
+   als 10 % überschreitet.
 9. **Muskelkater-Abfrage** vor dem Beinblock am Sonntag: drei Stufen, steuert die
    angezeigte Wiederholungsspanne.
 10. **Testanlauf** aus Abschnitt 2a als Hinweis ab 10 Tagen vor dem Testtermin, inklusive
@@ -1475,161 +1277,107 @@ Aus Fassung 3 (30.08.2026):
 
 Aus Fassung 4 (04.09.2026):
 
-11. **Schwellentest-Ablauf im Timer:** All-out-Segment entfernen, die Pause davor von
-    10 auf 5 min kürzen. Sequenz: 20 min Einfahren (mit 3 × 1 min zügig), 5 min
-    locker, 20 min Test, 10 min Ausrollen; Gesamtdauer 55 min. Der Sollwert der
-    Testtage führt dann 20 statt 25 harte Minuten — mit 25 meldet die Auswertung
-    einen sauber gefahrenen Test als zu kurz.
-12. **Woche 5 als Variante, nicht als Sonderfall.** Der `thursday` der Woche 5 trägt in
-    `plan.json` neben dem Regelfall eine benannte `variante` mit eigener Schrittfolge.
-    Auf der Donnerstagskarte zwei Knöpfe; die Wahl wird gespeichert und gilt für
-    Tageskarte, Intervall-Timer und Auswertung. Drei Zustände müssen unterscheidbar
-    sein: unentschieden, gewählt, ausdrücklich abgewählt.
-13. **Wochenwerte 245 / 375 / 260 / 265** nicht eintragen, sondern rechnen:
-    `weekPlanMinutes` nimmt für den Donnerstag der Woche 5 die Variante. Der
-    Umfangsdeckel folgt daraus automatisch (270 / 413 / 286 / 292).
-14. **Testhistorie:** „Ø-Watt 5 min" durch „Ø-Kadenz" ersetzen, in beiden
-    Eingabeformularen. Die VO2max-Referenz bekommt im Testbereich eine eigene Karte
-    samt Import aus der Aufzeichnung und der 118-%-Gegenprobe; sie hängt am Test
-    davor und nicht am Kalender.
-15. **Ablaufgleichheit prüfbar machen.** `thresholdTest` trägt eine Kennung und eine
-    Fassungsnummer, die in jeden Eintrag der Testhistorie wandert. Stammen zwei
-    Einträge aus verschiedenen Abläufen, muss die Historie das sagen — sonst steht die
-    Regel aus Abschnitt 2a nur im Dokument.
-16. **RPE der letzten 5 min** als Feld im Testergebnis. Unter 9 steht dort, dass nicht
-    ausbelastet wurde und die FTP eher zu niedrig ist — das einzige Feld des Tests,
-    das etwas über die Güte des Messwerts sagt.
+11. **Schwellentest-Ablauf im Timer:** All-out-Segment entfernen. Sequenz: 20 min
+    Einfahren (mit 3 × 1 min zügig), 5 min locker, 20 min Test, 10 min Ausrollen;
+    Gesamtdauer 55 min.
+12. **Woche 5 als Variante, nicht als Sonderfall** in `plan.json`, mit gespeicherter
+    Wahl (unentschieden, gewählt, abgewählt).
+13. **Wochenwerte nicht eintragen, sondern rechnen** (`weekPlanMinutes`), Umfangsdeckel
+    folgt daraus.
+14. **Testhistorie:** Spalte „Ø-Kadenz" statt „Ø-Watt 5 min"; VO2max-Referenz als eigene
+    Karte mit 118-%-Gegenprobe.
+15. **Ablaufgleichheit prüfbar machen** — Kennung und Fassungsnummer des Testablaufs in
+    jedem Eintrag der Testhistorie.
+16. **RPE der letzten 5 min** als Feld im Testergebnis.
 17. **Sprechtest-Puls gegen die Z2-Obergrenze** nur über die Erhebungen seit dem letzten
-    Test mitteln. Ein Schnitt über beide Zeiträume vergleicht Werte aus zwei
-    Zonenmodellen gegen das neuere von ihnen. Damit ist Punkt 6 der Checkliste nach dem
-    Test gerechnet und nicht nur genannt.
-18. **Kein RPE je Einheit.** Empfinden verlangt dieser Plan an zwei Stellen, und beide
-    sind woanders verankert — das RPE der letzten fünf Testminuten als Güteprüfung
-    (Punkt 16) und der Sprechtest als oberste Instanz für Z2, erhoben als Puls. Auch
-    Coggan braucht es nicht: dort sind FTP und LTHR die Eingaben, und die RPE-Spalte
-    der Zonentabelle ist beschreibend — sie sagt, wie sich eine Zone anfühlen soll,
-    damit man sie ohne Messgerät findet. Eine Reihe über alle Einheiten wäre zusätzlich
-    irreführend, solange die Einheitsart nicht mitgespeichert wird: ein Ausschlag nach
-    oben hieße dann nicht „schlechte Form", sondern „das war ein Donnerstag".
-19. **Die Notiz gehört an den Wert**, nicht auf die Eingabekarte. Dort steht sie nur in
-    den letzten vier Einträgen — also gerade nicht bei dem alten Ausreißer, zu dem man
-    sie sucht. Sie gehört an den angetippten Punkt der Sprechtest-Kurve. Ihr Platzhalter
-    nennt nur, was die App nicht selbst herleitet: Wind und Strecke rechnet das Fazit
-    aus der Aufzeichnung genauer aus, als man sie tippen kann.
-20. **Bedingungen des Tests anzeigen.** Das Feld wird seit jeher erhoben — dieser
-    Abschnitt verlangt es und führt eine eigene Spalte dafür — und gehört in beide
-    Testhistorien. Bei drei Tests im Plan hängt der Vergleich zweier Werte an dieser
-    Zeile: 6 Grad und Gegenwind gegen 22 Grad und Windstille sind keine zwei
-    Formzustände.
+    Test mitteln.
+18. **Kein RPE je Einheit.**
+19. **Die Notiz gehört an den Wert**, nicht auf die Eingabekarte.
+20. **Bedingungen des Tests anzeigen**, in beiden Testhistorien.
 
 Aus Fassung 5 (09.09.2026):
 
-21. **Woche 11 und 12 im Intervall-Timer:** nicht als Sonderfall im Code, sondern als
-    Form in `plan.json` — `tage.do.kind: "steps"` trägt den Ablauf als Schrittliste
-    statt als drei Zahlen. Folge: 10 min Einfahren, 25 min Z2, 3 × (3 min bei
-    108–115 % FTP / 3 min Pause), dann 20 bzw. 25 min Z2 bis zum Ende — 70 und 75 min.
-    Die Wochensummen 430 und 445 bleiben unverändert, weil die 15 min innerhalb der
-    Einheit liegen.
-22. **Erhaltungsreiz von der Mittwochs- auf die Donnerstagskarte** (siehe Punkt 6).
-    `mi.extra` steht in Woche 11 und 12 auf `null`, der Reiz hängt an den drei
-    `work`-Schritten des Donnerstags. Die Form `mi.extra` bleibt in der Datei zulässig
-    und geprüft — sie wird nur nicht mehr gebraucht.
-23. **Zonenanzeige im Timer:** kein eigener Zonensatz. Die drei Blöcke tragen
-    `effort: "108–115 % FTP"`, und das ersetzt auf Karte und Ring das Pulsband —
-    dieselbe Regel wie beim Schwellentest und beim Testanlauf, und dieselbe wie die
-    Steuergrößen-Tabelle in Abschnitt 6: Watt für die 3 × 3 min, HF nur am
-    Intervallende.
+21. **Woche 11 und 12 im Intervall-Timer** als Schrittliste in `plan.json`
+    (`tage.do.kind: "steps"`): 10 min Einfahren, 25 min Z2, 3 × (3 min / 3 min Pause),
+    dann 20 bzw. 25 min Z2.
+22. **Erhaltungsreiz von der Mittwochs- auf die Donnerstagskarte.**
+23. **Zonenanzeige im Timer:** die Blöcke tragen ihr Zielband statt eines Pulsbands.
 
 Aus Fassung 6 (11.09.2026):
 
-24. **Keine Anforderung an App oder `plan.json`.** Abschnitt 4.11 ist eine Ausweichregel
-    ohne Datenfolge. Die abweichende Startzeit am 03.12. gehört ins Feld „Bedingungen“
-    der Testhistorie (Punkt 20).
+24. **Keine Anforderung an App oder `plan.json`.**
 
 Aus Fassung 7 (17.09.2026):
 
-25. **Zweiter FTP-Wert in `plan.json`.** Neben dem Testwert (`ftp`, 192) trägt die Datei
-    eine `arbeits_ftp` (206) mit Datum und Herkunft. Zonen, Zonenanzeige und
-    Trainingslast rechnen weiter gegen `ftp`; **nur die Zielwatt der `work`-Schritte und
-    der Samstagsblöcke** rechnen gegen `arbeits_ftp`. Fehlt der Wert, gilt `ftp` — dann
-    zeigt die App die alten Zahlen und nicht etwa keine.
+25. ~~**Zweiter FTP-Wert `arbeits_ftp` in `plan.json`.**~~ **Aufgehoben in Fassung 12**
+    (Punkt 34). Die Logik „fehlt `arbeits_ftp`, gilt `ftp`" sorgt dafür, dass das
+    Entfernen des Felds genügt.
 26. **Herkunft anzeigen.** An der Zielwattangabe muss ablesbar sein, gegen welchen Wert
-    gerechnet wurde. Ohne das steht in vier Wochen eine Zahl da, deren Grundlage niemand
-    mehr rekonstruiert — dasselbe Problem wie bei den Testbedingungen (Punkt 20).
-27. **Kennzahl „HF am Intervallende" auf die LTHR umstellen:** ≥ 163 bpm statt
-    ≥ 90 % HFmax. Die HFmax ist unbekannt, und je nach Annahme (171 oder 180) fällt
-    dieselbe Einheit einmal bestanden und einmal durchgefallen aus. Das Feld „Max HR"
-    bleibt bei 180 und darf keine Schwelle mehr speisen; aufgezeichnete Höchstwerte
-    laufen in die Testhistorie.
-28. **Z2-Warnungen der Analyse hängen an den falschen Bändern.** Die App prüft Z2 noch
-    gegen 128–135 bpm aus der Übergangsfassung, obwohl seit Woche 5 die Leistungszonen
-    gelten. Folge: Falschmeldungen an sauber gefahrenen Z2-Tagen. Zu ändern:
-    Zonenquelle ab Woche 5 auf Leistung, Pulsprüfung nur noch als Zweitkriterium, und
-    keine Warnung, wenn das Decoupling der Fahrt unter 5 % liegt. **An Di und Mi
-    (Trekkingrad, keine Watt) bleibt die Pulsprüfung die einzige Quelle** — fehlende
-    Leistungsdaten dort dürfen nicht als Fehler gemeldet werden.
+    gerechnet wurde.
+27. **Kennzahl „HF am Intervallende" an der LTHR**, nicht an der HFmax — seit Fassung 12
+    ≥ 166 bpm.
+28. **Z2-Warnungen der Analyse:** Zonenquelle auf Leistung, Pulsprüfung nur als
+    Zweitkriterium, keine Warnung bei Decoupling unter 5 %. **An Di und Mi (Trekkingrad,
+    keine Watt) bleibt die Pulsprüfung die einzige Quelle.**
 
 Aus Fassung 8 (19.09.2026):
 
-29. **Kadenzziel Z2 nach Rad trennen.** Für Z2 auf dem Cube (Do, Sa) zeigt die App
-    **80–85 rpm** und warnt nicht bei einer Kadenz unter 85, solange die Leistung im
-    Z2-Band liegt. Für Di und Mi (Trekkingrad) bleibt 85–90 rpm als Richtwert ohne
-    Prüfung, weil dort keine Kadenzdaten ankommen. Die Kennzahl „Ø-Kadenz" in der
-    Analyse prüft Z2 gegen 80 rpm als Untergrenze.
-30. **Analyse der Radeinheiten nach Abschnitten.** Anlass: Sa 19.09., Decoupling im
-    Z2-Teil −1,2 %, beide Blöcke im Ziel (172 / 171 W) — und trotzdem „zu hart", weil jede
-    Sekunde über 144 W zählte, geplante Blöcke und Kuppen im Gelände gleichermaßen.
-    Gilt für Fahrten mit Leistungsmesser (Cube, Do/Sa); Di/Mi auf dem Trekkingrad bleiben
-    bei der Pulsprüfung (Z2 ≤ 135 bpm), fehlende Watt- und Kadenzwerte sind dort kein Fehler.
-    - **Bezugswerte:** Z2-Band 106–144 W aus der **Test-FTP**; Blockziel Samstag
-      172–189 W (80–88 %) und Do-Intervalle 240–250 W (112–116 %) aus der **Arbeits-FTP**
-      (seit Fassung 11 215 W, siehe Punkt 31).
-    - **Glätten:** Zonenzeiten auf dem 30-s-Gleitmittel der Leistung. Stillstand
-      (0 W **und** unter 2 km/h) fällt aus allen Rechnungen heraus.
-    - **Abschnitte, in dieser Reihenfolge:** erste 15 min Einfahren und letzte 10 min
-      Ausrollen werden nicht bewertet. In Blockwochen (6, 9, 12) sind Runden aus
-      `GET /activity/{id}/intervals` mit 10–14 min und Ø ≥ 160 W die Blöcke; fehlen sie,
-      die zwei stärksten nicht überlappenden 12-min-Fenster der zweiten Fahrthälfte. Die
-      8 min nach jedem Block außer dem letzten sind Blockpause. Der Rest ist der Z2-Anteil.
-    - **Bewertung:** Blöcke nur gegen 172–189 W, nie als Z3/Z4-Überschreitung — Hinweis
-      „zu weich" / „zu hart" am Block. Blockpause: Hinweis nur bei Ø > 144 W. Z2-Anteil:
-      Zeit über 144 W (geglättet) wird gezählt.
+29. **Kadenzziel Z2 nach Rad trennen:** Cube 80–85 rpm, keine Warnung unter 85, solange
+    die Leistung passt; Trekkingrad 85–90 rpm als Richtwert ohne Prüfung.
+30. **Analyse der Radeinheiten nach Abschnitten.** Gilt für Fahrten mit Leistungsmesser
+    (Cube, Do/Sa); Di/Mi auf dem Trekkingrad bleiben bei der Pulsprüfung
+    (Z2 ≤ 137 bpm seit Fassung 12).
+    - **Bezugswerte seit Fassung 12:** Z2 123–167 W und Arbeitsbereich Ø 135–150 W aus der
+      **FTP 223 W**; Blockziel Samstag 178–196 W (80–88 %), Do-Reiz 250–260 W (112–116 %).
+    - **Glätten:** Zonenzeiten auf dem 30-s-Gleitmittel. Stillstand (0 W **und** unter
+      2 km/h) fällt aus allen Rechnungen heraus.
+    - **Abschnitte:** erste 15 min Einfahren und letzte 10 min Ausrollen werden nicht
+      bewertet. In Blockwochen sind Runden mit 10–14 min und Ø ≥ 170 W die Blöcke;
+      fehlen sie, die zwei stärksten nicht überlappenden 12-min-Fenster der zweiten
+      Fahrthälfte. Die 8 min nach jedem Block außer dem letzten sind Blockpause. Der Rest
+      ist der Z2-Anteil.
+    - **Bewertung:** Blöcke nur gegen ihr Zielband. Blockpause: Hinweis nur bei
+      Ø > 167 W. Z2-Anteil: Zeit über 167 W (geglättet) wird gezählt, Ø-Leistung beim
+      Treten gegen den Arbeitsbereich 135–150 W angezeigt.
     - **„Zu hart" für die Einheit** nur bei Decoupling Pw:HR des Z2-Anteils > 5 %; lässt es
-      sich nicht rechnen, bei Ø-Leistung des Z2-Anteils > 144 W oder mehr als 10 % seiner
-      Zeit über 144 W. **Decoupling ≤ 5 % heißt: keine Warnung** (Punkt 28), die übrigen
-      Befunde stehen dann nur als Hinweis da.
+      sich nicht rechnen, bei Ø-Leistung des Z2-Anteils > 150 W oder mehr als 10 % seiner
+      Zeit über 167 W. **Decoupling ≤ 5 % heißt: keine Warnung.**
     - **Decoupling** nur über den Z2-Anteil ab Minute 15 bis zum Beginn des ersten Blocks
-      (ohne Blöcke: bis zum Ausrollen), Hälften nach Bewegungszeit:
-      (P/HF erste Hälfte − P/HF zweite Hälfte) ÷ P/HF erste Hälfte × 100.
+      (ohne Blöcke: bis zum Ausrollen), Hälften nach Bewegungszeit.
     - **Kadenz (nur Cube):** Z2-Anteil Ziel 80–85 rpm, Hinweis nur unter 80 rpm; Blöcke
       Ziel 85–90 rpm.
-    - **Anzeige:** „Z2-Anteil: X min, davon Y min über Z2" und „Geplante Blöcke: 2 × 12 min,
-      Ø ___ W (Ziel 172–189)" getrennt. Keine Gesamtsumme „Zeit über Z2" mehr als
-      Warngrundlage.
+    - **Anzeige:** „Z2-Anteil: X min, Ø Y W beim Treten (Arbeitsbereich 135–150)" und
+      „Geplante Blöcke: 2 × 12 min, Ø ___ W (Ziel 178–196)" getrennt.
 
 Aus Fassung 11 (24.09.2026):
 
-31. **`arbeits_ftp` auf 215** (Datum 24.09., Herkunft „Pulskriterium Do 17.09./24.09.,
-    4-min-Wert 268 W“). Do-Intervalle ab Woche 8 mit **240–250 W**, Woche 7 fest mit
-    **196 W** als absoluter Wert statt Prozentsatz, Sa-Blöcke 172–189 W, Phase 4
-    194–204 W.
+31. ~~**`arbeits_ftp` auf 215.**~~ Erledigt durch Fassung 12 (Punkt 34).
 32. **Timer zeigt das Zielband, nicht das Zonenband.** Am 24.09. zeigte die App für die
-    Intervalle **202–230 W** — das Z5-Band der Test-FTP 192 W — statt des Zielbands.
-    Punkt 25 verlangt bereits, dass die `work`-Schritte gegen `arbeits_ftp` rechnen;
-    das ist offenbar nicht umgesetzt. Anzeige am Ring und auf der Karte: Zielband aus
-    `plan.json`, darunter klein die Herkunft (Punkt 26).
+    Intervalle das Z5-Band statt des Zielbands. Anzeige am Ring und auf der Karte:
+    Zielband aus `plan.json`, darunter klein die Herkunft (Punkt 26). **Bleibt offen.**
 33. **Nachsteuerung sichtbar machen.** Die Analyse des Donnerstags zeigt je
-    Wiederholung Ø-Watt und Ø-Puls der letzten 60 s und gibt nach Regel 7 der
-    Ausführungsregeln einen Hinweis „nächstes Mal +5 W / −5 W / Band halten“. Die App
-    ändert `plan.json` nicht selbst — die Anpassung bleibt eine bewusste Entscheidung.
+    Wiederholung Ø-Watt und Ø-Puls der letzten 60 s und gibt nach Regel 7 einen Hinweis
+    „nächstes Mal +5 W / −5 W / Band halten". Schwelle seit Fassung 12: 166 bpm.
 
-**Nicht in die App:** Abschnitt 11 (Ernährung). Der Block ist reine Dokumentation und
-gehört nicht in `plan.json`.
+Aus Fassung 12 (22.10.2026):
+
+34. **Werte nach dem Retest:** `ftp` 223, `lthr` 166, `arbeits_ftp` entfernen.
+    Zielbänder: Do-Reiz Phase 3 250–260 W, Sa-Blöcke Woche 12 178–196 W, Phase 4
+    201–212 W. Erholungswochen `[4, 7, 13, 16]`, Testwochen weiterhin `[4, 10, 16]`.
+    Woche 10: `SAT_MIN` 150, Soll 310, Deckel 341; Rumpfdosis der Woche bleibt reduziert,
+    Beinblock entfällt am Tag vor der langen Ausfahrt.
+35. **Z2-Arbeitsbereich als eigenes Feld** (`z2_arbeitsbereich: [135, 150]`), getrennt
+    von den Zonengrenzen. Karte „Samstag" zeigt „Ø 135–150 W (Z2 123–167)". Die App
+    darf den Arbeitsbereich nicht aus der FTP errechnen — er ist eine Entscheidung,
+    keine Formel.
+36. **Testhistorie:** Zeile 22.10. eintragen (Abschnitt 2a), inklusive Max HF 180 und
+    Pacing-Abschnitten.
+
+**Nicht in die App:** Abschnitt 11 (Ernährung).
 
 ### Bewusst nicht übernommen
 
-Die harte Z2-Obergrenze 142. Die App zeigt Z2 als 128–135 bpm. Der Wert 142 ist unbelegt
-und wäre, sobald er in der App steht, ein Ziel geworden statt einer Grenze.
+Die harte Pulsobergrenze 142 aus der Übergangsfassung.
 
 ### Der Plan liegt in `plan.json`, nicht im Code
 
@@ -1638,35 +1386,22 @@ Seit 23.08.2026 stehen alle Plandaten in `plan.json` neben `index.html`.
 | In der JSON | Im Code geblieben |
 |---|---|
 | Wochenwerte je Woche, Donnerstag und Samstagsblöcke je Woche | Kalender- und Wochenrechnung, Phasenzuordnung |
-| Pulszonen, Leistungszonen, Kadenzziele | Zonenberechnung aus LTHR und FTP |
+| Pulszonen, Leistungszonen, Kadenzziele, Z2-Arbeitsbereich | Zonenberechnung aus LTHR und FTP |
 | Übungen mit Schritten, Zielen, Bildpfaden; Beinblock-Dosierung je Phase | Wiederholungsziel aus Belastung ÷ Tempo, Zirkeldauer |
 | Timer-Konstanten, Schwellentest-Ablauf | Sequenzbau der Timer |
 | Freistehende Erklärtexte | Satzgerüste mit eingerechneten Zahlen |
-| **Erholungswochen-Liste** (neu in Fassung 3) | — |
-| **Ablauf eines Tages als Schrittliste** (neu in Fassung 5) | — |
+| **Erholungswochen-Liste** | — |
+| **Ablauf eines Tages als Schrittliste** | — |
 | — | **Auswertungstoleranzen der Analyse** |
 
 **Was ein Tag in der Datei tragen kann.** `tage.do.kind` ist `intervals` (drei Zahlen),
-`z2` oder `test` (nur Dauer) — oder `steps`, dann steht der ganze Ablauf als Liste da.
-Drei Angaben an dieser Liste sind mit Fassung 5 dazugekommen und stehen der nächsten
-Fassung ohne Codeänderung zur Verfügung:
+`z2` oder `test` (nur Dauer) — oder `steps`, dann steht der ganze Ablauf als Liste da,
+mit den Schritttypen inklusive `ride`, `say` am Schritt und `art` am Tag.
 
-- **Schritttyp `ride`** — ein Abschnitt, der weder Einfahren noch Belastung noch Pause
-  ist. Ohne ihn sagt der Grundlagenteil vor einem eingebetteten Reiz „Einfahren" an und
-  der danach „Alle Intervalle geschafft"; beides sind Sätze über die Stelle im Ablauf,
-  und die stimmt bei einer frei zusammengesetzten Folge nicht mehr.
-- **`say` am Schritt** — was die Sprachausgabe zu ihm sagt. Bis Fassung 4 entschied
-  allein die Schrittart über den Wortlaut. Wer die Folge schreibt, schreibt jetzt auch,
-  was zu ihr gesagt wird.
-- **`art` am Tag** — das Einheitszeichen in Plan und Analyse. Ohne Angabe gilt
-  `intervalle`; der Donnerstag der Phase 3 ist mit 9 von 70 harten Minuten eine
-  Grundlagenfahrt und trägt deshalb `z2`.
-
-**Der Sollwert eines solchen Tages richtet sich nach seinen `work`-Schritten:** beim
-Donnerstag der Phase 3 also Z5 als Zielzone und 9 min harte Zeit, weil die Auswertung
-genau daran misst, ob der Reiz gefahren wurde. Der Preis ist, dass die Z2-Prüfungen
-dieses Tages — Decoupling und Sprechtest-Anteil — entfallen, wie an jedem Intervalltag.
-Der saubere Z2-Tag der Woche bleibt der Samstag.
+**Der Sollwert eines solchen Tages richtet sich nach seinen `work`-Schritten.** Beim
+Donnerstag der Phase 3 also Z5 als Zielzone und 9 min harte Zeit; Decoupling und
+Sprechtest-Anteil entfallen an diesem Tag. Der saubere Z2-Tag der Woche bleibt der
+Samstag.
 
 **Beim Bearbeiten zu beachten:**
 
@@ -1688,22 +1423,20 @@ Der saubere Z2-Tag der Woche bleibt der Samstag.
 | `intervals-icu-api-key` | API-Key für intervals.icu, nur auf dem Gerät |
 | `core-session-log` | Protokoll der Rumpfeinheiten, JSON-Array, max. 80 Einträge |
 | `test-history` | Testhistorie |
-| `interim-log` | Sprechtest-Puls und Notiz. Alte Einträge tragen noch ein `rpe`; es wird nicht mehr gelesen |
+| `interim-log` | Sprechtest-Puls und Notiz |
 
 ### Protokoll der Rumpfeinheiten
 
-Der Rumpf-Timer schreibt jede Einheit selbst mit. Gespeichert wird nach **jedem Satz**.
-
-Pro Einheit: Tag, Trainingswoche, geplante Runden, Belastung, Pause, Anzahl Sätze,
-Zeit unter Spannung, ob komplett beendet, letzte Übung mit Runde, und je Übung Sätze,
-gehaltene Sekunden und Zahl der vorzeitigen Abbrüche. Beinblock-Einträge tragen
-`kind:'leg'`.
+Der Rumpf-Timer schreibt jede Einheit selbst mit, gespeichert nach **jedem Satz**: Tag,
+Trainingswoche, geplante Runden, Belastung, Pause, Anzahl Sätze, Zeit unter Spannung, ob
+komplett beendet, letzte Übung mit Runde, und je Übung Sätze, gehaltene Sekunden und
+Zahl der vorzeitigen Abbrüche. Beinblock-Einträge tragen `kind:'leg'`.
 
 ### PWA-Eigenheiten
 
 - `display: standalone`, Statusleiste sichtbar.
-- **Der Anzeigemodus steckt in der installierten Verknüpfung**, nicht in der
-  ausgelieferten Seite. Sofortlösung: deinstallieren und neu hinzufügen.
+- **Der Anzeigemodus steckt in der installierten Verknüpfung.** Sofortlösung:
+  deinstallieren und neu hinzufügen.
 - Service Worker arbeitet **cache-first**. Nach einem Update `CACHE_VERSION` erhöhen,
   danach App zweimal neu starten; GitHub Pages cached zusätzlich bis zu 10 Minuten.
 
@@ -1727,19 +1460,20 @@ Der Key ist wie ein Passwort zu behandeln — er erlaubt Lese- **und** Schreibzu
 
 Settings → Sportart **Ride**:
 
-| Feld | Wert | Stand 17.09.2026 |
+| Feld | Wert | Stand 22.10.2026 |
 |---|---|---|
-| FTP | Ø-Watt der 20 min × 0,95, manuell | **192 W** |
-| Threshold HR (LTHR) | siehe Zonenabschnitt in Abschnitt 1 | **163 bpm** |
-| Max HR | Annahme, steuert in diesem Setup nichts | **180 bpm unverändert** — der höchste aufgezeichnete Wert 173 (24.09., ohne gezielte Ausbelastung) gehört in die Testhistorie, nicht in dieses Feld |
+| FTP | Ø-Watt der 20 min × 0,95, manuell | **223 W** (zuvor 192 W) |
+| Threshold HR (LTHR) | Ø-Puls der 20 min | **166 bpm** (zuvor 163) |
+| Max HR | im Retest gemessen | **180 bpm** — entspricht der bisherigen Annahme |
 | Power Zones | Coggan | |
 | HR Zones | Coggan, % LTHR | |
 | Load Priority | Power | |
 
-**Die Arbeits-FTP von 215 W wird hier nicht eingetragen.** Sie steht nur in diesem
-Dokument und in der App-Anzeige der Zielwatt; siehe Abschnitt 1.
+**Am Edge bzw. in Garmin Connect** dieselben Werte für FTP und Laktatschwelle eintragen,
+damit Gerät und intervals.icu dieselben Zonen anzeigen.
 
-Zonenänderungen werden rückwirkend auf die Historie angewandt.
+Zonenänderungen werden rückwirkend auf die Historie angewandt, sofern beim Ändern
+bestätigt.
 
 ### Lesen
 
@@ -1760,11 +1494,8 @@ Nützliche Felder: `start_date_local`, `type`, `name`, `moving_time`, `elapsed_t
 `icu_weighted_avg_watts`, `average_cadence`, `icu_efficiency_factor`, `icu_power_hr`.
 Der Feldfilter `fields=` lohnt sich — die Aktivität hat 183 Felder.
 
-Puls-Streams liefern 1-Hz-Samples.
-
-**Lap-Marken setzen.** Ohne sie müssen Intervallgrenzen aus der geplanten Struktur
-rekonstruiert werden, was die Auswertung ungenau macht. Am Garmin die Runden-Taste
-konsequent verwenden.
+**Lap-Marken setzen.** Am Garmin die Runden-Taste konsequent verwenden, oder die
+Einheit als strukturiertes Workout fahren.
 
 ### Schreiben
 
@@ -1780,21 +1511,18 @@ konsequent verwenden.
 | Aktivität bearbeiten | `PUT /activity/{id}` |
 | Wellness-Werte setzen | `PUT /athlete/0/wellness/{date}` |
 
-**Praktischer Nutzen:** Der komplette Plan aus Abschnitt 2 lässt sich als `Event`-Reihe
-in den intervals.icu-Kalender schreiben und geht von dort auf die Garmin-Uhr.
-
-- **Woche 1–4:** `target: HR`, Vorgabe sind die Übergangsbänder.
-- **Ab Woche 5:** `target: POWER`, Vorgabe in % FTP. Klartext-Syntax, z. B.
-  `5x` / `4m 108-115%` / `4m z1`.
+**Praktischer Nutzen:** Der Plan aus Abschnitt 2 lässt sich als `Event`-Reihe in den
+intervals.icu-Kalender schreiben und geht von dort auf das Garmin-Gerät. Vorgabe ab
+Woche 5 `target: POWER` in % FTP, z. B. `5x` / `4m 112-116%` / `4m z1`.
 
 **Vor jedem Schreibvorgang bestätigen lassen.** `DELETE`-Aufrufe sind nicht rückholbar.
 
 ### Zur Anbindung im Chat
 
-Der Zugriff im Chat läuft über einen intervals.icu-Konnektor („ICUvisor"). Die Endpunkte
-und Feldnamen oben stammen aus der OpenAPI-Spezifikation und sind verifiziert. Die
-konkreten Werkzeugnamen des Konnektors sind hier nicht dokumentiert — im Zweifel die
-Werkzeugliste des Konnektors zugrunde legen.
+Der Zugriff im Chat läuft über einen intervals.icu-Konnektor („ICUvisor"). Die
+Athleten-Einstellungen (FTP, LTHR) lassen sich darüber **nicht** ändern — sie werden von
+Hand in intervals.icu gesetzt. Im Zweifel die Werkzeugliste des Konnektors zugrunde
+legen.
 
 ---
 
@@ -1804,65 +1532,51 @@ Werkzeugliste des Konnektors zugrunde legen.
 
 - **Dauer** gegen den Sollwert, Toleranz 15 %.
 - **Wochensumme gegen den Deckel.** Überschreitung um mehr als 10 % ist eine Warnung.
-  Das ist in Fassung 3 neu und ersetzt die Ramp-Rate als Frühwarnung.
-- **Zonenverteilung** aus dem Puls-Stream gegen die Bänder aus Abschnitt 1; ab Woche 5
-  auf Fahrten mit Leistungsmesser aus dem 30-s-geglätteten Leistungsstrom, und dort
-  **nach Abschnitten** bewertet (App-Anforderung 30).
-- **Z2-Tage:** Warnung bei mehr als 15 % der Zeit in Z4/Z5. Warnung auch, wenn unter
-  40 % in Z2 und unter 75 % in Z1–Z2 liegen.
-- **Samstag:** in den Wochen 6, 9, 12 werden die Blöcke erkannt (Runden, sonst die zwei
-  stärksten 12-min-Fenster der zweiten Hälfte) und ihre Ø-Leistung gegen 172–189 W
-  geprüft — getrennt vom Z2-Anteil. Sonst gilt der Samstag als Z2-Tag.
+- **Zonenverteilung:** auf Fahrten mit Leistungsmesser aus dem 30-s-geglätteten
+  Leistungsstrom, **nach Abschnitten** bewertet (App-Anforderung 30); auf dem
+  Trekkingrad aus dem Puls-Stream gegen die HF-Zonen aus der LTHR 166.
+- **Z2-Tage ohne Leistungsmesser:** Warnung bei mehr als 15 % der Zeit in Z4/Z5, und
+  wenn unter 40 % in Z2 und unter 75 % in Z1–Z2 liegen.
+- **Samstag:** in den Blockwochen werden die Blöcke erkannt und gegen ihr Zielband
+  geprüft — getrennt vom Z2-Anteil. Sonst gilt der Samstag als Z2-Tag mit
+  Arbeitsbereich Ø 135–150 W.
 - **„Zu hart" an Z2-Tagen mit Leistungsmesser** nur, wenn das Decoupling des Z2-Anteils
-  über 5 % liegt (ohne Decoupling: Ø-Leistung des Z2-Anteils über 144 W oder mehr als
-  10 % seiner Zeit darüber). Die Regel zu Z4/Z5-Anteilen oben gilt nur noch für Fahrten
-  ohne Leistungsmesser.
-- **Donnerstag:** harte Zeit gegen `Wiederholungen × Minuten`. Bis Woche 4 zählt die
-  Zone **unter** der Zielzone mit, weil der Puls dem Tritt nachhinkt. **Ab Woche 5 wird
-  stattdessen die Zeit in der Watt-Zone gezählt.**
+  über 5 % liegt (ohne Decoupling: Ø beim Treten über 150 W oder mehr als 10 % der Zeit
+  über 167 W).
+- **Donnerstag:** harte Zeit in der Watt-Zone gegen `Wiederholungen × Minuten`.
 - **Pendelfahrten (Di, Mi):** Die Solldauer ist eine **Untergrenze**. Über 20 % der Zeit
-  oberhalb Z2 heißt, der Weg wurde unter Zeitdruck gefahren.
+  oberhalb HF-Z2 heißt, der Weg wurde unter Zeitdruck gefahren.
 - **Ruhetag mit Fahrt:** als Zusatz markiert, nicht als Fehler.
-- **Optionale Fahrten (Freitag, Sonntag):** nicht am Umfang gemessen. Bewertet wird die
-  Intensität: über 25 % der Zeit oberhalb Z2 gilt als zu hart.
+- **Optionale Fahrten (Freitag, Sonntag):** nicht am Umfang gemessen. Über 25 % der Zeit
+  oberhalb Z2 gilt als zu hart.
 
-### Zusätzliche Kennzahlen ab Woche 5
+### Kennzahlen
 
 | Kennzahl | Einheit | Zielwert | Aussage |
 |---|---|---|---|
-| Decoupling Pw:HR | Samstag, Z2-Anteil ab Minute 15 bis zum ersten Block | ≤ 5 % | Grundlage trägt diese Dauer; einziges Kriterium für „zu hart" |
-| Efficiency Factor NP ÷ Ø-HF | Di und Sa | Trend steigend | aerobe Basis wächst |
+| Decoupling Pw:HR | Samstag, Z2-Anteil ab Minute 15 bis zum ersten Block | ≤ 5 % | Grundlage trägt diese Dauer und den Arbeitsbereich; einziges Kriterium für „zu hart" |
+| Ø-Leistung beim Treten | Samstag, Z2-Anteil | 135–150 W | Arbeitsbereich getroffen |
+| Efficiency Factor NP ÷ Ø-HF | Samstag | Trend steigend | aerobe Basis wächst |
 | Leistungsabfall Wdh. 1 → letzte | Donnerstag | < 5 % | Pacing sauber |
 | Erste Wdh. über Zielband | Donnerstag | Warnung ab > 5 % darüber | zu hart gestartet |
-| HF am Intervallende | Donnerstag | **≥ 163 bpm** in den letzten 60 s, also ≥ 100 % LTHR, mindestens in den letzten zwei Wiederholungen | Reiz erreicht. Bezug ist die LTHR, nicht die unbekannte HFmax. Grundlage der Nachsteuerung (Regel 7) |
-| Ø-Kadenz | Do und Sa (Cube) | **80–85 rpm in Z2** (Leistung hat Vorrang), 85–90 rpm in Schwellen- und Samstagsblöcken, siehe Kadenz-Gang-Konflikt in Abschnitt 1 | Technik |
+| HF am Intervallende | Donnerstag | **≥ 166 bpm** in den letzten 60 s, mindestens in den letzten zwei Wiederholungen | Reiz erreicht. Grundlage der Nachsteuerung (Regel 7) |
+| Ø-Kadenz | Do und Sa (Cube) | **80–85 rpm in Z2**, 85–90 rpm in Schwellen- und Samstagsblöcken | Technik |
 | Kadenzabfall im Intervall | Donnerstag | < 8 rpm | Ermüdung, Gang zu schwer |
-| Zeit in Watt-Z2 | Woche | Trend Richtung 300 min | Grundlagendosis. **Nur Do und Sa liefern Watt**; Di und Mi laufen auf dem Trekkingrad und sind über den Puls-Stream zu zählen |
+| Zeit in Watt-Z2 | Woche | Trend Richtung 300 min | Grundlagendosis. **Nur Do und Sa liefern Watt**; Di und Mi über den Puls-Stream |
 | Wochensumme gegen Deckel | Woche | ≤ Soll + 10 % | Überlastungsschutz |
 
 ### Krafteinheiten
 
-**intervals.icu speichert bei Krafteinheiten nur Dauer und Puls.** Es gibt kein Feld für
-Übung, Satz, Wiederholung oder Gewicht. Auch Garmin erkennt Planks, Dead Bugs und Bird
-Dogs nicht zuverlässig.
+**intervals.icu speichert bei Krafteinheiten nur Dauer und Puls.** Krafteinheiten werden
+derzeit **nicht aufgezeichnet** — fehlende Einträge bedeuten nicht, dass die Einheit
+ausgefallen ist. Vor jeder Bewertung nachfragen.
 
-Zwei Auswertungswege:
+Zwei Auswertungswege, falls aufgezeichnet:
 
 **1. Rundenschätzung aus der Dauer.** Der Zirkel ist deterministisch. Passt keine
-Rundenzahl auf eine halbe Runde genau, wird nichts behauptet. **Achtung:** am Sonntag
-verlängert der Beinblock die Aufzeichnung um ca. 10 min — und ab Woche 11 kommt am
-Dienstagabend eine zweite, kürzere Krafteinheit dazu, die nicht als Sonntagszirkel
-fehlinterpretiert werden darf.
+Rundenzahl auf eine halbe Runde genau, wird nichts behauptet.
 
-**2. Das App-eigene Protokoll** (genauer, hat Vorrang). Liefert exakte Runden, Sätze,
-Zeit unter Spannung, Abbruchpunkt und **welche Übung regelmäßig vorzeitig beendet
-wird**.
-
-Fehlt beides, wird das Rumpftraining als „nicht erfasst" ausgewiesen.
-
-**Ist-Befund 30.08.:** In beiden ausgewerteten Wochen ist nur **eine** Krafteinheit
-aufgezeichnet, der Plan sieht zwei vor. Entweder wird die zweite nicht aufgezeichnet
-oder sie fällt aus — vor der nächsten Auswertung zu klären.
+**2. Das App-eigene Protokoll** (genauer, hat Vorrang).
 
 ### Sportart-Erkennung
 
@@ -1881,20 +1595,20 @@ Geplante und optionale Fahrzeit werden getrennt summiert und getrennt ausgewiese
 Der Plan endet am **04.12.2026**. Danach wird auf Basis der drei Testergebnisse und der
 Auswertung der 16 Wochen ein neuer Plan geschrieben.
 
-Punkte, die dann zu klären sind — hier nur als Merkposten, ohne Festlegung:
+Merkposten, ohne Festlegung:
 
-- Ergebnis der drei Schwellentests und die Entwicklung von FTP, LTHR und Gewicht
+- Ergebnis der drei Schwellentests und die Entwicklung von FTP, LTHR und Gewicht.
+  **Vergleichsbasis für den 03.12. ist der 22.10.** — der 10.09. war eine Untergrenze
 - Lage der Qualitätseinheiten im Tageslicht von Dezember bis Februar — draußen, ohne
-  Rolle (Entscheidung Fassung 6, Abschnitt 4.11)
+  Rolle (Fassung 6)
 - Zieltermin und Zielereignis
 - Höhenmeter als eigenständige Progression
 - Lange Ausfahrten jenseits von drei Stunden
-- **Der Dienstag ist eine feste Größe** (90 min, Fassung 10). Der Folgeplan darf dort
-  keine Steigerung einplanen; Zuwachs an Wochenumfang muss vom Wochenende, vom
-  Donnerstag oder vom Mittwoch kommen
-- **Zweiter Qualitätstag pro Woche.** In diesem Plan bewusst nicht enthalten, weil bei
-  CTL um 10 die Erholungsfähigkeit die Grenze ist, nicht die Trainingstheorie. Liegt die
-  CTL nach Woche 16 bei 30 oder darüber, ist die Frage neu zu stellen (siehe 9b)
+- **Der Dienstag ist eine feste Größe** (90 min, Fassung 10)
+- **Zweiter Qualitätstag pro Woche.** Die CTL liegt Mitte Oktober um 30 — die Frage ist
+  für den Folgeplan neu zu stellen (siehe 9b)
+- **Z2-Arbeitsbereich** (Fassung 12): Nach drei bis vier langen Fahrten mit Decoupling
+  prüfen, ob 135–150 W trägt oder angepasst wird
 
 ---
 
@@ -1902,416 +1616,205 @@ Punkte, die dann zu klären sind — hier nur als Merkposten, ohne Festlegung:
 
 | # | Änderung | Begründung |
 |---|---|---|
-| 1 | **2:1 statt 3:1 ab Woche 5**, Erholungswochen 4, 7, 10, 13, 16 | TSB −26 bei CTL 10 in Woche 3. Der 3:1-Rhythmus war in Fassung 2 selbst als Risiko benannt, mit der Begründung, `week % 4 === 0` halte die App-Logik einfach. Das ist kein Trainingsargument |
-| 2 | **Wochenumfang als Obergrenze** (Soll + 10 %) | Ist-Umfang lag 10–35 % über Plan. Der Plan war nicht zu aggressiv, die Ausführung lag darüber |
-| 3 | **Ramp-Rate-Regel ersetzt** | Bei CTL unter 20 ist „≤ 5 Punkte/Woche" nicht aussagekräftig — das wäre eine Verdopplung der Grundlast pro Woche |
-| 4 | **Erholungssteuerung zweistufig** | TSB als Auslöser erst ab CTL 20, davor Umfangsdeckel und Wellness-Gate |
-| 5 | **Verbindlicher Testanlauf** (Abschnitt 2a) mit Testtempo-Vorbelastung am 03.09. und Öffnern am 09.09. | Ein blind gepacter erster Test fällt zu niedrig aus und verzerrt die Zonen für den gesamten Folgeblock |
+| 1 | **2:1 statt 3:1 ab Woche 5** | TSB −26 bei CTL 10 in Woche 3 |
+| 2 | **Wochenumfang als Obergrenze** (Soll + 10 %) | Ist-Umfang lag 10–35 % über Plan |
+| 3 | **Ramp-Rate-Regel ersetzt** | Bei CTL unter 20 nicht aussagekräftig |
+| 4 | **Erholungssteuerung zweistufig** | TSB als Auslöser erst ab CTL 20 |
+| 5 | **Verbindlicher Testanlauf** | Ein blind gepacter erster Test fällt zu niedrig aus |
 | 6 | **Go/No-Go-Liste statt TSB-Grenzwert** | Ein TSB-Kriterium wäre bei dieser CTL dauerhaft blockierend |
-| 7 | **Verschiebungsregel korrigiert:** nach hinten, ohne Ersatz, ohne Tausch | Die alte Regel („Samstag derselben Woche") war bei einer Sa–Fr-Woche unmöglich — der Samstag liegt fünf Tage vor dem Donnerstag |
+| 7 | **Verschiebungsregel korrigiert:** nach hinten, ohne Ersatz, ohne Tausch | Die alte Regel war bei einer Sa–Fr-Woche unmöglich |
 | 8 | **Abschnitt 4.0 Wochengrenze** neu | Derselbe Denkfehler steckte in 4.3, 4.7 und 4.11 |
-| 9 | **Phasen neu geschnitten:** 1–4, 5–10, 11–13, 14–16. Tests in Woche 4, 10, 16 | Folge des 2:1-Rhythmus. Testabstände 6 Wochen statt 8 und 4 |
-| 10 | **Samstagsblöcke in Woche 6, 9, 12** statt 6, 10, 14 | Jeweils zweite Belastungswoche eines Paars; nicht in Phase 4, wo der Donnerstag bereits Schwellenarbeit trägt |
-| 11 | **Erhaltungsreiz in Phase 3** (6 × 30 s am Mittwoch, Woche 11–12) | Drei Wochen ohne harten Reiz kosten VO2max. Kostet an Erholung praktisch nichts |
-| 12 | **Zweite Beineinheit ab Woche 11**, Dienstagabend; Phase 4 als Erhaltungsdosis | Erst in Phase 3 fällt der Konflikt mit dem Qualitätstag weg. Vorher gibt es keinen freien Platz in der Woche |
-| 13 | **Progression des Beinblocks von den Phasengrenzen entkoppelt** | Zusatzgewicht ab Woche 13 zu warten verschenkt Wochen, in denen das Defizit bereits läuft |
-| 14 | **Muskelkater-Regel** für den Beinblock | Rückmeldung: Oberschenkel brauchen nach der Samstagsausfahrt mehr als einen Tag. Abschnitt 4.3 warnte bereits vor Krafttraining auf müder Muskulatur, ohne eine Regel dafür zu haben |
-| 15 | **Bikefit und Knie-Begründungen entfernt** | Die Beschwerden waren einmalig und muskulär, nicht das Knie. Die Kadenzregel bleibt, mit muskulärer statt orthopädischer Begründung |
-| 16 | **Abschnitt 11 Ernährung** neu | Zieldaten festhalten. Bewusst nicht in `plan.json` |
-| 17 | **Abschnitt 8 auf Merkposten reduziert** | Nach Woche 16 wird ein neuer Plan geschrieben, nicht dieser fortgeschrieben |
-| 18 | **Ist-Stand-Abschnitt** mit den Daten der ersten drei Wochen | Grundlage aller Änderungen dieser Fassung, nachvollziehbar dokumentiert |
-| 19 | **Sensorik-Abschnitt aktualisiert** | Powermeter liegt früher vor als geplant, wird bis zum Test aber nur mitgeschrieben |
-| 20 | **Drift-Einschränkung dokumentiert** | D3 der Referenzfahrt stützt sich auf 11,7 min Steady-Zeit; der Wert +6,5 % ist statistisch dünn |
-
-### Bewusst **nicht** geändert
-
-- **Der Einstiegssprung in Woche 1–3.** Die Wochen sind gefahren; rückwirkend zu bremsen
-  bringt nichts.
-- **Alle Entscheidungen zum Rumpf-Zirkel** (Deckel bei 40 s, Verhältnis 1:0,5,
-  alternierende Übungen, kein Superman).
-- **Ein Qualitätstag pro Woche** in Phase 1, 2 und 4. Für einen Einsteiger richtig
-  dosiert.
-- **Sprechtest als oberste Instanz für Z2.** Coggan-Z2 ist breit und liegt oben oft über
-  LT1.
-
-### Unter Vorbehalt
-
-- ~~**Dienstag wächst auf 90 min.**~~ **Aufgelöst in Fassung 10:** 90 min gehen auf,
-  aber nicht mehr. Der Dienstag bleibt bei 90 min fest (Abschnitt 9g).
-- **Phase 3 erreicht 445 min Rad pro Woche.** Ein großer Teil ist Pendelzeit, die ohnehin
-  anfällt. Fallen die Bürotage weg, sinkt der Umfang automatisch mit; das ist kein
-  Planverstoß.
-- **Phase 3 umfasst nur zwei Belastungswochen.** Als Grundlagenblock ist das kurz. Sie
-  ist hier vor allem die Brücke zwischen VO2max- und Schwellenblock und trägt die zweite
-  Beineinheit.
+| 9 | **Phasen neu geschnitten:** 1–4, 5–10, 11–13, 14–16 | Folge des 2:1-Rhythmus |
+| 10 | **Samstagsblöcke in Woche 6, 9, 12** | Jeweils zweite Belastungswoche eines Paars |
+| 11 | **Erhaltungsreiz in Phase 3** | Drei Wochen ohne harten Reiz kosten VO2max (seit Fassung 5 als 3 × 3 min am Donnerstag) |
+| 12 | **Zweite Beineinheit ab Woche 11** | Erst in Phase 3 fällt der Konflikt mit dem Qualitätstag weg |
+| 13 | **Progression des Beinblocks entkoppelt** | Bei laufendem Defizit zählt die Reizhöhe |
+| 14 | **Muskelkater-Regel** | Rückmeldung nach den ersten Samstagsausfahrten |
+| 15 | **Bikefit und Knie-Begründungen entfernt** | Beschwerden waren einmalig und muskulär |
+| 16 | **Abschnitt 11 Ernährung** neu | Zieldaten festhalten |
+| 17 | **Abschnitt 8 auf Merkposten reduziert** | Nach Woche 16 wird ein neuer Plan geschrieben |
+| 18 | **Ist-Stand-Abschnitt** | Grundlage der Änderungen nachvollziehbar dokumentiert |
+| 19 | **Sensorik-Abschnitt aktualisiert** | Powermeter früher als geplant |
+| 20 | **Drift-Einschränkung dokumentiert** | D3 statistisch dünn |
 
 ---
 
 ## 9a. Änderungen gegenüber Fassung 3
 
-Eine einzige inhaltliche Entscheidung, mit ihren Folgeanpassungen.
-
 | # | Änderung | Begründung |
 |---|---|---|
-| 1 | **5-min-All-out aus dem Schwellentest gestrichen.** Test besteht nur noch aus dem 20-min-Abschnitt, Pause davor von 10 auf 5 min gekürzt | Der All-out soll die anaerobe Kapazität leeren. Bei einem Einsteiger ist die klein, die Verzerrung also gering. Gleichzeitig reicht bei CTL um 10 die Pause nicht zur Erholung, und die am 03.09. ermittelte Pacing-Vorgabe gilt nur für frische Beine. Ein blind gepacter Test war genau das, was der Anlauf verhindern sollte |
-| 2 | **VO2max-Referenz auf Do 17.09. verlegt**, als erste Wiederholung der ersten Intervalleinheit | Kostet keinen zusätzlichen Tag und keine zusätzliche Erholung, weil der Maximalversuch selbst ein VO2max-Reiz ist. Frisch gefahren ist der Wert aussagekräftiger als nach 20 min Maximalbelastung |
-| 3 | **Variante „am Samstag 12.09. innerhalb der langen Ausfahrt" geprüft und verworfen** | Zu nah am Testtag; zerstört die erste saubere Decoupling-Messung mit Watt; hebt den Puls für den Rest der Fahrt an |
-| 4 | **Woche 5 Donnerstag: 5 × 4 min → 5 min max + 4 × 4 min** | Folge aus 2. Ab Woche 6 wieder Regelstruktur |
-| 5 | **Testdauer 65 → 55 min**, Wochensummen 4, 10 und 16 um 10 min gesenkt, Woche 5 um 2 min erhöht | Rechnerische Folge. Der Umfangsdeckel muss auf den geänderten Werten rechnen |
-| 6 | **Testhistorie getrennt:** Spalte „Ø-Watt 5 min" raus, dafür „Ø-Kadenz"; eigene kleine Tabelle für die VO2max-Referenz | Die beiden Werte entstehen jetzt an verschiedenen Tagen und gehören nicht in dieselbe Zeile |
-| 7 | **Ablaufgleichheit über alle drei Termine festgeschrieben** | Ohne diese Festlegung wären 22.10. und 03.12. nicht mit dem 10.09. vergleichbar |
-
-### Bewusst **nicht** geändert
-
-- **Der Faktor 0,95.** Er ist streng genommen für das Originalprotokoll mit Vorermüdung
-  kalibriert und liefert ohne All-out eine minimal zu hohe FTP. Bei einem Test, der
-  ausdrücklich als Untergrenze gilt, ist das die kleinere Verzerrung. Die eFTP ab
-  Woche 6 bleibt der Gegencheck.
-- **Der Testanlauf** aus Fassung 3 einschließlich Öffnern am 09.09.
-- **Die Go/No-Go-Liste** und die Verschiebungsregel.
-- **Die Einordnung des ersten Testwerts als Untergrenze.** Von den drei dort genannten
-  Faktoren fällt keiner durch diese Änderung weg.
+| 1 | **5-min-All-out aus dem Schwellentest gestrichen**, Pause davor 10 → 5 min | Kleine anaerobe Kapazität, unzureichende Erholung in der Pause, Pacing-Vorgabe nur für frische Beine gültig |
+| 2 | **VO2max-Referenz auf Do 17.09. verlegt** | Kostet keinen zusätzlichen Tag; frisch aussagekräftiger |
+| 3 | **Variante „Samstag 12.09." verworfen** | Zu nah am Test, zerstört die erste saubere Decoupling-Messung |
+| 4 | **Woche 5 Donnerstag: 5 min max + 4 × 4 min** | Folge aus 2 |
+| 5 | **Testdauer 65 → 55 min** | Rechnerische Folge |
+| 6 | **Testhistorie getrennt** | Die beiden Werte entstehen an verschiedenen Tagen |
+| 7 | **Ablaufgleichheit über alle drei Termine festgeschrieben** | Vergleichbarkeit |
 
 ---
 
 ## 9b. Änderungen gegenüber Fassung 4
 
-Eine einzige inhaltliche Entscheidung, mit ihren Folgeanpassungen.
-
-### Anlass
-
-Anlass war die Prüfung der verbreiteten Kritik, reines Zone-2-Training bringe Anfängern
-und Amateuren wenig. Die Kritik trifft den Plan als Ganzes **nicht** — er hat in Phase 1,
-2 und 4 jeweils einen Qualitätstag und ist nach Einheiten gezählt ein 80/20-Modell. Sie
-trifft aber **eine** Stelle exakt: Phase 3.
-
-Zeit oberhalb Z2, gemessen an der Wochensumme, Stand Fassung 4:
-
-| Woche | Zeit > Z2 | Anteil |
-|---|---|---|
-| 5 | ~21 min (Z5) | 5,6 % |
-| 6 | 20 min Z5 + 24 min Z3 | 11,2 % |
-| 8 | 20 min Z5 | 5,0 % |
-| **11** | **3 min** | **0,7 %** |
-| 12 | 3 min + 24 min Z3 | 6,1 % |
-| **13** | **0 min** | **0 %** |
-| 15 | 36 min Z4 | 8,4 % |
-
-Woche 11 und 13 waren faktisch reine Z2-Wochen. Genau der Zustand, den die Kritik meint.
-
-### Die Änderung
+**Anlass:** Prüfung der Kritik, reines Zone-2-Training bringe Anfängern wenig. Sie traf
+den Plan als Ganzes nicht, aber Phase 3: Woche 11 und 13 waren faktisch reine Z2-Wochen.
 
 | # | Änderung | Begründung |
 |---|---|---|
-| 1 | **Erhaltungsreiz Phase 3: 6 × 30 s → 3 × 3 min bei 108–115 % FTP**, 3 min Pause | 30-Sekunden-Antritte sind ein neuromuskulärer und anaerober Reiz. Die Sauerstoffaufnahme braucht rund zwei Minuten bis zum Vollausschlag — sie erreichen VO2max nie und erhalten deshalb nicht, was Phase 2 aufgebaut hat. 3 min liefern etwa 1 min nutzbare Zeit nahe VO2max je Wiederholung |
-| 2 | **Verlegt vom Mittwoch auf den Donnerstag**, eingebettet in die Z2-Einheit | Der Mittwoch ist Pendelfahrt mit Gepäck, zu fester Uhrzeit, im Berufsverkehr, in Woche 11–12 im Dunkeln und in der Kälte. Der Ankunftspuffer aus Abschnitt 1 ist Teil des Trainings und wird von einem Intensitätsreiz aufgezehrt. Der Donnerstag ist die einzige freie Wochentagsfahrt |
-| 3 | **Mittwoch Woche 11–12 wieder reines Z2**, weiterhin 60 min | Der Umfang bleibt, der Reiz geht. Wochensummen unverändert |
-| 4 | **Dosis: 9 min harte Zeit pro Woche** statt 3 min | Etwa ein Drittel der Phase-2-Dosis (20 min). Erhalt braucht deutlich weniger Reiz als Aufbau, solange die **Intensität** gehalten wird — dieselbe Logik wie bei der Erhaltungsdosis des Beinblocks in Phase 4 |
-| 5 | **Abschnitt 4.8 ergänzt:** fällt der Donnerstag in Phase 3 aus, wandern die 3 × 3 min in die Samstagsausfahrt, der Z2-Umfang wird gestrichen | In Fassung 4 war der Donnerstag in Phase 3 verzichtbar. Jetzt trägt er den einzigen harten Reiz der Woche |
-| 6 | **Wochensummen unverändert** (430 / 445) | Die 15 min liegen innerhalb der 70 bzw. 75 min. Nebeneffekt: in Fassung 4 hingen die 6 min außerhalb der Summe und tauchten im Umfangsdeckel nicht auf — das ist jetzt sauber |
-
-Anteil oberhalb Z2 nach dieser Änderung: Woche 11 **2,1 %**, Woche 12 **7,4 %**.
-Woche 13 bleibt bei 0 % — sie ist eine Erholungswoche, das ist Absicht.
-
-### Bewusst **nicht** geändert
-
-- **Ein Qualitätstag pro Woche in Phase 1, 2 und 4.** Die Begrenzung ist bei CTL um 10
-  nicht die Trainingstheorie, sondern die Erholungsfähigkeit. Sobald die CTL Richtung 30
-  läuft, ist ein zweiter Qualitätstag erneut zu prüfen — als Merkposten für Abschnitt 8,
-  nicht als Änderung in dieser Fassung.
-- **Woche 13 bleibt reizfrei.** Eine Erholungswoche mit Intensität ist keine
-  Erholungswoche.
-- **Die Z3-Blöcke am Samstag in Woche 6, 9, 12.** Sie bleiben, wo sie sind.
-- **Phase 1, Woche 1–3 mit Z3-Tempo.** Nach polarisierter Logik wäre das Grauzone. Die
-  Wochen sind gefahren, rückwirkend zu ändern bringt nichts — dieselbe Begründung wie in
-  Abschnitt 9 für den Einstiegssprung.
-- **Der gesamte Testanlauf und der Test am 10.09.** Diese Fassung entsteht am Vorabend
-  des Tests und lässt alles unberührt, was Woche 4 betrifft.
+| 1 | **Erhaltungsreiz Phase 3: 6 × 30 s → 3 × 3 min** | 30-s-Antritte erreichen VO2max nie |
+| 2 | **Verlegt vom Mittwoch auf den Donnerstag** | Der Mittwoch ist Pendelfahrt mit Gepäck im Berufsverkehr |
+| 3 | **Mittwoch Woche 11–12 reines Z2, 60 min** | Umfang bleibt, Reiz geht |
+| 4 | **Dosis 9 min harte Zeit pro Woche** | Etwa ein Drittel der Phase-2-Dosis, genug für den Erhalt |
+| 5 | **Abschnitt 4.8 ergänzt** | Der Donnerstag trägt in Phase 3 den einzigen harten Reiz |
+| 6 | **Wochensummen unverändert** | Die 15 min liegen innerhalb der Einheit |
 
 ---
 
 ## 9c. Änderungen gegenüber Fassung 5
 
-Eine Grundsatzentscheidung, mit ihren Folgeanpassungen.
-
-### Anlass
-
-Frage, warum viele im Winter auf die Rolle wechseln. Die üblichen Gründe — Frost, Streusalz,
-Materialverschleiß, fehlende Ausrüstung — treffen hier kaum zu: Rheingraben mit seltenem
-Frost und wenig Salz, Winterkleidung, Beleuchtung und Reflektoren vorhanden, Erfahrung mit
-Winterfahrten vorhanden. Übrig bleibt ein Grund dagegen, und der wiegt schwer: **Die Rolle
-wäre ein Motivationsrisiko.** Der beste Plan ist der, der durchgezogen wird.
-
-Nebeneffekt: Alle Daten stammen aus derselben Umgebung. Rollen- und Draußenwerte sind nicht
-1:1 vergleichbar (fehlender Fahrtwind, anderer Puls bei gleicher Leistung) — diese
-Umrechnung entfällt.
-
-### Die Änderung
+**Anlass:** Frage, warum viele im Winter auf die Rolle wechseln. Die üblichen Gründe
+treffen hier kaum zu; die Rolle wäre ein Motivationsrisiko.
 
 | # | Änderung | Begründung |
 |---|---|---|
 | 1 | **Ganzjährig draußen, keine Rolle** | Siehe Anlass |
-| 2 | **Abschnitt 4.11 neu geordnet:** tagsüber → im Dunkeln auf bekannter Strecke → Samstag nur bei schlechtem Wetter | Die alte Regel machte die Verlegung in den Samstag ab Woche 11 zum Regelfall und hätte das Decoupling über die Phasen 3 und 4 weitgehend ausgeschaltet |
-| 3 | **Abschnitt 2, Phase 3:** Dunkelheit als Verlegungsgrund gestrichen | Folge aus 2 |
-| 4 | **Retest 03.12.: Start 14:00 statt 16:21** | Sonnenuntergang gegen 16:25, Fahrt 1:31 h. Maximalbelastung bei fast 30 km/h im Dunkeln ist weder sicher noch vergleichbar. Die Uhrzeit ist die kleinste mögliche Abweichung — Strecke, Protokoll, Rad und Reifendruck bleiben |
-| 5 | **Abschnitt 8:** Merkposten „Rolle“ ersetzt durch „Qualitätseinheiten im Tageslicht Dezember bis Februar“ | Die Prämisse „Draußentraining ab Dezember praktisch ausgeschlossen“ trifft nicht zu |
-
-### Bewusst **nicht** geändert
-
-- **Retest 22.10. bleibt bei 16:21.** Rückkehr gegen 17:50, Sonnenuntergang gegen 18:20.
-- **Die Testbedingungen im Übrigen.** Die Protokollgleichheit aus 2a gilt unverändert; die
-  Startzeit am 03.12. ist die einzige dokumentierte Abweichung.
-- **Wochenstruktur, Umfänge, Donnerstag als Qualitätstag.**
-- **Kein zusätzliches Go/No-Go-Kriterium für Dunkelheit.** Die Reihenfolge in 4.11 regelt
-  das; ein weiteres Kriterium würde den Donnerstag ab November dauerhaft blockieren.
+| 2 | **Abschnitt 4.11 neu geordnet** | Die alte Regel hätte das Decoupling über Phase 3 und 4 ausgeschaltet |
+| 3 | **Dunkelheit kein Verlegungsgrund** | Folge aus 2 |
+| 4 | **Retest 03.12.: Start 14:00** | Sonnenuntergang gegen 16:25 |
+| 5 | **Merkposten Abschnitt 8 angepasst** | Draußentraining ab Dezember ist möglich |
 
 ---
 
 ## 9d. Änderungen gegenüber Fassung 6
 
-### Anlass
-
-Die erste Intervalleinheit am 17.09. hat den VO2max-Referenzwert geliefert, und der fällt
-eindeutig aus.
-
-| Größe | Wert | Schwelle |
-|---|---|---|
-| 5-min-Maximalwert | **254 W** | Gegenprobe bei 118 % = 227 W |
-| Anteil der Test-FTP | **132 %** | — |
-| eFTP nach der Einheit | **206 W** | Testwert 192 W |
-| 4 × 4 min gefahren | 210 / 221 / 222 / 227 W | Vorgabe war 207–221 W |
-| Ø HF am Intervallende | 154 / 159 / 157 / 161 bpm | Ziel ≥ 163 bpm (LTHR), knapp verfehlt |
-
-Die vier Wiederholungen liefen ohne Leistungsabfall, die letzte war die stärkste, und der
-Puls blieb am Intervallende moderat. Bezogen auf eine FTP um 206 W lagen sie bei
-102–110 % und damit am **unteren** Rand des VO2max-Bereichs. Der Plan hatte diesen Fall
-vorgesehen: Abschnitt 2a nennt den Testwert ausdrücklich eine Untergrenze und knüpft
-daran zwei Gegenchecks. Beide haben angeschlagen.
-
-### Die Änderung
+**Anlass:** 5-min-Wert 254 W (132 % der Test-FTP), eFTP 206 W, 4 × 4 min ohne
+Leistungsabfall.
 
 | # | Änderung | Begründung |
 |---|---|---|
-| 1 | **Arbeits-FTP 206 W eingeführt** (Abschnitt 1), gültig bis zum Retest am 22.10. | Die Zielwatt der Qualitätseinheiten müssen auf der wahren Leistungsfähigkeit rechnen, sonst läuft Phase 2 fünf Wochen unterhalb des beabsichtigten Reizes |
-| 2 | **Kein vorgezogener Retest** | Ein Testanlauf kostet eine VO2max-Einheit in Woche 6 und einen Testtag in Woche 7 und liefert nur die Zahl, die aus 5-min-Wert und eFTP bereits ablesbar ist. Der reguläre Termin liegt fünf Wochen entfernt |
-| 3 | **Test-FTP 192 W bleibt in intervals.icu und App** | Die drei Testwerte sind nur vergleichbar, wenn zwischendurch kein geschätzter Wert eingetragen wird. Dieselbe Logik wie bei der Protokollgleichheit in Abschnitt 2a |
-| 4 | **Zielwatt neu:** Do-Intervalle 222–237 W, Sa-Blöcke 165–181 W, Phase-4-Schwelle 185–196 W | Prozentsätze unverändert, nur der Bezugswert wechselt |
-| 5 | **Z2 unverändert** bei 106–144 W, Arbeitspunkt ~139 W | Z2 hängt an LT1, nicht an einem Prozentsatz der FTP. Der Arbeitspunkt ist durch Decoupling −0,9 % am 12.09., Sprechtest und Puls 128–135 belegt. Ein rechnerisch angehobenes Band wäre unbelegt — und auf flacher Strecke wegen der Gangabstufung ohnehin kaum fahrbar |
-| 6 | **Kennzahl „HF am Intervallende" jetzt ≥ 163 bpm (100 % LTHR)** statt ≥ 90 % HFmax; Max HR bleibt bei der Annahme 180 | Die HFmax ist unbekannt. Die 171 bpm vom 17.09. entstanden ohne Ausbelastung und wären als HFmax eine Verzerrung nach unten, die Annahme 180 ist ebenso unbelegt. Ein Kriterium darf nicht an einer Zahl hängen, die je nach Annahme um 8 bpm springt — die LTHR ist belegt und stabil |
-| 7 | **Streckenregel für Maximalversuche:** kein Gefälle im letzten Drittel | Der Leistungsabfall in den letzten 30 s des 17.09. war streckenbedingt, nicht muskulär. Bergab bricht die Leistung bei hoher Geschwindigkeit von selbst weg und verfälscht den Wert nach unten |
-| 8 | **Ruhepuls-Regel im Wellness-Gate präzisiert:** maßgeblich ist der abgeschlossene Vortageswert | Garmin berechnet den Ruhepuls serverseitig mit ein bis zwei Stunden Verzug. Der Morgenwert des laufenden Tages ist am Testmorgen regelmäßig noch unfertig |
-| 9 | **Kadenz-Gang-Konflikt dokumentiert** samt Prüfauftrag für den 19.09. | 85–90 rpm in Gang 8 ergeben 155–165 W und damit Z3. Ohne diese Notiz steht das Kadenzziel dauerhaft gegen das Leistungsziel |
-| 10 | **Trekkingrad an Di und Mi ausdrücklich vermerkt** | Fehlende Watt- und Kadenzwerte an den Pendeltagen sind eine Geräteeigenschaft, kein Aufzeichnungsfehler — und dürfen weder EF- noch eFTP-Trends verfälschen |
-| 11 | **Testhistorie und VO2max-Tabelle ausgefüllt**, Vorrang von `SCHWELLENTESTS.md` festgeschrieben | Beide Dokumente führten dieselbe Tabelle, eine davon leer |
-| 12 | **LTHR-Widerspruch aufgelöst:** erhobener Protokollwert 152, gesetzter Zonenwert 163, beides dokumentiert | Abschnitt 2a verlangte „LTHR = Ø-Puls der 20 min", gesetzt sind aber 163. Ohne die Klarstellung widersprechen sich Checkliste und Zonentabelle |
-
-### Die Grenze der Entscheidung
-
-**Zieht die eFTP bis Woche 8 über 215 W, wird der vorgezogene Retest neu geprüft.** Dann
-ist der Abstand zwischen eingetragenem Wert und Wirklichkeit so groß, dass auch die
-Trainingslast-Rechnung spürbar danebenliegt.
-
-### Bewusst **nicht** geändert
-
-- **Die Zonen in intervals.icu.** Sie bleiben auf 192 W und 163 bpm. Die Trainingslast
-  rechnet dadurch etwa 7 % zu hoch; das ist der bewusst gewählte Preis.
-- **Die Retesttermine 22.10. und 03.12.** samt Protokoll, Strecke, Rad und Reifendruck.
-- **Wochenstruktur, Umfänge, Umfangsdeckel und Erholungswochen.**
-- **Die Vorgabe „Atmung sticht die Zahl".** Sie gilt für die Arbeits-FTP genauso wie
-  zuvor für die Test-FTP — die 206 W sind eine begründete Schätzung, kein Messwert.
-- **Der Sprechtest als oberste Instanz für Z2.**
+| 1 | **Arbeits-FTP 206 W eingeführt** | Zielwatt auf der wahren Leistungsfähigkeit |
+| 2 | **Kein vorgezogener Retest** | Kostet einen Testanlauf, liefert nur die bereits ablesbare Zahl |
+| 3 | **Test-FTP 192 W bleibt in intervals.icu** | Vergleichbarkeit der Tests |
+| 4 | **Zielwatt neu** | Bezugswert wechselt |
+| 5 | **Z2 unverändert** 106–144 W | Z2 an LT1 — **aufgehoben in Fassung 12** |
+| 6 | **„HF am Intervallende" an der LTHR** | HFmax unbekannt |
+| 7 | **Streckenregel für Maximalversuche** | Gefälle verfälscht den Wert |
+| 8 | **Ruhepuls-Regel präzisiert** | Garmin liefert verzögert |
+| 9 | **Kadenz-Gang-Konflikt dokumentiert** | 85–90 rpm in Gang 8 ergaben damals Z3 |
+| 10 | **Trekkingrad an Di und Mi vermerkt** | Fehlende Watt sind Geräteeigenschaft |
+| 11 | **Testhistorie ausgefüllt** | Beide Dokumente identisch führen |
+| 12 | **LTHR-Widerspruch aufgelöst:** 152 erhoben, 163 gesetzt | Test nicht ausbelastet |
 
 ---
 
 ## 9e. Änderungen gegenüber Fassung 7
 
-### Anlass
-
-Der Prüfauftrag aus Fassung 7 (Abschnitt 1, Kadenz-Gang-Konflikt) wurde auf der
-Samstagsausfahrt am 19.09. erledigt.
-
-| Größe | Wert | Schwelle |
-|---|---|---|
-| Gang 7, Kadenz (Median) | **89 rpm** | Vorgabe 88–92 rpm |
-| Gang 7, Leistung | **Ø 107 W**, Median 112 W | neuer Arbeitspunkt ab 115 W, Ablehnung bei 100–110 W |
-| Referenz Gang 8 | ~139 W bei 80–82 rpm | Z2-Band 106–144 W |
-
-### Die Änderung
+**Anlass:** Gang-Test vom 19.09.: Gang 7 bei 89 rpm nur Ø 107 W.
 
 | # | Änderung | Begründung |
 |---|---|---|
-| 1 | **Zielkadenz Z2 auf dem Cube 80–85 rpm** statt 85–90 rpm | Gang 7 liefert bei Zielkadenz nur ~107 W und damit den unteren Rand von Z2, Gang 8 bei 85–90 rpm ergibt Z3. Beide Ziele zugleich sind im Flachen nicht erreichbar, die Leistung hat Vorrang |
-| 2 | **Gang 8 bei 80–82 rpm bleibt Z2-Arbeitspunkt** | Belegt durch Decoupling −0,9 % (12.09.) und −1,2 % (19.09., Z2-Anteil) |
-| 3 | **Kadenzziel nach Rad getrennt** | Auf dem Trekkingrad gibt es keine Wattvorgabe, dort bleibt 85–90 rpm als Richtwert und die Kadenzarbeit sinnvoll |
-| 4 | **Kennzahl Ø-Kadenz in Abschnitt 7 angepasst:** Z2 auf dem Cube gegen 80 rpm Untergrenze | Sonst meldet die Analyse jede korrekt gefahrene Z2-Einheit als Technikfehler |
-| 5 | **Analyse nach Abschnitten** (App-Anforderung 30): Einfahren und Ausrollen ohne Bewertung, Blöcke gegen ihr eigenes Ziel, „zu hart" nur über das Decoupling des Z2-Anteils | Die Ausfahrt vom 19.09. wurde mit −1,2 % Decoupling und zwei Blöcken im Ziel als „zu hart" gemeldet, weil Blöcke und Geländespitzen in dieselbe Zählung liefen |
-
-### Bewusst **nicht** geändert
-
-- **Kadenzziele für Intervalle (95–100 rpm) und Blöcke (85–90 rpm).** In den
-  Samstagsblöcken am 19.09. lag die Kadenz bei ~87 rpm und 172 W — dort passt der Gang.
-- **Die Untergrenze 70 rpm am Anstieg.**
-- **Die Kadenzpyramide am Mittwoch** als Ort für reine Kadenzarbeit.
-- **Kein Kraftausdauertraining mit niedriger Kadenz.** 80–85 rpm sind kein
-  Kraftausdauerreiz, die Regel gegen 50–60 rpm bleibt unberührt.
+| 1 | **Zielkadenz Z2 auf dem Cube 80–85 rpm** | Beide Ziele zugleich im Flachen nicht erreichbar, die Leistung hat Vorrang |
+| 2 | **Gang 8 bei 80–82 rpm bleibt Arbeitspunkt** | Decoupling −0,9 % und −1,2 % |
+| 3 | **Kadenzziel nach Rad getrennt** | Auf dem Trekkingrad keine Wattvorgabe |
+| 4 | **Kennzahl Ø-Kadenz angepasst** | Sonst Fehlmeldungen |
+| 5 | **Analyse nach Abschnitten** | Blöcke und Geländespitzen liefen in dieselbe Zählung |
 
 ---
 
 ## 9f. Änderungen gegenüber Fassung 8
 
-### Anlass
-
-Rückmeldung des Sportlers am 20.09.2026: Der Diagonalgang im Koordinationsblock bietet
-keinerlei Herausforderung.
-
-Der Einwand ist berechtigt. Diagonalgang ist langsames Gehen mit bewusst geführtem
-Armschwung. Bei unauffälligem Gangbild liegt der Reiz unterhalb der
-Wahrnehmungsschwelle — die Übung stammt aus der Rehabilitation und aus der Arbeit mit
-neurologisch oder altersbedingt gestörten Gangbildern. Für den Zweck dieses Blocks,
-Koordination zu erhalten, solange sie vorhanden ist, ist sie zu leicht.
-
-Dazu kommt ein struktureller Mangel: Von vier Übungen waren drei statische Stehübungen,
-die vierte Gehen. **Dynamische einbeinige Kontrolle fehlte vollständig** — genau die
-Fähigkeit, die beim Treppabgehen, beim Absteigen vom Rad und beim Abfangen eines
-Stolperns gebraucht wird und die mit dem Alter zuerst verloren geht.
-
-### Die Änderung
+**Anlass:** Der Diagonalgang im Koordinationsblock bot keinerlei Herausforderung.
 
 | # | Änderung | Begründung |
 |---|---|---|
-| 1 | Übung 3 des Koordinationsblocks: **einbeinige Standwaage („Airplane")** statt Diagonalgang, 5 Wdh. je Seite, ca. 5 s absenken und 5 s aufrichten | Einbeinige Standfläche bei bewegtem Schwerpunkt. Fordert Propriozeption, Gesäßmuskulatur und Rumpf gleichzeitig, ohne nennenswerte Last |
-| 2 | **Kurzanleitung und Abbruchkriterium** direkt unter der Tabelle ergänzt | Erste Übung des Blocks, bei der die Ausführung über den Nutzen entscheidet: dreht das Becken auf, ist die Balanceanforderung weg |
-| 3 | **Progressionsregel um eine dritte Stufe ergänzt** | Der Block hatte bisher keinen Steigerungsweg für die dynamische Übung |
+| 1 | **Einbeinige Standwaage („Airplane")** statt Diagonalgang | Dynamische einbeinige Kontrolle fehlte vollständig |
+| 2 | **Kurzanleitung und Abbruchkriterium** | Die Ausführung entscheidet über den Nutzen |
+| 3 | **Progressionsregel um eine Stufe ergänzt** | Steigerungsweg für die dynamische Übung |
 
-### Bewusst **nicht** geändert
-
-- **Step-downs von der Treppenstufe** wären der stärkere Reiz und passten zum Ziel
-  „im Alltag fit bleiben". Sie fallen trotzdem raus: exzentrische Beinarbeit alle zwei
-  Tage interferiert mit dem Beinblock am Sonntag und mit dem Qualitätstag. Der
-  Koordinationsblock soll weiterhin **keine Erholung kosten** (Abschnitt 10,
-  Einleitung). Die Standwaage erfüllt diese Bedingung, Step-downs nicht.
-- **Die übrigen drei Übungen** des Koordinationsblocks und die Dosierung „alle zwei Tage".
-- **Der Mobility-Flow.** Zum 90/90-Wechsel und zum Ausfallschritt mit Rotation liegen
-  Rückmeldungen vor; sie sind in dieser Fassung **noch offen** und bewusst unverändert.
-- **Der Rumpf-Zirkel.** Die Wirksamkeit des Bird Dog wird zunächst über die Ausführung
-  geprüft, bevor an der Übung etwas geändert wird.
-- **Keine App-Anforderung.** Abschnitt 10 ist ausdrücklich nicht Teil des App-Protokolls
-  (Abschnitt 10, „Abgrenzung"). Die Änderung erzeugt keinen Code- und keinen
-  `plan.json`-Bedarf.
+Offen: 90/90-Wechsel, Ausfallschritt mit Rotation und Bird Dog — Rückmeldungen liegen
+vor, bewusst noch nicht geändert.
 
 ---
 
 ## 9g. Änderungen gegenüber Fassung 9
 
-### Anlass
-
-Die lange Pendelfahrt am Dienstag lässt sich aus Zeitgründen nicht weiter verlängern.
-Am 22.09. lag sie bei 96 min Fahrzeit und 100 min brutto auf 33,6 km — das ist die
-Strecke, die vor Arbeitsbeginn samt Ankunftspuffer, Umziehen und Duschen aufgeht.
-
-Abschnitt 9 hatte genau diesen Fall als Vorbehalt geführt („Dienstag wächst auf 90 min
-… falls das nicht aufgeht"). Er ist damit entschieden: **90 min gehen auf, mehr nicht.**
-
-### Befund
-
-Der Plan hat den Dienstag in den Belastungswochen ab Woche 6 bereits nicht mehr
-gesteigert (`TUE_MIN` = 90 in Woche 6, 8, 9, 11, 12, 14, 15). Die Wochenprogression lief
-schon bisher über Samstag, Donnerstag und den Mittwoch in Phase 3. **Es muss also keine
-Zahl verschoben werden** — offen war nur, dass mehrere Stellen im Dokument den Dienstag
-als dehnbar behandelt haben: „verlängert, ca. 20 km+", „die Verlängerung hat eine
-Obergrenze" statt einer festen Grenze, und Option A4 („Di/Mi verlängern") als Ausgleich
-für einen ausgefallenen Samstag.
-
-### Die Änderung
+**Anlass:** Die lange Pendelfahrt am Dienstag lässt sich aus Zeitgründen nicht weiter
+verlängern (22.09.: 96 min Fahrzeit).
 
 | # | Änderung | Begründung |
 |---|---|---|
-| 1 | **Dienstag = feste lange Strecke, Soll 90 min, Toleranz 85–100 min** in allen Belastungswochen | Die verfügbare Zeit ist die Grenze. Die Toleranz deckt die natürliche Streuung (84–96 min in den letzten Wochen) |
-| 2 | **Keine Verlängerung zum Ausgleich**, auch nicht in Option A4 | Ein Ausgleich auf dem Dienstag würde genau die Zeit kosten, die nicht da ist |
-| 3 | **Bei langsamerer Fahrt Strecke kürzen, nicht früher losfahren** | Ab Oktober Wind, Kälte, Dunkelheit. Der Ankunftspuffer bleibt Teil des Trainings |
-| 4 | **Progressionsträger explizit ausgewiesen** (Abschnitt 2, Tabelle unter „Wochenumfang Rad und Deckel") | Macht sichtbar, dass die Steigerung ohne Dienstag vollständig ist |
-| 5 | **Merkposten in Abschnitt 8** | Der Folgeplan nach Woche 16 soll den Dienstag nicht wieder als Wachstumstag einplanen |
-
-### Warum die Steigerung ohne Dienstag trotzdem sinnvoll ist
-
-- **Die Dauer am Stück ist der Reiz, und die liegt am Samstag.** Der Dienstag hat mit
-  90 min seine Aufgabe erfüllt — ein zweiter längerer Z2-Tag unter der Woche. Ob er 90
-  oder 110 min dauert, verändert den Grundlagenreiz weniger als 10 min mehr am Samstag.
-- **Ein konstanter Tag ist ein Vorteil für die Auswertung.** Gleiche Strecke, gleiche
-  Uhrzeit, gleiches Rad: Durchschnittspuls und Fahrtzeit auf der festen Strecke werden
-  zu einer einfachen Vergleichsreihe über die Wochen — ohne Powermeter, aber mit
-  konstanten Bedingungen. Fällt der Ø-Puls bei gleichem Tempo, wirkt die Grundlage.
-- **Der Wochenumfang wächst weiter** von 375 (Woche 5) auf 445 min (Woche 12). Mehr ist
-  bei einer CTL um 20 und laufendem Kaloriendefizit ohnehin nicht angezeigt.
-
-### Bewusst **nicht** geändert
-
-- **Alle Zahlenreihen** (`TUE_MIN`, `SAT_MIN`, Soll und Deckel). Nur Kommentar und Text.
-- **Der Dienstag in Erholungswochen** bleibt bei 50 min. Kürzen ist jederzeit möglich.
-- **Die zweite Beineinheit am Dienstagabend** in Woche 11, 12, 14 und 15.
-- **Keine Intensität auf dem Dienstag als Ersatz für Dauer.** Pendelfahrt mit Gepäck,
-  Trekkingrad ohne Powermeter, Berufsverkehr — dieselben Gründe wie in Abschnitt 9b.
-- **Keine App-Anforderung.** `plan.json` enthält die Werte bereits; die Änderung ist
-  rein dokumentarisch.
+| 1 | **Dienstag fest 90 min, Toleranz 85–100 min** | Die verfügbare Zeit ist die Grenze |
+| 2 | **Keine Verlängerung zum Ausgleich** | Die Zeit ist nicht da |
+| 3 | **Bei langsamerer Fahrt Strecke kürzen** | Ankunftspuffer bleibt Teil des Trainings |
+| 4 | **Progressionsträger ausgewiesen** | Steigerung ohne Dienstag vollständig |
+| 5 | **Merkposten in Abschnitt 8** | Folgeplan ohne Dienstagswachstum |
 
 ---
 
 ## 9h. Änderungen gegenüber Fassung 10
 
+**Anlass:** Intervalle 17.09. und 24.09.: Pulskriterium bis 239 W zweimal verfehlt,
+268 W über 4 min nach vier Wiederholungen.
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **Do-Intervalle 240–250 W** ab Woche 8 | Dort wird das Pulskriterium rechnerisch erreicht |
+| 2 | **Arbeits-FTP 206 → 215 W** | Zwischen den langen und kurzen Anhaltspunkten |
+| 3 | **Sa-Blöcke 172–189 W, Phase-4-Schwelle 194–204 W** | Bezugswert wechselt |
+| 4 | **Nachsteuerregel in 5-W-Schritten** | Pulskriterium steuert direkt |
+| 5 | **Woche 7 fest bei ~196 W** | Erholungswoche soll nichts kitzeln |
+| 6 | **Höchster Puls 173 bpm dokumentiert** | Keine HFmax |
+| 7 | **App-Anforderungen 31–33** | Neue Zielwerte, Anzeigefehler, Nachsteuer-Hinweis |
+
+---
+
+## 9i. Änderungen gegenüber Fassung 11
+
 ### Anlass
 
-Die zweite reguläre Intervalleinheit am Do 24.09. (Woche 6, 5 × 4 min, Vorgabe
-222–237 W) — ausgewertet zusammen mit dem 17.09.:
+Der Retest am Do 22.10.2026 und die Wochen davor.
 
-| Wdh. | 17.09. Ø W | 17.09. HF letzte 60 s | 24.09. Ø W | 24.09. HF letzte 60 s |
-|---|---|---|---|---|
-| 1 | 210 | 154 | 222 | — (Spitze 152) |
-| 2 | 221 | 159 | 230 | 153 |
-| 3 | 222 | 157 | 234 | 159 |
-| 4 | 227 | 161 | 239 | 160 |
-| 5 | — | — | **268** | **168** (Max 173) |
+| Größe | Wert |
+|---|---|
+| Ø 20 min | **234,7 W**, NP 236 W |
+| 5-min-Abschnitte | 236 / 233 / 232 / 237 W |
+| FTP (× 0,95) | **223 W** |
+| Ø HF 20 min | **166 bpm**, letzte 5 min 172, Max **180** |
+| Ø-Kadenz | 89 rpm |
+| Gewicht | 91,8 kg → 2,43 W/kg |
+| Pacing-Vorgabe | 225 W aus dem Tempotest (227 W bei HF 160) |
 
-Befund:
-
-- **Das Pulskriterium verfehlt zweimal in Folge.** Bis 239 W bleibt der Puls der
-  letzten Minute unter 163 bpm. Am 24.09. lag er bei höherer Leistung sogar niedriger
-  als am 17.09. — eher Anpassung als Tagesform.
-- **268 W über 4 min nach vier harten Wiederholungen** übertreffen den frischen
-  5-min-Wert von 254 W. Wiederholung 5 war bewusst „alles raus" gefahren, um zu zeigen,
-  dass das Band zu niedrig liegt.
-- **Rechnerischer Punkt für 163 bpm:** Zwischen Wdh. 4 und 5 stieg der Puls um rund
-  0,3 bpm je Watt. Die 163 bpm in der letzten Minute fallen damit bei etwa 245–250 W,
-  in den späteren Wiederholungen einer Serie.
-- **Gegenprobe gegen Überschätzung:** Die Leistungskurve seit 15.08. zeigt 1 min 347 W,
-  3 min 279 W, 4 min 267 W, 5 min 254 W, 10 min 208 W, 20 min 202 W. Kurz stark, lang
-  flach — die Kurzzeitwerte tragen einen deutlichen anaeroben Anteil. Die eFTP steht
-  nach der Einheit unverändert bei 206 W.
-- **Belastung:** TSB nach der Einheit um −27. Unkritisch, weil ab Samstag die
-  Erholungswoche 7 beginnt.
+Dazu zwei Entscheidungen aus den Wochen 9 und 10: Nach einer Erkältung in Woche 8 entfiel
+die Erholungswoche 10, und der Sportler hielt die feste Z2-Obergrenze von 144 W bei einer
+eFTP um 205 und einer Arbeits-FTP von 215 W für zu niedrig — Z2 sollte sich nach dem
+Retest aus der neuen FTP ergeben.
 
 ### Die Änderung
 
 | # | Änderung | Begründung |
 |---|---|---|
-| 1 | **Do-Intervalle 240–250 W** (112–116 % der Arbeits-FTP) ab Woche 8, ebenso der Erhaltungsreiz Phase 3 | Das Band liegt dort, wo das Pulskriterium rechnerisch erreicht wird. Rund 90 % der aktuellen 4-min-Leistung — obere Grenze bewusst nicht bei 255 W, weil 268 W am 24.09. ein Maximalversuch war |
-| 2 | **Arbeits-FTP 206 → 215 W** | Liegt zwischen eFTP/Testwert/10–20-min-Werten und 75–85 % der 5-min-Leistung. Ein höherer Wert (etwa 222 W aus den Kurzzeitwerten) würde Samstagsblöcke und Schwelle zu hart ansetzen |
-| 3 | **Sa-Blöcke 172–189 W** (Woche 9, 12), **Phase-4-Schwelle 194–204 W** | Prozentsätze unverändert, nur der Bezugswert wechselt. Die Blöcke vom 19.09. lagen mit 172/171 W bereits am oberen Rand des alten Bands |
-| 4 | **Nachsteuerregel in 5-W-Schritten** (Ausführungsregel 7) | Das Pulskriterium steuert jetzt direkt. Damit muss nicht jede Abweichung eine neue Fassung auslösen, und ein zu großer Sprung korrigiert sich nach einer Woche |
-| 5 | **Woche 7 fest bei ~196 W** statt „~95 % FTP" | Mit 215 W wären 95 % schon 204 W. Die Erholungswoche soll gerade nichts kitzeln |
-| 6 | **Höchster aufgezeichneter Puls 173 bpm** (24.09.) in Zonenabschnitt, Settings und VO2max-Tabelle | Weiterhin keine HFmax, Annahme 180 bleibt; nur die Dokumentation wird nachgeführt |
-| 7 | **App-Anforderungen 31–33** | Neue Zielwerte, Anzeigefehler 202–230 W statt Zielband, Nachsteuer-Hinweis in der Analyse |
+| 1 | **FTP 223 W**, eingetragen in intervals.icu, App und Edge | Ausbelasteter, gleichmäßig gepacter Test nach vollständigem Anlauf |
+| 2 | **Arbeits-FTP aufgehoben** | Der Testwert ist belastbar; zwei FTP-Werte waren eine Notlösung für einen zu niedrigen ersten Test. Die Arbeits-FTP 215 W lag 8 W unter dem Testwert — sie war vorsichtig, nicht überzogen |
+| 3 | **LTHR 166 bpm**, erhoben = gesetzt | Ø-Puls der 20 min, gleiche Methode wie Abschnitt 2a. Diesmal ausbelastet, daher keine Abweichung nötig. intervals.icu-Methode (98 %) ergäbe 163 — bewusst nicht verwendet, damit die Testreihe vergleichbar bleibt |
+| 4 | **Zielwatt neu:** Phase-3-Reiz 250–260 W, Sa-Blöcke 178–196 W, Schwelle 201–212 W | Prozentsätze unverändert, Bezugswert jetzt die FTP 223 W |
+| 5 | **Z2 folgt der FTP:** Coggan-Z2 123–167 W, Arbeitsbereich lange Fahrt **Ø 135–150 W** | Die feste Obergrenze 144 W stammte aus einer Zeit mit belegt zu niedriger FTP. Der Arbeitsbereich bleibt unter der Coggan-Obergrenze, weil Z2 oben über LT1 liegen kann; gesteuert wird über den Schnitt, kontrolliert über das Decoupling |
+| 6 | **Pulskriterium der Intervalle ≥ 166 bpm** | Folge aus 3 |
+| 7 | **Woche 10 keine Erholungswoche**, Erholungswochen 4, 7, 13, 16 | Woche 8 war krankheitsbedingt faktisch Pause; eine Erholungswoche direkt nach der Pause wäre zu früh gekommen. Absicherung über TSB-Regel und Wellness-Gate in Woche 11 und 12 |
+| 8 | **Woche 10 Soll 310 min, Deckel 341**, lange Ausfahrt 150 min | Folge aus 7, mit dem Testanlauf vereinbar |
+| 9 | **Anlauf zum 22.10. dokumentiert** (Tempotest Fr 16.10., lange Fahrt So 18.10.) | Nachvollziehbarkeit, Vorlage für den 03.12. |
+| 10 | **Max HF 180 als Messwert**, Feld bleibt 180 | Im Retest erreicht |
+| 11 | **Testhistorie, VO2max-Tabelle, Settings, Analyse-Bezugswerte nachgeführt** | Konsistenz |
+| 12 | **App-Anforderungen 34–36** | Neue Werte, Arbeitsbereich als eigenes Feld, Testhistorie |
+| 13 | **Abschnitt 4.12 um Krankheit ergänzt**, Abschnitt 4.7 E1 mit Beispiel | Der Fall ist eingetreten und war nicht geregelt |
 
 ### Bewusst **nicht** geändert
 
-- **Test-FTP 192 W, LTHR 163 bpm und die Zonen in intervals.icu.** Die Vergleichbarkeit
-  der drei Tests geht vor.
-- **Retesttermine 22.10. und 03.12.** Kein vorgezogener Retest; nach dem 22.10. ersetzt
-  der Testwert die Arbeits-FTP.
-- **Wiederholungszahl und Pausen** (5 × 4 min, 4 min Pause). Die Progression läuft
-  weiter über die Leistung.
-- **Z2 106–144 W** und der Arbeitspunkt um 139 W — hängen an LT1, nicht an der FTP.
-- **Erholungswoche 7** in Umfang und Inhalt.
-- **„Atmung sticht die Zahl".** Auch 215 W sind eine begründete Schätzung, kein Messwert.
+- **Erholungswoche 13 und Retest 03.12.** samt Protokoll, Strecke, Rad, 2,5 bar.
+- **Wochenstruktur, Umfänge ab Woche 11, Dienstag fest bei 90 min.**
+- **Kadenzziel Z2 auf dem Cube 80–85 rpm** — bleibt sinnvoll, weil 85–90 rpm in Gang 8
+  über dem Arbeitsbereich liegen.
+- **Sprechtest als oberste Instanz für Z2**, „Atmung sticht die Zahl" bei Intervallen.
+- **Pulsbänder für die Pendeltage** (128–135 bpm) — belegt und weiter in HF-Z2.
+- **Die Nachsteuerregel** — nur ihre Schwelle wechselt auf 166 bpm.
 
 ---
 
@@ -2322,7 +1825,7 @@ zunehmendem Alter unabhängig von der Ausdauerentwicklung an Substanz.
 
 **Bewusst getrennt vom Radplan gehalten:** geringe mechanische Belastung, kaum
 Interferenz mit Kraft- oder Ausdauererholung. **Nicht** Teil der Opferreihenfolge aus
-Abschnitt 4 — der Block kostet keine Erholung und hat keinen Grund, zuerst zu fallen.
+Abschnitt 4.
 
 ### Täglich — Mobility-Flow (5–6 min)
 
@@ -2349,27 +1852,24 @@ Statisches Dehnen davon direkt nach der Fahrt, solange der Muskel warm ist.
 **Einbeinige Standwaage („Airplane") — Ausführung.** Auf einem Bein stehen, Standknie
 minimal gebeugt. Oberkörper nach vorn kippen und gleichzeitig das freie Bein nach hinten
 strecken, bis Rumpf und Bein eine waagerechte Linie bilden. **Die Hüfte bleibt
-geschlossen** — das Becken darf nicht zur freien Seite aufdrehen, sonst fällt die
-Balanceanforderung weg. Ca. 5 s absenken, kurz halten, ca. 5 s aufrichten.
+geschlossen** — das Becken darf nicht zur freien Seite aufdrehen. Ca. 5 s absenken, kurz
+halten, ca. 5 s aufrichten.
 
 *Steigerung:* Arme seitlich ausstrecken → Arme über Kopf → Augen schließen.
 *Abbruch:* Sobald das Becken aufdreht oder der Fuß absetzt, ist der Satz zu Ende.
 
-**Warum keine Step-downs von der Treppenstufe:** inhaltlich der stärkere Reiz, aber
-exzentrische Beinarbeit alle zwei Tage interferiert mit dem Beinblock am Sonntag. Der
-Block soll weiterhin keine Erholung kosten. Die Standwaage erfüllt diese Bedingung.
+**Warum keine Step-downs von der Treppenstufe:** exzentrische Beinarbeit alle zwei Tage
+interferiert mit dem Beinblock am Sonntag. Der Block soll keine Erholung kosten.
 
 ### 2–3 × pro Woche — Knochenreiz (unter 1 min)
 
 **20–30 beidbeinige Sprünge**, zügig, weich landen. An den Mobility-Flow gehängt.
 
 **Warum:** Radfahren ist nicht gewichtstragend und leistet für die Knochendichte nichts.
-Der Reiz, der dort wirkt, ist kurz, stoßhaltig und ermüdungsfrei. Bei laufendem
-Kaloriendefizit ist das der einzige Reiz im gesamten Programm, den das Rad prinzipiell
-nicht liefern kann.
+Bei laufendem Kaloriendefizit ist das der einzige Reiz im Programm, den das Rad
+prinzipiell nicht liefern kann.
 
-**Ausdrücklich keine eigene Einheit.** Zählt in der Wochenrechnung nicht mit, taucht in
-keiner Opferreihenfolge auf, erzeugt keine messbare Erholungslast.
+**Ausdrücklich keine eigene Einheit.** Zählt in der Wochenrechnung nicht mit.
 
 Steigerung erst, wenn 30 Sprünge ohne Ermüdung und mit weicher Landung gelingen: dann
 einbeinig, wenige Wiederholungen je Seite.
@@ -2379,7 +1879,6 @@ einbeinig, wenige Wiederholungen je Seite.
 - **Mobility-Flow:** an jedem Tag möglich, auch am Ruhetag Montag.
 - **Gleichgewicht und Koordination:** alle zwei Tage, z. B. Mo/Mi/Fr/So.
 - **Knochenreiz:** an den Mobility-Flow gehängt, nicht am Tag vor dem Qualitätstag.
-- Alle drei Blöcke passen morgens, als Pause im Büro oder abends dazwischen.
 
 ### Progressionsregel
 
@@ -2396,8 +1895,8 @@ Kein Eintrag im App-Protokoll und keine Auswertung über intervals.icu vorgesehe
 
 ## 11. Ernährung — Zieldaten
 
-**Referenzabschnitt, keine Steuerung durch den Plan.** Die Umsetzung läuft unabhängig.
-Bewusst **nicht** in `plan.json` und damit nicht in der App.
+**Referenzabschnitt, keine Steuerung durch den Plan.** Die Umsetzung läuft unabhängig
+und ist in `ERNAEHRUNGSPLAN.md` beschrieben. Bewusst **nicht** in `plan.json`.
 
 ### Zielwerte
 
@@ -2406,25 +1905,19 @@ Bewusst **nicht** in `plan.json` und damit nicht in der App.
 | Ausgangsgewicht | 102,2 kg (01.07.2026) |
 | Erste belastbare Messung | 97,6 kg (17.08.2026) |
 | Stand 17.09.2026 (Sieben-Tage-Schnitt) | 95,5 kg |
+| Testtag 22.10.2026 | 91,8 kg |
 | Zielgewicht Woche 16 (04.12.2026) | 87 kg |
 | Zielkorridor Abnahmerate | 500–650 g/Woche |
-| Protein | 1,6–2,2 g/kg → bei 96 kg: 155–212 g/Tag |
+| Protein | 1,6–2,2 g/kg |
 | Verpflegung auf dem Rad | ab 90 min Fahrzeit, 40–60 g Kohlenhydrate/h |
 
 ### Hinweise
 
-- **Der Wert 102,2 kg steht zweimal identisch** (01.07. und 15.08.) und stammt vermutlich
-  aus einer einzigen Eingabe. Der scheinbare Sturz auf 97,6 kg am 17.08. ist ein
-  Messartefakt, kein Gewichtsverlust. Für jede Verlaufsrechnung ist der 17.08. der erste
-  belastbare Punkt.
-- **Nur der Wochentrend ist lesbar.** Der Tageswert schwankt um bis zu 1,5 kg bei einem
-  echten Trend von rund 100 g pro Tag. Gleitendes Sieben-Tage-Mittel verwenden.
-- **87 kg sind das optimistische Ende.** Von 96,3 kg aus sind das 664 g pro Woche über
-  14 Wochen und damit oberhalb des eigenen Korridors. Bei 500–650 g liegt das Ergebnis
-  bei 87 bis 89 kg.
+- **Der Wert 102,2 kg** stammt vermutlich aus einer einzigen Eingabe. Für jede
+  Verlaufsrechnung ist der 17.08. der erste belastbare Punkt.
+- **Nur der Wochentrend ist lesbar.** Gleitendes Sieben-Tage-Mittel verwenden.
+- **87 kg sind das optimistische Ende.** Realistisch liegt das Ergebnis bei 89–91 kg.
 - **Gewicht am Testtag dokumentieren** — sonst ist W/kg über die drei Tests nicht
-  vergleichbar (steht auch in der Testcheckliste, Abschnitt 2a).
-- **Ab Woche 5 liegen die Samstagsausfahrten bei 150+ min.** Ohne Verpflegung verzerrt
-  der Energiemangel im letzten Drittel die Driftanalyse — der Drift ist dann nicht mehr
-  sauber der Intensität zuzuordnen.
-- **Kein Tracking vorgesehen.** Die Steuerung läuft über den Wochentrend auf der Waage.
+  vergleichbar.
+- **Lange Ausfahrten ab 150 min** brauchen Verpflegung; ohne sie verzerrt der
+  Energiemangel im letzten Drittel die Driftanalyse.
