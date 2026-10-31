@@ -141,7 +141,43 @@
    33 mal die 19 Zeichen von ,"baustein":"core" plus 19 mal die 18 Zeichen von
    ,"baustein":"leg" - die 33 Rumpf- und 19 Beineinheiten der 126 Tage. Die
    Wochenangaben und die Wiederholungsziele haben ihre Pruefsumme behalten:
-   der Knopf haengt an der Einheit und nicht an der Woche. */
+   der Knopf haengt an der Einheit und nicht an der Woche.
+
+   Neu gesetzt am 31.10.2026 auf Fassung 12 des Trainingsplans: der Retest vom
+   22.10. hat die FTP von 192 auf 223 W gehoben, und damit ist die Arbeits-FTP
+   abgeschafft. Das Feld arbeits_ftp ist aus plan.json verschwunden, jeder
+   Prozentsatz rechnet wieder gegen die eingetragene FTP, der Erhaltungsreiz
+   der Wochen 11 und 12 steht bei 250-260 statt 240-250 W, und die
+   Samstagsbloecke der gefahrenen Woche 9 sind mit 172-189 W eingefroren.
+
+   Betroffen sind genau fuenf der 126 Tage, und sie liessen sich vor dem
+   Neusetzen einzeln benennen:
+
+   - 10.10., Samstag der Woche 9: das Band 172-189 W steht jetzt in der Datei
+     statt aus 215 W gerechnet zu werden. Dieselben Zahlen, 17 Zeichen mehr
+     fuer das Datum in der Herkunft.
+   - 29.10. und 05.11., die Donnerstage der Wochen 11 und 12: der Reiz traegt
+     250-260 W und eine um 8 Zeichen kuerzere Herkunft, zweimal je Tag.
+   - 31.10., Samstag der Woche 12: die Bloecke rechnen gegen die FTP statt
+     gegen 215 W - 178-196 W im Coggan-Pfad.
+   - 19.11., Donnerstag der Woche 14: dasselbe fuer die Schwellenbloecke der
+     Phase 4, 201-212 W.
+
+   Die uebrigen 121 Tage sind Zeichen fuer Zeichen dieselben geblieben. Der
+   Abzug der Uebergangsbaender ist um 219 Zeichen kuerzer (+17 / -16 / -33 /
+   -16 / -171), der Coggan-Abzug um 23 (+17 / -8 / -8 / -8 / -16), und die
+   Wochenangaben um genau 48 - sechsmal die acht Zeichen, um die
+   "112-116 % der FTP 223 W, nachgesteuert (Fassung 12)" kuerzer ist als die
+   Fassung-11-Zeile.
+
+   Die -171 am 19.11. sind der einzige Eintrag, der mehr als eine Zahl
+   aendert, und sie sagen etwas: ohne eingetragene FTP nennt die Tageskarte
+   dort jetzt gar keine Zielwatt mehr. Bisher lieferte die Arbeits-FTP aus
+   der Datei auch dann ein Band, wenn kein Test eingetragen war. Das ist die
+   Folge, die Fassung 12 will - die Zielwatt haengen an einer Messung, und
+   ohne Messung gibt es sie nicht. Im Coggan-Pfad, also mit eingetragener
+   FTP, steht das Band unveraendert da. Die Wiederholungsziele haben ihre
+   Pruefsumme behalten: der Zirkel kennt keine Watt. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -299,11 +335,11 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: '558f0d69270abce0', len: 17076 });
+      .toEqual({ hash: 'a1c53f5bacd3fa48', len: 17028 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: 'da7777a85db8bdd8', len: 186136 });
+      .toEqual({ hash: 'a5234b6a41dd557d', len: 185917 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -327,7 +363,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '49eac98625a3d29c', len: 165672 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '0119f7ff6a48e049', len: 165649 });
   });
 });
 
@@ -464,12 +500,15 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
       const hart = t.steps.filter(s => s.type === 'work');
       expect(hart.map(s => s.minutes)).toEqual([3, 3, 3]);
       /* Seit Fassung 11 traegt der Reiz sein Zielband in Watt und keinen
-         Prozentsatz mehr: 240-250 W werden ueber das Pulskriterium
+         Prozentsatz mehr: es wird ueber das Pulskriterium in 5-W-Schritten
          nachgesteuert, und ein nachgesteuerter Wert ist keine runde
-         Prozentzahl mehr. */
+         Prozentzahl mehr. Mit dem Retest vom 22.10.2026 ist es von 240-250
+         auf 250-260 W gegangen - von Hand und nicht gerechnet, genau deshalb
+         steht es in der Datei. Das Band gilt ohne eingetragene Messwerte, es
+         kommt ja aus dem Plan. */
       expect(hart.every(s => s.zone === 'z5' && s.effort == null)).toBe(true);
       expect(hart.map(s => Z.zielband(plan, Z.NO_THRESHOLDS, s).text)).toEqual(
-        ['240–250 W', '240–250 W', '240–250 W']);
+        ['250–260 W', '250–260 W', '250–260 W']);
       /* Die Pausen dazwischen, nicht danach: 3 x 3 min Belastung und 2 x 3 min
          Pause sind die 15 min, die der Trainingsplan nennt. */
       expect(D.schritteMinuten(t.steps.filter(s => s.type === 'work' || s.type === 'rest')))

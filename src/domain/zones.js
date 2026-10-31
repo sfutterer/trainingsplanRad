@@ -517,19 +517,26 @@ export function zoneSeconds(bands, hrData, timeData, recordedSec, opts){
   return out;
 }
 
-/* ---- Arbeits-FTP (Fassung 7) ----
+/* ---- Die FTP hinter den Zielwatt ----
 
-   Zwei FTP-Werte mit zwei Aufgaben. Die Test-FTP aus dem Schwellentest traegt
-   die Zonen, die Zonenanzeige und die Bewertung gegen Z2 - Z2 haengt an LT1
-   und nicht an einem Prozentsatz, und die drei Tests bleiben nur so
-   vergleichbar. Die Arbeits-FTP aus plan.json traegt ausschliesslich die
-   Zielwatt der Qualitaetseinheiten: die Prozentangaben am Donnerstag und die
-   Bloecke am Samstag.
+   Seit Fassung 12 gibt es wieder nur eine FTP: die aus dem Schwellentest. Sie
+   traegt die Zonen, die Zonenanzeige, die Bewertung gegen Z2 und die Zielwatt
+   der Qualitaetseinheiten. Eingetragen wird sie in den Zonen, nicht in
+   plan.json - die Datei kennt nur Prozentsaetze und die Baender, die sich als
+   Prozentsatz nicht schreiben lassen.
 
-   Fehlt sie, gilt die Test-FTP - dann stehen die alten Zahlen da und nicht
-   etwa keine. Die Herkunft wandert mit, weil sie an jeder Zielwattangabe
-   stehen muss: eine Zahl, deren Grundlage niemand mehr rekonstruiert, ist
-   dasselbe Problem wie ein Test ohne Bedingungen. */
+   Von Fassung 7 bis 11 gab es daneben die Arbeits-FTP aus plan.json: der erste
+   Test lag belegt zu tief (192 W), und die Zielwatt rechneten deshalb gegen
+   206, spaeter 215 W, waehrend die Zonen beim Testwert blieben. Der Retest vom
+   22.10.2026 hat die Luecke geschlossen (223 W), das Feld ist aus der Datei
+   verschwunden - der Weg dahin bleibt aber offen: traegt ein Plan arbeits_ftp,
+   gilt sie weiter fuer die Zielwatt. Ein gehobener Plan aus Fassung 2 und ein
+   eigener Plan duerfen das, und die Funktion ist der einzige Ort, an dem die
+   Frage beantwortet wird.
+
+   Die Herkunft wandert mit, weil sie an jeder Zielwattangabe stehen muss: eine
+   Zahl, deren Grundlage niemand mehr rekonstruiert, ist dasselbe Problem wie
+   ein Test ohne Bedingungen. */
 export function arbeitsFtp(plan, th){
   const a = plan && plan.arbeitsFtp;
   if(a && a.watt > 0){
@@ -540,14 +547,26 @@ export function arbeitsFtp(plan, th){
   return null;
 }
 
-/* "Arbeits-FTP 206 W" oder "Test-FTP 192 W" - die Grundlage in drei Worten. */
+/* "FTP 223 W", und nur im Ausnahmefall "Arbeits-FTP 215 W" - die Grundlage in
+   drei Worten.
+
+   Bis Fassung 11 hiess es hier "Test-FTP", weil daneben die Arbeits-FTP stand
+   und die beiden auseinanderzuhalten waren. Seit es nur noch eine gibt, ist
+   der Zusatz eine Unterscheidung ohne Gegenstueck - und auf dem Rad eine
+   Silbe, die nichts erklaert. Die Baender der gefahrenen Wochen nennen ihre
+   Arbeits-FTP weiterhin, aber als Text in der Datei und nicht von hier. */
 export function ftpHerkunft(af){
   if(!af) return '';
-  return (af.quelle === 'arbeit' ? 'Arbeits-FTP ' : 'Test-FTP ') + af.watt + ' W';
+  return (af.quelle === 'arbeit' ? 'Arbeits-FTP ' : 'FTP ') + af.watt + ' W';
 }
 
-/* Z2 in Watt, so wie der Trainingsplan es schreibt: 106-144 W bei 192 W,
-   aus der Test-FTP und nicht aus der Arbeits-FTP. */
+/* Z2 in Watt, aus der eingetragenen FTP: 123-167 W bei 223 W.
+
+   Bis Fassung 11 stand im Trainingsplan "Z2 106-144 W, unabhaengig von der
+   FTP" - das war die Coggan-Zone der Test-FTP 192 W, als feste Zahl
+   festgehalten, weil die FTP belegt zu tief lag. Fassung 12 hat die Regel
+   aufgehoben; die Zone wandert mit jedem Test. Gerechnet hat die App es immer
+   schon so, die feste Zahl war nur ihr damaliges Ergebnis. */
 export function z2WattBand(plan, th){
   if(!hasFtp(th) || !plan.powerZones.z1 || !plan.powerZones.z2) return null;
   return { min: wattGrenze(plan, th, 'z1') + 1, max: wattGrenze(plan, th, 'z2') };

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "planName": "Trainingsplan Radfahren – Fassung 11",
+  "planName": "Trainingsplan Radfahren – Fassung 12",
   "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
     "bearbeiten": "Zahlen und Texte hier aendern und die Datei speichern. Den Service Worker erzeugt vite-plugin-pwa beim Bauen; er nimmt plan.json selbsttaetig in den Precache. Eine Fassungsnummer von Hand gibt es nicht mehr.",
@@ -24,9 +24,8 @@
     "unbekannteSchluessel": "Die Pruefung meldet Schluessel der obersten Ebene, die sie nicht kennt. Ein Tippfehler in einem optionalen Feld wurde vorher stillschweigend verworfen, und die App rechnete mit dem Standardwert weiter - das widerspricht dem Grundsatz, lieber gar keine Zahl zu zeigen als eine falsche.",
     "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach.",
     "migration": "Ein Plan der Fassung 2 wird beim Laden auf Fassung 3 gehoben: die Wochentage im Feldnamen (tuesdayMinutes, saturdayBlocks …) werden zu einem Objekt je Tag unter weeks[].tage.",
-    "arbeitsFtp": "arbeits_ftp ist die Arbeits-FTP aus Fassung 7 des Trainingsplans, seit Fassung 11 bei 215 W. Sie steuert ausschliesslich die Zielwatt der Qualitaetseinheiten: die Prozentangaben der Donnerstage (power, effort) und saturdayRide.blockPower. Zonen, Zonenanzeige und Auswertung gegen Z2 rechnen weiter mit der Test-FTP aus dem Schwellentest. Fehlt das Feld, gilt die Test-FTP. seit und herkunft stehen an jeder Zielwattangabe, bis nennt den Retest, der sie abloest.",
     "kadenz": "cadenceTargets.byZone gilt fuer das Cube (Do, Sa) - dort hat in Z2 die Leistung Vorrang, deshalb 80-85 rpm (Fassung 8). cadenceTargets.trekkingrad ueberschreibt einzelne Zonen fuer Di und Mi auf dem Trekkingrad, wo keine Wattvorgabe gilt und keine Kadenzdaten ankommen.",
-    "zielwatt": "zielwatt steht an einem tage.do, an einem work-Schritt und an tage.sa.bloecke und nennt das Zielband in Watt direkt: min, max und herkunft. Es hat Vorrang vor jedem Prozentsatz und ist der Weg fuer alles, was sich nicht als Prozentsatz der heutigen Arbeits-FTP schreiben laesst. Fassung 11 brauchte ihn dreimal: das Donnerstagsband 240-250 W wird ueber das Pulskriterium in 5-W-Schritten nachgesteuert und ist deshalb keine Prozentzahl mehr; der Donnerstag der Erholungswoche 7 steht fest bei 196 W, weil 95 % der neuen Arbeits-FTP kitzeln wuerden; und die gefahrenen Wochen 5, 6 behalten ihre Baender aus der Arbeits-FTP 206 W, denn die Analyse eines gefahrenen Tages muss gegen die Vorgabe rechnen, die an ihm galt. min gleich max heisst ein fester Wert und keine Spanne. Wo zielwatt fehlt, rechnet die App den Prozentsatz gegen die heutige arbeits_ftp - so bleiben Phase 4 (90-95 %) und die Samstagsbloecke der Wochen 9 und 12 (80-88 %) automatisch richtig."
+    "zielwatt": "zielwatt steht an einem tage.do, an einem work-Schritt und an tage.sa.bloecke und nennt das Zielband in Watt direkt: min, max und herkunft. Es hat Vorrang vor jedem Prozentsatz. Seit Fassung 12 gibt es nur noch eine FTP - die aus dem Schwellentest -, und jeder Prozentsatz rechnet gegen sie; zielwatt bleibt fuer die zwei Faelle, die sich als Prozentsatz nicht schreiben lassen. Erstens das nachgesteuerte Band: das Donnerstagsband der Wochen 11 und 12 wird ueber das Pulskriterium in 5-W-Schritten verstellt und ist deshalb keine Prozentzahl mehr. Zweitens die gefahrenen Wochen: die Wochen 5 bis 9 behalten die Baender, die an ihnen galten - aus der Arbeits-FTP 206 bzw. 215 W, die es bis zum Retest am 22.10.2026 gab -, denn die Analyse eines gefahrenen Tages muss gegen die Vorgabe rechnen, die an ihm galt, und nicht gegen die von heute. min gleich max heisst ein fester Wert und keine Spanne. Wo zielwatt fehlt, rechnet die App den Prozentsatz gegen die FTP - so bleiben Phase 4 (90-95 %) und die Samstagsbloecke der Woche 12 (80-88 %) ohne Pflege richtig."
   },
   "recoveryWeeks": [
     4,
@@ -551,7 +550,12 @@
           "bloecke": {
             "reps": 2,
             "minutes": 12,
-            "restMinutes": 8
+            "restMinutes": 8,
+            "zielwatt": {
+              "min": 172,
+              "max": 189,
+              "herkunft": "80–88 % der Arbeits-FTP 215 W (bis 22.10.2026)"
+            }
           }
         },
         "so": {
@@ -642,9 +646,9 @@
               "label": "Erhaltungsreiz 1 / 3",
               "short": "Reiz 1/3",
               "zielwatt": {
-                "min": 240,
-                "max": 250,
-                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+                "min": 250,
+                "max": 260,
+                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
               },
               "minutes": 3,
               "zone": "z5",
@@ -666,9 +670,9 @@
               "label": "Erhaltungsreiz 2 / 3",
               "short": "Reiz 2/3",
               "zielwatt": {
-                "min": 240,
-                "max": 250,
-                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+                "min": 250,
+                "max": 260,
+                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
               },
               "minutes": 3,
               "zone": "z5",
@@ -689,9 +693,9 @@
               "label": "Erhaltungsreiz 3 / 3",
               "short": "Reiz 3/3",
               "zielwatt": {
-                "min": 240,
-                "max": 250,
-                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+                "min": 250,
+                "max": 260,
+                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
               },
               "minutes": 3,
               "zone": "z5",
@@ -768,9 +772,9 @@
               "label": "Erhaltungsreiz 1 / 3",
               "short": "Reiz 1/3",
               "zielwatt": {
-                "min": 240,
-                "max": 250,
-                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+                "min": 250,
+                "max": 260,
+                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
               },
               "minutes": 3,
               "zone": "z5",
@@ -792,9 +796,9 @@
               "label": "Erhaltungsreiz 2 / 3",
               "short": "Reiz 2/3",
               "zielwatt": {
-                "min": 240,
-                "max": 250,
-                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+                "min": 250,
+                "max": 260,
+                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
               },
               "minutes": 3,
               "zone": "z5",
@@ -815,9 +819,9 @@
               "label": "Erhaltungsreiz 3 / 3",
               "short": "Reiz 3/3",
               "zielwatt": {
-                "min": 240,
-                "max": 250,
-                "herkunft": "112–116 % der Arbeits-FTP 215 W, nachgesteuert (Fassung 11)"
+                "min": 250,
+                "max": 260,
+                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
               },
               "minutes": 3,
               "zone": "z5",
@@ -1129,12 +1133,6 @@
       "minFactor": 1.06,
       "maxFactor": 1.2
     }
-  },
-  "arbeits_ftp": {
-    "watt": 215,
-    "seit": "2026-09-24",
-    "bis": "2026-10-22",
-    "herkunft": "Pulskriterium Do 17.09./24.09., 4-min-Wert 268 W"
   },
   "cadenceTargets": {
     "fromWeek": 3,

@@ -48,10 +48,10 @@ function ohneHoehenmeter(p){
   k.cadenceTargets.byZone.z2 = '85–90 rpm';
   delete k.documentation.arbeitsFtp;
   delete k.documentation.kadenz;
-  /* Und nicht die festen Zielbaender aus Fassung 11: ein gehobener Plan
-     bringt seine Prozentangaben mit und rechnet sie gegen die FTP, die in ihm
-     steht. Die Migration erfindet kein Band und kein Datum, an dem es gegolten
-     haette - dieselbe Regel wie bei den Hoehenmetern. */
+  /* Und nicht die festen Zielbaender aus Fassung 11 und 12: ein gehobener
+     Plan bringt seine Prozentangaben mit und rechnet sie gegen die FTP, die in
+     ihm steht. Die Migration erfindet kein Band und kein Datum, an dem es
+     gegolten haette - dieselbe Regel wie bei den Hoehenmetern. */
   for(const w of k.weeks){
     const zurueck = { 5: '108–115 % FTP', 6: '108–115 % FTP', 7: 'ca. 95 % FTP',
                       8: '108–115 % FTP', 9: '108–115 % FTP' }[w.week];
@@ -60,7 +60,9 @@ function ohneHoehenmeter(p){
       w.tage.do.variante.steering = '5 min alles geben, danach 108–115 % FTP';
       for(const st of w.tage.do.variante.steps) delete st.zielwatt;
     }
-    if(w.week === 6) delete w.tage.sa.bloecke.zielwatt;
+    /* Woche 6 seit Fassung 11, Woche 9 seit Fassung 12 - beide eingefroren,
+       weil sie gefahren sind. Ein gehobener Plan kennt beide Baender nicht. */
+    if(w.week === 6 || w.week === 9) delete w.tage.sa.bloecke.zielwatt;
     for(const st of w.tage.do.steps || []){
       if(st.type !== 'work') continue;
       delete st.zielwatt;
