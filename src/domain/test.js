@@ -277,6 +277,40 @@ function mittel(werte, von, bis){
   return n ? summe / n : null;
 }
 
+/* Das staerkste Fenster einer Fahrt, als Mittelwerte.
+
+   Lag bis zum 31.10.2026 nur innerhalb von tempoBloecke - dort sucht es zwei
+   Bloecke, hier wird eines gebraucht: die zwanzig Minuten des Schwellentests,
+   damit das Ergebnis nicht aus der Aufzeichnung abgetippt werden muss. Die
+   Rechnung ist dieselbe, deshalb steht sie jetzt einmal da.
+
+   Zurueck kommen Ø-Leistung, Ø-Puls und Ø-Kadenz desselben Fensters - die
+   drei Zahlen, nach denen das Ergebnisformular fragt. Fehlt ein Strom, fehlt
+   seine Zahl; die Leistung muss da sein, denn nach ihr wird gesucht. */
+export function bestesFenster({ watts, puls, kadenz, zeit, sekunden }){
+  if(!Array.isArray(watts) || !watts.length || !(sekunden > 0)) return null;
+  const takt = taktSekunden(zeit) || 1;
+  const fenster = Math.max(2, Math.round(sekunden / takt));
+  const n = watts.length;
+  if(n < fenster) return null;
+
+  const s = new Float64Array(n + 1);
+  for(let i = 0; i < n; i++) s[i + 1] = s[i] + (Number.isFinite(watts[i]) ? watts[i] : 0);
+  let best = 0;
+  for(let i = 1; i + fenster <= n; i++){
+    if(s[i + fenster] - s[i] > s[best + fenster] - s[best]) best = i;
+  }
+  const r = v => (v == null ? null : Math.round(v));
+  const bis = best + fenster;
+  return {
+    watt: Math.round((s[bis] - s[best]) / fenster),
+    puls: Array.isArray(puls) ? r(mittel(puls, best, bis)) : null,
+    kadenz: Array.isArray(kadenz) ? r(mittel(kadenz, best, bis)) : null,
+    vonSek: Array.isArray(zeit) && Number.isFinite(zeit[best]) ? zeit[best] : Math.round(best * takt),
+    fensterSekunden: fenster * takt
+  };
+}
+
 export function tempoBloecke({ watts, puls, zeit, sekunden }){
   if(!Array.isArray(watts) || !watts.length || !(sekunden > 0)) return null;
   const takt = taktSekunden(zeit) || 1;

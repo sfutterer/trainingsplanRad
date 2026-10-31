@@ -66,6 +66,24 @@ export function Textfeld({ titel, wert, onWert, platzhalter }){
    kommen als {id, label} herein, damit der Aufrufer keine <option> baut - das
    war die Stelle, an der die vier Zeitraeume in der Analyse zweimal woertlich
    dastanden. */
+/* Ein Tag, als ISO-Zeichenkette hinein und heraus.
+
+   Nativ und kein eigener Kalender: der des Geraets kennt die Sprache, die
+   Wochenanfaenge und die Bedienung, die der Nutzer schon kann - und auf dem
+   Telefon oeffnet er sich als Rad statt als Tabelle. Ein leeres Feld meldet
+   null, damit der Aufrufer "kein Datum" von "falsches Datum" unterscheiden
+   kann. */
+export function Datumsfeld({ titel, wert, onWert, max }){
+  const id = useId();
+  return (
+    <div class="field">
+      <label for={id}>{titel}</label>
+      <input id={id} type="date" value={wert || ''} max={max}
+        onInput={e => onWert(e.currentTarget.value || null)} />
+    </div>
+  );
+}
+
 export function Auswahlfeld({ titel, wert, onWert, optionen }){
   const id = useId();
   return (

@@ -352,6 +352,26 @@ code{ font-family: ui-monospace, Menlo, monospace; font-size: .9em;
    den Schluessel. Sichtbar bleiben die Knoepfe, damit man sieht, was kommt. */
 .segbtn:disabled{ opacity: .45; }
 
+/* ---- Drei Werte nebeneinander ----
+
+   Die gerechneten Zahlen eines Messwerts stehen ueber den Feldern und aendern
+   sich, waehrend man tippt: so sieht man vor dem Speichern, was daraus wird.
+
+   Lagen bis zum 31.10.2026 in test.css, weil es sie nur im Ergebnisformular
+   des Testbereichs gab. Seit das Erfassen in einem Sheet liegt, das auch die
+   Zonenseite oeffnet, waeren sie dort ungestylt gewesen - eine Komponente,
+   die zwei Bereiche teilen, kann ihre Gestalt nicht aus einem davon holen. */
+.ergebnis{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 12px; }
+.ergwert{
+  background: var(--surface-2); border-radius: var(--radius-s); padding: 10px 8px;
+  text-align: center;
+}
+.ergwert b{ display: block; font-size: 17px; margin-bottom: 2px; white-space: nowrap; }
+.ergwert span{
+  font-size: 11px; color: var(--muted);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+
 /* ---- Top App Bar ---- */
 .appbar{
   position: sticky; top: 0; z-index: 30;

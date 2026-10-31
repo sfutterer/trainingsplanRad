@@ -43,28 +43,27 @@
 
 import { useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, testLog, testPrep, apiKey, settings,
-         saveTestEntry, setTestPrep } from '../../../state/store.js';
+         setTestPrep } from '../../../state/store.js';
 import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
-         vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke,
-         testZiel, vo2maxTermin, vo2maxBezug, baueTestEintrag, laengsteFahrt,
-         ergebnisTermine, vorgewaehlterErgebnistag, istJuengsterTest,
-         FTP_FAKTOR, AUSBELASTET_RPE }
+         vorgewaehlterAblauf, terminSchluessel, tempoBloecke,
+         testZiel, vo2maxTermin, vo2maxBezug, laengsteFahrt,
+         ergebnisTermine, vorgewaehlterErgebnistag, FTP_FAKTOR }
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds } from '../../../domain/timer/sequences.js';
-import { hrBands, usesCoggan, quelleVon } from '../../../domain/zones.js';
-import { messwertId, ART_TEST } from '../../../domain/messwerte.js';
-import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
+import { hrBands, usesCoggan } from '../../../domain/zones.js';
+import { ART_TEST } from '../../../domain/messwerte.js';
+import { isoDayLocal, toMidnight, dayOffset, weekNumberFor,
          WEEKDAY_NAMES, datumText, tagUndMonat } from '../../../domain/week.js';
-import { fetchGewicht, fetchActivities, fetchStreams,
-         zahlenStrom } from '../../../data/icu.js';
+import { fetchActivities, fetchStreams, zahlenStrom } from '../../../data/icu.js';
 import { Segmented } from '../../components/Segmented.jsx';
 import { Baustein } from '../training/Baustein.jsx';
 /* Ring, Vorschau und Zonenkarte teilt sich dieser Bereich mit dem
    Intervalltimer - siehe Schrittansicht.jsx. */
 import { Schrittbuehne, Schrittvorschau, Zonenkarte } from '../../components/Schrittansicht.jsx';
 import { mmss, dauerText, schrittDauer } from '../../../domain/zeit.js';
-import { Zahlenfeld, Textfeld, Auswahlfeld } from '../../components/Feld.jsx';
+import { Zahlenfeld, Auswahlfeld } from '../../components/Feld.jsx';
+import { Messwertsheet } from '../../components/Messwertsheet.jsx';
 import { Testhistorie } from '../../components/Testhistorie.jsx';
 import { useSchrittTimer } from '../../components/useSchrittTimer.js';
 import { zahl } from '../../../domain/zahlen.js';
@@ -548,141 +547,56 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
 
 /* ---------- Ergebnis ---------- */
 
-/* Was in den Feldern steht, wenn ein Termin geoeffnet wird.
+/* Die Zahlen eines Termins, zum Nachschlagen.
 
-   Ein gespeicherter Test kommt vollstaendig zurueck - nur so ist er
-   nachschlagbar, und nur so laesst sich ein Zahlendreher berichtigen, ohne
-   alles neu zu tippen. Der Ø-Puls kommt aus hr20, faellt aber auf lthr
-   zurueck: Eintraege von vor dem 10.09.2026 kennen hr20 nicht. */
-function ausEintrag(e){
-  if(!e) return { w20:null, hr20:null, kadenz:null, rpe:null, kg:null, bed:'' };
-  return {
-    w20:    e.w20 ?? null,
-    hr20:   e.hr20 ?? e.lthr ?? null,
-    kadenz: e.kadenz ?? null,
-    rpe:    e.rpe ?? null,
-    kg:     e.weight ?? null,
-    bed:    e.conditions || ''
-  };
-}
+   Eingetragen wird im Messwert-Sheet - derselben Komponente, die auch die
+   Zonenseite oeffnet. Bis zum 31.10.2026 stand hier ein eigenes Formular, und
+   unter Zonen ein zweites fuer dieselben Werte: eines rechnete FTP und LTHR
+   aus Ø-Watt und Ø-Puls, das andere liess sie tippen. Dieselbe Groesse auf
+   zwei Wegen, von denen einer das halbe Protokoll verlor.
 
-/* Das Formular eines einzelnen Termins.
-
-   Eigene Komponente, damit der Terminwechsel ueber den Schluessel laufen kann:
-   Zahlenfeld haelt waehrend der Eingabe einen Rohtext, damit "1," unter den
-   Fingern nicht zur 1 wird, und dieser Rohtext ueberlebt jedes Setzen von
-   aussen. Ein Formular, das beim Blaettern nur neue Werte hineingereicht
-   bekaeme, zeigte weiter die Zahlen des vorigen Termins. */
-function Ergebnisformular({ p, ziel }){
-  const [f, setF] = useState(() => ausEintrag(ziel.eintrag));
-  const [meldung, setMeldung] = useState(null);
-  const werte = testWerte({ w20:f.w20, hr20:f.hr20, kadenz:f.kadenz, rpe:f.rpe, gewicht:f.kg });
-  const bereit = werte.ftp != null || werte.lthr != null;
-  const tagIso = ziel.tagIso;
-
-  /* Ob dieser Termin der juengste Test ist, entscheidet nur noch den
-     Hinweis unter dem Formular. Die Baender setzt er ohnehin nicht mehr
-     selbst - das tut die Liste, und dort ist ein alter Test schlicht alt. */
-  const juengster = istJuengsterTest(testLog.value, tagIso);
-
-  /* Das Gewicht steht meist schon in der Wellness - dann muss es niemand
-     abtippen und die beiden Quellen koennen nicht auseinanderlaufen. */
-  async function gewichtHolen(){
-    const key = apiKey.value;
-    if(!key){ setMeldung({ art:'fehler', text:'Kein Zugang zu intervals.icu hinterlegt.' }); return; }
-    try {
-      const kg = await fetchGewicht(key, tagIso);
-      if(kg) setF(x => ({ ...x, kg }));
-      else setMeldung({ art:'fehler', text:'Für den ' + datumText(ziel.datum) + ' steht dort kein Gewicht.' });
-    } catch(e){ setMeldung({ art:'fehler', text:'Nicht abrufbar: ' + e.message }); }
-  }
-
-  /* Gespeichert wird der Messwert, mehr nicht. Was damit gilt, rechnet die
-     Liste aus - bis zum 31.10.2026 stand hier eine zweite Entscheidung
-     daneben, die den Satz der Schwellenwerte selbst zusammenbaute und dabei
-     pruefen musste, ob eine spaetere Eingabe von Hand den Messwert
-     ueberstimmt. Die Frage stellt sich nicht mehr: der juengste Eintrag
-     traegt den Wert, und dieser Test ist so jung wie sein Testtag. */
-  async function speichern(){
-    await saveTestEntry(baueTestEintrag({
-      tagIso, week: ziel.week ?? weekNumberFor(dayFromIso(tagIso), startDate.value),
-      werte, ftp: werte.ftp, lthr: werte.lthr, bedingungen: f.bed, plan: p
-    }));
-
-    const gilt = thresholds.value;
-    const meiner = messwertId(tagIso, ART_TEST);
-    const traegt = ['ftp', 'lthr'].filter(k => {
-      const q = quelleVon(gilt, k);
-      return q && q.id === meiner;
-    });
-
-    setMeldung({ art:'ok', text: traegt.length
-      ? 'Gespeichert. FTP ' + (gilt.ftp || '–') + ' W, LTHR ' + (gilt.lthr || '–')
-        + ' bpm – die Zonen rechnen ab sofort damit.'
-      : 'Gespeichert. Die Zonen bleiben bei FTP ' + (gilt.ftp || '–') + ' W und LTHR '
-        + (gilt.lthr || '–') + ' bpm: dafür gilt ein neuerer Wert.' });
-  }
+   Was bleibt, ist die Ansicht: was steht in diesem Termin, und ein Knopf, der
+   das Sheet damit oeffnet. */
+function Ergebniskarte({ ziel, onOeffnen }){
+  const e = ziel.eintrag;
+  const wkg = e && e.ftp > 0 && e.weight > 0 ? e.ftp / e.weight : null;
 
   return (
     <div class="card">
-      <div class="row"><span>{ziel.eintrag ? 'Ergebnis' : 'Ergebnis eintragen'}</span>
+      <div class="row"><span>{e ? 'Ergebnis' : 'Ergebnis eintragen'}</span>
         <b>{datumText(ziel.datum)}{ziel.week ? ' · Woche ' + ziel.week : ''}</b></div>
-      {/* Die gerechneten Zahlen stehen schon da, waehrend man tippt - so
-          sieht man vor dem Speichern, was daraus wird. */}
+
       <div class="ergebnis">
-        <div class="ergwert"><b>{werte.ftp != null ? werte.ftp + ' W' : '–'}</b><span>FTP</span></div>
-        <div class="ergwert"><b>{werte.lthr != null ? werte.lthr + ' bpm' : '–'}</b><span>LTHR</span></div>
-        <div class="ergwert"><b>{werte.wkg != null ? zahl(werte.wkg, 2) : '–'}</b><span>W/kg</span></div>
+        <div class="ergwert"><b>{e && e.ftp ? e.ftp + ' W' : '–'}</b><span>FTP</span></div>
+        <div class="ergwert"><b>{e && e.lthr ? e.lthr + ' bpm' : '–'}</b><span>LTHR</span></div>
+        <div class="ergwert"><b>{wkg != null ? zahl(wkg, 2) : '–'}</b><span>W/kg</span></div>
       </div>
-      <Zahlenfeld titel="Ø-Watt der 20 min" wert={f.w20} min={1}
-        onWert={v => setF({ ...f, w20: v })} />
-      <Zahlenfeld titel="Ø-Puls der 20 min (bpm)" wert={f.hr20} min={1}
-        onWert={v => setF({ ...f, hr20: v })} />
-      {/* Kadenz statt der 5-min-Leistung: die entsteht seit Fassung 4 an
-          einem anderen Tag und steht in ihrer eigenen Karte. Die Kadenz
-          gehoert dagegen zum Test - zwei Tests bei 78 und bei 92 U/min sind
-          nicht dasselbe. */}
-      <Zahlenfeld titel="Ø-Kadenz der 20 min (U/min)" wert={f.kadenz} min={1}
-        onWert={v => setF({ ...f, kadenz: v })} />
-      {/* Das einzige Feld, das etwas ueber die Guete des Messwerts sagt.
-          Der Trainingsplan verlangt es ausdruecklich: RPE der letzten fuenf
-          Minuten, unter 9 heisst nicht ausbelastet. */}
-      <Zahlenfeld titel="RPE der letzten 5 min (1–10)" wert={f.rpe} min={1} max={10}
-        onWert={v => setF({ ...f, rpe: v })} />
-      {werte.ausbelastet === false && (
-        <p class="hint warn">
-          Unter {AUSBELASTET_RPE} heißt: nicht ausbelastet. Dann ist die FTP eher zu niedrig –
-          gemessen wurde nicht die Schwelle, sondern die Bereitschaft, an sie heranzugehen.
-          Der Wert gilt trotzdem als Untergrenze; die eFTP und die VO2max-Referenz bleiben
-          die Gegenproben.
+
+      {e ? (
+        <>
+          <div class="listrow"><span>Ø der 20 min</span>
+            <span>{[e.w20 ? e.w20 + ' W' : null, e.hr20 ? e.hr20 + ' bpm' : null,
+                    e.kadenz ? e.kadenz + ' U/min' : null].filter(Boolean).join(' · ') || '–'}</span></div>
+          <div class="listrow"><span>Güte und Gewicht</span>
+            <span>{[e.rpe ? 'RPE ' + e.rpe : null, e.weight ? e.weight + ' kg' : null]
+                    .filter(Boolean).join(' · ') || '–'}</span></div>
+          {e.conditions && <div class="listrow"><span>Bedingungen</span><span>{e.conditions}</span></div>}
+        </>
+      ) : (
+        <p class="hint">
+          Ø-Watt und Ø-Puls stehen in der Aufzeichnung als Werte des 20-min-Intervalls –
+          mit hinterlegtem intervals.icu-Schlüssel holt das Sheet sie selbst. Ohne
+          Leistungsmesser genügt der Puls: die LTHR trägt die Pulsbänder, die Wattzonen
+          bleiben dann leer.
         </p>
       )}
-      <Zahlenfeld titel="Gewicht (kg)" wert={f.kg} min={1} dezimal schritt="0.1"
-        onWert={v => setF({ ...f, kg: v })} />
-      <Textfeld titel="Bedingungen" wert={f.bed} onWert={v => setF({ ...f, bed: v })}
-        platzhalter="Temperatur, Wind, Strecke, Rad" />
-      <div class="buttons">
-        <button class="btn" disabled={!bereit} onClick={speichern}>
-          {ziel.eintrag ? 'Ändern' : 'Speichern'}</button>
-        <button class="btn secondary" disabled={!apiKey.value} onClick={gewichtHolen}>Gewicht holen</button>
-      </div>
-      {ziel.eintrag
-        ? <p class="hint">
-            Dieser Test ist gespeichert; die Felder zeigen, was darin steht. Wer etwas
-            berichtigt, ersetzt den Eintrag – es entsteht keine zweite Zeile für denselben Tag.
-            {juengster ? '' : ' Die Schwellenwerte bleiben dabei unberührt, weil ein neuerer Test vorliegt.'}
-          </p>
-        : <p class="hint">
-            Ø-Watt und Ø-Puls stehen in der Aufzeichnung als Werte des 20-min-Intervalls. Ohne
-            Leistungsmesser genügt der Puls – die LTHR allein trägt die Pulsbänder, die
-            Wattzonen bleiben dann leer. Das Gewicht kommt über „Gewicht holen“ aus der
-            Wellness von intervals.icu, wo es die Waage über Garmin hinterlegt hat; geschrieben
-            wird dorthin nichts.
-          </p>}
-      {meldung && <div class={'meldung ' + meldung.art}><b>{meldung.text}</b></div>}
+
+      <button class="btn block" onClick={onOeffnen}>
+        {e ? 'Ergebnis ändern' : 'Ergebnis eintragen'}</button>
     </div>
   );
 }
+
 
 /* Die Ergebnisansicht: erst welcher Termin, dann dessen Zahlen.
 
@@ -693,6 +607,7 @@ function Ergebnisformular({ p, ziel }){
 function ErgebnisAnsicht({ p, termin, start }){
   const termine = ergebnisTermine(p, start, testLog.value, today.value);
   const [tag, setTag] = useState(() => vorgewaehlterErgebnistag(termine, termin, today.value));
+  const [sheet, setSheet] = useState(false);
 
   /* Faellt der gemerkte Tag weg - etwa weil der Plan gewechselt hat -, gilt
      wieder die Vorauswahl. Kein Zustand, der auf ein Datum zeigt, das es
@@ -723,7 +638,12 @@ function ErgebnisAnsicht({ p, termin, start }){
         </p>
       </div>
 
-      <Ergebnisformular key={ziel.tagIso} p={p} ziel={ziel} />
+      <Ergebniskarte ziel={ziel} onOeffnen={() => setSheet(true)} />
+
+      {sheet && <Messwertsheet
+        eintrag={ziel.eintrag || null}
+        vorgabe={{ day: ziel.tagIso, art: ART_TEST }}
+        onClose={() => setSheet(false)} />}
 
       {testLog.value.length > 0 && (
         <div class="card">

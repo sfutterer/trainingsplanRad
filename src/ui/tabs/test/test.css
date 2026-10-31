@@ -120,17 +120,3 @@
    keine Verfehlung, sondern ein Hinweis, dass der Retest vorruecken sollte. */
 .formel.warn{ background: var(--dev-bg); box-shadow: inset 3px 0 0 var(--dev); }
 
-/* ---- Ergebnis ----
-
-   Die drei gerechneten Werte stehen ueber den Feldern und aendern sich, waehrend
-   man tippt: so sieht man vor dem Speichern, welche Zahlen daraus werden. */
-.ergebnis{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 12px; }
-.ergwert{
-  background: var(--surface-2); border-radius: var(--radius-s); padding: 10px 8px;
-  text-align: center;
-}
-.ergwert b{ display: block; font-size: 17px; margin-bottom: 2px; white-space: nowrap; }
-.ergwert span{
-  font-size: 11px; color: var(--muted);
-  letter-spacing: .06em; text-transform: uppercase;
-}
