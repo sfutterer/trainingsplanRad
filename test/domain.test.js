@@ -195,7 +195,21 @@
    ("3 min · 237-246 W · 112-116 % der FTP 212 W").
 
    Die gerechnete Obergrenze liegt bei 259 statt 260 W: 116 % von 223 sind
-   258,7. Die 260 des Trainingsplans waren aufgerundet. */
+   258,7. Die 260 des Trainingsplans waren aufgerundet.
+
+   Neu gesetzt am 31.10.2026, dritter Schritt: wo eine FTP eingetragen ist,
+   fuehrt die Leistung. targetText schrieb bis dahin "Z2 113-138 bpm ·
+   123-167 W" - der Puls zuerst, die Watt als Anhaengsel. Das war die
+   Reihenfolge aus der Zeit vor dem ersten Test und blieb stehen, nachdem der
+   Plan auf die Leistung umgestellt hatte; wer auf dem Rad die erste Haelfte
+   der Zeile liest, las die Kontrollgroesse. Jetzt steht dort "Z2 123-167 W ·
+   Puls 113-138 bpm", und die Zeile heisst "Zielleistung" statt "Zielzone".
+
+   Betroffen ist deshalb genau ein Abzug: der Coggan-Pfad. Der Abzug der
+   Uebergangsbaender hat keine FTP, dort gibt es keine Wattzahl, und seine
+   Pruefsumme steht unveraendert - derselbe Nachweis wie im Code, nur von
+   aussen: ohne Messwert aendert sich nichts. Die Wochenangaben und die
+   Wiederholungsziele kennen keine Zielzeile und bleiben ebenfalls. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -381,7 +395,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: 'dc9c79edadafed52', len: 165593 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '4067d8b764893687', len: 166718 });
   });
 });
 

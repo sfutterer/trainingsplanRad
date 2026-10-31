@@ -32,10 +32,13 @@ export function Zonenliste({ bands, plan, thresholds, mitWatt }){
     <>
       {bands.filter(b => b.key !== 'unter').map(b => {
         const watt = mitWatt ? wattText(plan, thresholds, b.key) : null;
+        /* Die Leistung zuerst, wo es eine gibt - dieselbe Reihenfolge wie auf
+           der Tageskarte und am Ring. Der Puls steht dahinter: er ist die
+           Kontrollgroesse, nicht die Vorgabe. */
         return (
           <div class="row zonerow" key={b.key}>
             <span><Zonenpunkt zone={b.key} />{b.label}</span>
-            <b>{bandRange(b)}{watt ? ' · ' + watt : ''}</b>
+            <b>{watt ? watt + ' · ' + bandRange(b) : bandRange(b)}</b>
           </div>
         );
       })}

@@ -5,14 +5,18 @@ import { repTarget } from '../core.js';
 import { zeitDosis } from '../koerper.js';
 import { thursdayPlan, thursdayAnlauf, anlaufSchritte, schrittSekunden,
          varianteFuer } from '../day.js';
-import { zoneText, zoneSpan, wattText, zielband } from '../zones.js';
+import { zoneSpan, targetText, zielband } from '../zones.js';
 
 /* Ein Zonenetikett fuer die Anzeige im Timer. z12 ist die Spanne beim
    Einfahren und hat kein eigenes Band. */
 function timerZone(plan, th, key, week){
   if(key === 'z12') return { label: zoneSpan(plan, th, 'z1', 'z2', week), cls: 'z2', key: 'z12' };
-  const w = wattText(plan, th, key);
-  return { label: zoneText(plan, th, key, week) + (w ? ' · ' + w : ''), cls: key, key };
+  /* Dieselbe Zeile wie auf der Tageskarte, und zwar durch dieselbe Funktion:
+     die Leistung zuerst, sobald es eine gibt, der Puls dahinter. Hier stand
+     die Zusammensetzung bis zum 31.10.2026 ein zweites Mal von Hand - und
+     als die Reihenfolge sich aenderte, waere sie an zwei Stellen zu aendern
+     gewesen. */
+  return { label: targetText(plan, th, key, week), cls: key, key };
 }
 
 /* Das Etikett eines Belastungsschritts mit Zielband.

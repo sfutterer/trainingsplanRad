@@ -254,9 +254,29 @@ export function wattText(plan, th, key){
   return min + '–' + wattGrenze(plan, th, key) + ' W';
 }
 
+/* ---- Die Vorgabe einer Zone, in der Reihenfolge ihrer Steuergroessen ----
+
+   Bis zum 31.10.2026 stand hier "Z2 113-138 bpm · 123-167 W": der Puls
+   zuerst, die Watt als Anhaengsel. Das war die Reihenfolge aus der Zeit vor
+   dem ersten Schwellentest, als es nur Pulsbaender gab - und sie blieb
+   stehen, nachdem der Plan auf die Leistung umgestellt hatte. Wer auf dem Rad
+   die erste Haelfte der Zeile liest, las damit die Kontrollgroesse und nicht
+   die Vorgabe.
+
+   Jetzt fuehrt die Leistung, sobald eine FTP eingetragen ist, und der Puls
+   steht als das dahinter, was er ist. Ohne FTP bleibt alles, wie es war: dann
+   gibt es keine Wattzahl, und der Puls ist die Steuergroesse. */
 export function targetText(plan, th, key, week){
   const w = wattText(plan, th, key);
-  return w ? zoneText(plan, th, key, week) + ' · ' + w : zoneText(plan, th, key, week);
+  if(!w) return zoneText(plan, th, key, week);
+  const b = zoneBand(plan, th, key, week);
+  return key.toUpperCase() + ' ' + w + (b ? ' · Puls ' + bandRange(b) : '');
+}
+
+/* Wie die Zeile darueber heisst. "Zielzone" stimmte, solange die Zone das
+   Ziel war; sobald nach Watt gefahren wird, ist das Ziel eine Leistung. */
+export function zielLabel(th){
+  return hasFtp(th) ? 'Zielleistung' : 'Zielzone';
 }
 
 /* Trittfrequenz erst ab dem Sensor - vorher gibt es keine Messung, und

@@ -53,7 +53,7 @@ import {
   thursdayDateFor, isoDayLocal
 } from './week.js';
 import {
-  zoneText, zoneSpan, targetText, withCadence,
+  zoneText, zoneSpan, targetText, zielLabel, withCadence,
   estimateDistance, showsDistance, cadenceText, cadenceTextTrekking,
   zielband, zielbandZeile, blockWattBand
 } from './zones.js';
@@ -248,7 +248,7 @@ const TIMER_TEST       = { art:'test',       ziel:'test',       label:'Testablau
 function rideKennzahlen(plan, th, week, minutes, zone, trekking){
   const out = [
     { label:'Dauer',    wert: minutes + ' min' },
-    { label:'Zielzone', wert: targetText(plan, th, zone, week) }
+    { label: zielLabel(th), wert: targetText(plan, th, zone, week) }
   ];
   const cad = trekking ? cadenceTextTrekking(plan, zone, week) : cadenceText(plan, zone, week);
   if(cad) out.push({ label:'Trittfrequenz', wert: cad });
@@ -645,7 +645,7 @@ function donnerstag(c){
         { label:'Dauer',       wert: t.minutes + ' min' },
         { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
         steuer ? { label:'Steuergröße', wert: steuer }
-               : { label:'Zielzone',    wert: targetText(plan, th, t.zone, week) }
+               : { label: zielLabel(th),    wert: targetText(plan, th, t.zone, week) }
       ],
       bloecke: schrittBloecke(plan, th, week, plan.thresholdTest?.steps ?? []),
       hinweise,
@@ -675,7 +675,7 @@ function donnerstag(c){
     const kennzahlen = [
       { label:'Dauer',           wert: t.minutes + ' min' },
       { label:'Wiederholungen',  wert:`${t.reps} × ${t.workMin} min` },
-      { label:'Zielzone',        wert: b ? zoneText(plan, th, t.zone, week)
+      { label: zielLabel(th),        wert: b ? zoneText(plan, th, t.zone, week)
                                         : targetText(plan, th, t.zone, week) }
     ];
     if(b) kennzahlen.push({ label:'Leistung', wert: zielbandZeile(b) });
@@ -733,7 +733,7 @@ function freitag(c){
       art:'locker', titel:'Ruhetag oder lockere Fahrt',
       kennzahlen: [
         { label:'Umfang',   wert:`optional ${fo.minMinutes}–${fo.maxMinutes} min` },
-        { label:'Zielzone', wert: targetText(plan, th, fo.zone, week) }
+        { label: zielLabel(th), wert: targetText(plan, th, fo.zone, week) }
       ],
       bloecke: [
         { label:'Lockere Fahrt (optional)',
@@ -834,7 +834,7 @@ function sonntag(c){
       art:'z2', titel:'Rad (optional)', zeit:'davor',
       kennzahlen: [
         { label:'Dauer',    wert:'optional ' + dur + ' min' },
-        { label:'Zielzone', wert: targetText(plan, th, 'z1', week) }
+        { label: zielLabel(th), wert: targetText(plan, th, 'z1', week) }
       ],
       bloecke: [{ label:'Rad (optional)', wert:`${dur} min · ${zoneText(plan, th, 'z1', week)}`,
                   hinweis:`Davor – ${T.sundayRideFirst}.` }]
@@ -902,7 +902,7 @@ function schrittTag(c, sess, timer){
     { label:'Belastung', wert: ablaufText(arbeit.map(schrittSekunden)) },
     sess.steering
       ? { label:'Steuergröße', wert: sess.steering }
-      : { label:'Zielzone',    wert: targetText(plan, th, zone, week) }
+      : { label: zielLabel(th),    wert: targetText(plan, th, zone, week) }
   ];
   const cad = sess.steering ? null : cadenceText(plan, zone, week);
   if(cad) kennzahlen.push({ label:'Trittfrequenz', wert: cad });

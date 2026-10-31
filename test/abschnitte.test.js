@@ -111,6 +111,22 @@ describe('Bezugswerte aus plan.json', () => {
     expect(b.herkunft).toContain('Arbeits-FTP 206 W');
   });
 
+  /* Wonach gefahren wird, steht vorn. Seit dem 31.10.2026 fuehrt die
+     Leistung, sobald eine FTP eingetragen ist - vorher stand der Puls
+     zuerst und die Watt als Anhaengsel, und das war die Reihenfolge aus der
+     Zeit vor dem ersten Test. Ohne FTP bleibt der Puls die Steuergroesse:
+     dann gibt es keine Wattzahl, nach der man fahren koennte. */
+  it('stellt die Leistung voran, sobald eine FTP eingetragen ist', () => {
+    expect(Z.targetText(plan, TH12, 'z2', 12)).toBe('Z2 123–167 W · Puls 113–138 bpm');
+    expect(Z.zielLabel(TH12)).toBe('Zielleistung');
+  });
+
+  it('laesst ohne FTP den Puls die Steuergroesse sein', () => {
+    expect(Z.targetText(plan, Z.NO_THRESHOLDS, 'z2', 12)).toBe('Z2 128–142 bpm');
+    expect(Z.zielLabel(Z.NO_THRESHOLDS)).toBe('Zielzone');
+    expect(Z.targetText(plan, { lthr: 166 }, 'z2', 12)).toBe('Z2 113–138 bpm');
+  });
+
   /* Woche 9 ist aus demselben Grund eingefroren wie Woche 6, nur eine
      Fassung spaeter: sie wurde gegen 172-189 W aus der Arbeits-FTP 215 W
      gefahren. Ohne das feste Band waere sie mit dem Retest still auf
