@@ -1,313 +1,280 @@
-/* Zonen, Schwellenwerte und die Erhebung der Uebergangszeit.
+/* Zonen und Messwerte: womit gerechnet wird, woher es kommt, was es geändert
+   hat.
 
-   Standen frueher unter den Tageskarten. Das war die falsche Stelle: der Plan
-   beantwortet "was mache ich heute", diese Seite beantwortet "mit welchen
-   Zahlen rechne ich". Das eine schaut man taeglich an, das andere alle paar
-   Wochen.
+   Die Seite beantwortet "mit welchen Zahlen rechne ich" - das schaut man alle
+   paar Wochen an, nicht täglich. Bis zum 31.10.2026 beantwortete sie die
+   Frage in neun Absätzen Fließtext und zeigte dabei keine einzige vergangene
+   Messung: was gerade galt, stand in drei Eingabefeldern, die aussahen wie
+   eine Einstellung, und was vorher galt, stand nirgends. Wer wissen wollte,
+   seit wann die App mit 223 W rechnet, fand es nicht heraus.
 
-   Genau darauf ist die Seite seit dem 10.09.2026 beschraenkt. Bis dahin stand
-   hier ein zweites Testformular neben dem im Testbereich - beide fuellten
-   denselben Speicher, aber nicht mit demselben Eintrag: dieses fragte Ø-Watt,
-   Kadenz, Gewicht und Bedingungen, das andere zusaetzlich Ø-Puls und RPE. Ein
-   ueber diesen Weg eingetragener Test hatte also keine LTHR - ausgerechnet die
-   Zahl, aus der alle Pulsbaender entstehen - und keine Guetepruefung. Zwei
-   Wege zu derselben Ablage, von denen einer weniger speichert, sind keine
-   Wahlmoeglichkeit, sondern eine Falle.
+   Jetzt zeigt sie:
 
-   Was bleibt, ist die Korrektur von Hand: FTP, LTHR und HFmax direkt setzen.
-   Das ist eine andere Sache als einen Test einzutragen und gehoert deshalb
-   nicht in die Testhistorie - eine getippte Zahl ist keine Messung. */
+     Womit gerechnet wird    die drei Werte, wer von ihnen steuert, die Zonen
+     Was sich geändert hat   die letzte Messung mit ihren Folgen in Zahlen
+     Verlauf                 FTP, LTHR und Gewicht über alle Messungen
+     Messwerte               jeder Eintrag mit Datum, antippbar zum Ändern
+     Sprechtest-Erhebung     unverändert, nur kürzer
+
+   Die Erklärungen sind nicht verschwunden, sie stehen hinter den Begriffen
+   (domain/glossar.js). Ein Tipp auf "FTP" sagt, was eine FTP ist - und wer es
+   weiß, sieht nur die Zahl. */
 
 import { useState } from 'preact/hooks';
-import { plan, thresholds, week, testLog, interimLog, startDate,
-         saveMesswert, addInterimEntry } from '../../../state/store.js';
-import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag,
-         datumText, weekStartFor } from '../../../domain/week.js';
-import { gotoTab } from '../../../state/navigation.js';
-import { hrBands, zonenGrund, zoneBand, quelleVon,
-         SCHWELLEN_FELDER } from '../../../domain/zones.js';
-import { ART_HAND } from '../../../domain/messwerte.js';
-import { sprechtestBezug, FTP_FAKTOR } from '../../../domain/test.js';
-import { zahl } from '../../../domain/zahlen.js';
+import { plan, thresholds, week, messwerte, testLog, interimLog, startDate,
+         addInterimEntry } from '../../../state/store.js';
+import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, datumText,
+         weekStartFor } from '../../../domain/week.js';
+import { hrBands, zonenGrund, zoneBand, quelleVon } from '../../../domain/zones.js';
+import { konsequenz, reihe, werteText, vorbelegtesDatum,
+         ART_TEST, ART_HAND } from '../../../domain/messwerte.js';
+import { sprechtestBezug, testTermine } from '../../../domain/test.js';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
 import { Verlaufsgraph } from '../../components/Verlaufsgraph.jsx';
-import { Testhistorie } from '../../components/Testhistorie.jsx';
+import { Messwertsheet } from '../../components/Messwertsheet.jsx';
+import { Begriff } from '../../components/Begriff.jsx';
 import { Zahlenfeld, Textfeld } from '../../components/Feld.jsx';
 import './zonen.css';
 
-/* Die Zonen und - seit dem 10.09.2026 - der Grund, aus dem gerade diese
-   gelten.
-
-   Die Karte zeigte nur das Ergebnis. Wer am Testtag seine LTHR eintrug, sah
-   die Pulsbaender unveraendert stehen, waehrend die Wattzonen aus der frisch
-   gemessenen FTP sofort erschienen - die haengen an keiner Woche. Eine Karte,
-   die halb umschaltet und nichts dazu sagt, laesst genau einen Schluss zu:
-   die Zahlen stehen fest im Code. Sie stehen in plan.json, und was fehlte,
-   war der Satz, ab wann damit gerechnet wird. */
-/* Woher ein Wert kommt, in Worten. Ohne Vermerk kein Satz: eine geratene
-   Herkunft stuende so bestimmt da wie eine vermerkte. */
+/* Woher ein Wert kommt, in drei Worten. Ohne Vermerk kein Satz: eine geratene
+   Herkunft stünde so bestimmt da wie eine vermerkte. */
 function herkunftText(quelle){
   if(!quelle) return null;
-  if(quelle.art === 'hand'){
-    /* Das Datum steht dabei, weil es entscheidet, welcher Wert gilt: der
-       juengste Eintrag traegt ihn. */
-    return 'eingetragen'
-      + (quelle.tag ? ' am ' + datumText(dayFromIso(quelle.tag)) : '');
-  }
-  return 'im Test' + (quelle.tag ? ' vom ' + datumText(dayFromIso(quelle.tag)) : '') + ' gemessen';
+  const tag = quelle.tag ? datumText(dayFromIso(quelle.tag)) : null;
+  if(quelle.art === ART_HAND) return tag ? 'eingetragen am ' + tag : 'eingetragen';
+  return tag ? 'Test vom ' + tag : 'Test';
 }
 
-function ZonenKarte(){
+const FELDNAME = { ftp: 'FTP', lthr: 'LTHR', hrmax: 'HFmax' };
+const EINHEIT  = { ftp: 'W', lthr: 'bpm', hrmax: 'bpm' };
+
+/* ---- Womit gerechnet wird ---- */
+
+function Geltung(){
   const p = plan.value, th = thresholds.value, w = week.value, start = startDate.value;
-  const bands = hrBands(p, th, w);
-  const { coggan, grund, abWoche, quelle } = zonenGrund(p, th, w);
+  const { coggan, grund, abWoche } = zonenGrund(p, th, w);
   const abDatum = abWoche && start ? weekStartFor(abWoche, start) : null;
-  /* Die Herkunft der LTHR als Einschub, oder gar nichts. Sie steht nicht als
-     eigener Satz da: der Hinweis erklaert, ab wann gerechnet wird, und woher
-     die Zahl kommt, gehoert in dieselbe Zeile. */
-  const woher = herkunftText(quelle);
+  const nachWatt = th.ftp > 0;
 
   return (
     <div class="card">
-      <div class="row"><span>Zonenmodell</span><b>
-        {coggan ? 'Coggan, % LTHR (' + th.lthr + ' bpm)' + (th.ftp > 0 ? ' · Watt aus FTP ' + th.ftp + ' W' : '')
-                : 'Übergangsbänder, Arbeitsannahme'}
-      </b></div>
-      <Zonenliste bands={bands} plan={p} thresholds={th} mitWatt />
+      <div class="row"><span>Womit gerechnet wird</span>
+        <b>{nachWatt ? 'Watt steuert' : 'Puls steuert'}</b></div>
 
-      {coggan && woher && (
+      <div class="ergebnis">
+        <div class={'ergwert' + (nachWatt ? ' fuehrend' : '')}>
+          <b>{th.ftp > 0 ? th.ftp + ' W' : '–'}</b>
+          <span><Begriff id="ftp">FTP</Begriff></span>
+        </div>
+        <div class="ergwert">
+          <b>{th.lthr > 0 ? th.lthr + ' bpm' : '–'}</b>
+          <span><Begriff id="lthr">LTHR</Begriff></span>
+        </div>
+        <div class="ergwert">
+          <b>{th.hrmax > 0 ? th.hrmax + ' bpm' : '–'}</b>
+          <span><Begriff id="hrmax">HFmax</Begriff></span>
+        </div>
+      </div>
+
+      {/* Je Wert eine Zeile: woher die Zahl kommt. Das ersetzt den früheren
+          Absatz, der dasselbe in drei Sätzen sagte. */}
+      <div class="herkunftzeile">
+        {['ftp', 'lthr', 'hrmax'].filter(k => th[k] > 0).map(k => (
+          <span key={k}>{FELDNAME[k]} · {herkunftText(quelleVon(th, k)) || 'ohne Vermerk'}</span>
+        ))}
+      </div>
+
+      <Zonenliste bands={hrBands(p, th, w)} plan={p} thresholds={th} mitWatt />
+
+      {nachWatt && (
         <p class="hint">
-          Die Bänder entstehen aus der LTHR von {th.lthr} bpm – {woher}.
+          Gesteuert wird über die Leistung. Der Puls ist Kontrollgröße – er hängt an
+          Hitze, Schlaf und Tagesform und sagt erst am Ende eines Blocks etwas.
         </p>
       )}
       {grund === 'zu-frueh' && (
         <p class="hint good">
-          Die LTHR steht ({th.lthr} bpm{woher ? ', ' + woher : ''}) und ist nicht verloren –
-          gerechnet wird mit ihr ab Woche {abWoche}
-          {abDatum ? ', also ab ' + datumText(abDatum) : ''}. Bis dahin gelten die
-          Übergangsbänder. So verlangt es der Plan: der Test misst die Bänder des
-          <b> Folgeblocks</b>, nicht die der laufenden Woche.
-          {th.ftp > 0 ? ' Die Wattzonen stehen schon jetzt daneben – sie hängen an der FTP und an keiner Woche.' : ''}
+          Die LTHR steht und ist nicht verloren: die Pulsbänder daraus gelten ab Woche
+          {' '}{abWoche}{abDatum ? ', also ab ' + datumText(abDatum) : ''}. Bis dahin
+          laufen die <Begriff id="uebergang">Übergangsbänder</Begriff>.
+          {th.ftp > 0 ? ' Die Wattzonen stehen schon jetzt – sie hängen an keiner Woche.' : ''}
         </p>
       )}
       {grund === 'kein-test' && w >= p.cogganFromWeek && (
         <p class="hint warn">
-          Ab Woche {p.cogganFromWeek} wäre Coggan vorgesehen, es fehlt aber die LTHR. Solange
-          keine dasteht – gemessen oder von Hand –, laufen die Übergangsbänder weiter.
+          Ab Woche {p.cogganFromWeek} wäre <Begriff id="coggan">Coggan</Begriff> vorgesehen,
+          es fehlt aber die LTHR. Solange keine dasteht, laufen die
+          {' '}<Begriff id="uebergang">Übergangsbänder</Begriff> weiter.
         </p>
       )}
-
       <p class="hint">{coggan ? p.texts.zoneNoteCoggan : p.texts.zoneNoteTransition}</p>
-      <p class="hint">
-        Keine dieser Zahlen steht im Code: die Übergangsbänder und die Coggan-Prozentsätze
-        stehen in <b>plan.json</b>, LTHR und FTP kommen aus dem Schwellentest oder aus der
-        Eingabe darunter.
-      </p>
     </div>
   );
 }
 
-/* Zwei Verlaeufe, kein W/kg.
+/* ---- Was die letzte Messung geändert hat ----
 
-   W/kg waere die naheliegende Zahl und ist hier die falsche: waehrend einer
-   Abnehmphase bewegen sich Zaehler und Nenner gleichzeitig, ein steigender
-   Quotient sagt dann nichts darueber, ob der Motor groesser geworden ist.
-   Getrennt gezeichnet beantworten die beiden Linien genau das - und eine
-   flache FTP-Linie ueber einer fallenden Gewichtslinie ist kein Stillstand,
-   sondern gehaltene Leistung bei weniger Energie.
-
-   Beide auf einer gemeinsamen Prozentachse, nicht jede auf ihren eigenen
-   Bereich normiert. Eigene Bereiche waren der erste Entwurf und machten aus
-   einem Watt Unterschied zwischen zwei Tests einen Ausschlag ueber die halbe
-   Bildhoehe - Messrauschen, gezeichnet wie Fortschritt.
-
-   Gezeichnet wird jetzt mit Verlaufsgraph und nicht mehr mit einem eigenen
-   SVG. Die Begruendung oben rechtfertigt eine andere Aufbereitung der Daten -
-   eben die Umrechnung auf Prozent gegen den ersten Test - und nicht eine
-   zweite Zeichenroutine: die alte Fassung brachte eigene Skalierung, eigene
-   Legende und eigene Trefferflaechen mit, also drei Dinge, die es schon gab,
-   nur kleiner und ohne antippbare Punkte. Die Mindestspanne, die das Rauschen
-   klein haelt, ist als Eigenschaft dorthin gewandert. */
-const VERLAUF_MIN_SPANNE = 4;   // Prozent, damit Rauschen nicht das Bild fuellt
-
-/* Aus einer Testreihe die Prozentaenderung gegen den ersten Wert. Der absolute
-   Wert bleibt als Zusatz am Punkt haengen - beim Antippen steht dort "215 W"
-   und nicht nur "+3,9 %". */
-function prozentReihe(eintraege, feld, einheit, nk){
-  const echte = eintraege.filter(e => e[feld] > 0);
-  if(echte.length < 2) return null;
-  const erster = echte[0][feld];
-  return {
-    erster, letzter: echte[echte.length - 1][feld],
-    punkte: echte.map(e => ({
-      t: tagNr(e.day),
-      v: (e[feld] - erster) / erster * 100,
-      marke: kurzTag(e.day),
-      zusatz: zahl(e[feld], nk) + ' ' + einheit
-    }))
-  };
-}
-
-function delta(reihe, einheit, nk){
-  const d = reihe.letzter - reihe.erster;
-  const vz = d >= 0 ? '+' : '−';
-  return vz + zahl(Math.abs(d), nk) + ' ' + einheit +
-         ' (' + vz + zahl(Math.abs(d / reihe.erster * 100), 1) + ' %)';
-}
-
-function Verlauf({ eintraege }){
-  const sortiert = eintraege.slice().sort((a, b) => (a.day < b.day ? -1 : 1));
-  const ftp = prozentReihe(sortiert, 'ftp', 'W', 0);
-  const kg = prozentReihe(sortiert, 'weight', 'kg', 1);
-  if(!ftp && !kg) return null;
-
-  const reihen = [];
-  if(ftp) reihen.push({ name: 'FTP', farbe: 'var(--z4)', punkte: ftp.punkte });
-  if(kg)  reihen.push({ name: 'Gewicht', farbe: 'var(--z1)', punkte: kg.punkte });
-
-  return (
-    <>
-      <div class="listhead">Verlauf</div>
-      <Verlaufsgraph reihen={reihen} einheit="%" nachkomma={1}
-        mindestSpanne={VERLAUF_MIN_SPANNE} />
-      <div class="verlaufleg">
-        {ftp && <span><i class="z4"></i>FTP {delta(ftp, 'W', 0)}</span>}
-        {kg && <span><i class="z1"></i>Gewicht {delta(kg, 'kg', 1)}</span>}
-      </div>
-      <p class="hint">
-        Änderung gegenüber dem ersten Test, beide Linien auf derselben Achse. Bewusst
-        getrennt statt als W/kg: sinkt das Gewicht gewollt, sagt ein steigender Quotient
-        nichts über die Form. Eine flache FTP-Linie bei fallendem Gewicht ist gehaltene
-        Leistung bei weniger Energie – kein Stillstand.
-      </p>
-    </>
-  );
-}
-
-/* Die Schwellenwerte, mit denen gerechnet wird - und nur sie.
-
-   Die Karte kann eine Zahl aendern und keinen Test anlegen. Der Unterschied
-   ist nicht formal: die Testhistorie traegt Protokollkennung und Fassung, weil
-   der Trainingsplan denselben Ablauf ueber alle Termine verlangt. Eine hier
-   getippte FTP hat kein Protokoll - sie in dieselbe Reihe zu stellen, macht
-   aus der Pruefung "gleicher Ablauf?" eine, die stillschweigend besteht.
-
-   Der Weg zum Test steht daneben als Knopf. Er ist der Grund, aus dem das
-   Formular hier verschwinden konnte: wer hierher kam, um einen Test
-   einzutragen, ist einen Tipp entfernt von der Stelle, an der das geht.
-
-   Was hier eingetragen wird, gilt - genau wie ein Messwert und ohne
-   Einschraenkung. Die Kopfzeile behauptete bis zum 10.09.2026 "aus Test
-   uebernommen", sobald ueberhaupt eine LTHR dastand, auch bei einer von Hand
-   getippten. Jetzt steht je Wert dabei, woher er kommt: eine getippte HFmax
-   neben einer gemessenen FTP ist der Normalfall und keine Unstimmigkeit. */
-
-const FELDNAMEN = { ftp: 'FTP', lthr: 'LTHR', hrmax: 'HFmax' };
-const EINHEIT   = { ftp: 'W', lthr: 'bpm', hrmax: 'bpm' };
-
-/* Ein Satz fuer die Kopfzeile. Nicht die Aufzaehlung aller drei - die steht
-   darunter -, sondern die Antwort auf "womit rechnet die App gerade". */
-function herkunftKurz(th){
-  const arten = SCHWELLEN_FELDER
-    .filter(f => th[f] > 0)
-    .map(f => { const q = quelleVon(th, f); return q ? q.art : 'unbekannt'; });
-  if(!arten.length) return 'noch nichts eingetragen';
-  const einzig = new Set(arten);
-  if(einzig.size > 1) return 'gemessen und von Hand';
-  return { test: 'aus dem Test', hand: 'von Hand', unbekannt: 'Herkunft nicht vermerkt' }[arten[0]];
-}
-
-function SchwellenKarte(){
-  const th = thresholds.value;
-  const [f, setF] = useState({ ftp: th.ftp, lthr: th.lthr, hrmax: th.hrmax });
-
-  const geaendert = f.ftp !== th.ftp || f.lthr !== th.lthr || f.hrmax !== th.hrmax;
+   Die Zahl allein sagt wenig. 223 statt 192 W ist erst dann eine Aussage,
+   wenn danebensteht, dass Z2 damit bei 123–167 W liegt statt bei 106–144 und
+   die Schwellenblöcke der Phase 4 bei 201–212 W. Gerechnet wird das in
+   domain/messwerte.js, hier steht nur die Darstellung. */
+function Konsequenz(){
+  const k = konsequenz(plan.value, messwerte.value, week.value);
+  if(!k || !k.felder.length) return null;
+  const e = k.eintrag;
 
   return (
     <div class="card">
-      <div class="row"><span>Schwellenwerte</span><b>{herkunftKurz(th)}</b></div>
-      <Zahlenfeld titel="FTP (W)" wert={f.ftp} min={1} onWert={v => setF({ ...f, ftp: v })} />
-      <Zahlenfeld titel="LTHR (bpm)" wert={f.lthr} min={1} onWert={v => setF({ ...f, lthr: v })} />
-      <Zahlenfeld titel="HFmax (bpm)" wert={f.hrmax} min={1} onWert={v => setF({ ...f, hrmax: v })} />
+      <div class="row"><span>Was sich damit geändert hat</span>
+        <b>{e.art === ART_TEST ? 'Test' : 'Eintrag'}
+          {e.day ? ' vom ' + datumText(dayFromIso(e.day)) : ''}</b></div>
 
-      <div class="buttons">
-        <button class="btn" disabled={!geaendert}
-          onClick={() => saveMesswert({ art: ART_HAND, day: isoDayLocal(toMidnight(new Date())),
-            ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax })}>
-          Übernehmen</button>
-        <button class="btn secondary" onClick={() => gotoTab('test', true)}>Zum Schwellentest</button>
-      </div>
+      {k.felder.map(f => (
+        <div class="listrow" key={f.feld}>
+          <span>{FELDNAME[f.feld]}</span>
+          <span>
+            {f.von != null ? f.von + ' ' + EINHEIT[f.feld] + ' → ' : 'neu: '}
+            <b>{f.auf} {EINHEIT[f.feld]}</b>
+            {f.diff ? ' (' + (f.diff > 0 ? '+' : '−') + Math.abs(f.diff) + ')' : ''}
+          </span>
+        </div>
+      ))}
 
-      {/* Je Wert, woher er kommt. Ein Wert ohne Vermerk stammt aus der Zeit
-          vor dieser Anzeige; geraten wird nicht, er sagt es selbst. */}
-      {SCHWELLEN_FELDER.some(k => th[k] > 0) && (
+      {k.folgen.length ? (
         <>
-          <div class="listhead">Herkunft</div>
-          {SCHWELLEN_FELDER.map(k => (
-            <div class="listrow" key={k}>
-              <span>{FELDNAMEN[k]}</span>
-              <span>{th[k] > 0
-                ? th[k] + ' ' + EINHEIT[k] + ' · ' + (herkunftText(quelleVon(th, k)) || 'nicht vermerkt')
-                : 'nicht gesetzt'}</span>
+          <div class="listhead">Was daran hängt</div>
+          {k.folgen.map(f => (
+            <div class="listrow" key={f.titel}>
+              <span>{f.titel}</span><span>{f.von} → <b>{f.auf}</b></span>
             </div>
           ))}
         </>
-      )}
+      ) : null}
 
-      <p class="hint">
-        Was hier steht, gilt: die drei Zahlen tragen ab sofort alle Zonen – die Pulsbänder
-        ab Woche {plan.value.cogganFromWeek}, die Wattzonen sofort. Auch die Auswertung
-        vergangener Fahrten rechnet damit, denn sie nimmt immer die geltenden Schwellenwerte.
-      </p>
-      <p class="hint">
-        Vermerkt wird, <b>wann</b> eingetragen wurde – und das entscheidet etwas: ein Test
-        überschreibt eine Zahl von Hand nur, wenn sein <b>Testtag nach der Eingabe liegt</b>.
-        Ein später berichtigter Testeintrag holt damit keinen Messwert zurück, den du bewusst
-        ersetzt hast; der nächste Test gewinnt dagegen, seine Messung ist die neuere.
-      </p>
-      <p class="hint">
-        Die Testhistorie bleibt unberührt: eine getippte Zahl ist keine Messung und gehört
-        nicht in eine Reihe, die auf einen identischen Ablauf geprüft wird. Ein gefahrener Test
-        gehört unter „Schwellentest“ in die Ansicht <b>Ergebnis</b> – dort fallen FTP und LTHR
-        aus Ø-Watt und Ø-Puls, und der Eintrag trägt Protokoll, Kadenz und RPE mit.
-      </p>
-      <p class="hint">
-        FTP = Ø-Watt der 20 min × {String(FTP_FAKTOR).replace('.', ',')}, LTHR = Ø-Puls der 20 min.
-        Dieselben Werte gehören in
-        intervals.icu unter Settings → Ride, Power Zones und HR Zones auf Coggan, Load Priority
-        auf Power, FTP von automatisch auf manuell.
-      </p>
-      {testLog.value.length > 1 && <Verlauf eintraege={testLog.value} />}
-      <Testhistorie eintraege={testLog.value} />
+      {k.pulsAbWoche && (
+        <p class="hint">
+          Die Pulsbänder aus dieser LTHR gelten ab Woche {k.pulsAbWoche} – der Test misst
+          die Bänder des Folgeblocks, nicht die der laufenden Woche. Die Wattzonen gelten
+          sofort.
+        </p>
+      )}
     </div>
   );
 }
 
-/* Ein Wert mit Regel, dazu die Notiz, die ihn erklaert.
+/* ---- Verlauf ----
 
-   Hier stand bis zum 04.09.2026 auch ein RPE je Einheit. Es hatte keinen
-   Auftrag: der Trainingsplan verlangt Empfinden an zwei Stellen, und beide
-   sind woanders verankert - das RPE der letzten fuenf Testminuten als
-   Guetepruefung im Testformular, und der Sprechtest als oberste Instanz fuer
-   Z2, erhoben als Puls und nicht als Zahl von eins bis zehn. Auch Coggan
-   braucht es nicht: dort sind FTP und LTHR die Eingaben, und die RPE-Spalte
-   der Zonentabelle ist beschreibend - sie sagt, wie sich eine Zone anfuehlen
-   soll, damit man sie ohne Messgeraet findet. Eine Ausgabe des Modells, keine
-   Eingabe.
+   Drei Linien auf einer gemeinsamen Prozentachse: FTP, LTHR und Gewicht,
+   jeweils als Änderung gegen den ersten Wert. Gemeinsame Achse, weil eigene
+   Bereiche aus einem Watt Unterschied einen Ausschlag über die halbe
+   Bildhöhe machen - Messrauschen, gezeichnet wie Fortschritt.
 
-   Dazu kam ein Fehler in der Reihe selbst: Z2-Fahrt und Intervalltag landeten
-   in einer Kurve, ohne dass die Einheit mitgespeichert wurde. Ein Ausschlag
-   nach oben hiess dort nicht "schlechte Form", sondern "das war ein
-   Donnerstag". Bereits gespeicherte Eintraege behalten ihren rpe-Schluessel;
-   die Sicherung reicht ihn unveraendert durch. */
-function ErhebungsKarte(){
+   Kein W/kg: während einer Abnehmphase bewegen sich Zähler und Nenner
+   gleichzeitig, und ein steigender Quotient sagt dann nichts über die Form.
+   Getrennt gezeichnet beantworten die Linien genau das.
+
+   Die LTHR ist neu dabei. Sie stand nie in einer Kurve, obwohl sie sich
+   zwischen zwei Tests genauso ändert wie die FTP - und obwohl eine LTHR, die
+   bei steigender Leistung gleich bleibt, genau die Aussage ist, die man
+   sucht. */
+const VERLAUF_MIN_SPANNE = 4;   // Prozent, damit Rauschen nicht das Bild füllt
+
+const REIHEN = [
+  { feld: 'ftp',    name: 'FTP',     einheit: 'W',   nk: 0, cls: 'z4' },
+  { feld: 'lthr',   name: 'LTHR',    einheit: 'bpm', nk: 0, cls: 'z3' },
+  { feld: 'weight', name: 'Gewicht', einheit: 'kg',  nk: 1, cls: 'z1' }
+];
+
+function delta(r, einheit, nk){
+  const d = r.letzter - r.erster;
+  const vz = d >= 0 ? '+' : '−';
+  const abs = Math.abs(d);
+  return vz + (nk ? abs.toFixed(nk).replace('.', ',') : Math.round(abs)) + ' ' + einheit;
+}
+
+function Verlauf(){
+  const liste = messwerte.value;
+  const gezeichnet = REIHEN
+    .map(r => ({ ...r, reihe: reihe(liste, r.feld, r.einheit, r.nk) }))
+    .filter(r => r.reihe);
+  if(!gezeichnet.length) return null;
+
+  return (
+    <div class="card">
+      <div class="row"><span>Verlauf</span><b>seit der ersten Messung</b></div>
+      <Verlaufsgraph
+        reihen={gezeichnet.map(r => ({ name: r.name, farbe: 'var(--' + r.cls + ')',
+                                       punkte: r.reihe.punkte }))}
+        einheit="%" nachkomma={1} mindestSpanne={VERLAUF_MIN_SPANNE} />
+      <div class="verlaufleg">
+        {gezeichnet.map(r => (
+          <span key={r.feld}><i class={r.cls}></i>{r.name} {delta(r.reihe, r.einheit, r.nk)}</span>
+        ))}
+      </div>
+      <p class="hint">
+        Änderung gegenüber dem ersten Wert, alle Linien auf derselben Achse. Bewusst
+        getrennt statt als <Begriff id="wkg">W/kg</Begriff>.
+      </p>
+    </div>
+  );
+}
+
+/* ---- Die Messwerte selbst ---- */
+
+function Messwertliste({ onOeffnen }){
+  const liste = messwerte.value.slice().reverse();
+  const th = thresholds.value;
+  /* Welcher Eintrag gerade einen Wert trägt - er bekommt die Markierung. */
+  const traegt = new Set(['ftp', 'lthr', 'hrmax']
+    .map(k => quelleVon(th, k)).filter(Boolean).map(q => q.id));
+
+  return (
+    <div class="card">
+      <div class="row"><span><Begriff id="messwert">Messwerte</Begriff></span>
+        <b>{liste.length ? liste.length + (liste.length === 1 ? ' Eintrag' : ' Einträge')
+                         : 'noch keiner'}</b></div>
+
+      {liste.map(e => (
+        <button class={'messzeile' + (traegt.has(e.id) ? ' gilt' : '')} key={e.id}
+          type="button" onClick={() => onOeffnen(e)}>
+          <span class="messtag">
+            {e.day ? datumText(dayFromIso(e.day)) : 'ohne Datum'}
+            <small>{e.art === ART_TEST ? 'Schwellentest' : 'eingetragen'}
+              {e.week ? ' · W' + e.week : ''}</small>
+          </span>
+          <span class="messzahl">
+            {werteText(e) || '–'}
+            {e.art === ART_TEST && e.w20
+              ? <small>20 min {e.w20} W{e.kadenz ? ' · ' + e.kadenz + ' U/min' : ''}
+                  {e.rpe ? ' · RPE ' + e.rpe : ''}</small>
+              : null}
+            {e.note ? <small>{e.note}</small> : null}
+          </span>
+        </button>
+      ))}
+
+      <button class="btn block" type="button" onClick={() => onOeffnen(null)}>Neuer Wert</button>
+
+      {liste.length > 0 && (
+        <p class="hint">
+          Es gilt je Größe der jüngste Eintrag, der sie nennt – markiert ist, welcher das
+          ist. Antippen zum Ändern oder Löschen.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ---- Sprechtest ----
+
+   Bleibt, wie er war: ein Puls, eine Notiz, und der Vergleich mit der
+   Z2-Obergrenze über alle Erhebungen seit dem letzten Test. Nur der
+   Erklärtext ist weg - er steht jetzt am Begriff. */
+function Erhebung(){
   const p = plan.value, th = thresholds.value, w = week.value;
   const [f, setF] = useState({ talk: null, note: '' });
   const log = interimLog.value;
 
-  /* Der Vergleich mit der Z2-Obergrenze liegt in domain/test.js: er ist Punkt
-     6 der Checkliste nach jedem Test und zaehlt nur, was seit dem letzten Test
-     erhoben wurde - davor galten andere Baender. */
   const z2 = zoneBand(p, th, 'z2', w);
   const bezug = sprechtestBezug(log, testLog.value, z2);
   const leer = !(f.talk > 0) && !f.note.trim();
@@ -326,32 +293,23 @@ function ErhebungsKarte(){
 
   return (
     <div class="card">
-      <div class="row"><span>Sprechtest-Erhebung</span>
-        <b>{log.length ? log.length + (log.length === 1 ? ' Eintrag' : ' Einträge') : 'noch nichts erfasst'}</b></div>
+      <div class="row"><span><Begriff id="sprechtest">Sprechtest-Erhebung</Begriff></span>
+        <b>{log.length ? log.length + (log.length === 1 ? ' Eintrag' : ' Einträge')
+                       : 'noch nichts erfasst'}</b></div>
       <Zahlenfeld titel="Sprechtest-Puls (bpm)" wert={f.talk} min={1}
         onWert={v => setF({ ...f, talk: v })} />
-      {/* Der Platzhalter nennt nur noch, was die App nicht selbst herleitet.
-          Er nannte "Wind, Knie, Strecke" - und Wind und Strecke rechnet das
-          Fazit aus der Aufzeichnung genauer aus, als man sie tippen kann:
-          Gegenwindanteil, Hoehenmeter, hm/km, steilster Abschnitt. Uebrig
-          bleibt, was in keiner Datei steht. */}
       <Textfeld titel="Notiz" wert={f.note} platzhalter="Knie, Schlaf, Erkältung, Rad"
         onWert={v => setF({ ...f, note: v })} />
       <button class="btn block" disabled={leer} onClick={eintragen}>Eintragen</button>
-      <p class="hint">
-        Sprechtest: nach Atmung fahren. Sobald ganze Sätze anstrengend werden, Puls ablesen und
-        hier notieren – nicht umgekehrt. Die Notiz gehört zu genau diesem Wert: sie steht
-        in der Analyse am angetippten Punkt der Kurve und sagt dort, warum er so liegt.
-      </p>
+
       {bezug && (
         <p class={'hint ' + (bezug.zuHoch ? 'warn' : 'good')}>
-          Ø Sprechtest-Puls {bezug.schnitt} bpm aus {bezug.anzahl}{' '}
+          Ø {bezug.schnitt} bpm aus {bezug.anzahl}{' '}
           {bezug.anzahl === 1 ? 'Erhebung' : 'Erhebungen'}
           {bezug.seit ? ' seit dem Test vom ' + datumText(dayFromIso(bezug.seit)) : ''},
           Z2-Obergrenze {bezug.max} bpm.{' '}
           {bezug.zuHoch
-            ? 'Mehr als ' + bezug.abstand + ' bpm darunter – Z2 gehört nach unten begrenzt. '
-              + 'Das ist Punkt 6 der Checkliste nach dem Test: der Sprechtest sticht die Zahl.'
+            ? 'Mehr als ' + bezug.abstand + ' bpm darunter – Z2 gehört nach unten begrenzt.'
             : 'Die Bänder passen zur Atmung.'}
         </p>
       )}
@@ -366,11 +324,27 @@ function ErhebungsKarte(){
 }
 
 export function ZonenTab(){
+  /* null heisst zu. Sonst steht im Zustand, was im Sheet liegt: ein Eintrag
+     zum Ändern oder null für einen neuen. */
+  const [sheet, setSheet] = useState(null);
+
+  const termine = testTermine(plan.value, startDate.value).map(t => isoDayLocal(t.datum));
+  const heute = isoDayLocal(toMidnight(new Date()));
+
   return (
     <>
-      <ZonenKarte />
-      <SchwellenKarte />
-      <ErhebungsKarte />
+      <Geltung />
+      <Konsequenz />
+      <Verlauf />
+      <Messwertliste onOeffnen={e => setSheet({ eintrag: e })} />
+      <Erhebung />
+
+      {sheet && (
+        <Messwertsheet
+          eintrag={sheet.eintrag}
+          vorgabe={{ day: vorbelegtesDatum(termine, heute), art: ART_TEST }}
+          onClose={() => setSheet(null)} />
+      )}
     </>
   );
 }
