@@ -20,75 +20,58 @@ export const GLOSSAR = {
   ftp: {
     titel: 'FTP',
     text: 'Functional Threshold Power – die Leistung, die sich etwa eine Stunde lang '
-      + 'halten lässt, in Watt. Sie kommt aus dem Schwellentest: Ø-Watt der 20 Minuten '
-      + 'mal 0,95. Alle Wattzonen und alle Zielwatt des Plans sind Prozentsätze davon, '
-      + 'deshalb verschiebt ein neuer Test die ganze Rechnung auf einmal.'
+      + 'halten lässt, in Watt. Aus dem Schwellentest: Ø-Watt der 20 Minuten × 0,95. '
+      + 'Alle Wattzonen und Zielwatt des Plans sind Prozentsätze davon.'
   },
   lthr: {
     titel: 'LTHR',
     text: 'Lactate Threshold Heart Rate – der Puls an der Schwelle, erhoben als Ø-Puls '
-      + 'der 20 Testminuten. Aus ihr entstehen die Pulszonen. Sie ist die Kontrollgröße: '
-      + 'der Puls hängt an Hitze, Schlaf und Kaffee und sagt erst am Ende eines Blocks '
-      + 'etwas, die Leistung sagt es sofort.'
+      + 'der 20 Testminuten. Aus ihr entstehen die Pulszonen. Mit FTP ist sie '
+      + 'Kontrollgröße, gesteuert wird über die Leistung.'
   },
   hrmax: {
     titel: 'HFmax',
-    text: 'Der höchste Puls, der erreicht wurde. Kein Schwellentest misst ihn – er '
-      + 'entsteht nur aus einer bewussten Ausbelastung und wird deshalb eingetragen und '
-      + 'nicht gemessen. In dieser App steuert er nichts: alle Kontrollgrößen hängen an '
-      + 'der LTHR, weil eine geschätzte HFmax jede daran hängende Schwelle verzieht.'
+    text: 'Der höchste erreichte Puls. Der Schwellentest misst ihn nicht, er wird '
+      + 'eingetragen. In dieser App steuert er nichts; die Pulszonen hängen an der LTHR.'
   },
   coggan: {
     titel: 'Coggan-Zonen',
-    text: 'Das Zonenmodell, nach dem Plan und intervals.icu rechnen: feste Prozentsätze '
-      + 'der FTP für die Leistung und der LTHR für den Puls. Z2 ist die Grundlagenzone '
-      + '(56–75 % FTP), Z4 die Schwelle, Z5 der VO2max-Bereich. Die Prozentsätze stehen '
-      + 'in plan.json, nicht im Code.'
+    text: 'Das Zonenmodell von Plan und intervals.icu: feste Prozentsätze der FTP für '
+      + 'die Leistung und der LTHR für den Puls. Z2 ist die Grundlagenzone (56–75 % FTP), '
+      + 'Z4 die Schwelle, Z5 der VO2max-Bereich.'
   },
   uebergang: {
     titel: 'Übergangsbänder',
-    text: 'Die Pulsbänder, mit denen die App vor dem ersten Schwellentest rechnet – eine '
-      + 'Arbeitsannahme aus dem Trainingsplan, kein Messwert. Sie gelten bis zu der '
-      + 'Woche, ab der der Plan Coggan vorsieht, und werden dann von den Bändern aus der '
-      + 'LTHR abgelöst. Ein Test misst die Bänder des Folgeblocks, nicht die der '
-      + 'laufenden Woche.'
+    text: 'Die Pulsbänder aus dem Trainingsplan, mit denen die App vor dem ersten '
+      + 'Schwellentest rechnet. Sie gelten bis zu der Woche, ab der der Plan Coggan '
+      + 'vorsieht, danach die Bänder aus der LTHR.'
   },
   sprechtest: {
     titel: 'Sprechtest',
-    text: 'Die oberste Instanz für Z2: ganze Sätze müssen beim Fahren möglich sein. Wird '
-      + 'das Sprechen kurzatmig, ist die aerobe Schwelle überschritten – unabhängig '
-      + 'davon, was Zahl und Band sagen. Der Puls, bei dem das passiert, wird unter '
-      + '„Sprechtest-Erhebung" notiert und gegen die Z2-Obergrenze gehalten.'
+    text: 'Kriterium für Z2: ganze Sätze sind beim Fahren möglich. Der Puls, bei dem das '
+      + 'Sprechen kurzatmig wird, wird unter „Sprechtest-Erhebung" notiert und mit der '
+      + 'Z2-Obergrenze verglichen.'
   },
   decoupling: {
     titel: 'Decoupling',
     text: 'Wie weit Leistung und Puls im Lauf einer langen Fahrt auseinanderlaufen '
-      + '(Pw:HR). Bis 5 % trägt die Grundlagenausdauer diese Dauer; darüber war die '
-      + 'Fahrt zu hart, auch wenn die Leistung im Band lag. Die Zahl kommt aus '
-      + 'intervals.icu und steht in der Analyse an der Samstagsausfahrt.'
+      + '(Pw:HR), in Prozent. Die Grenze liegt bei 5 %.'
   },
   rpe: {
     titel: 'RPE',
-    text: 'Das empfundene Anstrengungsniveau von 1 bis 10. Im Schwellentest wird es für '
-      + 'die letzten fünf Minuten erhoben und ist das einzige Feld, das etwas über die '
-      + 'Güte des Messwerts sagt: unter 9 heißt nicht ausbelastet, und dann ist die FTP '
-      + 'eher zu niedrig – gemessen wurde die Bereitschaft, an die Schwelle zu gehen.'
+    text: 'Das empfundene Anstrengungsniveau von 1 bis 10, im Schwellentest für die '
+      + 'letzten fünf Minuten erhoben. Unter 9 gilt der Test als nicht ausbelastet.'
   },
   wkg: {
     titel: 'W/kg',
-    text: 'Leistung je Kilogramm Körpergewicht – die Zahl, die am Berg zählt. Sie wird '
-      + 'hier bewusst nicht als Verlaufskurve gezeigt: während einer Abnehmphase bewegen '
-      + 'sich Zähler und Nenner gleichzeitig, und ein steigender Quotient sagt dann '
-      + 'nichts darüber, ob der Motor größer geworden ist. FTP und Gewicht stehen '
-      + 'deshalb getrennt.'
+    text: 'Leistung je Kilogramm Körpergewicht. Im Verlauf stehen FTP und Gewicht '
+      + 'getrennt, weil sich bei einer Gewichtsänderung beide Teile des Quotienten bewegen.'
   },
   messwert: {
     titel: 'Messwert',
-    text: 'Jeder Eintrag in dieser Liste ist ein Wert mit einem Datum. Ein Schwellentest '
-      + 'ist gemessen und trägt sein Protokoll mit; ein eingetragener Wert kommt von '
-      + 'woanders – eFTP, Garmin, eine Korrektur. Gerechnet wird je Größe mit dem '
-      + 'jüngsten Eintrag, der sie nennt. Nichts wird überschrieben: ein gelöschter '
-      + 'Eintrag gibt den Wert frei, der davor galt.'
+    text: 'Ein Wert mit Datum: gemessen im Schwellentest oder direkt eingetragen (eFTP, '
+      + 'Garmin, Korrektur). Je Größe gilt der jüngste Eintrag. Wird er gelöscht, gilt '
+      + 'wieder der davor.'
   }
 };
 

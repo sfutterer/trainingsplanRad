@@ -156,10 +156,8 @@ export function abnehmHinweis(data){
   const pz = (Math.round(rate * 10) / 10).toString().replace('.', ',');
   return {
     ...t, rate,
-    text: 'Gewicht −' + kg + ' kg je Woche (' + pz + ' % über ' + t.tage + ' Tage). ' +
-      'Über ' + String(WELL.abnehmProzentProWoche).replace('.', ',') +
-      ' % je Woche fehlt im Aufbau die Energie für die Anpassung – und es drückt zuerst ' +
-      'auf genau die Werte, die das Gate liest.'
+    text: 'Gewicht −' + kg + ' kg je Woche (' + pz + ' % über ' + t.tage + ' Tage), ' +
+      'Grenze ' + String(WELL.abnehmProzentProWoche).replace('.', ',') + ' % je Woche.'
   };
 }
 
@@ -188,17 +186,15 @@ export function wellnessSerie(data, todayIso){
 export function wellnessMassnahmen(donnerstag, zweiRot){
   const m = [];
   if(donnerstag === 'test'){
-    m.push('Den Schwellentest heute nicht fahren. Ein Wert von einem roten Tag fällt zu niedrig aus ' +
-      'und bestimmt danach jede Zone – lieber ein bis zwei Tage später testen, notfalls in der Folgewoche.');
+    m.push('Schwellentest heute nicht fahren, ein bis zwei Tage später oder in der Folgewoche.');
   } else if(donnerstag === 'z2'){
-    m.push('Der Donnerstag ist ohnehin Z2 – herunterstufen lässt sich da nichts. ' +
-      'Stattdessen die Dauer kürzen und den Samstag ohne Blöcke fahren.');
+    m.push('Donnerstag ist ohnehin Z2: Dauer kürzen, Samstag ohne Blöcke.');
   } else {
     m.push('Donnerstag wird 60 min Z2, Samstag ohne Blöcke.');
   }
   m.push(zweiRot
-    ? 'Zweiter roter Tag in Folge – die ganze Woche als Erholungswoche fahren, unabhängig von der Wochennummer.'
-    : 'Zwei rote Tage hintereinander → die ganze Woche als Erholungswoche.');
+    ? 'Zweiter roter Tag in Folge: Woche als Erholungswoche fahren.'
+    : 'Bei zwei roten Tagen in Folge: Woche als Erholungswoche.');
   return m;
 }
 

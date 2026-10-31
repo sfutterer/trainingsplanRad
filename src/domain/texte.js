@@ -1,16 +1,16 @@
 /* Die Saetze, mit denen die App eine Einheit bewertet.
 
-   Standen bis zum 29.08.2026 mitten im Verzweigungsbaum von analysis.js -
-   siebzehn Zeilen ueber 140 Zeichen, die laengste 244, durchgehend als
-   row.notes.push({kind:'bad', text:'…langer deutscher Satz…'}). Der
-   Kontrollfluss verschwand zwischen den Texten: man sah nicht mehr, welche
-   Faelle es gibt, weil zwischen zwei if-Zweigen jeweils drei Zeilen Prosa
-   standen.
+   Standen bis zum 29.08.2026 mitten im Verzweigungsbaum von analysis.js.
+   Hier stehen sie als benannte Funktionen: der Rumpf von vergleicheTag liest
+   sich als Fallunterscheidung, und die Saetze stehen beieinander, wo man sie
+   als Ganzes redigieren kann.
 
-   Hier stehen sie als benannte Funktionen. Der Gewinn ist doppelt: der Rumpf
-   von vergleicheTag liest sich wieder als Fallunterscheidung, und die Saetze
-   stehen beieinander, wo man sie als Ganzes redigieren kann - vorher war der
-   Ton ueber vierhundert Zeilen verstreut.
+   Seit dem 31.10.2026 knapp und neutral. Bis dahin trugen viele Saetze
+   Deutungen des Gefahrenen ("Zeitdruck pruefen", "die Zonengrenze lag zu
+   tief", "Intervalle abgebrochen?") und Ratschlaege, die aus der
+   Plandiskussion stammten. Ein Satz nennt jetzt Messwert, Vorgabe und - wo
+   die App eine Regel anwendet - die Regel. Warum es so kam, weiss nur der
+   Fahrer.
 
    Nicht zu verwechseln mit plan.texts: das sind die Saetze aus dem
    Trainingsplan. Diese hier sind die Bewertung der App und gehoeren deshalb
@@ -21,246 +21,182 @@
 import { FTP_FAKTOR } from './test.js';
 import { zahl } from './zahlen.js';
 
-/* Die Gruende gegen eine Haerte-Bewertung als Satzende. Jeder nennt seine
-   Zahl - "der Drift spricht dagegen" ohne Wert waere ein Freispruch ohne
-   Begruendung. */
-function gegenGruende(vorbehalte, ohneLeistung){
+const vz = v => (v > 0 ? '+' : '') + zahl(v, 1);
+
+/* Was gegen eine Haerte-Bewertung spricht, als Liste mit Zahlen. */
+function einschraenkungen(vorbehalte, ohneLeistung){
   const g = (vorbehalte || []).map(v => {
     if(v.art === 'drift'){
-      return (v.icu ? 'Entkopplung ' : 'Drift aus Puls und Tempo ') + (v.wert > 0 ? '+' : '')
-        + zahl(v.wert, 1) + ' % – bis 5 % war die Fahrt nicht zu hart';
+      return (v.icu ? 'Entkopplung ' : 'Drift aus Puls und Tempo ') + vz(v.wert) + ' % (Grenze 5 %)';
     }
     if(v.art === 'grenze'){
-      return 'Median ' + Math.round(v.median) + ' bpm liegt im Toleranzband ±' + v.band
-        + ' bpm um die Z2-Grenze bei ' + v.grenze + ' bpm, und die LTHR ist nicht durch einen '
-        + 'ausbelasteten Test bestätigt – der Anteil misst hier die Grenze, nicht die Fahrt';
+      return 'Median ' + Math.round(v.median) + ' bpm im Toleranzband ±' + v.band
+        + ' bpm um die Z2-Grenze ' + v.grenze + ' bpm, LTHR nicht aus ausbelastetem Test';
     }
     if(v.art === 'ampeln'){
-      return 'nur ' + v.steadyMin + ' min gleichmäßig gefahren – der Anteil stammt aus Stop-and-go';
+      return 'nur ' + v.steadyMin + ' min gleichmäßig gefahren';
     }
     return null;
   }).filter(Boolean);
-  if(ohneLeistung){
-    g.push('keine Leistungsdaten – die primäre Steuergröße fehlt, der Puls ist nur die Hilfsgröße');
-  }
-  return g.length ? '. Dagegen spricht: ' + g.join('; ') + '.' : '.';
+  if(ohneLeistung) g.push('keine Leistungsdaten, gewertet nach Puls');
+  return g.length ? ': ' + g.join('; ') + '.' : '.';
 }
 
 export const T = {
 
   /* ---- Ruhetag und optionale Fahrten ---- */
 
-  ruhetagGefahren: dauer =>
-    'Ruhetag, trotzdem ' + dauer + ' gefahren. Einmal ist kein Problem, regelmäßig '
-    + 'frisst es die Erholung, die den Donnerstag trägt.',
+  ruhetagGefahren: dauer => 'Ruhetag, ' + dauer + ' gefahren.',
 
   optionaleFahrt: (ist, km, sollMin) => sollMin
-    ? 'Optionale Fahrt: ' + ist + ' min' + km + ' gefahren, vorgesehen sind ' + sollMin + ' min Z1.'
-    : 'Nicht eingeplante Fahrt: ' + ist + ' min' + km + '.',
+    ? 'Optionale Fahrt: ' + ist + ' min' + km + ', vorgesehen ' + sollMin + ' min Z1.'
+    : 'Nicht geplante Fahrt: ' + ist + ' min' + km + '.',
 
-  lockerZuHart: hart =>
-    hart + ' % der Zeit über Z2. Für eine locker gemeinte Fahrt zu hart – sie soll '
-    + 'Erholung bringen, nicht kosten.',
+  lockerZuHart: hart => hart + ' % über Z2, vorgesehen ist eine lockere Fahrt.',
 
-  lockerPasst: locker =>
-    locker + ' % locker (bis Z2). Passt für eine Erholungsfahrt.',
+  lockerPasst: locker => locker + ' % bis Z2.',
 
   /* ---- Rumpfzirkel ---- */
 
   rumpfNichtErfasst:
-    'Keine Krafteinheit gefunden. Rumpftraining landet nur in intervals.icu, wenn du es '
-    + 'auf der Uhr als Aktivität aufzeichnest – oder du nutzt den Rumpf-Timer der App, '
-    + 'der protokolliert von selbst.',
+    'Keine Krafteinheit erfasst – weder im Rumpf-Timer noch als Aktivität in intervals.icu.',
 
-  rumpfKomplett: soll => 'Alle ' + soll + ' Runden komplett durchgezogen.',
+  rumpfKomplett: soll => 'Alle ' + soll + ' Runden komplett.',
 
   rumpfTeilweise: (voll, soll, fertig, letzte) =>
     'Rumpf-Timer: ' + voll + ' von ' + soll + ' Runden'
-    + (fertig ? '' : ' – Einheit vorzeitig beendet')
+    + (fertig ? '' : ', vorzeitig beendet')
     + (letzte ? ', zuletzt ' + letzte.name + ' in Runde ' + letzte.round : '') + '.',
 
   rumpfUebersprungen: (anzahl, liste) =>
-    anzahl + (anzahl === 1 ? ' Satz' : ' Sätze') + ' vorzeitig weitergedrückt: ' + liste + '.',
+    anzahl + (anzahl === 1 ? ' Satz' : ' Sätze') + ' vorzeitig beendet: ' + liste + '.',
 
   rumpfMehrfach: anzahl =>
-    anzahl + ' Einheiten an diesem Tag protokolliert, bewertet ist die letzte.',
+    anzahl + ' Einheiten protokolliert, gewertet ist die letzte.',
 
   rumpfOhneSchaetzung: min =>
-    'Krafteinheit aufgezeichnet: ' + min + ' min. Die Dauer passt zu keiner Rundenzahl '
-    + 'dieses Zirkels, daher keine Schätzung.',
+    'Krafteinheit: ' + min + ' min. Die Rundenzahl lässt sich aus der Dauer nicht ableiten.',
 
   rumpfGeschaetztOk: (min, est, soll) =>
-    'Krafteinheit aufgezeichnet: ' + min + ' min, geschätzt etwa ' + est + ' von ' + soll + ' Runden.',
+    'Krafteinheit: ' + min + ' min, geschätzt ' + est + ' von ' + soll + ' Runden.',
 
   rumpfGeschaetztKurz: (min, est, soll, sollMin) =>
-    'Krafteinheit aufgezeichnet: ' + min + ' min, geschätzt etwa ' + est + ' von ' + soll
-    + ' Runden – geplant waren ' + sollMin + ' min. Geschätzt aus der Dauer, weil '
-    + 'intervals.icu keine Sätze speichert.',
+    'Krafteinheit: ' + min + ' min (geplant ' + sollMin + ' min), geschätzt ' + est + ' von '
+    + soll + ' Runden.',
 
   /* ---- Beinblock ---- */
 
-  beineNichtProtokolliert:
-    'Beinblock nicht protokolliert. Er steht im Rumpf-Tab unter „Beinblock“ – ohne Eintrag '
-    + 'ist er die einzige Trainingskomponente ohne jede Erfassung.',
+  beineNichtProtokolliert: 'Beinblock nicht protokolliert.',
 
   beineKomplett: (voll, soll, saetze) =>
     'Beinblock: ' + voll + ' von ' + soll + ' Runden komplett, ' + saetze + ' Sätze.',
 
   beineTeilweise: (voll, soll, saetze) =>
-    'Beinblock: ' + voll + ' von ' + soll + ' Runden komplett (' + saetze + ' Sätze protokolliert).',
+    'Beinblock: ' + voll + ' von ' + soll + ' Runden komplett, ' + saetze + ' Sätze protokolliert.',
 
-  beineOhneWerte: 'Beinblock angelegt, aber keine Wiederholungen eingetragen.',
+  beineOhneWerte: 'Beinblock ohne eingetragene Wiederholungen.',
 
   beineUnterZiel: (anzahl, liste) =>
-    anzahl + (anzahl === 1 ? ' Satz' : ' Sätze') + ' unter dem Wiederholungsziel: ' + liste
-    + '. Im ersten Block zählt Bewegungsqualität, nicht Maximalkraft – das ist eine '
-    + 'Beobachtung, kein Fehler.',
+    anzahl + (anzahl === 1 ? ' Satz' : ' Sätze') + ' unter dem Wiederholungsziel: ' + liste + '.',
 
   /* ---- Arbeitsweg ---- */
 
-  /* Seit dem 15.09.2026 ein Pruefhinweis und kein Urteil - Begruendung an
-     commuteIntensityNotes. Was gegen eine Haerte-Bewertung spricht, steht
-     dabei; sonst liest sich der Hinweis weiter wie der Befund, der er nicht
-     mehr ist. */
+  /* Seit dem 15.09.2026 ein Hinweis und kein Urteil - Begruendung an
+     commuteIntensityNotes. */
   pendelUeberZ2: (ueber, vorbehalte, ohneLeistung) =>
-    'Anteil über Z2 erhöht (' + ueber + ' %) – Zeitdruck oder Ankunftspuffer prüfen. '
-    + 'Auf dem Arbeitsweg keine Härte-Bewertung aus Zonenanteilen'
-    + gegenGruende(vorbehalte, ohneLeistung),
+    ueber + ' % über Z2. Arbeitsweg, ohne Härte-Bewertung'
+    + einschraenkungen(vorbehalte, ohneLeistung),
 
   /* Dieselbe Lage auf einer Grundlagen- oder Erholungsfahrt: der Anteil ist
      ueber der Vorgabe, aber etwas spricht dagegen, ihn als Befund zu lesen. */
   ueberZ2OhneBefund: (ueber, erlaubt, vorbehalte, ohneLeistung) =>
-    ueber + ' % der Zeit über Z2, vorgesehen sind rund ' + erlaubt + ' %. Kein Befund „zu hart“'
-    + gegenGruende(vorbehalte, ohneLeistung),
+    ueber + ' % über Z2, vorgesehen rund ' + erlaubt + ' %. Nicht als zu hart gewertet'
+    + einschraenkungen(vorbehalte, ohneLeistung),
 
   steadyBasis: (steady, gesamt, kmh, sek) =>
-    'Zonenanteile über ' + steady + ' von ' + gesamt + ' min gleichmäßig gefahrener Zeit – '
-    + 'Stop-and-go nicht mitgezählt (nur Abschnitte ab ' + sek + ' s durchgehend über '
-    + kmh + ' km/h).',
+    'Zonenanteile über ' + steady + ' von ' + gesamt + ' min gleichmäßig gefahrener Zeit '
+    + '(Abschnitte ab ' + sek + ' s über ' + kmh + ' km/h).',
 
   steadyZuKurz: (steady, gesamt, kmh, sek) =>
     'Nur ' + steady + ' von ' + gesamt + ' min gleichmäßig gefahren (Abschnitte ab ' + sek
-    + ' s über ' + kmh + ' km/h) – zu wenig für einen Zonenanteil, er ist über die ganze '
-    + 'Fahrt gerechnet und entsprechend von Ampeln und Anfahrten geprägt.',
+    + ' s über ' + kmh + ' km/h). Zonenanteile über die ganze Fahrt gerechnet.',
 
-  pruefFazit: ueber =>
-    'Kein Befund, aber ein Prüfhinweis: ' + ueber + ' % über Z2 auf dem Arbeitsweg.',
+  pruefFazit: ueber => 'Arbeitsweg: ' + ueber + ' % über Z2, ohne Härte-Bewertung.',
 
-  pendelPasst: (inZ2, ueber) =>
-    inZ2 + ' % in Z2, ' + ueber + ' % darüber. Passt für den Arbeitsweg.',
+  pendelPasst: (inZ2, ueber) => inZ2 + ' % in Z2, ' + ueber + ' % darüber.',
 
-  mittwochFehlt: soll =>
-    'Keine Fahrt an diesem Tag. Vorgesehen sind mindestens ' + soll + ' min Z2 auf dem '
-    + 'Arbeitsweg. Ersatzlos streichen ist in Ordnung – der Mittwoch ist der kleinste '
-    + 'Beitrag der Woche.',
+  mittwochFehlt: soll => 'Keine Fahrt. Vorgesehen: mindestens ' + soll + ' min Z2.',
 
-  mittwochKurz: (ist, soll) =>
-    ist + ' min gefahren, Untergrenze sind ' + soll + ' min.',
+  mittwochKurz: (ist, soll) => ist + ' min gefahren, Untergrenze ' + soll + ' min.',
 
   mittwochToleranz: (ist, soll) =>
-    ist + ' min gefahren statt ' + soll + ' min – innerhalb der Toleranz, gilt als eingehalten.',
+    ist + ' min gefahren, Untergrenze ' + soll + ' min – innerhalb der Toleranz.',
 
   mittwochErfuellt: (ist, soll) =>
-    ist + ' min gefahren, Untergrenze ' + soll + ' min – erfüllt. Länger ist kein Planverstoß.',
+    ist + ' min gefahren, Untergrenze ' + soll + ' min – erfüllt.',
 
   /* ---- Radeinheit mit messbarem Soll ---- */
 
-  testFehlt:
-    'Kein Test gefunden. Ein verschobener Test ist kein Problem – ein Test unter '
-    + 'schlechten Bedingungen verzerrt die Zonen für acht Wochen.',
+  testFehlt: 'Kein Test gefunden.',
 
   fahrtFehlt: 'Keine Fahrt an diesem Tag gefunden.',
 
   dauerKurz: pct => pct + ' % kürzer als geplant.',
 
-  dauerLang: (pct, deutlich) =>
-    pct + ' % länger als geplant – gilt als eingehalten.'
-    + (deutlich ? ' Dauerhaft deutlich mehr Umfang gehört in die Planprogression, '
-                + 'nicht in einzelne Fahrten.' : ''),
+  dauerLang: pct => pct + ' % länger als geplant.',
 
   /* Der Faktor kommt aus test.js und steht nicht noch einmal als Ziffernfolge
-     im Satz: er stand bis zum 04.09.2026 an vier Stellen im Code, und drei
-     davon haetten eine Aenderung nicht mitbekommen.
-
-     Der Verweis auf den Tab „Heute" ist mit weg - den Tab gibt es seit dem
-     Umbau nicht mehr. Die Schwellenwerte stehen unter „Zonen", der Test hat
-     seinen eigenen Bereich mit einer Ergebnisansicht. */
+     im Satz. */
   testtag:
-    'Testtag: Ø-Watt der 20 min notieren, FTP = Ø-Watt × '
-    + String(FTP_FAKTOR).replace('.', ',') + ', LTHR = Ø-Puls der 20 min. '
-    + 'Beides im Bereich „Schwellentest“ unter „Ergebnis“ eintragen und in '
-    + 'intervals.icu übernehmen, danach Power Zones und HR Zones auf Coggan.',
+    'Testtag: FTP = Ø-Watt der 20 min × ' + String(FTP_FAKTOR).replace('.', ',')
+    + ', LTHR = Ø-Puls der 20 min. Eintragen im Bereich „Schwellentest“.',
 
   /* ---- Die Fahrten eines Tages nacheinander ----
 
      Der Tag bleibt die Einheit, in der der Plan seine Vorgabe macht - aber die
-     Summe des Tages entsteht in einer Reihenfolge, und die gehoert dazugesagt.
-     Wer zweimal denselben Arbeitsweg faehrt, will lesen, dass die Vorgabe schon
-     nach dem Hinweg stand und der Rueckweg den Tag darueber hinaus getragen
-     hat. Bis zum 04.09.2026 stand dort eine einzige Zahl fuer beide Fahrten
-     zusammen, und die las sich als "alles gut". */
+     Summe des Tages entsteht in einer Reihenfolge, und die gehoert dazugesagt. */
 
   fahrtLaufstand: (nr, ist, kum, soll, minimum) => {
     const kopf = nr + '. Fahrt: ' + ist + ' min.';
     if(!soll) return kopf;
-    const bezug = minimum ? 'min Untergrenze' : 'min Tagesvorgabe';
-    if(kum < soll) return kopf + ' Damit stehen ' + kum + ' von ' + soll + ' ' + bezug
-      + ' – es fehlen noch ' + (soll - kum) + ' min.';
-    if(kum > soll) return kopf + ' Damit stehen ' + kum + ' von ' + soll + ' ' + bezug
-      + ' – ' + (kum - soll) + ' min darüber.';
-    return kopf + ' Damit stehen ' + kum + ' von ' + soll + ' ' + bezug + '.';
+    const stand = ' Stand ' + kum + ' von ' + soll + ' min ' + (minimum ? 'Untergrenze' : 'Vorgabe');
+    if(kum < soll) return kopf + stand + ', fehlen ' + (soll - kum) + ' min.';
+    if(kum > soll) return kopf + stand + ', ' + (kum - soll) + ' min darüber.';
+    return kopf + stand + '.';
   },
 
-  /* Die Ueberschreitung haengt an der Fahrt, die sie ausloest - nicht am Tag.
-     "80 min gegen 40 min" sagt nicht, welche der beiden Fahrten den Tag
-     darueber getragen hat; genau das ist aber die Frage, wenn man den naechsten
-     Mittwoch anders einteilen will. */
+  /* Die Ueberschreitung haengt an der Fahrt, die sie ausloest - nicht am Tag. */
   fahrtUeberZiel: (mehrere, kum, soll, minimum) =>
-    (mehrere ? 'Diese Fahrt trägt den Tag über das Ziel: '
-             : 'Der Tag liegt über dem Ziel: ')
+    (mehrere ? 'Mit dieser Fahrt über dem Ziel: ' : 'Über dem Ziel: ')
     + kum + ' min gegen ' + soll + ' min ' + (minimum ? 'Untergrenze' : 'Vorgabe')
-    + ' (+' + Math.round((kum - soll) / soll * 100) + ' %).'
-    + (minimum
-      ? ' Kein Planverstoß – aber die Minuten zählen gegen den Wochendeckel, und '
-        + 'die Grundlage kommt aus der Wochensumme, nicht aus einzelnen langen Tagen.'
-      : ''),
+    + ' (+' + Math.round((kum - soll) / soll * 100) + ' %).',
 
   umfangFazit: (kum, soll) =>
-    'Die Einheit passt zum Plan, der Umfang liegt aber deutlich darüber: '
-    + kum + ' min gegen ' + soll + ' min.',
+    'Umfang über der Vorgabe: ' + kum + ' min gegen ' + soll + ' min.',
 
   /* ---- Wochenumfang ---- */
 
   deckelUeberschritten: (ist, plan, cap) =>
-    ist + ' min gefahren, der Deckel liegt bei ' + cap + ' min (Plan ' + plan + ' min). '
-    + 'In der Folgewoche kürzen, nicht kompensieren.',
+    ist + ' min gefahren, Deckel ' + cap + ' min (Plan ' + plan + ' min).',
 
-  deckelHinweis: cap =>
-    'Obergrenze dieser Woche: ' + cap + ' min.',
+  deckelHinweis: cap => 'Obergrenze dieser Woche: ' + cap + ' min.',
 
   /* ---- Zonen ---- */
 
   z2ZuHart: (ueber, sehrHart, erlaubt) =>
-    ueber + ' % der Zeit über Z2'
+    ueber + ' % über Z2'
     + (sehrHart >= 5 ? ' (davon ' + sehrHart + ' % in Z4/Z5)' : '')
-    + ', vorgesehen sind hier rund ' + erlaubt + ' %. Das ist eine Grundlagenfahrt – '
-    + 'zu hart gefahren kostet sie die Erholung für den Qualitätstag.',
+    + ', vorgesehen rund ' + erlaubt + ' %.',
 
-  /* Die Entkopplung sticht die Zonenzaehlung. Genannt werden beide Zahlen und
-     nicht nur die, die gewinnt - sonst stuende hier ein Freispruch ohne
-     Anklage, und die Zonenzahl faende man nirgends mehr. */
+  /* Die Entkopplung sticht die Zonenzaehlung. Genannt werden beide Zahlen,
+     nicht nur die, die gewinnt. */
   z2EntkopplungSticht: (ueber, erlaubt, ent, grenze) =>
-    ueber + ' % der Zeit über Z2, vorgesehen sind rund ' + erlaubt + ' % – die Entkopplung '
-    + 'sticht das: ' + (ent > 0 ? '+' : '') + zahl(ent, 1) + ' %, bis ' + grenze + ' % trägt '
-    + 'die Grundlage diese Dauer. Bliebe der Puls bei gleicher Leistung nicht flach, wäre '
-    + 'oberhalb der aeroben Schwelle gefahren worden. Die Zonengrenze lag hier zu tief, '
-    + 'nicht die Fahrt zu hoch.',
+    ueber + ' % über Z2, vorgesehen rund ' + erlaubt + ' %. Entkopplung ' + vz(ent)
+    + ' % (Grenze ' + grenze + ' %), deshalb nicht als zu hart gewertet.',
 
-  z2ZuLocker: unten =>
-    unten + ' % der Zeit unter Z2. Für eine Grundlagenfahrt zu locker – der Reiz kommt aus Z2.',
+  z2ZuLocker: unten => unten + ' % unter Z2.',
 
-  z2Passt: (anteil, basis) =>
-    anteil + ' % in Z2, ' + basis + ' % in Z1–Z2. Passt.',
+  z2Passt: (anteil, basis) => anteil + ' % in Z2, ' + basis + ' % in Z1–Z2.',
 
   /* ---- Abschnitte einer Fahrt mit Leistungsmesser (seit 19.09.2026) ----
 
@@ -271,85 +207,77 @@ export const T = {
     + ' %, über ' + z2Max + ' W, 30-s-geglättet) · Ø ' + Math.round(watt) + ' W.',
 
   z2Rahmen: (ein, aus) =>
-    'Nicht bewertet: ' + ein + ' min Einfahren und ' + aus + ' min Ausrollen; Stillstand ist herausgerechnet.',
+    'Nicht gewertet: ' + ein + ' min Einfahren, ' + aus + ' min Ausrollen, Stillstand.',
 
   entkopplungZ2: (ent, grenze, min) =>
-    'Decoupling Pw:HR im Z2-Anteil ' + (ent.prozent > 0 ? '+' : '') + zahl(ent.prozent, 1) + ' % über '
-    + min + ' min (' + Math.round(ent.erste.watt) + ' → ' + Math.round(ent.zweite.watt) + ' W bei '
-    + Math.round(ent.erste.hf) + ' → ' + Math.round(ent.zweite.hf) + ' bpm)'
-    + (ent.prozent <= grenze ? ' – bis ' + grenze + ' % trägt die Grundlage diese Dauer.'
-                             : ' – über ' + grenze + ' %: der Puls stieg bei gleicher Leistung, oberhalb der aeroben Schwelle gefahren.'),
+    'Decoupling Pw:HR im Z2-Anteil ' + vz(ent.prozent) + ' % über ' + min + ' min ('
+    + Math.round(ent.erste.watt) + ' → ' + Math.round(ent.zweite.watt) + ' W bei '
+    + Math.round(ent.erste.hf) + ' → ' + Math.round(ent.zweite.hf) + ' bpm), Grenze ' + grenze + ' %.',
 
   entkopplungFehlt: min =>
-    'Decoupling nicht berechnet – der Z2-Anteil vor dem ersten Block ist ' + min
-    + ' min lang oder ohne Puls, für zwei belastbare Hälften zu wenig.',
+    'Decoupling nicht berechnet: Z2-Anteil vor dem ersten Block ' + min + ' min oder ohne Puls.',
 
-  z2ZuHartAbschnitt: gruende =>
-    'Zu hart für eine Grundlagenfahrt: ' + gruende.join('; ') + '. Das kostet die Erholung für den Qualitätstag.',
+  z2ZuHartAbschnitt: gruende => 'Über der Z2-Vorgabe: ' + gruende.join('; ') + '.',
 
   z2OhneBefund: (gruende, ent, grenze) =>
-    gruende.join('; ') + ' – aber das Decoupling liegt bei ' + (ent > 0 ? '+' : '') + zahl(ent, 1)
-    + ' %, bis ' + grenze + ' % gibt es keine Warnung (Plan-Punkt 28).',
+    gruende.join('; ') + '. Decoupling ' + vz(ent) + ' % (Grenze ' + grenze
+    + ' %), deshalb nicht als zu hart gewertet.',
 
   z2UnterBand: (watt, min) =>
-    'Ø ' + Math.round(watt) + ' W im Z2-Anteil liegt unter dem Z2-Band ab ' + min + ' W – eher Z1 als Grundlage.',
+    'Ø ' + Math.round(watt) + ' W im Z2-Anteil, unter dem Z2-Band ab ' + min + ' W.',
 
   bloecke: (n, min, watt, band, quelle) =>
     'Geplante Blöcke: ' + n + ' × ' + min + ' min, Ø ' + Math.round(watt) + ' W (Ziel ' + band.text
     + (band.herkunft ? ', ' + band.herkunft : '') + ')' + (quelle === 'fenster'
-      ? ' – keine passenden Runden, deshalb die stärksten ' + min + '-min-Fenster der zweiten Fahrthälfte.'
-      : ' – aus den Runden der Aufzeichnung.'),
+      ? ', stärkste ' + min + '-min-Fenster der zweiten Fahrthälfte (keine passenden Runden).'
+      : ', aus den Runden der Aufzeichnung.'),
 
   blockEinzeln: (nr, watt, hf, kadenz) =>
     'Block ' + nr + ': Ø ' + Math.round(watt) + ' W' + (hf ? ', ' + Math.round(hf) + ' bpm' : '')
     + (kadenz ? ', ' + Math.round(kadenz) + ' rpm' : '') + '.',
 
   blockZuWeich: (nr, watt, min) =>
-    'Block ' + nr + ' zu weich: Ø ' + Math.round(watt) + ' W, Ziel ab ' + min
-    + ' W. Mit Werten darunter ist der Block faktisch eine Z2-Fahrt mit anderem Etikett.',
+    'Block ' + nr + ' unter dem Ziel: Ø ' + Math.round(watt) + ' W, Ziel ab ' + min + ' W.',
 
   blockZuHart: (nr, watt, max) =>
-    'Block ' + nr + ' zu hart: Ø ' + Math.round(watt) + ' W, Ziel bis ' + max + ' W.',
+    'Block ' + nr + ' über dem Ziel: Ø ' + Math.round(watt) + ' W, Ziel bis ' + max + ' W.',
 
   bloeckeFehlen: (reps, min) =>
-    'Geplant waren ' + reps + ' × ' + min + ' min Block – in der Aufzeichnung keine gefunden.',
+    'Geplant ' + reps + ' × ' + min + ' min Block, in der Aufzeichnung nicht gefunden.',
 
   pauseHart: (nr, watt, max) =>
-    'Pause nach Block ' + nr + ' mit Ø ' + Math.round(watt) + ' W über Z2 (' + max + ' W) – das Rollen dazwischen soll locker sein.',
+    'Pause nach Block ' + nr + ': Ø ' + Math.round(watt) + ' W, über Z2 (' + max + ' W).',
 
   kadenzZ2: (ist, ziel) =>
-    'Ø-Kadenz im Z2-Anteil ' + Math.round(ist) + ' rpm (Ziel ' + ziel + ', die Leistung hat Vorrang).',
+    'Ø-Kadenz im Z2-Anteil ' + Math.round(ist) + ' rpm (Ziel ' + ziel + ').',
 
   kadenzZ2Niedrig: (ist, ziel) =>
-    'Ø-Kadenz im Z2-Anteil ' + Math.round(ist) + ' rpm, unter ' + ziel
-    + '. Einen Gang leichter, solange die Leistung im Z2-Band bleibt.',
+    'Ø-Kadenz im Z2-Anteil ' + Math.round(ist) + ' rpm, unter ' + ziel + '.',
 
   kadenzBlock: (ist, ziel) =>
     'Ø-Kadenz in den Blöcken ' + Math.round(ist) + ' rpm, Ziel ' + ziel + '.',
 
   z3Block: (ist, soll) =>
-    'Z3-Blockzeit: ' + ist + ' min erreicht, geplant waren rund ' + soll + ' min.',
+    'Z3-Blockzeit: ' + ist + ' min, geplant rund ' + soll + ' min.',
 
   hartErreicht: (hart, ziel, zone, soll, ablauf) =>
     hart + ' min hart gefahren (davon ' + ziel + ' min in ' + zone + '), geplant '
     + soll + ' min als ' + ablauf + '.',
 
   hartKurz: (hart, ziel, zone, soll, ablauf) =>
-    'Nur ' + hart + ' min hart gefahren (davon ' + ziel + ' min in ' + zone + '), geplant '
-    + 'waren ' + soll + ' min als ' + ablauf + '. Intervalle abgebrochen oder Zone nicht erreicht?',
+    hart + ' min hart gefahren (davon ' + ziel + ' min in ' + zone + '), geplant '
+    + soll + ' min als ' + ablauf + '.',
 
   /* ---- Wiederholungen des Donnerstags und die Nachsteuerung (seit 24.09.2026)
 
      Die Zahlen kommen aus wiederholungen.js; dort steht auch, welche Haelfte
-     der Ausfuehrungsregel 7 messbar ist und welche nicht. Hier stehen die
-     Saetze - einer je Wiederholung, einer ueber die Serie, einer mit dem
-     Hinweis fuer das naechste Mal. */
+     der Ausfuehrungsregel 7 messbar ist und welche nicht. */
   wdhReihe: (n, soll, band, quelle) =>
     'Wiederholungen: ' + n + ' von ' + soll + ' erkannt, Ziel ' + band.text
     + (band.herkunft ? ' (' + band.herkunft + ')' : '')
     + (quelle === 'fenster'
-      ? ' – keine passenden Runden, deshalb die stärksten Fenster der Solldauer.'
-      : ' – aus den Runden der Aufzeichnung.'),
+      ? ', stärkste Fenster der Solldauer (keine passenden Runden).'
+      : ', aus den Runden der Aufzeichnung.'),
 
   wdhEinzeln: (w, lthr) =>
     'Wdh. ' + w.nr + ': Ø ' + Math.round(w.watt) + ' W'
@@ -359,90 +287,69 @@ export const T = {
       : ', ohne Puls')
     + '.',
 
-  /* Der Hinweis fuer das naechste Mal. Ein Satz je Grund, weil die Gruende
-     verschiedene Dinge sagen: "+5 W" ist eine Empfehlung, "ohne Puls" ist ein
-     fehlender Messwert, und "Band nicht gehalten" ist ein Befund ueber die
-     gefahrene Einheit und nicht ueber die Vorgabe. */
+  /* Die Nachsteuerung nach Ausfuehrungsregel 7: Ergebnis, dann der Befund,
+     auf dem es beruht. */
   wdhHinweis: (h, band, lthr) => {
     const neu = h.neu ? h.neu.min + '–' + h.neu.max + ' W' : null;
     const schluss = h.maximalversuch
-      ? ' Wdh. ' + h.maximalversuch + ' zählt als Maximalversuch und nicht mit; bewertet sind '
+      ? ' Wdh. ' + h.maximalversuch + ' zählt als Maximalversuch und nicht mit; bewertet: '
         + 'Wdh. ' + h.bewertet.join(' und ') + '.'
-      : h.bewertet.length ? ' Bewertet sind Wdh. ' + h.bewertet.join(' und ') + '.' : '';
+      : h.bewertet.length ? ' Bewertet: Wdh. ' + h.bewertet.join(' und ') + '.' : '';
     if(h.grund === 'pulsTief'){
-      return 'Nächstes Mal ' + neu + ': das Pulskriterium (≥ ' + lthr + ' bpm in den letzten '
-        + '60 s) blieb unerreicht, obwohl das Band ' + band.text + ' gehalten wurde – nach '
-        + 'Ausführungsregel 7 ein Schritt von 5 W nach oben.' + schluss;
+      return 'Nächstes Mal ' + neu + ' (Ausführungsregel 7: +5 W). Band ' + band.text
+        + ' gehalten, Puls in den letzten 60 s unter ' + lthr + ' bpm.' + schluss;
     }
     if(h.grund === 'einbruch'){
-      return 'Nächstes Mal ' + neu + ': die Leistung brach zur letzten Wiederholung ein ('
+      return 'Nächstes Mal ' + neu + ' (Ausführungsregel 7: −5 W). Letzte Wiederholung '
         + Math.round(h.einbruch.letzte) + ' W gegen Ø ' + Math.round(h.einbruch.schnitt)
-        + ' W davor, mehr als 5 %) – nach Ausführungsregel 7 ein Schritt von 5 W nach unten.'
-        + schluss;
+        + ' W davor, mehr als 5 % darunter.' + schluss;
     }
     if(h.grund === 'pulsHoch'){
-      return 'Der Puls lag ab Wdh. 2 über der LTHR (' + lthr + ' bpm). Regel 7 nennt dafür '
-        + neu + ' – aber nur, wenn auch die Atmung am Limit war, und das sieht keine '
-        + 'Aufzeichnung. Atmung sticht die Zahl: war sie es nicht, bleibt das Band bei '
-        + band.text + '.' + schluss;
+      return 'Puls ab Wdh. 2 über der LTHR (' + lthr + ' bpm). Ausführungsregel 7: ' + neu
+        + ', wenn die Atmung am Limit war, sonst Band ' + band.text + '.' + schluss;
     }
     if(h.grund === 'bandNichtGehalten'){
-      return 'Das Pulskriterium blieb unerreicht, das Band ' + band.text + ' aber auch – '
-        + 'damit sagt die Einheit nichts über die Vorgabe. Band halten und noch einmal '
-        + 'fahren.' + schluss;
+      return 'Band ' + band.text + ' nicht gehalten, Pulskriterium nicht erreicht. Band unverändert.'
+        + schluss;
     }
     if(h.grund === 'imBand'){
-      return 'Band halten: ' + band.text + ' passt, das Pulskriterium ist erreicht, ohne dass '
-        + 'die Serie einbricht.' + schluss;
+      return 'Band ' + band.text + ' unverändert: Pulskriterium erreicht, kein Leistungsabfall.'
+        + schluss;
     }
     if(h.grund === 'ohnePuls'){
-      return 'Band halten: ' + band.text + '. Ohne Puls in den letzten Wiederholungen '
-        + 'entscheidet das Kriterium nichts.' + schluss;
+      return 'Band ' + band.text + ' unverändert: kein Puls in den letzten Wiederholungen.' + schluss;
     }
     if(h.grund === 'ohneLthr'){
-      return 'Keine Nachsteuerung: das Kriterium hängt an der LTHR, und die steht noch nicht '
-        + 'aus einem ausbelasteten Schwellentest fest.';
+      return 'Keine Nachsteuerung: LTHR fehlt.';
     }
-    return 'Keine Nachsteuerung: zu wenige bewertbare Wiederholungen in der Aufzeichnung.'
-      + schluss;
+    return 'Keine Nachsteuerung: zu wenige bewertbare Wiederholungen.' + schluss;
   },
 
   /* ---- Aufzeichnung ---- */
 
   aufzeichnungAnnahme:
-    'Kein Zeit-Stream und keine Aufzeichnungsdauer verfügbar – Zonenzeiten mit einer '
-    + 'Sekunde je Messwert gerechnet. Die Anteile stimmen, die absoluten Minuten können '
-    + 'deutlich zu niedrig sein.',
+    'Ohne Zeitangaben gerechnet (1 s je Messwert): Anteile korrekt, Minuten möglicherweise zu niedrig.',
 
   aufzeichnungSkaliert: (takt, samples) =>
-    'Kein Zeit-Stream vorhanden – Zonenzeiten gleichmäßig auf ⌀ ' + takt
-    + ' s je Messwert skaliert (' + samples + ' Messwerte).',
+    'Ohne Zeit-Stream: Zonenzeiten auf ⌀ ' + takt + ' s je Messwert skaliert (' + samples
+    + ' Messwerte).',
 
   aufzeichnungGrob: (takt, samples) =>
-    'Aufzeichnung im ⌀ ' + takt + '-Sekunden-Takt (' + samples + ' Messwerte), '
-    + 'zeitgewichtet ausgewertet.',
+    'Aufzeichnung im ⌀ ' + takt + '-s-Takt (' + samples + ' Messwerte), zeitgewichtet.',
 
   /* ---- Gegen welchen Massstab gezaehlt wurde ---- */
 
   zonenOhneLeistung:
-    'Ohne Leistungsdaten – Zonen aus dem Puls gegen die Coggan-Bänder der LTHR. Ab Woche 5 '
-    + 'zählt sonst die Zeit in der Watt-Zone; dieses Rad hat keinen Leistungsmesser. Der '
-    + 'Puls antwortet träge und mit Verzögerung, die Anteile sind deshalb weicher als bei '
-    + 'einer Wattmessung. Die Bewertung ist vorläufig, und die Fahrt zählt nicht in den '
-    + 'Effizienzfaktor.',
+    'Ohne Leistungsdaten: Zonen aus dem Puls (Coggan-Bänder der LTHR). Bewertung vorläufig, '
+    + 'Fahrt nicht im Effizienzfaktor.',
 
   zonenNochUebergang:
-    'Zonen noch gegen die Übergangsbänder gezählt – es fehlen FTP und LTHR. Die '
-    + 'Übergangsbänder sind laut Trainingsplan eine Arbeitsannahme bis zum Testtag; jede '
-    + 'Aussage über „über Z2" steht und fällt mit ihnen. Unter „Zonen & Schwellenwerte“ '
-    + 'eintragen, dann rechnet die Auswertung mit den gemessenen Zahlen.',
+    'Zonen nach den Übergangsbändern gezählt, FTP und LTHR fehlen. Eintragen unter „Zonen“.',
 
   zonenWattRollen: min =>
-    'Zonen aus der Leistung, über 30 s gemittelt. ' + min + ' min Rollzeit ohne Tritt sind '
-    + 'nicht mitgezählt – die Anteile gelten auf die getretene Zeit.',
+    'Zonen aus der Leistung (30 s gemittelt), ohne ' + min + ' min Rollzeit.',
 
   zonenGemischt:
-    'Die Fahrten dieses Tages wurden gegen verschiedene Maßstäbe gezählt – eine mit '
-    + 'Leistung, eine ohne. Die Tagesanteile mischen damit zwei Währungen; verlässlich '
-    + 'sind die Angaben je Fahrt.'
+    'Fahrten dieses Tages teils mit, teils ohne Leistung gezählt. Die Tagesanteile mischen '
+    + 'beide; die Angaben je Fahrt sind genauer.'
 };

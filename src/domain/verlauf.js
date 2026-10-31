@@ -120,18 +120,18 @@ export function trendAus(punkte, opts){
 
   if(p.length < minP){
     return Object.assign(basis, { grund:
-      'Noch keine belastbare Aussage: ' + p.length +
+      'Noch keine Richtung: ' + p.length +
       (p.length === 1 ? ' Messpunkt' : ' Messpunkte') + ' von ' + minP + ' nötigen. ' +
-      'Ab ' + minP + ' Punkten über ' + minW + ' Wochen steht hier eine Richtung.' });
+      'Ab ' + minP + ' Punkten über ' + minW + ' Wochen wird eine berechnet.' });
   }
   if(wochen < minW){
     return Object.assign(basis, { grund:
-      'Noch keine belastbare Aussage: die Reihe deckt erst ' + zahl(wochen, 1) +
-      ' Wochen ab, nötig sind ' + minW + '. Über einen kürzeren Zeitraum misst man Tagesform, keine Entwicklung.' });
+      'Noch keine Richtung: die Reihe deckt erst ' + zahl(wochen, 1) +
+      ' Wochen ab, nötig sind ' + minW + '.' });
   }
 
   const ts = theilSen(p);
-  if(!ts) return Object.assign(basis, { grund: 'Alle Messpunkte liegen auf demselben Tag – daraus lässt sich keine Entwicklung lesen.' });
+  if(!ts) return Object.assign(basis, { grund: 'Alle Messpunkte liegen auf demselben Tag.' });
 
   const proWoche = ts.proTag * 7;
   const bezug = Math.abs(ts.mitte);
@@ -151,7 +151,7 @@ export function trendAus(punkte, opts){
   const pz = prozentProWoche === null ? '' :
     ' (' + vz + zahl(Math.abs(prozentProWoche), 1) + ' % je Woche)';
   const aussage = richtung === 'unveraendert'
-    ? 'unverändert – ' + vz + betrag + ' je Woche liegt unter der Rauschgrenze'
+    ? 'unverändert (' + vz + betrag + ' je Woche, unter der Rauschgrenze)'
     : (richtung === 'steigt' ? 'steigt um ' : 'fällt um ') + betrag + ' je Woche' + pz;
 
   return Object.assign(basis, {
@@ -284,9 +284,7 @@ export function effizienzSerie(acts, th, opts){
 
   if(!fenster){
     trend = Object.assign({}, trend, { belastbar: false, richtung: null, urteil: null, aussage: null,
-      grund: 'Keine Aussage möglich: ohne LTHR oder HFmax lässt sich Z2 nicht abgrenzen. ' +
-        'Die Reihe würde Pendelwege, Intervalle und Ausfahrten in einen Topf werfen. ' +
-        'Der Schwellentest liefert die LTHR – danach steht hier ein Wert.' });
+      grund: 'Kein Wert: ohne LTHR oder HFmax lässt sich Z2 nicht abgrenzen.' });
   }
 
   const regel = 'Gewertet werden nur Radfahrten ab ' + Math.round(minSec / 60) + ' min' +
@@ -307,9 +305,9 @@ export function effizienzSerie(acts, th, opts){
     schluessel: 'ef', titel: 'Effizienzfaktor', einheit, nachkomma,
     punkte, trend, regel, bilanz, streuung, heterogen, fenster,
     hinweis: heterogen
-      ? 'Die gewerteten Fahrten sind untereinander wenig vergleichbar (' +
+      ? 'Gewertete Fahrten wenig vergleichbar: ' +
         streuung.dauerVon + ' bis ' + streuung.dauerBis + ' min, ⌀-Puls ' +
-        streuung.hfVon + ' bis ' + streuung.hfBis + ' bpm). Ein Teil der Streuung ist die Fahrt, nicht die Form.'
+        streuung.hfVon + ' bis ' + streuung.hfBis + ' bpm.'
       : null
   };
 }
@@ -347,9 +345,7 @@ export function entkopplungSerie(acts, opts){
   const fehltFeld = lang.length > 0 && punkte.length === 0;
   if(fehltFeld){
     trend = Object.assign({}, trend, { grund:
-      'intervals.icu liefert für diese ' + lang.length + ' langen Fahrten keinen Decoupling-Wert. ' +
-      'Er entsteht dort erst mit Wattmesser oder aus dem Pulsverlauf einer durchgehend ' +
-      'gleichmäßigen Fahrt – bis dahin bleibt dieser Indikator leer.' });
+      'intervals.icu liefert für diese ' + lang.length + ' langen Fahrten keinen Decoupling-Wert.' });
   }
 
   const niveau = punkte.length ? median(punkte.map(p => p.v)) : null;
@@ -357,11 +353,11 @@ export function entkopplungSerie(acts, opts){
     schluessel: 'entkopplung', titel: 'Aerobe Entkopplung', einheit: '%', nachkomma: 1,
     punkte, trend, fehltFeld, niveau, langeFahrten: lang.length,
     regel: 'Nur Fahrten ab ' + Math.round(minSec / 60) + ' min. Pa:Hf von intervals.icu, ' +
-      'ein Wert je Fahrt. Bis 5 % trägt die Grundlage diese Dauer.',
+      'ein Wert je Fahrt, Grenze 5 %.',
     hinweis: niveau === null ? null
       : niveau <= VERLAUF.entkopplung.gut
-        ? 'Median ' + zahl(niveau, 1) + ' % – die Grundlage trägt diese Dauer.'
-        : 'Median ' + zahl(niveau, 1) + ' % – über 5 %. Entweder ist die Dauer noch zu lang für die Grundlage, oder die Fahrten waren zu hart.'
+        ? 'Median ' + zahl(niveau, 1) + ' %, unter 5 %.'
+        : 'Median ' + zahl(niveau, 1) + ' %, über 5 %.'
   };
 }
 
@@ -422,8 +418,8 @@ export function testSerie(testLog, interimLog){
         flachAbsolut: 0.5 })
     },
     anzahl: tests.length,
-    regel: 'FTP und LTHR aus der Testhistorie, Sprechtest-Puls aus den ' +
-      'Zwischenkontrollen. Beides wird im Tab „Zonen“ eingetragen und liegt nur auf diesem Gerät.'
+    regel: 'FTP und LTHR aus den Messwerten, Sprechtest-Puls aus den Zwischenkontrollen. ' +
+      'Beides liegt nur auf diesem Gerät.'
   };
 }
 
@@ -467,10 +463,10 @@ export function umfangSerie(wochen){
       ? { wochen: bewertet.length, imRahmen,
           text: imRahmen + ' von ' + bewertet.length + ' Wochen im Rahmen von ±15 % um den Sollwert.' }
       : null,
-    regel: 'Ist ist die gefahrene Zeit der Woche einschließlich optionaler Fahrten, ' +
-      'Soll die Summe der geplanten Radminuten. Ohne Konsistenz sagt jede Leistungskurve darüber nichts.',
+    regel: 'Ist: gefahrene Zeit der Woche einschließlich optionaler Fahrten. ' +
+      'Soll: Summe der geplanten Radminuten.',
     hinweis: mitIst.length === 0
-      ? 'Für keine Woche liegen aufgezeichnete Fahrzeiten vor – ohne intervals.icu steht hier nur der Sollwert.'
+      ? 'Keine aufgezeichneten Fahrzeiten – ohne intervals.icu nur der Sollwert.'
       : null
   };
 }
@@ -553,11 +549,9 @@ export function zonenSerie(acts, wochen, startIso){
   return {
     schluessel: 'zonen', titel: 'Zonenverteilung', einheit: 'min', nachkomma: 0,
     punkte, mitDaten: mitDaten.length, z2Trend, hartTrend, anteilTrend, quellen,
-    regel: 'Z2-Minuten gegen harte Minuten (alles oberhalb Z2) je Woche. ' +
-      'Zielgröße sind 300 bis 400 min Z2; ein hoher Z2-Anteil bei wenigen harten Minuten ist polarisiert.',
+    regel: 'Z2-Minuten und harte Minuten (oberhalb Z2) je Woche. Zielgröße 300–400 min Z2.',
     hinweis: mitDaten.length === 0
-      ? 'Für keine Woche liegen Zonenzeiten vor. intervals.icu liefert sie erst, wenn dort HR-Zonen gesetzt sind – ' +
-        'bis dahin zeigt die Auswertung einer einzelnen Fahrt die Zonen aus dem Pulsstream.'
+      ? 'Für keine Woche liegen Zonenzeiten vor. intervals.icu liefert sie, sobald dort HR-Zonen gesetzt sind.'
       : (quellen.streams && !quellen.icu
           ? 'Zonenzeiten aus den Pulsstreams dieser App, nicht von intervals.icu.'
           : null)
@@ -587,8 +581,8 @@ export function rumpfSerie(coreLog, startIso){
     punkte,
     trend: trendAus(punkte, { einheit: 'Einheiten', nachkomma: 2, besser: 'hoch',
       flachAbsolut: VERLAUF.rumpf.flachAbsolut }),
-    regel: 'Aus dem Protokoll des Rumpf-Timers, zwei Einheiten je Woche sind geplant. ' +
-      'Liegt nur auf diesem Gerät und braucht keinen Zugang zu intervals.icu.'
+    regel: 'Aus dem Protokoll des Rumpf-Timers, geplant zwei Einheiten je Woche. ' +
+      'Liegt nur auf diesem Gerät.'
   };
 }
 

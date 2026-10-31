@@ -205,9 +205,7 @@ export function Messwertsheet({ eintrag, vorgabe, onClose }){
             platzhalter="Temperatur, Wind, Strecke, Rad" />
           {werte.ausbelastet === false && (
             <p class="hint warn">
-              Unter {AUSBELASTET_RPE} heißt: nicht ausbelastet. Dann ist die FTP eher zu
-              niedrig – gemessen wurde nicht die Schwelle, sondern die Bereitschaft, an sie
-              heranzugehen.
+              RPE unter {AUSBELASTET_RPE}: nicht ausbelastet, die FTP fällt dann eher zu niedrig aus.
             </p>
           )}
           <p class="hint">
@@ -222,8 +220,7 @@ export function Messwertsheet({ eintrag, vorgabe, onClose }){
           <Textfeld titel="Woher" wert={f.note} onWert={v => setze({ note: v })}
             platzhalter="eFTP, Garmin, Korrektur" />
           <p class="hint">
-            Nur ausfüllen, was dieser Eintrag setzen soll. Was leer bleibt, behält den Wert,
-            der bisher gilt.
+            Nur ausfüllen, was sich ändert. Leere Felder behalten den geltenden Wert.
           </p>
         </>
       )}

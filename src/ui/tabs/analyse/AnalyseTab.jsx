@@ -322,9 +322,7 @@ function TestKarte({ tests }){
       <div class="card">
         <div class="row"><span>Schwellentests</span><b>noch keiner</b></div>
         <p class="hint">
-          Der erste Schwellentest steht in Woche 4 an. Bis dahin gibt es keinen gemessenen
-          Anker – im Tab „Zonen“ werden Testergebnis und Sprechtest-Puls eingetragen, danach
-          steht hier ihr Verlauf.
+          Noch keine Messwerte. Erfasst werden sie unter „Zonen“.
         </p>
       </div>
     );
@@ -337,7 +335,7 @@ function TestKarte({ tests }){
       {t.ftp.punkte.length > 0 && <>
         <TrendZeile trend={t.ftp.trend} was="FTP" />
         {!t.ftp.trend.belastbar && t.ftp.vergleich &&
-          <div class="annote">FTP {t.ftp.vergleich.text} – ein Vergleich zweier Termine, kein Trend.</div>}
+          <div class="annote">FTP {t.ftp.vergleich.text} – zwei Termine, kein Trend.</div>}
         <Verlaufsgraph einheit="W" nachkomma={0}
           reihen={[{ name: 'FTP', farbe: 'var(--z4)', punkte: t.ftp.punkte, trend: t.ftp.trend }]} />
       </>}
@@ -355,11 +353,7 @@ function TestKarte({ tests }){
           reihen={[{ name: 'Sprechtest', farbe: 'var(--z2)', punkte: t.sprechtest.punkte,
                      trend: t.sprechtest.trend }]} />
         <p class="hint">
-          Bewusst ohne Urteil: ein steigender Sprechtest-Puls kann heißen, dass die Bänder zu
-          eng liegen, und ein fallender kann Müdigkeit sein. Er ist die Gegenprobe zu den
-          Zonen, kein Leistungsmaß. Wo eine Notiz zum Wert steht, zeigt sie der angetippte
-          Punkt – Knie, Schlaf oder Rad erklären einen Ausreißer, den die Kurve allein als
-          Trend läse.
+          Ohne Bewertung der Richtung. Notizen zu einem Wert zeigt der angetippte Punkt.
         </p>
       </>}
 
@@ -393,17 +387,13 @@ function Verlaufsansicht({ acts, wochen, verbunden, range, setRange, laedt }){
         )}
         <p class="hint">
           {verbunden
-            ? 'Quelle sind die Aufzeichnungen von intervals.icu, ergänzt um Testhistorie, ' +
-              'Zwischenkontrollen und Rumpfprotokoll dieses Geräts. Je länger der Zeitraum, ' +
-              'desto eher trägt eine Aussage – „Ganzer Plan“ liefert die meisten Punkte.'
-            : 'Kein Zugang zu intervals.icu hinterlegt. Angezeigt wird, was lokal vorliegt: ' +
-              'Testhistorie, Zwischenkontrollen, Rumpfprotokoll und die Sollwerte der Wochen. ' +
-              'Effizienzfaktor und Entkopplung brauchen die Aufzeichnungen und bleiben leer.'}
+            ? 'Quelle: Aufzeichnungen von intervals.icu, dazu Messwerte, Zwischenkontrollen ' +
+              'und Rumpfprotokoll dieses Geräts.'
+            : 'Ohne Zugang zu intervals.icu: nur lokale Daten (Messwerte, Zwischenkontrollen, ' +
+              'Rumpfprotokoll, Sollwerte). Effizienzfaktor und Entkopplung bleiben leer.'}
         </p>
         <p class="hint">
-          Jede Richtung stammt aus einer Theil-Sen-Steigung, nicht aus dem Vergleich von erstem
-          und letztem Wert. Wo zu wenige Punkte oder zu wenige Wochen vorliegen, steht das da –
-          statt eines Trends, den die Daten nicht hergeben.
+          Richtungen aus der Theil-Sen-Steigung über alle Punkte.
         </p>
         {laedt && <p class="hint">Aktivitäten werden geladen …</p>}
       </div>
@@ -415,7 +405,7 @@ function Verlaufsansicht({ acts, wochen, verbunden, range, setRange, laedt }){
         reihen={[{ name: 'EF', farbe: 'var(--z2)', punkte: ef.punkte, trend: ef.trend }]}
         einheit={ef.einheit} nachkomma={ef.nachkomma}
         warnung={ef.hinweis}
-        regel={ef.regel + ' ' + ef.bilanz + ' Steigt der Wert über Wochen, wächst die aerobe Basis.'} />
+        regel={ef.regel + ' ' + ef.bilanz} />
 
       <IndikatorKarte
         titel="Aerobe Entkopplung"
@@ -424,7 +414,7 @@ function Verlaufsansicht({ acts, wochen, verbunden, range, setRange, laedt }){
         reihen={[{ name: 'Pa:Hf', farbe: 'var(--z3)', punkte: ent.punkte, trend: ent.trend }]}
         einheit="%" nachkomma={1}
         hinweis={ent.hinweis}
-        regel={ent.regel + ' Sinkende Entkopplung heißt bessere Grundlage.'} />
+        regel={ent.regel} />
 
       <TestKarte tests={b.tests} />
 
@@ -553,14 +543,12 @@ export function AnalyseTab(){
         <div class="card">
           <div class="row"><span>Verbindung</span><b>nicht verbunden</b></div>
           <p class="hint">
-            Ohne API-Key kann die App keine Aktivitäten laden. Der Schlüssel wird unter
-            Einstellungen eingetragen – dort steht auch, wo man ihn findet.
+            Ohne API-Key keine Aktivitäten. Einzutragen unter Einstellungen.
           </p>
           <button class="btn block"
             onClick={() => gotoTab('einstellungen', true)}>Zu den Einstellungen</button>
           <p class="hint">
-            Der Verlauf oben zeigt auch ohne Zugang, was lokal vorliegt: Testhistorie,
-            Zwischenkontrollen, Rumpfprotokoll und die Sollwerte der Wochen.
+            Der Verlauf oben zeigt die lokalen Daten.
           </p>
         </div>
       </>
@@ -595,7 +583,7 @@ export function AnalyseTab(){
               Woche {w.week}: {T.deckelUeberschritten(Math.round(w.istSec / 60), w.planMin, w.capMin)}
             </p>
           ))}
-          <p class="hint">Z2-Summe pro Woche ist die Kennzahl, die zählt – Zielgröße 300–400 min.</p>
+          <p class="hint">Kennzahl: Z2-Summe je Woche, Zielgröße 300–400 min.</p>
           <p class="hint">{p.texts.volumeCap}</p>
         </div>
       )}

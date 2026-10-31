@@ -359,7 +359,7 @@ describe('Wann "zu hart" gilt', () => {
     expect(a.z2.watt).toBeGreaterThan(144);
     const row = tag(a);
     expect(row.badge).not.toBe('zu hart');
-    const n = row.notes.find(x => /Plan-Punkt 28/.test(x.text));
+    const n = row.notes.find(x => /nicht als zu hart gewertet/.test(x.text));
     expect(n.kind).toBe('info');
   });
 
@@ -375,14 +375,14 @@ describe('Wann "zu hart" gilt', () => {
     const a = abschnittsAuswertung(rahmenW6(), fahrt({ block: [150, 172] }),
       RUNDEN_1909.map(r => r.start_time === 7346 ? Object.assign({}, r, { average_watts: 160 }) : r));
     const row = tag(a);
-    expect(texte(row)).toContain('Block 1 zu weich');
+    expect(texte(row)).toContain('Block 1 unter dem Ziel');
     expect(row.badge).not.toBe('zu hart');
   });
 
   it('ein Block ueber 181 W: "zu hart" nur als Hinweis am Block', () => {
     const a = abschnittsAuswertung(rahmenW6(), fahrt({ block: [172, 195] }), RUNDEN_1909);
     const row = tag(a);
-    expect(texte(row)).toContain('Block 2 zu hart');
+    expect(texte(row)).toContain('Block 2 über dem Ziel');
     expect(row.badge).not.toBe('zu hart');
   });
 

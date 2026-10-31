@@ -49,9 +49,7 @@ export function Testhistorie({ eintraege, mitKopf }){
       ))}
       {/* Die Regel des Trainingsplans, hier nachgeprueft statt nur zitiert. */}
       {gemischteProtokolle(eintraege) && <p class="hint warn">
-        Die Einträge stammen aus verschiedenen Testabläufen. Der Trainingsplan verlangt
-        über alle Termine denselben Ablauf – die Werte sind untereinander nicht
-        vergleichbar.
+        Einträge aus verschiedenen Testabläufen, untereinander nicht vergleichbar.
       </p>}
     </>
   );

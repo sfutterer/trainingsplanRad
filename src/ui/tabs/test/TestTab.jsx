@@ -266,19 +266,16 @@ function TempotestKarte({ ablauf, prep, onNotiz, laden, kompakt }){
           dieselbe Folge. */}
       {!kompakt && <>
         <p class="hint">
-          Die Einheit, aus der die Zielleistung für den Test fällt. Zwei Blöcke im
-          angestrebten Testtempo, dazwischen die Entscheidung, ob korrigiert wird –
-          gesteuert wird nach {ablauf.steering || 'Anstrengung'}.
+          Zwei Blöcke im angestrebten Testtempo, gesteuert nach {ablauf.steering || 'Anstrengung'}.
+          Daraus ergibt sich die Zielleistung für den Test.
         </p>
         <div class="listhead">Ablauf</div>
         <Schrittliste steps={ablauf.steps} />
         <div class="listhead">Ergebnis</div>
       </>}
       <p class="hint">
-        Maßgeblich ist der <b>zweite</b> Block: er fährt die korrigierte Leistung, und genau
-        die ist das Ziel im Test. Aus der Aufzeichnung geholt sucht die App die beiden
-        stärksten Sechs-Minuten-Fenster der Fahrt und nimmt das spätere – beide stehen
-        danach nebeneinander, damit die Zuordnung nachprüfbar bleibt.
+        Maßgeblich ist der <b>zweite</b> Block. Aus der Aufzeichnung nimmt die App das spätere
+        der beiden stärksten 6-min-Fenster.
       </p>
       <Zahlenfeld titel="Ø-Watt Block 2 (W)" wert={prep ? prep.zielWatt : null} min={1}
         onWert={v => onNotiz({ zielWatt: v })} />
@@ -286,8 +283,7 @@ function TempotestKarte({ ablauf, prep, onNotiz, laden, kompakt }){
         onWert={v => onNotiz({ zielPuls: v })} />
       <HolenKnopf suche={suche} onHolen={holen} />
       {!apiKey.value && <p class="hint">
-        Ohne Zugang zu intervals.icu bleibt das Eintippen – die Zahl steht in der Auswertung
-        des Intervalls auf der Uhr.
+        Ohne Zugang zu intervals.icu: Wert aus der Intervallauswertung der Uhr eintippen.
       </p>}
       <Suchfehler suche={suche} />
       {suche && suche.phase === 'fertig' && (
@@ -330,11 +326,8 @@ function Vo2maxKarte({ termin, prep, onNotiz, ftp, laden }){
       <div class="row"><span>VO2max-Referenz am {kurzDatum(termin.datum)}</span>
         <b>{wert ? wert + ' W' : 'Kür, offen'}</b></div>
       <p class="hint">
-        Der 5-Minuten-Wert wird nicht mehr am Testtag erhoben, sondern als erste Wiederholung
-        der ersten Intervalleinheit – der Maximalversuch ist selbst ein VO2max-Reiz und kostet
-        so weder einen Tag noch zusätzliche Erholung. Frisch gefahren ist er außerdem
-        aussagekräftiger als nach 20 min Maximalbelastung. Ob er erhoben wird, wird auf der
-        Tageskarte des {kurzDatum(termin.datum)} entschieden.
+        Der 5-Minuten-Wert wird als erste Wiederholung der ersten Intervalleinheit erhoben.
+        Ob, entscheidet die Tageskarte des {kurzDatum(termin.datum)}.
       </p>
       <Zahlenfeld titel="Ø-Watt der 5 min (W)" wert={wert} min={1}
         onWert={v => onNotiz({ vo2max5: v })} />
@@ -363,8 +356,7 @@ function Vo2maxKarte({ termin, prep, onNotiz, ftp, laden }){
         </div>
       )}
       {!bezug && wert && <p class="hint">
-        Die Gegenprobe braucht die FTP des Tests – sie steht, sobald das Testergebnis
-        eingetragen ist.
+        Die Gegenprobe erscheint, sobald das Testergebnis eingetragen ist.
       </p>}
     </div>
   );
@@ -384,10 +376,9 @@ function ZielKarte({ ziel, termin }){
       <div class="card">
         <div class="row"><span>Ziel für den {datum}</span><b>steht noch aus</b></div>
         <p class="hint">
-          Solange aus dem Tempotest keine Leistung notiert ist, gibt es für die 20 Minuten
-          keine Zahl, sondern nur die Anstrengung: ein Tempo, das sich 20 min halten ließe,
-          Sprechtest drei bis fünf Worte am Stück. Das ist ohne Leistungsmesser der normale
-          Fall – der Puls wird dabei mitgeschrieben und nicht angesteuert.
+          Ohne notierte Leistung aus dem Tempotest: nach Anstrengung fahren – ein Tempo, das
+          sich 20 min halten ließe, Sprechtest drei bis fünf Worte. Der Puls wird
+          mitgeschrieben, nicht angesteuert.
         </p>
       </div>
     );
@@ -411,8 +402,7 @@ function ZielKarte({ ziel, termin }){
           </span></div>
       </div>
       {ziel.puls && <p class="hint">
-        Im Tempotest lag der Puls dabei bei ⌀ {ziel.puls} bpm. Das ist die Gegenprobe für
-        danach und keine Vorgabe: die LTHR entsteht erst aus dem Ø-Puls der 20 Minuten.
+        Puls im Tempotest: ⌀ {ziel.puls} bpm. Gegenprobe, keine Vorgabe.
       </p>}
     </div>
   );
@@ -452,9 +442,8 @@ function AuswertungsKarte({ th }){
           <span>Die Zahl, aus der alle Pulsbänder des Folgeblocks entstehen.</span></div>
       </div>
       <p class="hint">
-        Beide gehören auch nach intervals.icu: Settings → Ride, Power Zones und HR Zones auf
-        Coggan, Load Priority auf Power, FTP von automatisch auf manuell. Sonst rechnet die
-        Auswertung dort mit anderen Zonen als der Plan hier.
+        In intervals.icu übernehmen: Settings → Ride, Power Zones und HR Zones auf Coggan,
+        Load Priority auf Power, FTP auf manuell.
       </p>
     </div>
   );
@@ -491,9 +480,7 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
       hinweise={[a.note].filter(Boolean)}
       schluss={
         <p class="hint">
-          Der Ablauf steht fest und lässt sich nicht verstellen – ein Test, der sich anpassen
-          lässt, ist kein Vergleichsmaßstab mehr, und eine Probe mit anderen Zahlen probt
-          etwas anderes.
+          Der Ablauf ist fest, damit die Tests vergleichbar bleiben.
         </p>
       }>
 
@@ -515,8 +502,7 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
             optionen={ablaeufe.map(x => ({ id: x.id,
               label: x.titel.replace('Rad – ', '') + (x.datum ? ' · ' + kurzDatum(x.datum) : '') }))} />
           <p class="hint">
-            Vorgewählt ist der Ablauf des heutigen Tages. Umschalten muss nur, wer einen
-            Anlaufschritt verschoben hat.
+            Vorgewählt ist der Ablauf des heutigen Tages.
           </p>
         </div>
       )}
@@ -537,8 +523,7 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
       <Zonenkarte woche={w} bands={hrBands(p, th, w)} plan={p} thresholds={th}
         coggan={usesCoggan(p, th, w)}>
         <p class="hint">
-          Während des Tests ist der Puls Ergebnis und keine Vorgabe – die Bänder stehen hier
-          nur, damit Einfahren und Ausrollen eine Obergrenze haben.
+          Im Test ist der Puls Ergebnis, keine Vorgabe. Die Bänder begrenzen Einfahren und Ausrollen.
         </p>
       </Zonenkarte>
     </Baustein>
@@ -584,10 +569,8 @@ function Ergebniskarte({ ziel, onOeffnen }){
         </>
       ) : (
         <p class="hint">
-          Ø-Watt und Ø-Puls stehen in der Aufzeichnung als Werte des 20-min-Intervalls –
-          mit hinterlegtem intervals.icu-Schlüssel holt das Sheet sie selbst. Ohne
-          Leistungsmesser genügt der Puls: die LTHR trägt die Pulsbänder, die Wattzonen
-          bleiben dann leer.
+          Ø-Watt und Ø-Puls des 20-min-Intervalls. Mit intervals.icu-Schlüssel holt das Sheet
+          sie aus der Aufzeichnung. Ohne Leistungsmesser genügt der Puls.
         </p>
       )}
 
@@ -632,9 +615,8 @@ function ErgebnisAnsicht({ p, termin, start }){
           <b>{termine.filter(t => t.eintrag).length} von {termine.length} eingetragen</b></div>
         <Auswahlfeld titel="Termin" wert={ziel.tagIso} onWert={setTag} optionen={optionen} />
         <p class="hint">
-          Jeder Termin des Plans, dazu jeder Tag, an dem tatsächlich ein Test steht – ein
-          verschobener Test wird unter dem Tag eingetragen, an dem er gefahren wurde, und nicht
-          unter dem, an dem er geplant war.
+          Alle Termine des Plans und jeder Tag mit einem Test. Ein verschobener Test steht unter
+          dem Tag, an dem er gefahren wurde.
         </p>
       </div>
 

@@ -153,11 +153,8 @@ export function IntervalleTab(){
           <b>{testmodus ? 'Schwellentest' : 'Testanlauf'}</b></div>
         <p class="hint">
           {testmodus
-            ? 'Heute steht kein Intervalltraining an, sondern der Schwellentest. Er hat einen ' +
-              'eigenen Bereich: dort stehen der Ablauf, das Go/No-Go für den Morgen und die ' +
-              'Felder für FTP und LTHR.'
-            : 'Der Testanlauf tritt an die Stelle der Qualitätseinheit. Er gehört zum Test und ' +
-              'läuft im Testbereich – dort wird auch die Zielleistung notiert, die aus ihm fällt.'}
+            ? 'Heute steht der Schwellentest an. Ablauf, Go/No-Go und Ergebnis im Bereich „Schwellentest“.'
+            : 'Der Testanlauf ersetzt die Qualitätseinheit. Ablauf und Zielleistung im Bereich „Schwellentest“.'}
         </p>
         <button class="btn block" type="button"
           onClick={() => gotoTab('test', true)}>Zum Schwellentest</button>

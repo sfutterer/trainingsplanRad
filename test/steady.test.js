@@ -202,8 +202,7 @@ describe('Arbeitsweg vom 15.09.2026', () => {
   it('gibt stattdessen einen Pruefhinweis mit den Gruenden dagegen', () => {
     const row = compareDay(plan, TH, DI, START, [PENDEL], { [PENDEL.id]: zonen }, [], []);
     const text = row.fahrten[0].notes.map(n => n.text).join(' ');
-    expect(text).toContain('Anteil über Z2 erhöht');
-    expect(text).toContain('Zeitdruck oder Ankunftspuffer prüfen');
+    expect(text).toContain('Arbeitsweg, ohne Härte-Bewertung');
     expect(text).toContain('Drift aus Puls und Tempo');
     expect(text).toContain('keine Leistungsdaten');
     expect(text).toContain('Toleranzband');
@@ -217,7 +216,7 @@ describe('Arbeitsweg vom 15.09.2026', () => {
     const f = streckenFazit(row, null, null, null);
     expect(f.vorlaeufig).toBe(true);
     expect(f.urteil).toBe('erklaert');
-    expect(f.satz).toContain('Kein Befund');
+    expect(f.satz).toContain('ohne Härte-Bewertung');
     expect(f.satz).not.toContain('Zu hart');
   });
 
@@ -247,7 +246,7 @@ describe('Grundlagenfahrt ohne Leistung', () => {
     const row = compareDay(plan, TH, SA, START, [t], { x: z }, [], []);
     expect(row.target.hardMinutes).toBeFalsy();
     expect(row.badge).not.toBe('zu hart');
-    expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toContain('Kein Befund „zu hart“');
+    expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toContain('Nicht als zu hart gewertet');
     expect(row.vorlaeufig).toBe(true);
   });
 

@@ -49,7 +49,7 @@ export function WetterLeiste({ wetter }){
   );
 }
 
-/* Das Fazit des Tages: Urteil, Begruendung, Massnahmen.
+/* Das Fazit des Tages: Urteil, Bedingungen, Planregel.
 
    Stand bis zum 04.09.2026 zweimal auf der Seite - oben kompakt und unten am
    Ende der Zusammenfassung noch einmal mit Begruendungen. Mit der
@@ -63,8 +63,7 @@ export function Fazit({ fazit, kompakt }){
       <div class="fazit-satz">{fazit.satz}</div>
       {fazit.vorlaeufig && (
         <div class="fazit-vorbehalt">
-          Ohne Leistungsdaten gewertet: ab Woche 5 ist die Leistung die primäre Steuergröße,
-          hier stand nur der Puls zur Verfügung.
+          Ohne Leistungsdaten, nur nach Puls gewertet.
         </div>
       )}
       {!kompakt && fazit.gruende.length > 0 && (
@@ -72,7 +71,7 @@ export function Fazit({ fazit, kompakt }){
       )}
       {fazit.massnahmen.length > 0 && (
         <>
-          <div class="fazit-mass">Was ändern</div>
+          <div class="fazit-mass">Planregel</div>
           <ul>{fazit.massnahmen.map((m, i) => <li key={i}>{m}</li>)}</ul>
         </>
       )}
@@ -81,8 +80,7 @@ export function Fazit({ fazit, kompakt }){
 }
 
 /* Ruhepuls, HRV und Schlaf am Fahrtag - dieselbe Rolle wie die Wetterleiste
-   ueber der Karte: drei Zahlen, die den Rest einordnen. Ohne sie liest sich
-   eine harte Fahrt nach zwei kurzen Naechten wie mangelnde Disziplin. */
+   ueber der Karte: drei Zahlen neben der Fahrt. */
 export function VerfassungsLeiste({ verfassung }){
   if(!verfassung) return null;
   const v = verfassung;

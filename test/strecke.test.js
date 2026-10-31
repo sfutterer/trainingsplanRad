@@ -166,11 +166,14 @@ describe('Fazit', () => {
   const warm = { temp: 28, gefuehlt: 30, regen: 0, boe: 38 };
   const mild = { temp: 18, gefuehlt: 17, regen: 0, boe: 20 };
 
-  it('erklaert eine zu harte Fahrt, wenn die Bedingungen es tragen', () => {
+  /* Seit dem 31.10.2026 nennt das Fazit erschwerte Bedingungen, ohne sie zum
+     Grund zu erklaeren, und gibt dazu keinen Rat. */
+  it('nennt erschwerte Bedingungen bei einer zu harten Fahrt, ohne Rat', () => {
     const f = streckenFazit({ badge: 'zu hart', status: 'dev', target: { zone: 'z2' },
       zones: { _total: 5000 }, notes: [{ kind: 'bad', text: '34 % der Zeit über Z2.' }] }, schwer, warm);
     expect(f.urteil).toBe('erklaert');
-    expect(f.massnahmen.length).toBeGreaterThan(0);
+    expect(f.satz).toContain('Erschwerte Bedingungen');
+    expect(f.massnahmen).toEqual([]);
     expect(f.gruende.some(g => g.art === 'wind')).toBe(true);
   });
 

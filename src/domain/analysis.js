@@ -901,7 +901,7 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
   } else {
     row.status = 'ok'; row.badge = t.test ? 'Test gefahren' : 'erfüllt';
     if(diff > DUR_TOL_SHORT){
-      row.notes.push({ kind:'info', text: T.dauerLang(abw, diff > DUR_TOL_LONG) });
+      row.notes.push({ kind:'info', text: T.dauerLang(abw) });
     }
   }
 

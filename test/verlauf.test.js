@@ -283,7 +283,7 @@ describe('Aerobe Entkopplung', () => {
 
   it('ordnet das Niveau ein', () => {
     const gut = entkopplungSerie([fahrt(tagPlus(AB, 0), { moving_time: 180 * 60, decoupling: 3 })]);
-    expect(gut.hinweis).toContain('trägt diese Dauer');
+    expect(gut.hinweis).toContain('unter 5 %');
     const schlecht = entkopplungSerie([fahrt(tagPlus(AB, 0), { moving_time: 180 * 60, decoupling: 9 })]);
     expect(schlecht.hinweis).toContain('über 5 %');
   });

@@ -88,23 +88,20 @@ function Geltung(){
 
       {nachWatt && (
         <p class="hint">
-          Gesteuert wird über die Leistung. Der Puls ist Kontrollgröße – er hängt an
-          Hitze, Schlaf und Tagesform und sagt erst am Ende eines Blocks etwas.
+          Gesteuert wird über die Leistung, der Puls ist Kontrollgröße.
         </p>
       )}
       {grund === 'zu-frueh' && (
         <p class="hint good">
-          Die LTHR steht und ist nicht verloren: die Pulsbänder daraus gelten ab Woche
-          {' '}{abWoche}{abDatum ? ', also ab ' + datumText(abDatum) : ''}. Bis dahin
-          laufen die <Begriff id="uebergang">Übergangsbänder</Begriff>.
-          {th.ftp > 0 ? ' Die Wattzonen stehen schon jetzt – sie hängen an keiner Woche.' : ''}
+          Pulsbänder aus der LTHR ab Woche {abWoche}{abDatum ? ' (' + datumText(abDatum) + ')' : ''},
+          bis dahin die <Begriff id="uebergang">Übergangsbänder</Begriff>.
+          {th.ftp > 0 ? ' Wattzonen gelten sofort.' : ''}
         </p>
       )}
       {grund === 'kein-test' && w >= p.cogganFromWeek && (
         <p class="hint warn">
-          Ab Woche {p.cogganFromWeek} wäre <Begriff id="coggan">Coggan</Begriff> vorgesehen,
-          es fehlt aber die LTHR. Solange keine dasteht, laufen die
-          {' '}<Begriff id="uebergang">Übergangsbänder</Begriff> weiter.
+          Ab Woche {p.cogganFromWeek} ist <Begriff id="coggan">Coggan</Begriff> vorgesehen,
+          die LTHR fehlt. Bis dahin gelten die <Begriff id="uebergang">Übergangsbänder</Begriff>.
         </p>
       )}
       <p class="hint">{coggan ? p.texts.zoneNoteCoggan : p.texts.zoneNoteTransition}</p>
@@ -153,9 +150,7 @@ function Konsequenz(){
 
       {k.pulsAbWoche && (
         <p class="hint">
-          Die Pulsbänder aus dieser LTHR gelten ab Woche {k.pulsAbWoche} – der Test misst
-          die Bänder des Folgeblocks, nicht die der laufenden Woche. Die Wattzonen gelten
-          sofort.
+          Pulsbänder aus dieser LTHR ab Woche {k.pulsAbWoche}, Wattzonen sofort.
         </p>
       )}
     </div>
@@ -212,8 +207,8 @@ function Verlauf(){
         ))}
       </div>
       <p class="hint">
-        Änderung gegenüber dem ersten Wert, alle Linien auf derselben Achse. Bewusst
-        getrennt statt als <Begriff id="wkg">W/kg</Begriff>.
+        Änderung gegenüber dem ersten Wert, gemeinsame Achse, getrennt statt als
+          {' '}<Begriff id="wkg">W/kg</Begriff>.
       </p>
     </div>
   );
@@ -257,8 +252,7 @@ function Messwertliste({ onOeffnen }){
 
       {liste.length > 0 && (
         <p class="hint">
-          Es gilt je Größe der jüngste Eintrag, der sie nennt – markiert ist, welcher das
-          ist. Antippen zum Ändern oder Löschen.
+          Je Größe gilt der jüngste Eintrag (markiert). Antippen zum Ändern oder Löschen.
         </p>
       )}
     </div>
@@ -309,8 +303,8 @@ function Erhebung(){
           {bezug.seit ? ' seit dem Test vom ' + datumText(dayFromIso(bezug.seit)) : ''},
           Z2-Obergrenze {bezug.max} bpm.{' '}
           {bezug.zuHoch
-            ? 'Mehr als ' + bezug.abstand + ' bpm darunter – Z2 gehört nach unten begrenzt.'
-            : 'Die Bänder passen zur Atmung.'}
+            ? 'Mehr als ' + bezug.abstand + ' bpm darunter.'
+            : 'Abstand höchstens ' + bezug.abstand + ' bpm.'}
         </p>
       )}
       {log.slice(-4).reverse().map((e, i) => (

@@ -160,7 +160,7 @@ describe('Radeinheit mit messbarem Soll', () => {
     expect(row.status).toBe('ok');
     expect(row.badge).toBe('erfüllt');
     expect(texte(row)).toContain('länger als geplant');
-    expect(texte(row)).toContain('Planprogression');
+    expect(texte(row)).toContain('länger als geplant');
   });
 
   it('zaehlt mehrere Fahrten eines Tages zusammen', () => {
@@ -212,20 +212,20 @@ describe('Zonen einer Grundlagenfahrt', () => {
   it('bestaetigt eine sauber gefahrene Z2-Einheit', () => {
     const row = tag(SA, [fahrt(soll)], { a1: zonen({ z1: 1200, z2: 6000 }) });
     expect(row.status).toBe('ok');
-    expect(texte(row)).toContain('Passt.');
+    expect(texte(row)).toMatch(/% in Z2, \d+ % in Z1–Z2\./);
   });
 
   it('stuft eine zu harte Grundlagenfahrt herab', () => {
     const row = tag(SA, [fahrt(soll)], { a1: zonen({ z2: 3600, z3: 2400, z4: 1200 }) });
     expect(row.status).toBe('dev');
     expect(row.badge).toBe('zu hart');
-    expect(texte(row)).toContain('Grundlagenfahrt');
+    expect(texte(row)).toMatch(/% über Z2.*vorgesehen rund/);
   });
 
   it('meldet eine zu lockere Fahrt, ohne sie hart zu tadeln', () => {
     const row = tag(SA, [fahrt(soll)], { a1: zonen({ unter: 3000, z1: 3000, z2: 1200 }) });
     expect(row.badge).toBe('zu locker');
-    expect(texte(row)).toContain('der Reiz kommt aus Z2');
+    expect(texte(row)).toMatch(/% unter Z2\./);
   });
 
   /* Unter fuenf Minuten Aufzeichnung sagt die Zonenverteilung nichts - dann
@@ -247,7 +247,7 @@ describe('Qualitaetstag mit Intervallen', () => {
   it('meldet zu kurze Intervalle', () => {
     const row = tag(DO, [fahrt(60)], { a1: zonen({ z1: 3300, z3: 120 }) });
     expect(row.badge).toBe('Intervalle kurz');
-    expect(texte(row)).toContain('abgebrochen oder Zone nicht erreicht');
+    expect(texte(row)).toContain('min hart gefahren');
   });
 });
 
@@ -255,7 +255,7 @@ describe('Arbeitsweg am Dienstag', () => {
   it('nimmt eine laengere Fahrt hin und bewertet die Intensitaet', () => {
     const row = tag(DI, [fahrt(90)], { a1: zonen({ z1: 1800, z2: 3600 }) });
     expect(row.status).toBe('ok');
-    expect(texte(row)).toContain('Passt für den Arbeitsweg');
+    expect(texte(row)).toMatch(/% in Z2, \d+ % darüber\./);
   });
 
   /* Bis zum 15.09.2026 hiess das "zu hart". Seitdem ein Pruefhinweis: auf dem
@@ -266,7 +266,7 @@ describe('Arbeitsweg am Dienstag', () => {
     expect(row.status).toBe('ok');
     expect(row.badge).not.toBe('zu hart');
     expect(row.notes.filter(n => n.kind === 'bad')).toEqual([]);
-    expect(texte(row)).toContain('Zeitdruck oder Ankunftspuffer prüfen');
+    expect(texte(row)).toContain('Arbeitsweg, ohne Härte-Bewertung');
     expect(row.pruefHinweis.ueber).toBe(67);
   });
 });
@@ -276,7 +276,7 @@ describe('Rumpftag', () => {
     const row = tag(SO);
     expect(row.status).toBe('dev');
     expect(row.badge).toBe('nicht erfasst');
-    expect(texte(row)).toContain('Keine Krafteinheit gefunden');
+    expect(texte(row)).toContain('Keine Krafteinheit erfasst');
   });
 
   it('bestaetigt einen vollstaendigen Zirkel aus dem eigenen Protokoll', () => {
@@ -329,7 +329,6 @@ describe('Beinblock', () => {
     knapp.exercises[0].reps = [5, 8];
     const row = tag(SO, [], null, [], [knapp]);
     expect(texte(row)).toContain('unter dem Wiederholungsziel: Kniebeuge');
-    expect(texte(row)).toContain('kein Fehler');
   });
 
   /* Am Mittwoch steht kein Beinblock an - dann darf auch keiner angemahnt
@@ -402,7 +401,7 @@ describe('Fahrten eines Tages nacheinander', () => {
     expect(row.fahrten[0].notes.map(n => n.text).join(' '))
       .not.toContain('über das Ziel');
     expect(row.fahrten[1].notes.map(n => n.text).join(' '))
-      .toContain('Diese Fahrt trägt den Tag über das Ziel: 90 min gegen 40 min');
+      .toContain('Mit dieser Fahrt über dem Ziel: 90 min gegen 40 min');
     expect(row.umfangUeber).toEqual({ kum: 90, soll: 40, minimum: true });
   });
 
@@ -426,8 +425,8 @@ describe('Fahrten eines Tages nacheinander', () => {
   it('bewertet die Intensitaet je Fahrt statt ueber den Tag gemittelt', () => {
     const row = zwei(90, 20, zonen({ z2: 5400 }), zonen({ z2: 300, z4: 900 }));
     expect(row.badge).not.toBe('zu hart');
-    expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toContain('Passt für den Arbeitsweg');
-    expect(row.fahrten[1].notes.map(n => n.text).join(' ')).toContain('Zeitdruck');
+    expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toMatch(/% in Z2, \d+ % darüber\./);
+    expect(row.fahrten[1].notes.map(n => n.text).join(' ')).toContain('Arbeitsweg, ohne Härte-Bewertung');
   });
 
   /* row.notes bleibt die flache Liste: das Fazit sucht darin die schweren
@@ -511,13 +510,13 @@ describe('Hinweis zur Aufzeichnung', () => {
   it('benennt einen groben Takt', () => {
     const z = zonen({ z2: 3600 });
     z._takt = 4.2;
-    expect(recordingNote(z).text).toContain('4,2-Sekunden-Takt');
+    expect(recordingNote(z).text).toContain('4,2-s-Takt');
   });
 
   it('warnt, wenn ohne Zeit-Stream geraten wurde', () => {
     const z = zonen({ z2: 3600 });
     z._method = 'annahme';
-    expect(recordingNote(z).text).toContain('deutlich zu niedrig');
+    expect(recordingNote(z).text).toContain('möglicherweise zu niedrig');
   });
 });
 
@@ -562,7 +561,7 @@ describe('Rundenschaetzung aus der Aufzeichnungsdauer', () => {
      der Uhr, kein Eintrag im App-Protokoll. */
   it('bewertet eine auf der Uhr aufgezeichnete Krafteinheit', () => {
     const row = tag(SO, [kraft(Math.round(dauer(2) / 60))]);
-    expect(texte(row)).toMatch(/Krafteinheit aufgezeichnet/);
+    expect(texte(row)).toMatch(/Krafteinheit: \d+ min, geschätzt/);
     expect(row.status).not.toBe('miss');
   });
 });
@@ -598,7 +597,7 @@ describe('Entkopplung gegen die Zonenwarnung', () => {
     /* Beide Zahlen stehen da - ein Freispruch ohne Anklage waere die
        Zonenzahl, die man nirgends mehr findet. */
     expect(texte(row)).toContain('31 %');
-    expect(texte(row)).toContain('sticht das');
+    expect(texte(row)).toContain('deshalb nicht als zu hart gewertet');
   });
 
   it('laesst die Warnung stehen, wenn die Entkopplung selbst hoch ist', () => {
@@ -671,7 +670,7 @@ describe('Herkunft der Zonenverteilung', () => {
     const row = tag(SA, [fahrt(soll)],
       { a1: mitQuelle('hf-uebergang', { _wattAusgefallen: true }) });
     expect(texte(row)).toContain('Übergangsbänder');
-    expect(texte(row)).toContain('Zonen & Schwellenwerte');
+    expect(texte(row)).toContain('Eintragen unter „Zonen“');
   });
 
   it('schweigt in den Wochen 1 bis 4', () => {
@@ -685,6 +684,6 @@ describe('Herkunft der Zonenverteilung', () => {
       fahrt(soll / 2, { id: 'a2', start_date_local: '2026-08-15T15:00:00' })
     ], { a1: mitQuelle('watt'), a2: mitQuelle('hf-coggan') });
     expect(row.zones._quelle).toBe('gemischt');
-    expect(texte(row)).toContain('zwei Währungen');
+    expect(texte(row)).toContain('teils mit, teils ohne Leistung');
   });
 });

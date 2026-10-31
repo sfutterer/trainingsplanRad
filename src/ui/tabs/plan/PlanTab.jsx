@@ -86,10 +86,10 @@ function naechsterTest(p, heute, start){
     const d = testDateFor(p, w, start);
     const tage = Math.round((d - toMidnight(heute)) / 86400000);
     if(tage < 0) continue;
-    if(tage === 0) return 'Heute ist Schwellentest (Woche ' + w + '). Danach FTP und LTHR unten eintragen.';
+    if(tage === 0) return 'Heute ist Schwellentest (Woche ' + w + ').';
     if(tage <= vorlauf) return 'Nächster Schwellentest: ' + datumText(d) +
       ' (Woche ' + w + '), in ' + tage + (tage === 1 ? ' Tag' : ' Tagen') +
-      '. Der Testanlauf läuft – die Vorgabe steht auf der jeweiligen Tageskarte.';
+      '. Der Testanlauf läuft.';
     return null;
   }
   return null;
@@ -106,8 +106,8 @@ function StatusKarte(){
   const tn = naechsterTest(p, today.value, start);
   if(tn && !isTestWeek(p, w)) hinweise.push(tn);
   if(w >= p.cogganFromWeek && !(th.lthr > 0)){
-    hinweise.push('Ab Woche ' + p.cogganFromWeek + ' rechnet der Plan mit Coggan-Zonen aus der LTHR. ' +
-      'Solange kein Testwert eingetragen ist, laufen die Übergangsbänder weiter – die Zonenauswertung ist dann nur eine Näherung.');
+    hinweise.push('Ab Woche ' + p.cogganFromWeek + ' sind Coggan-Zonen vorgesehen, die LTHR fehlt. ' +
+      'Bis dahin gelten die Übergangsbänder.');
   }
 
   return (
