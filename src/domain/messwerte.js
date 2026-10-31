@@ -202,37 +202,75 @@ export function konsequenz(plan, liste, woche){
    Uebernahme waere er beim ersten Start nach dem Umbau verschwunden - samt
    einer HFmax, die ein Test ueberhaupt nicht liefert.
 
-   Uebernommen wird nur, was ein Test nicht schon traegt, und nur mit dem
-   Datum, das der Vermerk nennt. Fehlt es, landet der Eintrag ohne Datum ganz
-   am Anfang: er gilt dann, solange kein Test etwas Neueres sagt.
+   Die Bedingung, an der sich die Uebernahme messen lassen muss: danach gilt
+   genau das, was vorher galt. Nicht ungefaehr, sondern Wert fuer Wert - wer
+   die App nach dem Update oeffnet, darf keine andere Zone sehen als am Abend
+   davor.
 
-   Zweimal aufgerufen aendert sich nichts mehr - der Schluessel ist derselbe,
-   und ein vorhandener Eintrag wird nicht noch einmal angelegt. Das ist
-   wichtig, weil der alte Speicher stehen bleibt: ein spaeter von Hand
-   geloeschter Wert darf beim naechsten Start nicht wieder auftauchen. */
+   In zwei Schritten:
+
+   1  Werte von Hand mit Eingabedatum werden ein Eintrag an diesem Tag.
+
+   2  Was danach noch abweicht, wird so eingetragen, dass es gilt. Das betrifft
+      vor allem Werte ohne Eingabedatum - so speicherte die App bis zum
+      12.09.2026, und die von Hand gesetzte LTHR 163 jenes Tages ist genau so
+      ein Fall. Die erste Fassung dieser Uebernahme legte sie ohne Datum an den
+      Anfang der Liste; der Test vom 10.09. mit 152 war damit juenger und
+      gewann. Gefunden durch die Pruefung gegen alle Datenformen der
+      Vorversion (test/messwerte.test.js), nicht durch Zufall.
+
+      Das Datum, das ein solcher Eintrag bekommt, ist der Tag des juengsten
+      Eintrags der Liste. Das ist keine Erfindung, sondern eine Untergrenze: in
+      der Vorversion ueberschrieb jeder neu gespeicherte Test einen
+      undatierten Handwert. Steht die Handzahl noch im Speicher, wurde sie nach
+      dem juengsten Test gesetzt. Am selben Tag gewinnt der Handeintrag (siehe
+      sortiere), also gilt er - wie vorher.
+
+   Die Notiz sagt, dass das Datum erschlossen ist. Eine Zahl, deren Herkunft
+   geraten aussieht, ist schlimmer als eine, die sagt, was man weiss.
+
+   Zweimal aufgerufen aendert sich nichts mehr: beim zweiten Mal gilt schon,
+   was gelten soll. Der alte Speicher wird nach der ersten Uebernahme ohnehin
+   geleert (state/store.js), damit ein spaeter geloeschter Wert nicht beim
+   naechsten Start zurueckkommt. */
 export function uebernimmSchwellen(liste, alt){
-  const sortiert = sortiere(liste);
-  if(!alt) return sortiert;
+  let ergebnis = sortiere(liste);
+  if(!alt) return ergebnis;
 
-  /* Je Herkunftsdatum ein Eintrag: drei von Hand gesetzte Werte vom selben Tag
-     sind eine Eingabe und keine drei. */
-  const neue = new Map();
+  /* 1 - mit Eingabedatum. Drei Werte vom selben Tag sind eine Eingabe. */
+  const datiert = new Map();
   for(const f of WERTFELDER){
     const v = n(alt[f]);
     if(v == null) continue;
     const q = alt.quellen && alt.quellen[f];
-    if(q && q.art === ART_TEST) continue;          // steht als Test in der Liste
-    const tag = q && q.art === ART_HAND && typeof q.seit === 'string'
-      ? q.seit.slice(0, 10) : null;
+    if(!(q && q.art === ART_HAND && typeof q.seit === 'string')) continue;
+    const tag = q.seit.slice(0, 10);
     const id = messwertId(tag, ART_HAND);
-    if(sortiert.some(e => e.id === id)) continue;
-    const e = neue.get(id) || { id, art: ART_HAND, day: tag,
+    if(ergebnis.some(e => e.id === id)) continue;
+    const e = datiert.get(id) || { id, art: ART_HAND, day: tag,
       note: 'aus dem früheren Schwellenspeicher übernommen' };
     e[f] = v;
-    neue.set(id, e);
+    datiert.set(id, e);
   }
-  if(!neue.size) return sortiert;
-  return sortiere(sortiert.concat([...neue.values()]));
+  if(datiert.size) ergebnis = sortiere(ergebnis.concat([...datiert.values()]));
+
+  /* 2 - was jetzt noch abweicht, so eintragen, dass es gilt. */
+  const gilt = geltendeSchwellen(ergebnis);
+  const offen = WERTFELDER.filter(f => n(alt[f]) != null && gilt[f] !== n(alt[f]));
+  if(!offen.length) return ergebnis;
+
+  const tage = ergebnis.map(e => e.day).filter(Boolean);
+  const tag = tage.length ? tage[tage.length - 1] : null;
+  const id = messwertId(tag, ART_HAND);
+  const vorhanden = ergebnis.find(e => e.id === id);
+  const eintrag = vorhanden ? { ...vorhanden } : {
+    id, art: ART_HAND, day: tag,
+    note: tag ? 'aus dem früheren Schwellenspeicher übernommen – Eingabedatum '
+                + 'unbekannt, gilt spätestens seit diesem Tag'
+              : 'aus dem früheren Schwellenspeicher übernommen'
+  };
+  for(const f of offen) eintrag[f] = n(alt[f]);
+  return sortiere(ergebnis.filter(e => e.id !== id).concat([eintrag]));
 }
 
 /* ---- Vorbelegung eines neuen Eintrags ----

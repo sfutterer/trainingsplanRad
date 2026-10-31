@@ -120,15 +120,23 @@ export async function boot(){
      steht dort nichts mehr, was die App liest - der Schluessel selbst bleibt,
      damit eine aeltere Sicherung sich weiterhin einspielen laesst.
 
-     Geschrieben wird nur, wenn tatsaechlich etwas uebernommen wurde: ohne das
-     schriebe jeder Start den Bestand neu, und ein Fehler beim Schreiben
-     traefe jedes Mal die einzige Kopie der Protokolle. */
+     Die Liste wird nur geschrieben, wenn sich an ihr etwas geaendert hat:
+     sonst schriebe jeder Start den Bestand neu, und ein Fehler beim Schreiben
+     traefe jedes Mal die einzige Kopie der Protokolle.
+
+     Der alte Speicher wird dagegen geleert, sobald er ueberhaupt einen Wert
+     trug - auch wenn die Uebernahme nichts anlegen musste, weil alle Werte
+     schon als Test in der Liste stehen. Bis zum 31.10.2026 hing das Leeren
+     daran, dass ein Eintrag dazukam; stammten alle Werte aus Tests, blieb der
+     Speicher voll, und wer spaeter einen Test loeschte, bekam beim naechsten
+     Start dessen Zahlen als Handwert zurueck. Erst schreiben, dann leeren: in
+     umgekehrter Reihenfolge waere ein Abbruch dazwischen ein Verlust. */
   const rohe = sortiere(await store.testLog());
   const alt  = await store.thresholds();
   const mit  = uebernimmSchwellen(rohe, alt);
   messwerte.value = mit;
-  if(mit.length !== rohe.length){
-    await store.setTestLog(mit);
+  if(JSON.stringify(mit) !== JSON.stringify(rohe)) await store.setTestLog(mit);
+  if(alt && (alt.ftp || alt.lthr || alt.hrmax)){
     await store.setThresholds({ ftp:null, lthr:null, hrmax:null, quellen:{} });
   }
 

@@ -151,6 +151,77 @@ describe('Uebernahme des alten Schwellenspeichers', () => {
   });
 });
 
+/* Die Bedingung, an der sich die Uebernahme messen lassen muss: danach gilt
+   genau das, was vorher galt - Wert fuer Wert. Die Faelle sind die
+   Datenformen, die die Vorversion erzeugen konnte, nicht ausgedachte.
+
+   Fall B ist der, an dem die erste Fassung gescheitert ist: bis zum
+   12.09.2026 speicherte die App Handwerte ohne Eingabedatum, die LTHR 163
+   jenes Tages ist so einer. Die Uebernahme legte sie ohne Datum an den
+   Anfang der Liste, der Test vom 10.09. mit 152 war juenger und gewann - die
+   Zonen waeren beim Update still um elf Schlaege verrutscht. */
+describe('Uebernahme: nach dem Update gilt, was vorher galt', () => {
+  const T = (day, ftp, lthr) => ({ day, ftp, lthr, w20: Math.round(ftp / 0.95) });
+  const hand = seit => (seit ? { art:'hand', seit } : { art:'hand' });
+  const vonTest = tag => ({ art:'test', tag });
+
+  const faelle = {
+    'A Test, danach Handwerte mit Eingabedatum': [
+      [T('2026-09-10', 192, 152)],
+      { ftp:192, lthr:163, hrmax:180, quellen:{ ftp: vonTest('2026-09-10'),
+        lthr: hand('2026-09-12T18:04:00Z'), hrmax: hand('2026-09-12T18:04:00Z') } }],
+    'B Test, danach Handwerte ohne Eingabedatum': [
+      [T('2026-09-10', 192, 152)],
+      { ftp:192, lthr:163, hrmax:180, quellen:{ ftp: vonTest('2026-09-10'),
+        lthr: hand(), hrmax: hand() } }],
+    'C nur Handwerte, ohne jeden Vermerk': [
+      [], { ftp:200, lthr:160, hrmax:null }],
+    'D Retest im alten Ergebnisformular': [
+      [T('2026-09-10', 192, 152), T('2026-10-22', 223, 166)],
+      { ftp:223, lthr:166, hrmax:180, quellen:{ ftp: vonTest('2026-10-22'),
+        lthr: vonTest('2026-10-22'), hrmax: hand() } }],
+    'E Retest von Hand unter Zonen': [
+      [T('2026-09-10', 192, 152)],
+      { ftp:223, lthr:166, hrmax:180, quellen:{ ftp: hand('2026-10-25T08:00:00Z'),
+        lthr: hand('2026-10-25T08:00:00Z'), hrmax: hand() } }],
+    'F Handwert ohne Vermerk neben einem Test': [
+      [T('2026-09-10', 192, 152)], { ftp:192, lthr:163, hrmax:null, quellen:{} }]
+  };
+
+  for(const [name, [liste, alt]] of Object.entries(faelle)){
+    it(name, () => {
+      const s = M.geltendeSchwellen(M.uebernimmSchwellen(liste, alt));
+      expect([s.ftp, s.lthr, s.hrmax]).toEqual([alt.ftp, alt.lthr, alt.hrmax ?? null]);
+    });
+  }
+
+  /* Das Datum eines undatierten Handwerts ist erschlossen, nicht geraten: in
+     der Vorversion ueberschrieb jeder neu gespeicherte Test einen solchen
+     Wert. Steht er noch da, wurde er nach dem juengsten Test gesetzt - und
+     die Notiz sagt das. */
+  it('datiert einen undatierten Handwert auf den juengsten Eintrag', () => {
+    const [liste, alt] = faelle['B Test, danach Handwerte ohne Eingabedatum'];
+    const neu = M.uebernimmSchwellen(liste, alt).find(e => e.art === 'hand');
+    expect(neu.day).toBe('2026-09-10');
+    expect([neu.lthr, neu.hrmax]).toEqual([163, 180]);
+    expect(neu.note).toMatch(/Eingabedatum unbekannt/);
+  });
+
+  it('laesst die Tests der Liste unberuehrt', () => {
+    const [liste, alt] = faelle['D Retest im alten Ergebnisformular'];
+    const tests = M.uebernimmSchwellen(liste, alt).filter(e => e.art === 'test');
+    expect(tests.map(e => [e.day, e.ftp, e.lthr])).toEqual(
+      [['2026-09-10', 192, 152], ['2026-10-22', 223, 166]]);
+  });
+
+  it('aendert beim zweiten Durchlauf nichts mehr', () => {
+    for(const [liste, alt] of Object.values(faelle)){
+      const einmal = M.uebernimmSchwellen(liste, alt);
+      expect(M.uebernimmSchwellen(einmal, alt)).toEqual(einmal);
+    }
+  });
+});
+
 describe('Was die letzte Messung geaendert hat', () => {
   const liste = [test('2026-09-10', 192, 163), test('2026-10-22', 223, 166)];
 
