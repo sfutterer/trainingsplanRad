@@ -25,7 +25,7 @@
     "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach.",
     "migration": "Ein Plan der Fassung 2 wird beim Laden auf Fassung 3 gehoben: die Wochentage im Feldnamen (tuesdayMinutes, saturdayBlocks …) werden zu einem Objekt je Tag unter weeks[].tage.",
     "kadenz": "cadenceTargets.byZone gilt fuer das Cube (Do, Sa) - dort hat in Z2 die Leistung Vorrang, deshalb 80-85 rpm (Fassung 8). cadenceTargets.trekkingrad ueberschreibt einzelne Zonen fuer Di und Mi auf dem Trekkingrad, wo keine Wattvorgabe gilt und keine Kadenzdaten ankommen.",
-    "zielwatt": "zielwatt steht an einem tage.do, an einem work-Schritt und an tage.sa.bloecke und nennt das Zielband in Watt direkt: min, max und herkunft. Es hat Vorrang vor jedem Prozentsatz. Seit Fassung 12 gibt es nur noch eine FTP - die aus dem Schwellentest -, und jeder Prozentsatz rechnet gegen sie; zielwatt bleibt fuer die zwei Faelle, die sich als Prozentsatz nicht schreiben lassen. Erstens das nachgesteuerte Band: das Donnerstagsband der Wochen 11 und 12 wird ueber das Pulskriterium in 5-W-Schritten verstellt und ist deshalb keine Prozentzahl mehr. Zweitens die gefahrenen Wochen: die Wochen 5 bis 9 behalten die Baender, die an ihnen galten - aus der Arbeits-FTP 206 bzw. 215 W, die es bis zum Retest am 22.10.2026 gab -, denn die Analyse eines gefahrenen Tages muss gegen die Vorgabe rechnen, die an ihm galt, und nicht gegen die von heute. min gleich max heisst ein fester Wert und keine Spanne. Wo zielwatt fehlt, rechnet die App den Prozentsatz gegen die FTP - so bleiben Phase 4 (90-95 %) und die Samstagsbloecke der Woche 12 (80-88 %) ohne Pflege richtig."
+    "zielwatt": "zielwatt steht an einem tage.do, an einem work-Schritt und an tage.sa.bloecke und nennt das Zielband in Watt direkt: min, max und herkunft. Es hat Vorrang vor jedem Prozentsatz. Seit Fassung 12 gibt es nur noch eine FTP - die aus dem Schwellentest -, und jede Vorgabe steht wieder als Prozentsatz davon; zielwatt bleibt allein fuer die gefahrenen Wochen 5 bis 9, die ihre Baender aus der Arbeits-FTP 206 bzw. 215 W behalten, die es bis zum Retest am 22.10.2026 gab. Die Analyse eines gefahrenen Tages muss gegen die Vorgabe rechnen, die an ihm galt, und nicht gegen die von heute - deshalb werden sie eingefroren und nicht nachgezogen. min gleich max heisst ein fester Wert und keine Spanne. Alles Kuenftige steht als Prozentsatz (power an einem tage.do, effort an einem Schritt, saturdayRide.blockPower an den Samstagsbloecken) und folgt damit jedem Test von selbst."
   },
   "recoveryWeeks": [
     4,
@@ -645,16 +645,12 @@
               "type": "work",
               "label": "Erhaltungsreiz 1 / 3",
               "short": "Reiz 1/3",
-              "zielwatt": {
-                "min": 250,
-                "max": 260,
-                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
-              },
               "minutes": 3,
               "zone": "z5",
               "rep": 1,
               "reps": 3,
-              "note": "Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max. Der Puls ist erst am Blockende aussagekräftig – gesteuert wird über die Leistung."
+              "note": "Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max. Der Puls ist erst am Blockende aussagekräftig – gesteuert wird über die Leistung.",
+              "effort": "112–116 % FTP"
             },
             {
               "type": "rest",
@@ -669,15 +665,11 @@
               "type": "work",
               "label": "Erhaltungsreiz 2 / 3",
               "short": "Reiz 2/3",
-              "zielwatt": {
-                "min": 250,
-                "max": 260,
-                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
-              },
               "minutes": 3,
               "zone": "z5",
               "rep": 2,
-              "reps": 3
+              "reps": 3,
+              "effort": "112–116 % FTP"
             },
             {
               "type": "rest",
@@ -692,15 +684,11 @@
               "type": "work",
               "label": "Erhaltungsreiz 3 / 3",
               "short": "Reiz 3/3",
-              "zielwatt": {
-                "min": 250,
-                "max": 260,
-                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
-              },
               "minutes": 3,
               "zone": "z5",
               "rep": 3,
-              "reps": 3
+              "reps": 3,
+              "effort": "112–116 % FTP"
             },
             {
               "type": "ride",
@@ -771,16 +759,12 @@
               "type": "work",
               "label": "Erhaltungsreiz 1 / 3",
               "short": "Reiz 1/3",
-              "zielwatt": {
-                "min": 250,
-                "max": 260,
-                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
-              },
               "minutes": 3,
               "zone": "z5",
               "rep": 1,
               "reps": 3,
-              "note": "Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max. Der Puls ist erst am Blockende aussagekräftig – gesteuert wird über die Leistung."
+              "note": "Drei Minuten liefern etwa eine Minute nutzbare Zeit nahe VO2max. Der Puls ist erst am Blockende aussagekräftig – gesteuert wird über die Leistung.",
+              "effort": "112–116 % FTP"
             },
             {
               "type": "rest",
@@ -795,15 +779,11 @@
               "type": "work",
               "label": "Erhaltungsreiz 2 / 3",
               "short": "Reiz 2/3",
-              "zielwatt": {
-                "min": 250,
-                "max": 260,
-                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
-              },
               "minutes": 3,
               "zone": "z5",
               "rep": 2,
-              "reps": 3
+              "reps": 3,
+              "effort": "112–116 % FTP"
             },
             {
               "type": "rest",
@@ -818,15 +798,11 @@
               "type": "work",
               "label": "Erhaltungsreiz 3 / 3",
               "short": "Reiz 3/3",
-              "zielwatt": {
-                "min": 250,
-                "max": 260,
-                "herkunft": "112–116 % der FTP 223 W, nachgesteuert (Fassung 12)"
-              },
               "minutes": 3,
               "zone": "z5",
               "rep": 3,
-              "reps": 3
+              "reps": 3,
+              "effort": "112–116 % FTP"
             },
             {
               "type": "ride",

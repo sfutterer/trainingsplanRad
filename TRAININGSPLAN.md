@@ -27,6 +27,12 @@ Plan muss dieses Dokument mitgezogen werden.
 > Punkte 34 bis 36) — **ohne** die Erholungswochen: sie bleibt bei
 > `[4, 7, 10, 13, 16]` und bei den alten Minuten der Woche 10.
 >
+> Ebenfalls am 31.10.: **der Erhaltungsreiz steht wieder als Prozentsatz der FTP**
+> (112–116 %) und nicht mehr als festes Wattband. Das feste Band stammte aus der Zeit
+> der Arbeits-FTP; mit einer FTP für alles ist die Coggan-Form wieder die richtige, und
+> die Vorgabe folgt jedem Test ohne Hand an der Datei. Gerechnet sind das **250–259 W**
+> aus 223 W — die 260 waren aufgerundet. Nachgesteuert wird ab jetzt der Prozentsatz.
+>
 > Fassung 11 (24.09.2026) brachte: **Die Zielwatt der Donnerstagsintervalle stiegen auf
 > 240–250 W, die Arbeits-FTP von 206 auf 215 W.** Anlass: zwei Intervalleinheiten in Folge
 > (17.09., 24.09.) hatten das Pulskriterium „≥ 163 bpm in den letzten 60 s" bei Leistungen
@@ -399,11 +405,14 @@ Begründet war das mit LT1 und dem belegten Arbeitspunkt um 139 W (Decoupling �
 
 **Zielwatt der Qualitätseinheiten — aus der FTP 223 W (Fassung 12):**
 
-| Einheit | Vorgabe | Watt |
+Bindend ist der Prozentsatz, die Wattspalte ist seine Rechnung bei FTP 223 W. Sie
+wandert mit jedem Test mit, ohne dass jemand sie nachträgt.
+
+| Einheit | Vorgabe | Watt bei FTP 223 |
 |---|---|---|
-| Do-Intervalle Phase 2 | 112–116 % | **250–260**, Nachsteuerung über das Pulskriterium |
+| Do-Intervalle Phase 2 (abgeschlossen) | 112–116 % | 250–259 |
 | Sa-Blöcke Woche 12 | 80–88 % | **178–196** |
-| Do-Erhaltungsreiz Phase 3 | 112–116 % | **250–260**, bzw. der zuletzt nachgesteuerte Wert |
+| Do-Erhaltungsreiz Phase 3 | 112–116 % | **250–259**, Nachsteuerung über das Pulskriterium |
 | Do-Schwellenblöcke Phase 4 | 90–95 % | **201–212** |
 
 **Vorwerte:** Fassung 11 (Arbeits-FTP 215 W): Do-Intervalle 240–250 W, Sa-Blöcke
@@ -419,10 +428,10 @@ der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn die Leistung in 
 |---|---|---|
 | Di Z2 (Trekkingrad, kein Powermeter) | Sprechtest, HF 128–135 | — |
 | Mi Z2 kurz (Trekkingrad) | Sprechtest, bewusst darunter | — |
-| Do Intervalle Phase 2 | **250–260 W**, Nachsteuerung ±5 W | Atmung sticht die Zahl; HF nur am Intervallende (≥ 166 bpm, letzte 60 s) |
-| Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **250–260 W** (bzw. nachgesteuerter Wert) für die 3 × 3 min | HF nur am Intervallende |
+| Do Intervalle Phase 2 (abgeschlossen) | 112–116 % FTP, Nachsteuerung ±5 W | Atmung sticht die Zahl; HF nur am Intervallende (≥ 166 bpm, letzte 60 s) |
+| Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **112–116 % FTP** (250–259 W) für die 3 × 3 min | HF nur am Intervallende |
 | Do Schwelle (Phase 4) | **201–212 W** | HF sollte in Z4 einpendeln |
-| Sa Basis | **Ø 135–150 W** beim Treten (Z2 123–167 W) | Sprechtest, Decoupling nach der Fahrt |
+| Sa Basis | **Z2 123–167 W** | Sprechtest, Decoupling nach der Fahrt |
 | Sa Blöcke | **178–196 W** | HF steigt langsam, ist normal |
 | Fr/So optional | HF unter Z2-Obergrenze | — |
 
@@ -608,7 +617,7 @@ Erholungswoche.
 | 2 | 6, 8, 9 | **5 × 4 min**, 4 min Pause (Woche 8 und 9: 240–250 W aus Arbeits-FTP 215 W) | VO2max |
 | 2 | 7 | 4 × 3 min bei ~196 W | Erholungswoche, kein Z5 |
 | 2 | 10 | Retest | FTP + LTHR |
-| 3 | 11–12 | 70–75 min Z2, darin **3 × 3 min bei 250–260 W** (112–116 %), 3 min Pause | dritter Grundlagentag + Erhaltungsreiz VO2max |
+| 3 | 11–12 | 70–75 min Z2, darin **3 × 3 min bei 112–116 % FTP** (250–259 W), 3 min Pause | dritter Grundlagentag + Erhaltungsreiz VO2max |
 | 3 | 13 | 55 min Z2 | Erholungswoche |
 | 4 | 14–15 | 3 × 10–12 min bei **201–212 W** (90–95 %), 5 min Pause | Schwelle |
 | 4 | 16 | Retest | FTP + LTHR |
@@ -621,7 +630,7 @@ Phase 2 ist mit dem Retest abgeschlossen; weitere VO2max-Arbeit kommt nur noch a
 Erhaltungsreiz in Phase 3.
 
 **Erhaltungsreiz Phase 3 (Woche 11 und 12):** In die Z2-Einheit am Donnerstag werden
-**3 × 3 min bei 250–260 W (112–116 % FTP) mit je 3 min lockerer Pause** eingebettet,
+**3 × 3 min bei 112–116 % FTP (250–259 W) mit je 3 min lockerer Pause** eingebettet,
 insgesamt 15 min. Grund: Phase 3 enthält sonst drei Wochen ohne jeden harten Reiz, und
 die VO2max bildet sich von allen Größen am schnellsten zurück. In der Erholungswoche 13
 entfällt der Reiz.
@@ -679,6 +688,11 @@ dazwischen, **178–196 W** (80–88 % der FTP 223 W; Woche 9 noch 172–189 W, 
    - Eine **gewollte schnellere Schlusswiederholung** („alles raus") ist erlaubt, fließt
      aber nicht in die Nachsteuerung ein.
    - **In Phase 3 (3 × 3 min)** gilt die Regel sinngemäß für die Wiederholungen 2 und 3.
+   - **Seit dem 31.10.2026 steht die Vorgabe als Prozentsatz** (112–116 % FTP).
+     Ein Schritt von ±5 W sind damit rund ±2 Prozentpunkte; nachgesteuert wird, indem
+     der Prozentsatz in `plan.json` geändert wird. Hält die Nachsteuerung über mehrere
+     Einheiten in dieselbe Richtung an, ist nicht das Band falsch, sondern die FTP alt —
+     dann ist der nächste Test die Antwort und nicht der nächste 5-W-Schritt.
 
 ---
 
@@ -1326,7 +1340,7 @@ Aus Fassung 8 (19.09.2026):
     (Cube, Do/Sa); Di/Mi auf dem Trekkingrad bleiben bei der Pulsprüfung
     (Z2 ≤ 137 bpm seit Fassung 12).
     - **Bezugswerte seit Fassung 12:** Z2 123–167 W aus der **FTP 223 W**; Blockziel
-      Samstag 178–196 W (80–88 %), Do-Reiz 250–260 W (112–116 %).
+      Samstag 178–196 W (80–88 %), Do-Reiz 250–259 W (112–116 %).
     - **Glätten:** Zonenzeiten auf dem 30-s-Gleitmittel. Stillstand (0 W **und** unter
       2 km/h) fällt aus allen Rechnungen heraus.
     - **Abschnitte:** erste 15 min Einfahren und letzte 10 min Ausrollen werden nicht
@@ -1364,9 +1378,11 @@ Aus Fassung 12 (22.10.2026):
     ihre Messwerte führt. In der Datei ist `arbeits_ftp` **entfernt**; seitdem rechnet
     jeder Prozentsatz wieder gegen die eingetragene FTP, also Phase 4 bei 201–212 W und
     die Sa-Blöcke der Woche 12 bei 178–196 W, beide ohne Pflege. Der Do-Reiz der Wochen
-    11 und 12 steht als festes Band bei **250–260 W** — er wird nachgesteuert und ist
-    deshalb keine Prozentzahl. Die Sa-Blöcke der gefahrenen Woche 9 sind mit 172–189 W
-    **eingefroren**, sonst wären sie rückwirkend gewandert. **Erledigt am 31.10.2026.**
+    11 und 12 steht seit dem 31.10. ebenfalls als Prozentsatz (112–116 %, gerechnet
+    **250–259 W**) und nicht mehr als festes Band. Die Sa-Blöcke der gefahrenen Woche 9
+    sind mit 172–189 W **eingefroren**, sonst wären sie rückwirkend gewandert. In
+    `plan.json` steht damit kein einziges Wattband mehr, das nicht eine gefahrene Woche
+    festhält. **Erledigt am 31.10.2026.**
 
     **Nicht übernommen:** Erholungswochen und Woche 10. Die App führt weiter
     `[4, 7, 10, 13, 16]` und die alten Minuten der Woche 10. Die Woche ist vorbei, der
@@ -1805,7 +1821,7 @@ Retest aus der neuen FTP ergeben.
 | 1 | **FTP 223 W**, eingetragen in intervals.icu, App und Edge | Ausbelasteter, gleichmäßig gepacter Test nach vollständigem Anlauf |
 | 2 | **Arbeits-FTP aufgehoben** | Der Testwert ist belastbar; zwei FTP-Werte waren eine Notlösung für einen zu niedrigen ersten Test. Die Arbeits-FTP 215 W lag 8 W unter dem Testwert — sie war vorsichtig, nicht überzogen |
 | 3 | **LTHR 166 bpm**, erhoben = gesetzt | Ø-Puls der 20 min, gleiche Methode wie Abschnitt 2a. Diesmal ausbelastet, daher keine Abweichung nötig. intervals.icu-Methode (98 %) ergäbe 163 — bewusst nicht verwendet, damit die Testreihe vergleichbar bleibt |
-| 4 | **Zielwatt neu:** Phase-3-Reiz 250–260 W, Sa-Blöcke 178–196 W, Schwelle 201–212 W | Prozentsätze unverändert, Bezugswert jetzt die FTP 223 W |
+| 4 | **Zielwatt neu:** Phase-3-Reiz 250–259 W, Sa-Blöcke 178–196 W, Schwelle 201–212 W | Prozentsätze unverändert, Bezugswert jetzt die FTP 223 W; seit 31.10. stehen alle drei als Prozentsatz in der Datei und werden gerechnet |
 | 5 | **Z2 folgt der FTP:** Coggan-Z2 123–167 W | Die feste Obergrenze 144 W stammte aus einer Zeit mit belegt zu niedriger FTP. Am oberen Rand kann Z2 über LT1 liegen — dort entscheidet der Sprechtest, kontrolliert wird über das Decoupling |
 | 6 | **Pulskriterium der Intervalle ≥ 166 bpm** | Folge aus 3 |
 | 7 | **Woche 10 keine Erholungswoche**, Erholungswochen 4, 7, 13, 16 | Woche 8 war krankheitsbedingt faktisch Pause; eine Erholungswoche direkt nach der Pause wäre zu früh gekommen. Absicherung über TSB-Regel und Wellness-Gate in Woche 11 und 12 |

@@ -143,19 +143,25 @@ describe('Bezugswerte aus plan.json', () => {
     expect(w15.herkunft).toBe('90–95 % der FTP 223 W');
   });
 
-  /* Der Erhaltungsreiz der Wochen 11 und 12 steht als Band in der Datei und
-     nicht als Prozentsatz: er wird ueber das Pulskriterium in 5-W-Schritten
-     nachgesteuert, und ein nachgesteuerter Wert ist keine runde Prozentzahl
-     mehr. Mit dem Retest ist er von 240-250 auf 250-260 W gegangen - von Hand,
-     nicht gerechnet. */
-  it('der Erhaltungsreiz der Wochen 11 und 12 steht bei 250-260 W', () => {
+  /* Der Erhaltungsreiz der Wochen 11 und 12 steht als Prozentsatz der FTP
+     und wandert damit mit jedem Test: 250-259 W aus der FTP 223 W. Von
+     Fassung 11 bis zum 31.10.2026 stand hier ein festes Band - erst 240-250,
+     dann 250-260 W -, weil es ueber das Pulskriterium in 5-W-Schritten
+     nachgesteuert wurde. Der Prozentsatz ist die Coggan-Form und braucht nach
+     einem Test keine Hand mehr; nachgesteuert wird, indem man ihn aendert. */
+  it('der Erhaltungsreiz der Wochen 11 und 12 folgt der FTP', () => {
     for(const nr of [11, 12]){
       const schritte = W.thursdayData(plan, nr).steps.filter(x => x.type === 'work');
       expect(schritte.length).toBe(3);
       for(const st of schritte){
+        expect(st.zielwatt).toBeUndefined();
+        expect(st.effort).toBe('112–116 % FTP');
         const b = Z.zielband(plan, TH12, st);
-        expect([b.min, b.max, b.quelle]).toEqual([250, 260, 'plan']);
-        expect(b.herkunft).toContain('FTP 223 W');
+        expect([b.min, b.max, b.quelle]).toEqual([250, 259, 'prozent']);
+        expect(b.herkunft).toBe('112–116 % der FTP 223 W');
+        /* Dieselben Prozente gegen die erste Messung - der Beleg, dass die
+           Zahl nicht mehr in der Datei steht. */
+        expect(Z.zielband(plan, TH, st).text).toBe('215–223 W');
       }
     }
   });

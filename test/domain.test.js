@@ -177,7 +177,25 @@
    Folge, die Fassung 12 will - die Zielwatt haengen an einer Messung, und
    ohne Messung gibt es sie nicht. Im Coggan-Pfad, also mit eingetragener
    FTP, steht das Band unveraendert da. Die Wiederholungsziele haben ihre
-   Pruefsumme behalten: der Zirkel kennt keine Watt. */
+   Pruefsumme behalten: der Zirkel kennt keine Watt.
+
+   Neu gesetzt am 31.10.2026, zweiter Schritt: der Erhaltungsreiz der Wochen
+   11 und 12 steht als Prozentsatz der FTP (112-116 %) statt als festes Band.
+   Das feste Band kam aus der Zeit der Arbeits-FTP, in der die Vorgabe in
+   5-W-Schritten nachgesteuert wurde und deshalb keine runde Prozentzahl mehr
+   war; mit einer FTP fuer alles ist die Coggan-Form wieder die richtige, und
+   der Reiz folgt jedem Test ohne Hand an der Datei.
+
+   Betroffen sind genau zwei Tage, der 29.10. und der 05.11., und zwar nur in
+   ihrer Schrittfolge: je dreimal -73 Zeichen in den Wochenangaben, wo das
+   zielwatt-Objekt dem kurzen effort weicht - 6 x 73 = 438, genau die Laenge,
+   um die der Wochenabzug kuerzer ist. Auf den Tageskarten sind es -167 je
+   Tag: im Uebergangspfad steht statt des Bandes die Prozentangabe selbst
+   ("3 min · 112-116 % FTP"), im Coggan-Pfad das gerechnete Band
+   ("3 min · 237-246 W · 112-116 % der FTP 212 W").
+
+   Die gerechnete Obergrenze liegt bei 259 statt 260 W: 116 % von 223 sind
+   258,7. Die 260 des Trainingsplans waren aufgerundet. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -335,11 +353,11 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: 'a1c53f5bacd3fa48', len: 17028 });
+      .toEqual({ hash: '3a320269517aaee3', len: 16590 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: 'a5234b6a41dd557d', len: 185917 });
+      .toEqual({ hash: '481620ac912213fb', len: 185583 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -363,7 +381,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '0119f7ff6a48e049', len: 165649 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: 'dc9c79edadafed52', len: 165593 });
   });
 });
 
@@ -499,16 +517,18 @@ describe('Kennzahlen aus dem Trainingsplan-Dokument', () => {
       const t = D.thursdayPlan(plan, w);
       const hart = t.steps.filter(s => s.type === 'work');
       expect(hart.map(s => s.minutes)).toEqual([3, 3, 3]);
-      /* Seit Fassung 11 traegt der Reiz sein Zielband in Watt und keinen
-         Prozentsatz mehr: es wird ueber das Pulskriterium in 5-W-Schritten
-         nachgesteuert, und ein nachgesteuerter Wert ist keine runde
-         Prozentzahl mehr. Mit dem Retest vom 22.10.2026 ist es von 240-250
-         auf 250-260 W gegangen - von Hand und nicht gerechnet, genau deshalb
-         steht es in der Datei. Das Band gilt ohne eingetragene Messwerte, es
-         kommt ja aus dem Plan. */
-      expect(hart.every(s => s.zone === 'z5' && s.effort == null)).toBe(true);
-      expect(hart.map(s => Z.zielband(plan, Z.NO_THRESHOLDS, s).text)).toEqual(
-        ['250–260 W', '250–260 W', '250–260 W']);
+      /* Der Reiz steht als Prozentsatz der FTP, wie jede andere Vorgabe des
+         Plans auch. Von Fassung 11 bis zum 31.10.2026 stand hier ein festes
+         Band, weil es in 5-W-Schritten nachgesteuert wurde; seit es wieder
+         nur eine FTP gibt, folgt der Prozentsatz jedem Test von selbst.
+
+         Ohne eingetragene Messwerte gibt es deshalb kein Band mehr, sondern
+         die Prozentangabe selbst - sie steht auf der Karte und im Timer an
+         der Stelle, an der sonst die Watt stehen. */
+      expect(hart.every(s => s.zone === 'z5' && s.effort === '112–116 % FTP')).toBe(true);
+      expect(hart.every(s => Z.zielband(plan, Z.NO_THRESHOLDS, s) === null)).toBe(true);
+      expect(hart.map(s => Z.zielband(plan, { ftp: 223, lthr: 166 }, s).text)).toEqual(
+        ['250–259 W', '250–259 W', '250–259 W']);
       /* Die Pausen dazwischen, nicht danach: 3 x 3 min Belastung und 2 x 3 min
          Pause sind die 15 min, die der Trainingsplan nennt. */
       expect(D.schritteMinuten(t.steps.filter(s => s.type === 'work' || s.type === 'rest')))
