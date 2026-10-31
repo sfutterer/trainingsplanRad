@@ -536,13 +536,13 @@ function mittwoch(c){
   let info;
   if(dur > 0){
     const lockerer = phase === 3 ? T.wednesdayEasyPhase3 : T.wednesdayEasyDefault;
-    info = { type:'ride', title:'Rad – kurzes Z2 (Arbeitsweg) + Rumpf' };
+    info = { type:'ride', title:'Rad – kurzes Z2 + Rumpf' };
     const kennzahlen = rideKennzahlen(plan, th, week, dur, 'z2', true);
     /* Die Dauer ist eine Untergrenze, keine Vorgabe - das muss schon in der
        Kennzahl stehen und nicht erst im Hinweis darunter. */
     kennzahlen[0] = { label:'Dauer', wert:`mindestens ${dur} min` };
     const bloecke = [
-      { label:'Fahrt (Arbeitsweg)', wert:`mindestens ${dur} min direkte Strecke · ${z2Trekking()}`,
+      { label:'Fahrt', wert:`mindestens ${dur} min · ${z2Trekking()}`,
         hinweis:`${T.wednesdayMinimum} ${lockerer}` }
     ];
 
@@ -564,7 +564,7 @@ function mittwoch(c){
        nirgendwo gelesen: ein Textbaustein, den die Planpruefung als Pflicht
        erzwang und den kein Nutzer je zu sehen bekam. */
     info.einheiten = [
-      einheit({ art:'z2', titel:'Rad – kurzes Z2 (Arbeitsweg)', kennzahlen, bloecke,
+      einheit({ art:'z2', titel:'Rad – kurzes Z2', kennzahlen, bloecke,
                 hinweise: [T.cadencePyramid] }),
       zirkelEinheit
     ];

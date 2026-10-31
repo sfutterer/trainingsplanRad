@@ -267,7 +267,7 @@ describe('Einheiten eines Tages', () => {
     const info = buildDayInfo(plan, th, tagIn(w, 3), START);
 
     expect(info.einheiten.map(e => e.titel))
-      .toEqual(['Rad – kurzes Z2 (Arbeitsweg)', 'Rumpf-Zirkel (verkürzt)']);
+      .toEqual(['Rad – kurzes Z2', 'Rumpf-Zirkel (verkürzt)']);
     expect(info.einheiten[0].art).toBe('z2');
     expect(info.einheiten[1].art).toBe('rumpf');
     /* Die Tageszeit ist der Unterschied, den man kennen muss: der Zirkel

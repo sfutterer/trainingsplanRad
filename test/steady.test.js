@@ -202,7 +202,7 @@ describe('Arbeitsweg vom 15.09.2026', () => {
   it('gibt stattdessen einen Pruefhinweis mit den Gruenden dagegen', () => {
     const row = compareDay(plan, TH, DI, START, [PENDEL], { [PENDEL.id]: zonen }, [], []);
     const text = row.fahrten[0].notes.map(n => n.text).join(' ');
-    expect(text).toContain('Arbeitsweg, ohne Härte-Bewertung');
+    expect(text).toContain('über Z2, ohne Härte-Bewertung');
     expect(text).toContain('Drift aus Puls und Tempo');
     expect(text).toContain('keine Leistungsdaten');
     expect(text).toContain('Toleranzband');

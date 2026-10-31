@@ -209,7 +209,25 @@
    Uebergangsbaender hat keine FTP, dort gibt es keine Wattzahl, und seine
    Pruefsumme steht unveraendert - derselbe Nachweis wie im Code, nur von
    aussen: ohne Messwert aendert sich nichts. Die Wochenangaben und die
-   Wiederholungsziele kennen keine Zielzeile und bleiben ebenfalls. */
+   Wiederholungsziele kennen keine Zielzeile und bleiben ebenfalls.
+
+   Neu gesetzt am 31.10.2026, vierter Schritt: der Arbeitsweg verschwindet
+   aus den Texten. Dass Dienstag und Mittwoch Pendeltage sind, spielt fuer
+   das Training keine Rolle; die Mittwochskarte heisst "Rad - kurzes Z2 +
+   Rumpf", ihr Ablauf "Fahrt" statt "Fahrt (Arbeitsweg)" ohne "direkte
+   Strecke", und aus plan.json fallen die Pendel-Saetze in tuesdayCommute,
+   in der Dienstagsnotiz des Testanlaufs und in der Donnerstagsnotiz der
+   Wochen 10 und 11. zoneNoteTransition verliert den Arbeitsbereich
+   128-135, der seit Fassung 12 weder im Plan noch in der App steht.
+
+   Betroffen sind die 18 Dienstage, die Mittwoche mit Fahrt (17 im
+   Uebergangspfad, 14 im Coggan-Pfad, wo die Oeffner des Testanlaufs drei
+   davon ersetzen), die zwei Donnerstage der Wochen 10 und 11 und in den
+   Wochenangaben deren zwei Zeilen. Der Vergleich lief ueber dieselbe Ausgabe
+   vor und nach der Aenderung: fuehrt man in der neuen jede dieser
+   Ersetzungen rueckwaerts aus, ist sie Zeile fuer Zeile die alte. Kein
+   Sollwert hat sich geaendert; die Wiederholungsziele behalten ihre
+   Pruefsumme. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -367,11 +385,11 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   const th = Z.NO_THRESHOLDS;
   it('Wochenangaben unveraendert', () => {
     expect({ hash: sha(dumpWeeks(th)), len: dumpWeeks(th).length })
-      .toEqual({ hash: '3a320269517aaee3', len: 16590 });
+      .toEqual({ hash: '73633fc6617d1468', len: 16034 });
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '481620ac912213fb', len: 185583 });
+      .toEqual({ hash: 'df3941c22dde9918', len: 182235 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -395,7 +413,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '4067d8b764893687', len: 166718 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '04bb16baaabb1ae5', len: 163591 });
   });
 });
 

@@ -149,7 +149,7 @@
         "zone": "z2",
         "art": "z2",
         "steering": "Sprechtest für den Z2-Anteil, Watt für die 3 × 3 min",
-        "note": "Der Reiz liegt bewusst nicht am Anfang der Einheit: erst mindestens 20 min Z2, danach mindestens 15 min lockeres Ausrollen. Er hängt seit Fassung 5 am Donnerstag und nicht mehr am Mittwoch – der Mittwoch ist Pendelfahrt mit Gepäck, zu fester Uhrzeit, im Berufsverkehr und in diesen Wochen im Dunkeln; der Donnerstag ist die einzige freie Wochentagsfahrt. Fällt er aus, wandern die drei Blöcke in die zweite Hälfte der Samstagsausfahrt, der Z2-Umfang entfällt – dann ist der Samstag kein sauberer Z2-Tag mehr und das Decoupling der Woche fällt als Kennzahl aus.",
+        "note": "Der Reiz liegt bewusst nicht am Anfang der Einheit: erst mindestens 20 min Z2, danach mindestens 15 min lockeres Ausrollen. Fällt er aus, wandern die drei Blöcke in die zweite Hälfte der Samstagsausfahrt, der Z2-Umfang entfällt; das Decoupling der Woche fällt dann als Kennzahl aus.",
         "steps": [
           {
             "type": "warm",
@@ -240,7 +240,7 @@
         "zone": "z2",
         "art": "z2",
         "steering": "Sprechtest für den Z2-Anteil, Watt für die 3 × 3 min",
-        "note": "Der Reiz liegt bewusst nicht am Anfang der Einheit: erst mindestens 20 min Z2, danach mindestens 15 min lockeres Ausrollen. Er hängt seit Fassung 5 am Donnerstag und nicht mehr am Mittwoch – der Mittwoch ist Pendelfahrt mit Gepäck, zu fester Uhrzeit, im Berufsverkehr und in diesen Wochen im Dunkeln; der Donnerstag ist die einzige freie Wochentagsfahrt. Fällt er aus, wandern die drei Blöcke in die zweite Hälfte der Samstagsausfahrt, der Z2-Umfang entfällt – dann ist der Samstag kein sauberer Z2-Tag mehr und das Decoupling der Woche fällt als Kennzahl aus.",
+        "note": "Der Reiz liegt bewusst nicht am Anfang der Einheit: erst mindestens 20 min Z2, danach mindestens 15 min lockeres Ausrollen. Fällt er aus, wandern die drei Blöcke in die zweite Hälfte der Samstagsausfahrt, der Z2-Umfang entfällt; das Decoupling der Woche fällt dann als Kennzahl aus.",
         "steps": [
           {
             "type": "warm",
@@ -466,7 +466,7 @@
        "session": {"kind": "core", "title": "Rumpf-Zirkel (voll), kein Beinblock", "note": "Beinblock und optionale Fahrt entfallen – die Beine sollen am Testtag frisch sein."}},
       {"offsetDays": -3, "label": "3 Tage davor (Mo)", "text": "Ruhe."},
       {"offsetDays": -2, "label": "2 Tage davor (Di)", "text": "45 min, direkte Strecke, unteres Z2 – nicht verlängern.",
-       "session": {"kind": "ride", "title": "Rad – direkte Strecke", "zone": "z2", "note": "Direkte Strecke, unteres Z2 – nicht verlängern. Der Arbeitsweg wird an diesem Dienstag nicht gedehnt."}},
+       "session": {"kind": "ride", "title": "Rad – direkte Strecke", "zone": "z2", "note": "Unteres Z2 – nicht verlängern."}},
       {"offsetDays": -1, "label": "Tag davor (Mi)", "text": "30 min Z1 mit 3 × 1 min zügig / 1 min locker, kein Rumpf. Die Öffner stellen nach zwei ruhigen Tagen die Spritzigkeit her, ohne Ermüdung zu erzeugen.",
        "session": {
          "kind": "steps", "title": "Rad – Öffner vor dem Test", "note": "Kein Rumpf-Zirkel an diesem Mittwoch.",
@@ -660,7 +660,7 @@
 
   "mobilityFlow": {
     "durationHint": "ca. 5–6 min",
-    "placement": "An jedem Tag möglich, auch am Ruhetag Montag – kollidiert mit nichts im bestehenden Plan. Bewusst kurz gehalten: passt morgens, als Pause im Büro oder abends dazwischen, ein eigener Termin ist nicht nötig.",
+    "placement": "An jedem Tag möglich, auch am Ruhetag Montag – kollidiert mit nichts im bestehenden Plan. Kurz gehalten, ohne eigenen Termin: morgens, mittags oder abends.",
     "scope": "Kein Eintrag im App-Protokoll und keine Auswertung über intervals.icu – reine Körpergewichtsübungen ohne Aufzeichnung.",
     "note": "Größter Hebel bei Radfahrern: verkürzte Hüftbeuger durch die gebeugte Sitzposition. Statisches Dehnen davon direkt nach der Fahrt, solange der Muskel warm ist, wirkt am zuverlässigsten – 5 min reichen.",
     "exercises": [
@@ -733,7 +733,7 @@
   "coordination": {
     "everyNthDay": 2,
     "durationHint": "ca. 5–8 min",
-    "placement": "Alle zwei Tage, zum Beispiel Montag, Mittwoch, Freitag und Sonntag, damit es nicht auf denselben Tag wie Rumpf oder Beinblock fällt. Bewusst kurz gehalten: passt morgens, als Pause im Büro oder abends dazwischen, ein eigener Termin ist nicht nötig.",
+    "placement": "Alle zwei Tage, zum Beispiel Montag, Mittwoch, Freitag und Sonntag, damit es nicht auf denselben Tag wie Rumpf oder Beinblock fällt. Kurz gehalten, ohne eigenen Termin: morgens, mittags oder abends.",
     "scope": "Kein Eintrag im App-Protokoll und keine Auswertung über intervals.icu – reine Körpergewichtsübungen ohne Aufzeichnung.",
     "progression": [
       "Einbeinstand mit geschlossenen Augen über 30 s sauber je Seite → instabile Unterlage ergänzen",
@@ -806,7 +806,7 @@
   "texts": {
     "wellnessRule": "Wellness-Gate prüfen: Ruhepuls > 7-Tage-Schnitt + 5 bpm, HRV deutlich darunter oder zwei Nächte unter 6 h Schlaf → Donnerstag wird 60 min Z2, Samstag ohne Blöcke. Zwei rote Tage hintereinander → die gesamte Woche als Erholungswoche.",
     "mondayRest": "Komplette Erholung – kein Training. Invariante des Plans: der Montag bleibt frei.",
-    "tuesdayCommute": "Arbeitsweg, verlängerte Strecke – gesteuert wird über die Zeit, nicht über die Distanz. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich bleiben. Die Verlängerung hat seit Fassung 3 eine Obergrenze: lieber den Planwert treffen als im Zweifel länger.",
+    "tuesdayCommute": "Gesteuert wird über die Zeit, nicht über die Distanz. Sprechtest: ganze Sätze müssen möglich bleiben. Den Planwert treffen, nicht verlängern.",
     "wednesdayMinimum": "Die Zeit ist eine Untergrenze für den Tag, aber die Wochensumme deckelt trotzdem.",
     "wednesdayEasyDefault": "Bewusst der lockerste Fahrtag der Woche: unteres bis mittleres Z2, nicht am Sprechtest-Limit. Der Donnerstag ist der Qualitätstag.",
     "wednesdayEasyPhase3": "In Phase 3 ist der Donnerstag selbst ein Z2-Tag – der Mittwoch darf deshalb länger sein. Reines Z2: was in Woche 11 und 12 an Reiz dazukommt, hängt am Donnerstag.",
@@ -828,7 +828,7 @@
     "legWednesdayNote": "Mittwoch ist der verkürzte Zirkel ohne Beinblock. Fällt der Sonntag aus, wird der Beinblock nicht auf den Mittwoch nachgeholt – ausgefallen ist ausgefallen.",
     "legTuesdayNote": "Zweite Beineinheit am Abend, am unteren Rand der Wiederholungsspanne. Erst ab Phase 3 möglich: davor liegt der Qualitätstag am Donnerstag keine 40 Stunden entfernt. In Phase 4 nur noch Erhaltungsdosis – Kraft zu erhalten braucht deutlich weniger Reiz als Kraft aufzubauen.",
     "coreAbortRule": "Regel: Wenn die Form kippt – Hüfte hängt durch, Rücken wird rund, Zittern – ist der Satz zu Ende. Abbrechen ist besser als schlecht weitermachen; eine Runde weniger kostet nichts.",
-    "zoneNoteTransition": "Arbeitsannahme, kein gemessener Wert – ein Datenpunkt, eine ungeprüfte HFmax, Geschwindigkeit statt Leistung. Das Band reicht wie im Plan bis 142; belegt ist aber nur der Arbeitsbereich 128–135, dort wird gefahren. 142 ist eine harte Grenze, kein Ziel. Der Sprechtest sticht die Zahl.",
+    "zoneNoteTransition": "Arbeitsannahme aus dem Plan, kein gemessener Wert. Die Obergrenze 142 bpm ist eine harte Grenze, kein Ziel. Der Sprechtest hat Vorrang.",
     "zoneNoteCoggan": "Auch Coggan-Z2 ist breit und reicht oben oft über LT1. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich sein. Zweite Kontrollinstanz ist der Drift – liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band lag.",
     "thresholdTestSummary": "20 min Einfahren mit 3× 1 min zügig, 5 min locker, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95 · LTHR = Ø-Puls der 20 min. Pacing: die ersten drei Minuten bewusst konservativer als das Ziel, auf die Durchschnittsleistung schauen, nicht auf den Momentanwert.",
     "intervalRollingStart": "Rollender Start: in der letzten Minute der Erholung das Tempo leicht anziehen.",

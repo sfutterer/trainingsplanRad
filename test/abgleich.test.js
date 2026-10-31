@@ -266,7 +266,7 @@ describe('Arbeitsweg am Dienstag', () => {
     expect(row.status).toBe('ok');
     expect(row.badge).not.toBe('zu hart');
     expect(row.notes.filter(n => n.kind === 'bad')).toEqual([]);
-    expect(texte(row)).toContain('Arbeitsweg, ohne Härte-Bewertung');
+    expect(texte(row)).toContain('über Z2, ohne Härte-Bewertung');
     expect(row.pruefHinweis.ueber).toBe(67);
   });
 });
@@ -426,7 +426,7 @@ describe('Fahrten eines Tages nacheinander', () => {
     const row = zwei(90, 20, zonen({ z2: 5400 }), zonen({ z2: 300, z4: 900 }));
     expect(row.badge).not.toBe('zu hart');
     expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toMatch(/% in Z2, \d+ % darüber\./);
-    expect(row.fahrten[1].notes.map(n => n.text).join(' ')).toContain('Arbeitsweg, ohne Härte-Bewertung');
+    expect(row.fahrten[1].notes.map(n => n.text).join(' ')).toContain('über Z2, ohne Härte-Bewertung');
   });
 
   /* row.notes bleibt die flache Liste: das Fazit sucht darin die schweren
