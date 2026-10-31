@@ -2,7 +2,7 @@
    ihr sinnvoll rechnen laesst: Zonenanteile nach Puls, der Drift aus Puls und
    Tempo, der Median des Pulses.
 
-   Anlass war die Pendelfahrt vom 15.09.2026: 84 min, Trekkingrad ohne
+   Anlass war die Fahrt vom 15.09.2026: 84 min, Trekkingrad ohne
    Leistungsmesser, Ø 132 bpm, Median 133, p90 139. Die App meldete 38 % der
    Zeit ueber Z2 und daraus "zu hart gefahren". Gerechnet war das richtig, die
    Aussage trug nicht - aus vier Gruenden, von denen drei hier stehen:

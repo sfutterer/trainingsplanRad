@@ -91,7 +91,7 @@ const DOKU_3 = {
   tage: 'Die Wochentage unter ihrem Kuerzel: di, mi, do, sa, so. Montag und '
     + 'Freitag fehlen, weil an ihnen nichts von der Woche abhaengt - der '
     + 'Montag ist frei, der Freitag steht in fridayOptional. '
-    + 'di.minutes und di.legRounds: Arbeitsweg und die zweite Beineinheit am '
+    + 'di.minutes und di.legRounds: die Fahrt und die zweite Beineinheit am '
     + 'Abend. mi.minutes und mi.extra: die kurze Fahrt und ein daran '
     + 'haengender Reiz. do: der Qualitaetstag als vollstaendiges Objekt, '
     + 'siehe variante und schrittfolge. sa.minutes, sa.hoehenmeter und sa.bloecke: die lange '

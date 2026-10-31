@@ -32,7 +32,7 @@ const TH = { ftp: 212, lthr: 163, hrmax: 187 };
 const SA = dayFromIso('2026-08-15');   // lange Ausfahrt
 const SO = dayFromIso('2026-08-16');   // Rumpf + Beinblock
 const MO = dayFromIso('2026-08-17');   // Ruhetag
-const DI = dayFromIso('2026-08-18');   // Arbeitsweg
+const DI = dayFromIso('2026-08-18');   // Z2-Fahrt
 const MI = dayFromIso('2026-08-19');   // Rumpf verkuerzt + Fahrt
 const DO = dayFromIso('2026-08-20');   // Qualitaetstag
 
@@ -251,23 +251,20 @@ describe('Qualitaetstag mit Intervallen', () => {
   });
 });
 
-describe('Arbeitsweg am Dienstag', () => {
-  it('nimmt eine laengere Fahrt hin und bewertet die Intensitaet', () => {
+/* Seit dem 31.10.2026 gilt am Dienstag dieselbe Z2-Regel wie an jedem
+   anderen Grundlagentag. */
+describe('Z2-Fahrt am Dienstag', () => {
+  it('bewertet die Intensitaet wie jede Grundlagenfahrt', () => {
     const row = tag(DI, [fahrt(90)], { a1: zonen({ z1: 1800, z2: 3600 }) });
     expect(row.status).toBe('ok');
-    expect(texte(row)).toMatch(/% in Z2, \d+ % darüber\./);
+    expect(texte(row)).toMatch(/% in Z2, \d+ % in Z1–Z2\./);
   });
 
-  /* Bis zum 15.09.2026 hiess das "zu hart". Seitdem ein Pruefhinweis: auf dem
-     Arbeitsweg verfaelschen Ampeln, Gepaeck und Verkehr den Pulsanteil, und
-     der Plan braucht von ihm den Umfang - siehe steady.test.js. */
-  it('gibt dem Arbeitsweg bei hohem Anteil einen Pruefhinweis statt eines Urteils', () => {
+  it('wertet einen hohen Anteil ueber Z2 als zu hart', () => {
     const row = tag(DI, [fahrt(60)], { a1: zonen({ z2: 1200, z3: 1800, z4: 600 }) });
-    expect(row.status).toBe('ok');
-    expect(row.badge).not.toBe('zu hart');
-    expect(row.notes.filter(n => n.kind === 'bad')).toEqual([]);
-    expect(texte(row)).toContain('über Z2, ohne Härte-Bewertung');
-    expect(row.pruefHinweis.ueber).toBe(67);
+    expect(row.status).toBe('dev');
+    expect(row.badge).toBe('zu hart');
+    expect(texte(row)).toContain('67 % über Z2');
   });
 });
 
@@ -356,7 +353,7 @@ describe('Mittwoch: Rumpf und Fahrt am selben Tag', () => {
 
 /* Die Fahrten eines Tages nacheinander.
 
-   Der Anlass: ein Mittwoch mit zwei Arbeitswegen, die einzeln schon ueber der
+   Der Anlass: ein Mittwoch mit zwei Fahrten, die einzeln schon ueber der
    Untergrenze lagen. Die Analyse rechnete beide zu einer Zahl zusammen, fand
    sie ueber der Untergrenze und meldete "erfuellt" - der Tag stand beim
    Dreifachen der Vorgabe, und nichts davon war zu lesen. Bewertet wird
@@ -424,9 +421,9 @@ describe('Fahrten eines Tages nacheinander', () => {
      75 %. */
   it('bewertet die Intensitaet je Fahrt statt ueber den Tag gemittelt', () => {
     const row = zwei(90, 20, zonen({ z2: 5400 }), zonen({ z2: 300, z4: 900 }));
-    expect(row.badge).not.toBe('zu hart');
-    expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toMatch(/% in Z2, \d+ % darüber\./);
-    expect(row.fahrten[1].notes.map(n => n.text).join(' ')).toContain('über Z2, ohne Härte-Bewertung');
+    expect(row.badge).toBe('zu hart');
+    expect(row.fahrten[0].notes.map(n => n.text).join(' ')).toMatch(/% in Z2, \d+ % in Z1–Z2\./);
+    expect(row.fahrten[1].notes.map(n => n.text).join(' ')).toContain('75 % über Z2');
   });
 
   /* row.notes bleibt die flache Liste: das Fazit sucht darin die schweren

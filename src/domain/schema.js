@@ -345,7 +345,7 @@ function pvTage(err, t, feld, zonen){
   }
   if(PV_TAGE.some(k => !t[k])) return;
 
-  /* Dienstag: Arbeitsweg, ab Phase 3 abends der Beinblock. */
+  /* Dienstag: Z2-Fahrt, ab Phase 3 abends der Beinblock. */
   pvNum(err, t.di.minutes, feld + '.di.minutes', {min:0, int:true});
   pvNum(err, t.di.legRounds, feld + '.di.legRounds', {min:0, int:true});
 

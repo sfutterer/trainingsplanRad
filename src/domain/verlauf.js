@@ -25,7 +25,7 @@
    Parameter herein, damit sich jede Aussage mit einer synthetischen Reihe
    nachpruefen laesst. */
 
-import { isRide, istPendel, ENTKOPPLUNG_GUT } from './analysis.js';
+import { isRide, ENTKOPPLUNG_GUT } from './analysis.js';
 import { tagNr, kurzTag } from './week.js';
 import { median, zahl } from './zahlen.js';
 
@@ -186,7 +186,7 @@ export function zweiPunktVergleich(punkte, einheit, nk){
    Aus der LTHR, nicht aus der HFmax, wenn beides da ist: die LTHR ist gemessen,
    die HFmax meist nur der hoechste je aufgezeichnete Wert. Ohne beides gibt es
    kein Fenster - und dann bewusst gar keine Aussage statt einer ueber einen
-   Topf aus Pendelwegen, Intervallen und Ausfahrten. */
+   Topf aus Grundlagenfahrten, Intervallen und Ausfahrten. */
 export function effizienzFenster(th){
   const t = th || {};
   if(t.lthr > 0){
@@ -211,15 +211,11 @@ export function effizienzFenster(th){
    Wechsel einen Sprung erzeugt, den niemand als Einheitenwechsel erkennt.
    Deshalb: sobald genug Fahrten Watt haben, zaehlen nur diese.
 
-   Seit dem 15.09.2026 fallen zwei Gruppen ganz heraus:
-
-     Pendelfahrten   mit Gepaeck, im Berufsverkehr, auf dem Trekkingrad - der
-                     Plan sagt, ihre Werte sind mit dem Samstag nicht
-                     vergleichbar, und laesst sie deshalb taggen.
-     ohne Leistung   ab opts.leistungAbIso, dem ersten Tag, an dem Leistung die
-                     primaere Steuergroesse ist. Davor bleibt die Reihe aus
-                     Tempo je Schlag stehen - sie ist alles, was die Wochen 1
-                     bis 4 hergeben. */
+   Seit dem 15.09.2026 fallen Fahrten ohne Leistung ganz heraus, und zwar ab
+   opts.leistungAbIso, dem ersten Tag, an dem Leistung die primaere
+   Steuergroesse ist. Davor bleibt die Reihe aus Tempo je Schlag stehen - sie
+   ist alles, was die Wochen 1 bis 4 hergeben. Alle uebrigen Fahrten
+   zaehlen gleich. */
 export function effizienzSerie(acts, th, opts){
   const o = opts || {};
   const minSec = o.minSec || VERLAUF.ef.minSec;
@@ -227,13 +223,12 @@ export function effizienzSerie(acts, th, opts){
   const fenster = effizienzFenster(th);
 
   const fahrten = (acts || []).filter(a => a && isRide(a.type));
-  const verworfen = { kurz: 0, ohnePuls: 0, ausserhalb: 0, ohneWert: 0, pendel: 0, ohneLeistung: 0 };
+  const verworfen = { kurz: 0, ohnePuls: 0, ausserhalb: 0, ohneWert: 0, ohneLeistung: 0 };
   const roh = [];
 
   for(const a of fahrten){
     const sec = a.moving_time || a.elapsed_time || 0;
     const hf = a.average_heartrate || 0;
-    if(istPendel(a)){ verworfen.pendel++; continue; }
     if(o.leistungAbIso && String(a.start_date_local || '').slice(0, 10) >= o.leistungAbIso
        && !(a.icu_weighted_avg_watts > 0 || a.average_watts > 0)){
       verworfen.ohneLeistung++; continue;
@@ -264,7 +259,7 @@ export function effizienzSerie(acts, th, opts){
   }));
 
   /* Auch innerhalb des Fensters koennen die Fahrten zu verschieden sein. Eine
-     Stunde Pendelweg neben vier Stunden Ausfahrt ergibt zwei Punkte, die sich
+     Stunde Grundlage neben vier Stunden Ausfahrt ergibt zwei Punkte, die sich
      schon aus physiologischen Gruenden unterscheiden, ohne dass sich etwas
      entwickelt haette. */
   const dauern = genommen.map(r => r.sec);
@@ -297,7 +292,6 @@ export function effizienzSerie(acts, th, opts){
     (verworfen.ausserhalb ? ' · ' + verworfen.ausserhalb + ' außerhalb des Pulsfensters' : '') +
     (verworfen.ohnePuls ? ' · ' + verworfen.ohnePuls + ' ohne Puls' : '') +
     (verworfen.ohneWert ? ' · ' + verworfen.ohneWert + ' ohne Watt und ohne Strecke' : '') +
-    (verworfen.pendel ? ' · ' + verworfen.pendel + ' Pendelfahrt' + (verworfen.pendel === 1 ? '' : 'en') : '') +
     (verworfen.ohneLeistung ? ' · ' + verworfen.ohneLeistung + ' ohne Leistungsdaten ab Woche 5' : '') +
     (wattReihe && roh.length > mitWatt.length ? ' · ' + (roh.length - mitWatt.length) + ' ohne Wattwert' : '') + '.';
 

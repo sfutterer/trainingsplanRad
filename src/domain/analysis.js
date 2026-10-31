@@ -129,14 +129,6 @@ function entkopplungVon(act){
   return Number.isFinite(d) ? d : null;
 }
 
-/* Eine Pendelfahrt, so wie intervals.icu sie fuehrt: der Haken "commute" oder
-   der Untertyp COMMUTE. Der Trainingsplan verlangt das Taggen ausdruecklich -
-   mit Gepaeck, im Berufsverkehr und zu fester Uhrzeit ist die Fahrt mit keiner
-   anderen vergleichbar. */
-export function istPendel(act){
-  return !!(act && (act.commute === true || /commute/i.test(act.sub_type || '')));
-}
-
 /* Unter so viel gleichmaessiger Zeit ist ein Zonenanteil keine Aussage mehr
    ueber die Fahrt, sondern ueber die Ampeln. Dieselben 15 min, unter denen
    der Plan ein Driftdrittel nicht ueberinterpretiert. */
@@ -292,8 +284,8 @@ function coreEstimateNotes(row, strength, t, roundRestSec, prepSec, exCount){
 /* ---- Die Fahrten eines Tages der Reihe nach ----
 
    Der Tag bleibt die Einheit der Bewertung: ob zu kurz oder zu lang, entscheidet
-   die Summe und nicht die einzelne Fahrt. Wer den Arbeitsweg zweimal faehrt,
-   soll nicht zweimal "kuerzer" lesen.
+   die Summe und nicht die einzelne Fahrt. Wer die Vorgabe auf zwei Fahrten
+   verteilt, soll nicht zweimal "kuerzer" lesen.
 
    Die Summe entsteht aber in einer Reihenfolge, und bis zum 04.09.2026 stand
    davon nichts da: zwei Fahrten, die einzeln schon ueber der Vorgabe lagen,
@@ -326,14 +318,6 @@ function fahrtTeile(rides, zonesById){
    Fahrt sucht, haette sie sich von irgendwo herholen muessen. */
 function jeFahrt(fn){
   return f => (f.zones && f.zones._total > 300 ? fn(f).concat(steadyNotiz(f)) : []);
-}
-
-/* Eine Pendelfahrt wird wie der Arbeitsweg bewertet, an welchem Tag sie auch
-   liegt: keine Haerte-Bewertung aus Zonenanteilen. Sonst traefe der
-   verlaengerte Hinweg an einem getauschten Tag wieder die Regel, die fuer
-   eine Grundlagenfahrt ohne Ampeln und ohne Gepaeck gemacht ist. */
-function oderPendel(row, fn){
-  return f => (istPendel(f.act) ? commuteIntensityNotes(row, f) : fn(f));
 }
 
 function fahrtenNotizen(row, teile, sollMin, minimum, intensitaet){
@@ -397,7 +381,7 @@ function lockerNotes(row, f){
 function easyRideNotes(row, teile, sollMin){
   const ist = Math.round(row.rideSec / 60);
   const km = row.rideKm >= 1 ? ' (' + row.rideKm.toFixed(1) + ' km)' : '';
-  fahrtenNotizen(row, teile, 0, false, jeFahrt(oderPendel(row, z => lockerNotes(row, z))));
+  fahrtenNotizen(row, teile, 0, false, jeFahrt(z => lockerNotes(row, z)));
   return [{ kind:'', text: T.optionaleFahrt(ist, km, sollMin) }];
 }
 
@@ -433,32 +417,6 @@ function legNotes(row, legSessions, t){
       .filter(ex => ex.reps.some(v => v != null && v > 0 && v < ex.target))
       .map(ex => ex.name).join(', ');
     notes.push({ kind:'', text: T.beineUnterZiel(ab, liste) });
-  }
-  return notes;
-}
-
-/* Pendelfahrten am Dienstag und Mittwoch: die Solldauer ist eine Untergrenze.
-   Zu lang ist kein Fehler und darf keine Warnung ausloesen.
-
-   Die Intensitaet wird geprueft, aber seit dem 15.09.2026 nicht mehr
-   beurteilt. Ueber 20 % der Zeit oberhalb Z2 bleibt ein Hinweis auf Zeitdruck -
-   als Frage an den Fahrer, nicht als "zu hart". Die Fahrt an dem Tag: 84 min
-   Trekkingrad, Median 133 bpm gegen eine Z2-Grenze von 135, Drift 3,4 %, und
-   38 % "ueber Z2". Auf dem Arbeitsweg kommt alles zusammen, was einen
-   Pulsanteil verfaelscht - Ampeln, Gepaeck, Verkehr, kein Leistungsmesser -,
-   und der Plan braucht von ihm den Umfang, nicht die Zonenpraezision. Die
-   Gruende, die gegen eine Haerte-Bewertung sprechen, stehen im Satz dabei. */
-function commuteIntensityNotes(row, f){
-  const notes = [];
-  if(!f.zones || !f.zones._total || f.zones._total <= 300) return notes;
-  const zones = anteilsZonen(f.zones);
-  const ueber = pct((zones.z3 || 0) + (zones.z4 || 0) + (zones.z5 || 0), zones._total);
-  if(ueber > 20){
-    const gegen = haerteVorbehalte(f);
-    row.pruefHinweis = { ueber, vorbehalte: gegen, ohneLeistung: ohneLeistung(f.zones) };
-    notes.push({ kind:'info', text: T.pendelUeberZ2(ueber, gegen, ohneLeistung(f.zones)) });
-  } else {
-    notes.push({ kind:'good', text: T.pendelPasst(pct(zones.z2 || 0, zones._total), ueber) });
   }
   return notes;
 }
@@ -785,8 +743,10 @@ function coreDayNotes(plan, row, t, rides, strength, teile){
                      text: T.mittwochErfuellt(ist, t.rideMinutes) });
       }
     }
+    /* Die Fahrt ist Z2 und wird bewertet wie jede andere Grundlagenfahrt -
+       seit dem 31.10.2026 ohne Ausnahme fuer einzelne Tage. */
     fahrtenNotizen(row, teile, t.rideMinutes, true,
-                   jeFahrt(z => commuteIntensityNotes(row, z)));
+                   jeFahrt(z => z2Notes(row, z, t)));
   } else if(rides.length){
     notes.push(...easyRideNotes(row, teile, t.optionalRideMinutes));
   }
@@ -908,21 +868,16 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
   if(t.test) row.notes.push({ kind:'info', text: T.testtag });
 
   /* Was in Minuten zaehlt, bleibt am Tag: die harte Zeit eines Intervalltages
-     und die Z3-Bloecke des Samstags. Was als Anteil zaehlt, geht je Fahrt -
-     der Dienstag ist Pendelweg, dort ist laenger normal und zu hart der
-     Fehler. */
+     und die Z3-Bloecke des Samstags. Was als Anteil zaehlt, geht je Fahrt. */
   if(row.zones && row.zones._total > 300){
     row.zoneShare = pct(row.zones[t.zone] || 0, row.zones._total);
-    if(!t.commute){
-      row.notes.push(...(t.zone === 'z2'
-        ? (mitAbschnitten(teile) ? [] : z3BlockNote(row.zones, t))
-        : intervallNotes(row, row.zones, t)));
-    }
+    row.notes.push(...(t.zone === 'z2'
+      ? (mitAbschnitten(teile) ? [] : z3BlockNote(row.zones, t))
+      : intervallNotes(row, row.zones, t)));
   }
 
   fahrtenNotizen(row, teile, t.minutes || 0, false,
-    t.commute ? jeFahrt(z => commuteIntensityNotes(row, z))
-              : t.zone === 'z2' ? jeFahrt(oderPendel(row, z => z2Notes(row, z, t))) : null);
+    t.zone === 'z2' ? jeFahrt(z => z2Notes(row, z, t)) : null);
 
   return fertig(row);
 }

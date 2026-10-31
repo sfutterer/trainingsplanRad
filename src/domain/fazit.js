@@ -156,11 +156,6 @@ export function streckenFazit(row, bilanz, wetter, verfassung){
   } else if(schlecht.length){
     urteil = 'abweichung';
     satz = schlecht[0].text;
-  } else if(row && row.pruefHinweis){
-    /* Der Arbeitsweg lag ueber der 20-%-Marke. Seit dem 15.09.2026 kein
-       Urteil mehr, aber auch kein gruenes "passt". */
-    urteil = 'erklaert';
-    satz = T.pruefFazit(row.pruefHinweis.ueber);
   } else if(row && row.umfangUeber){
     /* Der Tag ist nicht falsch gefahren, aber deutlich laenger als
        vorgesehen. Kein Befund, aber auch kein gruenes Fazit. */

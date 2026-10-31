@@ -99,17 +99,10 @@ export const T = {
   beineUnterZiel: (anzahl, liste) =>
     anzahl + (anzahl === 1 ? ' Satz' : ' Sätze') + ' unter dem Wiederholungsziel: ' + liste + '.',
 
-  /* ---- Arbeitsweg ---- */
+  /* ---- Anteil ueber Z2 ---- */
 
-  /* Seit dem 15.09.2026 ein Hinweis und kein Urteil - Begruendung an
-     commuteIntensityNotes. Dass es der Arbeitsweg ist, sagt der Satz seit
-     dem 31.10.2026 nicht mehr: fuer das Training spielt es keine Rolle. */
-  pendelUeberZ2: (ueber, vorbehalte, ohneLeistung) =>
-    ueber + ' % über Z2, ohne Härte-Bewertung'
-    + einschraenkungen(vorbehalte, ohneLeistung),
-
-  /* Dieselbe Lage auf einer Grundlagen- oder Erholungsfahrt: der Anteil ist
-     ueber der Vorgabe, aber etwas spricht dagegen, ihn als Befund zu lesen. */
+  /* Der Anteil ist ueber der Vorgabe, aber etwas spricht dagegen, ihn als
+     Befund zu lesen. */
   ueberZ2OhneBefund: (ueber, erlaubt, vorbehalte, ohneLeistung) =>
     ueber + ' % über Z2, vorgesehen rund ' + erlaubt + ' %. Nicht als zu hart gewertet'
     + einschraenkungen(vorbehalte, ohneLeistung),
@@ -121,10 +114,6 @@ export const T = {
   steadyZuKurz: (steady, gesamt, kmh, sek) =>
     'Nur ' + steady + ' von ' + gesamt + ' min gleichmäßig gefahren (Abschnitte ab ' + sek
     + ' s über ' + kmh + ' km/h). Zonenanteile über die ganze Fahrt gerechnet.',
-
-  pruefFazit: ueber => ueber + ' % über Z2, ohne Härte-Bewertung.',
-
-  pendelPasst: (inZ2, ueber) => inZ2 + ' % in Z2, ' + ueber + ' % darüber.',
 
   mittwochFehlt: soll => 'Keine Fahrt. Vorgesehen: mindestens ' + soll + ' min Z2.',
 

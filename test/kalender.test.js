@@ -244,7 +244,7 @@ describe('Strukturierte Tagesbeschreibung', () => {
 /* Mehrere Einheiten an einem Tag.
 
    Der Anlass war ein uebersehenes Rumpftraining: der Mittwoch hiess "Rad –
-   kurzes Z2 (Arbeitsweg) + Rumpf", und der Zirkel stand als eine von drei
+   kurzes Z2 + Rumpf", und der Zirkel stand als eine von drei
    Ablaufzeilen unter den Kennzahlen der Fahrt. Geprueft wird deshalb beides -
    dass die zweite Einheit eigenstaendig dasteht, und dass die drei Listen des
    Tages nichts verlieren, was in einer Einheit steht. Die zweite Haelfte ist

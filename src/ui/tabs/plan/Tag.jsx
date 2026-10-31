@@ -15,7 +15,7 @@
 
    Seit dem 03.09.2026 ist die Tageskarte kein Block mehr, sondern so viele
    Abschnitte, wie der Tag Einheiten hat. Der Anlass war ein uebersehener
-   Mittwoch: die Karte hiess "Rad – kurzes Z2 (Arbeitsweg) + Rumpf", und der
+   Mittwoch: die Karte hiess "Rad – kurzes Z2 + Rumpf", und der
    Zirkel stand als dritte von drei Ablaufzeilen unter den Kennzahlen der
    Fahrt. Zugeklappt war von ihm nur das Wort "Rumpf" im Titel zu sehen.
 
@@ -272,7 +272,7 @@ export function Tageskopf({ datum, info, istHeute, mitKurz }){
             Vor Planbeginn bleibt es weg - dort gibt es keine Einheit.
 
             Traegt der Tag mehrere Arten, stehen sie alle da: ein Rad allein
-            vor "Rad – kurzes Z2 (Arbeitsweg) + Rumpf" liess den Zirkel auch
+            vor "Rad – kurzes Z2 + Rumpf" liess den Zirkel auch
             im Zeichen verschwinden. */}
         <span class="daysymtitel">
           {!info.vorStart && tagesArten(info).map(a =>

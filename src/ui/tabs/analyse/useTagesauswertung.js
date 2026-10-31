@@ -3,8 +3,7 @@
    Hiess bis zum 03.09.2026 useFahrtauswertung und wertete genau eine
    Aufzeichnung aus. Das war die falsche Einheit. Der Plan macht seine Vorgabe
    je Tag - "80 min Z2", "5 x 5 min Z4 mit Ein- und Ausfahren" -, und wer sie
-   auf zwei Fahrten verteilt, weil der Arbeitsweg zweimal am Tag anfaellt,
-   bekam sie zweimal gegen dasselbe Soll gerechnet: Hinweg 40 min gegen 80 min
+   auf zwei Fahrten verteilt, bekam sie zweimal gegen dasselbe Soll gerechnet: Hinweg 40 min gegen 80 min
    Vorgabe ist "kuerzer", Rueckweg ebenso, und beide zusammen waren genau
    richtig. Dieselbe Rechnung steckt schon in compareDay, das immer alle
    Aktivitaeten eines Tages nimmt - nur bekam es aus dieser Ansicht immer nur
@@ -276,8 +275,8 @@ export function useTagesauswertung(acts){
 
       /* Doppelt gefahrene Abschnitte einmal je Fahrt bestimmen: die Geometrie
          aendert sich durch den Untergrund nicht mehr. Ueber zwei Fahrten
-         hinweg wird nicht verglichen - Hin- und Rueckweg desselben
-         Arbeitswegs sind zwei Fahrten und keine Schleife. */
+         hinweg wird nicht verglichen - zwei Fahrten auf derselben
+         Strecke sind zwei Fahrten und keine Schleife. */
       for(const t of mitSpur){
         t.abschnitte = markiereDoppelt(baueAbschnitte(t.spur, { wind: t.wind }));
       }

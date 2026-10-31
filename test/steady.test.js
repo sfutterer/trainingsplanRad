@@ -1,7 +1,7 @@
-/* Gleichmaessige Zeit, Drift, Median, Toleranzband - und der Arbeitsweg vom
-   15.09.2026, an dem alle vier zusammenkamen.
+/* Gleichmaessige Zeit, Drift, Median, Toleranzband - und die Fahrt vom
+   15.09.2026, an der alle vier zusammenkamen.
 
-   Die Fahrt: Dienstag, verlaengerter Hinweg, 84 min, 30,2 km, Trekkingrad
+   Die Fahrt: Dienstag, 84 min, 30,2 km, Trekkingrad
    ohne Leistungsmesser. Ø 132 bpm, Median 133, Drittel 130,7 / 133,9 /
    132,7 bpm bei 21,1 / … / 20,7 km/h, Drift rund 3,4 %. LTHR 163 von Hand,
    Z2 endet bei 135. Gemeldet wurden 38 % ueber Z2 und "zu hart gefahren".
@@ -19,9 +19,8 @@ import { toMidnight, dayFromIso } from '../src/domain/week.js';
 import { zoneSeconds, zonenBaender } from '../src/domain/zones.js';
 import { steadyMaske, maskenSekunden, driftAus, pulsMedian, lthrBestaetigt,
          STEADY, GRENZBAND_BPM } from '../src/domain/steady.js';
-import { compareDay, istPendel } from '../src/domain/analysis.js';
+import { compareDay } from '../src/domain/analysis.js';
 import { streckenFazit } from '../src/domain/fazit.js';
-import { artDerAktivitaet } from '../src/domain/einheiten.js';
 import { AUSBELASTET_RPE } from '../src/domain/test.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
@@ -121,14 +120,14 @@ describe('Median und bestaetigte LTHR', () => {
   });
 });
 
-/* ---- Der Arbeitsweg vom 15.09.2026 ---- */
+/* ---- Die Fahrt vom 15.09.2026 ---- */
 
 const TH = { ftp: 192, lthr: 163, hrmax: 180,
              quellen: { lthr: { art: 'hand', seit: '2026-09-12T18:04' } } };
 const TESTS = [{ day: '2026-09-10', rpe: 8, lthr: 152 }];
 const DI = dayFromIso('2026-09-15');
 
-function pendelStrom(){
+function fahrtStrom(){
   const N = 84 * 60;
   const hfDrittel = [130.7, 133.9, 132.7], kmhDrittel = [21.1, 20.9, 20.7];
   return strom(N, t => {
@@ -161,16 +160,16 @@ function zonenWieDieAnsicht(s, th, tests, woche){
   return z;
 }
 
-const PENDEL = {
+const FAHRT_1509 = {
   id: 'i186828088', type: 'Ride', name: 'Bruchsal Gravel/Offroad-Radfahren',
   start_date_local: '2026-09-15T07:03:01', moving_time: 5060, elapsed_time: 5278,
   distance: 30169.64, average_heartrate: 132, has_heartrate: true,
-  commute: true, sub_type: 'COMMUTE', decoupling: null,
+  decoupling: null,
   icu_hr_zone_times: [57, 3431, 1587, 0, 0]
 };
 
-describe('Arbeitsweg vom 15.09.2026', () => {
-  const s = pendelStrom();
+describe('Fahrt vom 15.09.2026', () => {
+  const s = fahrtStrom();
   const zonen = zonenWieDieAnsicht(s, TH, TESTS, 5);
 
   it('bildet die Fahrt nach, wie sie gemessen wurde', () => {
@@ -184,53 +183,45 @@ describe('Arbeitsweg vom 15.09.2026', () => {
     expect(zonen._steady._total).toBeLessThan(zonen._total);
   });
 
-  it('steht in der Liste als Grundlage und nicht als Intervalle', () => {
-    expect(istPendel(PENDEL)).toBe(true);
-    expect(artDerAktivitaet(PENDEL)).toBe('z2');
-    /* Dieselbe Fahrt ohne den Pendelvermerk waere ueber die Zonenschwelle
-       gefallen - der Vermerk ist, was sie davor bewahrt. */
-    expect(artDerAktivitaet({ ...PENDEL, commute: false, sub_type: null })).toBe('intervalle');
-  });
-
   it('wird nicht mehr als "zu hart gefahren" bewertet', () => {
-    const row = compareDay(plan, TH, DI, START, [PENDEL], { [PENDEL.id]: zonen }, [], []);
+    const row = compareDay(plan, TH, DI, START, [FAHRT_1509], { [FAHRT_1509.id]: zonen }, [], []);
     expect(row.badge).not.toBe('zu hart');
     expect(row.status).toBe('ok');
     expect(row.notes.filter(n => n.kind === 'bad')).toEqual([]);
   });
 
-  it('gibt stattdessen einen Pruefhinweis mit den Gruenden dagegen', () => {
-    const row = compareDay(plan, TH, DI, START, [PENDEL], { [PENDEL.id]: zonen }, [], []);
+  /* Seit dem 31.10.2026 nach der gewoehnlichen Z2-Regel: was "zu hart"
+     verhindert, sind die Gruende gegen den Anteil, nicht der Wochentag. */
+  it('nennt den Anteil als Information mit den Gruenden dagegen', () => {
+    const row = compareDay(plan, TH, DI, START, [FAHRT_1509], { [FAHRT_1509.id]: zonen }, [], []);
     const text = row.fahrten[0].notes.map(n => n.text).join(' ');
-    expect(text).toContain('über Z2, ohne Härte-Bewertung');
+    expect(text).toContain('Nicht als zu hart gewertet');
     expect(text).toContain('Drift aus Puls und Tempo');
     expect(text).toContain('keine Leistungsdaten');
     expect(text).toContain('Toleranzband');
     /* Worauf sich der Anteil stuetzt, steht dabei. */
     expect(text).toMatch(/Zonenanteile über \d+ von 8\d min gleichmäßig gefahrener Zeit/);
-    expect(row.pruefHinweis).toBeTruthy();
   });
 
   it('kennzeichnet das Fazit als vorlaeufig und urteilt nicht', () => {
-    const row = compareDay(plan, TH, DI, START, [PENDEL], { [PENDEL.id]: zonen }, [], []);
+    const row = compareDay(plan, TH, DI, START, [FAHRT_1509], { [FAHRT_1509.id]: zonen }, [], []);
     const f = streckenFazit(row, null, null, null);
     expect(f.vorlaeufig).toBe(true);
-    expect(f.urteil).toBe('erklaert');
-    expect(f.satz).toContain('ohne Härte-Bewertung');
-    expect(f.satz).not.toContain('Zu hart');
+    expect(f.urteil).not.toBe('abweichung');
+    expect(f.satz).not.toContain('Über der Vorgabe');
   });
 
   it('nimmt das Toleranzband weg, sobald ein ausbelasteter Test die LTHR traegt', () => {
     const th = { ...TH, quellen: { lthr: { art: 'test', tag: '2026-09-10' } } };
     const z = zonenWieDieAnsicht(s, th, [{ day: '2026-09-10', rpe: 9 }], 5);
-    const row = compareDay(plan, th, DI, START, [PENDEL], { [PENDEL.id]: z }, [], []);
+    const row = compareDay(plan, th, DI, START, [FAHRT_1509], { [FAHRT_1509.id]: z }, [], []);
     const text = row.fahrten[0].notes.map(n => n.text).join(' ');
     expect(text).not.toContain('Toleranzband');
     expect(text).toContain('Drift aus Puls und Tempo');
   });
 });
 
-/* Dieselbe Rechnung auf einer Grundlagenfahrt, die keine Pendelfahrt ist. */
+/* Dieselbe Rechnung auf einer Grundlagenfahrt am Samstag. */
 describe('Grundlagenfahrt ohne Leistung', () => {
   /* Ein Samstag ab Woche 5 ohne geplante Bloecke - an Blocktagen prueft die
      Zaehlung die Dosis, und dort gilt keine Gegeninstanz. */
@@ -241,7 +232,7 @@ describe('Grundlagenfahrt ohne Leistung', () => {
               moving_time: 84 * 60, elapsed_time: 84 * 60, distance: 30000 };
 
   it('unterdrueckt "zu hart" bei flachem Drift und nennt den Anteil als Information', () => {
-    const s = pendelStrom();
+    const s = fahrtStrom();
     const z = zonenWieDieAnsicht(s, TH, TESTS, woche);
     const row = compareDay(plan, TH, SA, START, [t], { x: z }, [], []);
     expect(row.target.hardMinutes).toBeFalsy();

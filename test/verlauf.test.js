@@ -210,19 +210,8 @@ describe('Effizienzfaktor', () => {
     expect(s.bilanz).toContain('1 ohne Wattwert');
   });
 
-  /* Seit dem 15.09.2026: Pendelfahrten nie, Fahrten ohne Leistung erst ab dem
-     Tag, an dem Leistung die Steuergroesse ist. Davor bleibt die Tempo-Reihe. */
-  it('laesst Pendelfahrten aus dem Effizienzfaktor', () => {
-    const acts = [
-      fahrt(tagPlus(AB, 0)),
-      fahrt(tagPlus(AB, 1), { commute: true }),
-      fahrt(tagPlus(AB, 2), { sub_type: 'COMMUTE' })
-    ];
-    const s = effizienzSerie(acts, TH);
-    expect(s.punkte.length).toBe(1);
-    expect(s.bilanz).toContain('2 Pendelfahrten');
-  });
-
+  /* Fahrten ohne Leistung fallen erst ab dem Tag heraus, an dem Leistung die
+     Steuergroesse ist. Davor bleibt die Tempo-Reihe. */
   it('laesst Fahrten ohne Leistung ab Woche 5 aus, davor nicht', () => {
     const ab = tagPlus(AB, 28);
     const acts = [

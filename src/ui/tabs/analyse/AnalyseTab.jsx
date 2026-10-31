@@ -7,13 +7,13 @@
 
    Der Tag und nicht die Fahrt ist seit dem 03.09.2026 die Einheit der
    Auswertung. Der Plan macht seine Vorgabe je Tag; wer sie auf zwei Fahrten
-   verteilt, weil der Arbeitsweg zweimal anfaellt, bekam sie zweimal gegen
+   verteilt, bekam sie zweimal gegen
    dasselbe Soll gerechnet - Hinweg "kuerzer", Rueckweg "kuerzer", zusammen
    genau richtig. compareDay nahm immer schon alle Aktivitaeten eines Tages;
    nur bekam es aus dieser Ansicht immer nur eine davon.
 
    Der Tag bleibt die Einheit; seit dem 04.09.2026 steht daneben, in welcher
-   Reihenfolge seine Summe entstanden ist. Zwei Arbeitswege, die einzeln schon
+   Reihenfolge seine Summe entstanden ist. Zwei Fahrten, die einzeln schon
    ueber der Untergrenze lagen, ergaben bis dahin eine Zahl und den Satz
    "erfuellt" - der Tag stand beim Dreifachen der Vorgabe, und nichts davon war
    zu lesen. Jede Fahrt traegt jetzt ihre eigene Karte samt Bewertung, die
@@ -173,7 +173,7 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
 /* Eine einzelne Fahrt innerhalb des Tages: Karte, Wetter, Zahlen, Bewertung.
 
    Je Fahrt eine Karte und nicht eine gemeinsame: zwei Runden in einer Karte
-   sind ein Knaeuel, und Hin- und Rueckweg desselben Arbeitswegs laegen
+   sind ein Knaeuel, und zwei Fahrten auf derselben Strecke laegen
    uebereinander. Seit dem 04.09.2026 steht auch die Bewertung hier statt in
    einer gemeinsamen Karte am Fuss der Seite - dort war bei zwei Fahrten nicht
    mehr zu erkennen, welcher Satz zu welcher gehoert.

@@ -450,7 +450,7 @@ function montag(c){
   };
 }
 
-/* Dienstag: verlaengerter Arbeitsweg, gesteuert ueber die Zeit.
+/* Dienstag: Z2-Fahrt, gesteuert ueber die Zeit.
 
    Ab Woche 11 kommt abends die zweite Beineinheit dazu. Sie steht je Woche in
    plan.json und nicht als Phasenregel hier: massgeblich ist der Abstand zum
@@ -475,7 +475,7 @@ function dienstag(c){
        Beineinheit vorsieht - sonst waere sie in der Anzeige geplant und in
        der Auswertung nicht vorhanden. */
     target: { sport:'ride', minutes: dur, km: estimateDistance(plan, dur, week),
-              zone:'z2', commute:true, legRounds: beine }
+              zone:'z2', legRounds: beine }
   };
 
   if(beine > 0){
@@ -523,7 +523,7 @@ function mittwoch(c){
 
   /* Der Zirkel als eigene Einheit und nicht als letzte Zeile im Ablauf der
      Fahrt. Genau dieser Fall war der Anlass des Umbaus: unter einer Karte mit
-     der Ueberschrift "Rad – kurzes Z2 (Arbeitsweg) + Rumpf" stand der Zirkel
+     der Ueberschrift "Rad – kurzes Z2 + Rumpf" stand der Zirkel
      als eine von drei Ablaufzeilen und wurde uebersehen. */
   const zirkelEinheit = einheit({
     art:'rumpf', titel:'Rumpf-Zirkel (verkürzt)', zeit:'abends',

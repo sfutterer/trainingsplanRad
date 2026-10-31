@@ -211,11 +211,10 @@
    aussen: ohne Messwert aendert sich nichts. Die Wochenangaben und die
    Wiederholungsziele kennen keine Zielzeile und bleiben ebenfalls.
 
-   Neu gesetzt am 31.10.2026, vierter Schritt: der Arbeitsweg verschwindet
-   aus den Texten. Dass Dienstag und Mittwoch Pendeltage sind, spielt fuer
-   das Training keine Rolle; die Mittwochskarte heisst "Rad - kurzes Z2 +
-   Rumpf", ihr Ablauf "Fahrt" statt "Fahrt (Arbeitsweg)" ohne "direkte
-   Strecke", und aus plan.json fallen die Pendel-Saetze in tuesdayCommute,
+   Neu gesetzt am 31.10.2026, vierter Schritt: Dienstag und Mittwoch sind
+   gewoehnliche Fahrten, ohne Bezug auf den Weg dorthin. Die Mittwochskarte
+   heisst "Rad - kurzes Z2 + Rumpf", ihr Ablauf "Fahrt" ohne Zusatz und ohne
+   "direkte Strecke", und aus plan.json fallen die Saetze dazu in tuesdayCommute,
    in der Dienstagsnotiz des Testanlaufs und in der Donnerstagsnotiz der
    Wochen 10 und 11. zoneNoteTransition verliert den Arbeitsbereich
    128-135, der seit Fassung 12 weder im Plan noch in der App steht.
@@ -227,7 +226,14 @@
    vor und nach der Aenderung: fuehrt man in der neuen jede dieser
    Ersetzungen rueckwaerts aus, ist sie Zeile fuer Zeile die alte. Kein
    Sollwert hat sich geaendert; die Wiederholungsziele behalten ihre
-   Pruefsumme. */
+   Pruefsumme.
+
+   Neu gesetzt am 31.10.2026, fuenfter Schritt: der Dienstag verliert im Soll
+   die Markierung commute:true, mit der die Auswertung ihn bisher ohne
+   Haerte-Bewertung liess. Er wird seitdem wie jede Z2-Fahrt bewertet. Der
+   Vergleich vor und nach der Aenderung: 18 Dienstage, in jedem genau dieses
+   eine Feld weniger im target, sonst kein Unterschied. Die Wochenangaben und
+   der Coggan-Pfad lesen das Feld nicht und behalten ihre Pruefsummen. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -389,7 +395,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: 'df3941c22dde9918', len: 182235 });
+      .toEqual({ hash: '961494d43d98e66e', len: 181965 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
