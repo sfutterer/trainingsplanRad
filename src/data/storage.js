@@ -138,11 +138,20 @@ export function createRepos(store){
       return store.set(KEYS.coreLog, JSON.stringify(list.slice(-CORE_LOG_MAX)));
     },
 
+    /* Die Messwerte: Tests und eingetragene Werte in einer Liste. Der
+       Schluessel heisst weiterhin test-history - er steht so in jeder
+       Sicherung, die es gibt, und ein umbenannter Schluessel waere ein
+       verlorener Bestand.
+
+       Vierzig statt zwoelf Eintraege, seit die eingetragenen Werte
+       danebenstehen: zwoelf reichten fuer drei Tests im Plan und jede Menge
+       Luft, aber nicht mehr fuer eine Liste, in der auch jede Korrektur eine
+       Zeile ist. Was hier hinten abfaellt, ist fuer immer weg. */
     async testLog(){
       const v = await json(KEYS.testLog, []);
       return Array.isArray(v) ? v : [];
     },
-    async setTestLog(list){ return store.set(KEYS.testLog, JSON.stringify(list.slice(-12))); },
+    async setTestLog(list){ return store.set(KEYS.testLog, JSON.stringify(list.slice(-40))); },
 
     async interimLog(){
       const v = await json(KEYS.interimLog, []);

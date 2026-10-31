@@ -9,6 +9,8 @@ import { signal, computed } from '@preact/signals';
 import { createRepos, KEYS } from '../data/storage.js';
 import { loadPlan, parsePlan, PlanError } from '../data/planSource.js';
 import { toMidnight, isoDayLocal, weekNumberFor } from '../domain/week.js';
+import { geltendeSchwellen, uebernimmSchwellen, sortiere, istTest,
+         normalisiere } from '../domain/messwerte.js';
 import * as platform from '../platform/index.js';
 import { theme } from './theme.js';
 import { initAuth, profilSpeicher } from './auth.js';
@@ -25,12 +27,25 @@ export const planJson    = signal(null);   // Rohfassung, fuer den Export
 export const planSource  = signal('default');
 export const planError   = signal(null);
 export const startDate   = signal(null);
-export const thresholds  = signal({ ftp:null, lthr:null, hrmax:null, quellen:{} });
+/* Die Messwerte: Tests und eingetragene Werte in einer Liste, aelteste
+   zuerst. Sie ist der Speicher, alles andere faellt daraus - siehe
+   domain/messwerte.js. */
+export const messwerte   = signal([]);
 export const apiKey      = signal('');
 export const mapKey      = signal('');   // Thunderforest, fuer OpenCycleMap
 export const coreLog     = signal([]);
-export const testLog     = signal([]);
 export const interimLog  = signal([]);
+
+/* Was gilt, wird gerechnet und nicht gespeichert: je Wert der juengste
+   Eintrag, der ihn nennt. Die Form bleibt die des alten Speichers, damit
+   Zonen, Tageskarten, Timer und Analyse unveraendert damit rechnen. */
+export const thresholds = computed(() => geltendeSchwellen(messwerte.value));
+
+/* Nur die Tests. Alles, was die Vergleichbarkeit der Testreihe prueft -
+   Protokollgleichheit, "ist das der juengste Test", der Bezug des
+   Sprechtests -, meint diese Teilmenge und nicht die eingetragenen Werte:
+   eine getippte Zahl hat kein Protokoll. */
+export const testLog = computed(() => messwerte.value.filter(istTest));
 /* Was zu einem Testtermin notiert wurde, bevor er stattfand - vor allem die
    Zielleistung aus dem Tempotest. Schluessel ist das Datum des Tests. */
 export const testPrep    = signal({});
@@ -101,11 +116,25 @@ export async function boot(){
   }
   startDate.value = toMidnight(new Date(sd));
 
-  thresholds.value = await store.thresholds();
+  /* Einmalige Uebernahme des alten Schwellenspeichers in die Liste. Danach
+     steht dort nichts mehr, was die App liest - der Schluessel selbst bleibt,
+     damit eine aeltere Sicherung sich weiterhin einspielen laesst.
+
+     Geschrieben wird nur, wenn tatsaechlich etwas uebernommen wurde: ohne das
+     schriebe jeder Start den Bestand neu, und ein Fehler beim Schreiben
+     traefe jedes Mal die einzige Kopie der Protokolle. */
+  const rohe = sortiere(await store.testLog());
+  const alt  = await store.thresholds();
+  const mit  = uebernimmSchwellen(rohe, alt);
+  messwerte.value = mit;
+  if(mit.length !== rohe.length){
+    await store.setTestLog(mit);
+    await store.setThresholds({ ftp:null, lthr:null, hrmax:null, quellen:{} });
+  }
+
   apiKey.value     = await store.apiKey();
   mapKey.value     = await store.mapKey();
   coreLog.value    = await store.coreLog();
-  testLog.value    = await store.testLog();
   interimLog.value = await store.interimLog();
   testPrep.value   = await store.testPrep();
   varianten.value  = await store.varianten();
@@ -133,9 +162,21 @@ export async function setStartDate(date){
   await store.setStartDate(isoDayLocal(d));
 }
 
-export async function setThresholds(t){
-  thresholds.value = t;
-  await store.setThresholds(t);
+/* Einen Messwert anlegen oder aendern. Der Schluessel entscheidet: derselbe
+   Tag und dieselbe Art sind derselbe Eintrag, und eine Berichtigung erzeugt
+   keine zweite Zeile. Ein Test und eine Korrektur am selben Tag sind dagegen
+   zwei - sie haben verschiedene Schluessel. */
+export async function saveMesswert(eintrag){
+  const e = normalisiere(eintrag);
+  if(!e) return;
+  messwerte.value = sortiere(messwerte.value.filter(x => x.id !== e.id).concat([e]));
+  await store.setTestLog(messwerte.value);
+}
+
+export async function deleteMesswert(id){
+  if(!id) return;
+  messwerte.value = messwerte.value.filter(e => e.id !== id);
+  await store.setTestLog(messwerte.value);
 }
 
 export async function setApiKey(k){
@@ -160,24 +201,14 @@ export async function saveCoreLog(list){
   await store.setCoreLog(coreLog.value);
 }
 
-/* Ein Test je Tag, und die Liste nach Datum sortiert.
+/* Ein Testergebnis ist ein Messwert der Art 'test'.
 
-   Hiess bis zum 10.09.2026 addTestEntry und haengte blind an. Solange das
-   Formular nach dem Speichern leer stehenblieb, fiel das nicht auf; seit die
-   Ergebnisansicht einen gespeicherten Test wieder anzeigt und aendern laesst,
-   waere jede Korrektur eine zweite Zeile fuer denselben Tag geworden - zwei
-   Werte fuer eine Messung, und der Verlauf haette beide gezeichnet.
-
-   Sortiert wird beim Schreiben und nicht beim Lesen: das Protokoll wird auf
-   die letzten Eintraege gekuerzt, und "die letzten" heisst nur dann die
-   juengsten, wenn die Reihenfolge stimmt. Ein nachgetragener alter Test haette
-   sonst den neuesten aus der Liste geschoben. */
+   Die Funktion bleibt als eigener Name stehen, obwohl sie nur noch
+   weiterreicht: der Testbereich legt Tests an, und an der Stelle soll stehen,
+   dass es ein Test ist und keine getippte Zahl. Ein Test je Tag - darum
+   kuemmert sich der Schluessel in saveMesswert. */
 export async function saveTestEntry(entry){
-  testLog.value = testLog.value
-    .filter(e => !e || e.day !== entry.day)
-    .concat([entry])
-    .sort((a, b) => (a.day < b.day ? -1 : 1));
-  await store.setTestLog(testLog.value);
+  return saveMesswert({ ...entry, art: 'test' });
 }
 
 export async function addInterimEntry(entry){

@@ -20,12 +20,13 @@
 
 import { useState } from 'preact/hooks';
 import { plan, thresholds, week, testLog, interimLog, startDate,
-         setThresholds, addInterimEntry } from '../../../state/store.js';
+         saveMesswert, addInterimEntry } from '../../../state/store.js';
 import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, tagNr, kurzTag,
          datumText, weekStartFor } from '../../../domain/week.js';
 import { gotoTab } from '../../../state/navigation.js';
-import { hrBands, zonenGrund, zoneBand, quelleVon, schwellenVonHand,
+import { hrBands, zonenGrund, zoneBand, quelleVon,
          SCHWELLEN_FELDER } from '../../../domain/zones.js';
+import { ART_HAND } from '../../../domain/messwerte.js';
 import { sprechtestBezug, FTP_FAKTOR } from '../../../domain/test.js';
 import { zahl } from '../../../domain/zahlen.js';
 import { Zonenliste } from '../../components/Zonenliste.jsx';
@@ -48,10 +49,10 @@ import './zonen.css';
 function herkunftText(quelle){
   if(!quelle) return null;
   if(quelle.art === 'hand'){
-    /* Das Datum der Eingabe steht dabei, weil es etwas entscheidet: ein Test
-       ueberschreibt diesen Wert nur, wenn sein Testtag danach liegt. */
-    return 'von Hand eingetragen'
-      + (quelle.seit ? ' am ' + datumText(new Date(quelle.seit)) : '');
+    /* Das Datum steht dabei, weil es entscheidet, welcher Wert gilt: der
+       juengste Eintrag traegt ihn. */
+    return 'eingetragen'
+      + (quelle.tag ? ' am ' + datumText(dayFromIso(quelle.tag)) : '');
   }
   return 'im Test' + (quelle.tag ? ' vom ' + datumText(dayFromIso(quelle.tag)) : '') + ' gemessen';
 }
@@ -231,8 +232,8 @@ function SchwellenKarte(){
 
       <div class="buttons">
         <button class="btn" disabled={!geaendert}
-          onClick={() => setThresholds(schwellenVonHand(
-            th, { ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax }, new Date().toISOString()))}>
+          onClick={() => saveMesswert({ art: ART_HAND, day: isoDayLocal(toMidnight(new Date())),
+            ftp: f.ftp, lthr: f.lthr, hrmax: f.hrmax })}>
           Übernehmen</button>
         <button class="btn secondary" onClick={() => gotoTab('test', true)}>Zum Schwellentest</button>
       </div>

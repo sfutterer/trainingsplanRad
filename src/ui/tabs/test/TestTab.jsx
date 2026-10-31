@@ -43,7 +43,7 @@
 
 import { useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, testLog, testPrep, apiKey, settings,
-         setThresholds, saveTestEntry, setTestPrep } from '../../../state/store.js';
+         saveTestEntry, setTestPrep } from '../../../state/store.js';
 import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
          vorgewaehlterAblauf, testWerte, terminSchluessel, tempoBloecke,
          testZiel, vo2maxTermin, vo2maxBezug, baueTestEintrag, laengsteFahrt,
@@ -52,8 +52,8 @@ import { aktuellerTermin, anlaufTage, testPhase, testAblaeufe,
   from '../../../domain/test.js';
 import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds } from '../../../domain/timer/sequences.js';
-import { hrBands, usesCoggan, schwellenAusTest,
-         ueberstimmteFelder } from '../../../domain/zones.js';
+import { hrBands, usesCoggan, quelleVon } from '../../../domain/zones.js';
+import { messwertId, ART_TEST } from '../../../domain/messwerte.js';
 import { isoDayLocal, toMidnight, dayOffset, weekNumberFor, dayFromIso,
          WEEKDAY_NAMES, datumText, tagUndMonat } from '../../../domain/week.js';
 import { fetchGewicht, fetchActivities, fetchStreams,
@@ -554,9 +554,6 @@ function Ablaufansicht({ p, th, w, ablaeufe, gewaehlt, setGewaehlt, prep, onNoti
    nachschlagbar, und nur so laesst sich ein Zahlendreher berichtigen, ohne
    alles neu zu tippen. Der Ø-Puls kommt aus hr20, faellt aber auf lthr
    zurueck: Eintraege von vor dem 10.09.2026 kennen hr20 nicht. */
-/* Fuer die Meldung, wenn ein von Hand gesetzter Wert den Messwert ueberstimmt. */
-const FELDNAME = { ftp: 'Die FTP', lthr: 'Die LTHR', hrmax: 'Die HFmax' };
-
 function ausEintrag(e){
   if(!e) return { w20:null, hr20:null, kadenz:null, rpe:null, kg:null, bed:'' };
   return {
@@ -576,16 +573,16 @@ function ausEintrag(e){
    Fingern nicht zur 1 wird, und dieser Rohtext ueberlebt jedes Setzen von
    aussen. Ein Formular, das beim Blaettern nur neue Werte hineingereicht
    bekaeme, zeigte weiter die Zahlen des vorigen Termins. */
-function Ergebnisformular({ p, th, ziel }){
+function Ergebnisformular({ p, ziel }){
   const [f, setF] = useState(() => ausEintrag(ziel.eintrag));
   const [meldung, setMeldung] = useState(null);
   const werte = testWerte({ w20:f.w20, hr20:f.hr20, kadenz:f.kadenz, rpe:f.rpe, gewicht:f.kg });
   const bereit = werte.ftp != null || werte.lthr != null;
   const tagIso = ziel.tagIso;
 
-  /* Ein alter Test darf die Baender nicht mehr setzen - sonst wirft eine
-     Korrektur am ersten Termin das ganze Zonenmodell acht Wochen zurueck,
-     und zwar ohne dass es jemand merkt. */
+  /* Ob dieser Termin der juengste Test ist, entscheidet nur noch den
+     Hinweis unter dem Formular. Die Baender setzt er ohnehin nicht mehr
+     selbst - das tut die Liste, und dort ist ein alter Test schlicht alt. */
   const juengster = istJuengsterTest(testLog.value, tagIso);
 
   /* Das Gewicht steht meist schon in der Wellness - dann muss es niemand
@@ -600,42 +597,30 @@ function Ergebnisformular({ p, th, ziel }){
     } catch(e){ setMeldung({ art:'fehler', text:'Nicht abrufbar: ' + e.message }); }
   }
 
+  /* Gespeichert wird der Messwert, mehr nicht. Was damit gilt, rechnet die
+     Liste aus - bis zum 31.10.2026 stand hier eine zweite Entscheidung
+     daneben, die den Satz der Schwellenwerte selbst zusammenbaute und dabei
+     pruefen musste, ob eine spaetere Eingabe von Hand den Messwert
+     ueberstimmt. Die Frage stellt sich nicht mehr: der juengste Eintrag
+     traegt den Wert, und dieser Test ist so jung wie sein Testtag. */
   async function speichern(){
-    const neu = {
-      ftp:   werte.ftp  != null ? werte.ftp  : th.ftp,
-      lthr:  werte.lthr != null ? werte.lthr : th.lthr,
-      hrmax: th.hrmax
-    };
-    /* Ersetzt einen Eintrag desselben Tages, statt einen zweiten anzulegen -
-       siehe saveTestEntry. */
     await saveTestEntry(baueTestEintrag({
       tagIso, week: ziel.week ?? weekNumberFor(dayFromIso(tagIso), startDate.value),
-      werte, ftp: neu.ftp, lthr: neu.lthr, bedingungen: f.bed, plan: p
+      werte, ftp: werte.ftp, lthr: werte.lthr, bedingungen: f.bed, plan: p
     }));
 
-    if(juengster){
-      /* Beide Werte werden uebernommen und nicht nur die FTP, wenn noch keine
-         dastand. Ein Test, dessen LTHR man danach von Hand nachtragen muss,
-         hat den halben Zweck verfehlt - und der Rueckweg steht offen: unter
-         Zonen lassen sich beide Zahlen jederzeit korrigieren.
+    const gilt = thresholds.value;
+    const meiner = messwertId(tagIso, ART_TEST);
+    const traegt = ['ftp', 'lthr'].filter(k => {
+      const q = quelleVon(gilt, k);
+      return q && q.id === meiner;
+    });
 
-         Uebernommen wird nur, was dieser Test gemessen hat, und nur, wo
-         seither nichts von Hand gesetzt wurde. Welcher Wert am Ende gilt,
-         entscheidet schwellenAusTest und nicht diese Stelle - siehe dort. */
-      const gemessen = { ftp: werte.ftp, lthr: werte.lthr };
-      const satz = schwellenAusTest(th, gemessen, tagIso);
-      await setThresholds(satz);
-
-      const hand = ueberstimmteFelder(th, gemessen, tagIso)
-        .map(k => FELDNAME[k]).join(' und ');
-      setMeldung({ art:'ok', text:'Gespeichert. FTP ' + (satz.ftp || '–') +
-        ' W, LTHR ' + (satz.lthr || '–') + ' bpm – die Zonen rechnen ab sofort damit.'
-        + (hand ? ' ' + hand + ' bleibt beim Wert von Hand: er wurde nach dem '
-                + datumText(ziel.datum) + ' eingetragen und ist damit der neuere.' : '') });
-    } else {
-      setMeldung({ art:'ok', text:'Gespeichert. Die Schwellenwerte bleiben stehen: ' +
-        'es gibt einen neueren Test, und der trägt die Zonen.' });
-    }
+    setMeldung({ art:'ok', text: traegt.length
+      ? 'Gespeichert. FTP ' + (gilt.ftp || '–') + ' W, LTHR ' + (gilt.lthr || '–')
+        + ' bpm – die Zonen rechnen ab sofort damit.'
+      : 'Gespeichert. Die Zonen bleiben bei FTP ' + (gilt.ftp || '–') + ' W und LTHR '
+        + (gilt.lthr || '–') + ' bpm: dafür gilt ein neuerer Wert.' });
   }
 
   return (
@@ -705,7 +690,7 @@ function Ergebnisformular({ p, th, ziel }){
    der man herkommt - "was kam beim letzten Test heraus" ist genauso oft der
    Grund wie "ich will eintragen", und bis zum 10.09.2026 beantwortete diese
    Ansicht nur die zweite. */
-function ErgebnisAnsicht({ p, th, termin, start }){
+function ErgebnisAnsicht({ p, termin, start }){
   const termine = ergebnisTermine(p, start, testLog.value, today.value);
   const [tag, setTag] = useState(() => vorgewaehlterErgebnistag(termine, termin, today.value));
 
@@ -738,7 +723,7 @@ function ErgebnisAnsicht({ p, th, termin, start }){
         </p>
       </div>
 
-      <Ergebnisformular key={ziel.tagIso} p={p} th={th} ziel={ziel} />
+      <Ergebnisformular key={ziel.tagIso} p={p} ziel={ziel} />
 
       {testLog.value.length > 0 && (
         <div class="card">
@@ -862,7 +847,7 @@ export function TestTab(){
     return (
       <>
         {umschalter}
-        <ErgebnisAnsicht p={p} th={th} termin={termin} start={start} />
+        <ErgebnisAnsicht p={p} termin={termin} start={start} />
       </>
     );
   }
