@@ -15,7 +15,7 @@ import { createPlan } from '../src/domain/plan.js';
 import * as W from '../src/domain/week.js';
 import * as Z from '../src/domain/zones.js';
 import { buildDayInfo } from '../src/domain/day.js';
-import { artDerAktivitaet } from '../src/domain/einheiten.js';
+import { artDerAktivitaet, geplanteRadart } from '../src/domain/einheiten.js';
 import { EINHEITSARTEN } from '../src/ui/components/Einheitssymbol.jsx';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
@@ -96,6 +96,37 @@ describe('Einheitsart einer Aufzeichnung', () => {
   it('faellt ohne Zonenzeiten auf die Grundlagenfahrt zurueck', () => {
     expect(artDerAktivitaet(fahrt({ icu_hr_zone_times: null }))).toBe('z2');
     expect(artDerAktivitaet(fahrt({ icu_hr_zone_times: [0, 0, 0] }))).toBe('z2');
+  });
+});
+
+/* Der Anlass: der Dienstag vom 27.10.2026, 89 min bei Ø 136 bpm, 46 % der
+   Zeit oberhalb der zweiten Pulszone von intervals.icu - nach den Zonen ein
+   Intervalltag, nach dem Plan eine Grundlagenfahrt. */
+describe('Einheitsart einer Aufzeichnung am geplanten Tag', () => {
+  const dienstag = fahrt({ moving_time: 5321, icu_hr_zone_times: [150, 2733, 2448, 0, 0] });
+  const infoAm = d => buildDayInfo(plan, Z.NO_THRESHOLDS, d, start);
+
+  it('nimmt die Art der geplanten Radeinheit', () => {
+    expect(artDerAktivitaet(dienstag)).toBe('intervalle');
+    expect(artDerAktivitaet(dienstag, geplanteRadart(infoAm(tagDerWoche(11, 3))))).toBe('z2');
+    expect(artDerAktivitaet(dienstag, geplanteRadart(infoAm(tagDerWoche(5, 5))))).toBe('intervalle');
+  });
+
+  it('nennt die Radeinheit des Tages, auch wenn der Tag als Rumpftag gefuehrt wird', () => {
+    /* Mittwoch der Woche 2: Zirkel und kurze Fahrt. */
+    expect(geplanteRadart(infoAm(tagDerWoche(2, 4)))).toBe('z2');
+  });
+
+  it('laesst die Aufzeichnung entscheiden, wo keine Fahrt geplant ist', () => {
+    expect(geplanteRadart(infoAm(tagDerWoche(1, 2)))).toBe(null);      // Montag, Ruhetag
+    expect(geplanteRadart(infoAm(tagDerWoche(1, 6)))).toBe(null);      // Freitag, offen
+    expect(geplanteRadart(infoAm(W.addDays(start, -3)))).toBe(null);   // vor Planbeginn
+    expect(artDerAktivitaet(dienstag, null)).toBe('intervalle');
+  });
+
+  it('ordnet Kraft und Fremdes weiter nach dem Typ', () => {
+    expect(artDerAktivitaet({ type:'WeightTraining', moving_time: 1800 }, 'z2')).toBe('rumpf');
+    expect(artDerAktivitaet({ type:'Swim', moving_time: 1800 }, 'z2')).toBe('sonstige');
   });
 });
 

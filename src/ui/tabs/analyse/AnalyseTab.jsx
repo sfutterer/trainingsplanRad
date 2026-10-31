@@ -37,7 +37,8 @@ import { compareDay, weekTotals, buildReport, fmtMin, pct,
          tagesGruppen } from '../../../domain/analysis.js';
 import { T } from '../../../domain/texte.js';
 import { verlaufBericht } from '../../../domain/verlauf.js';
-import { artDerAktivitaet } from '../../../domain/einheiten.js';
+import { artDerAktivitaet, geplanteRadart } from '../../../domain/einheiten.js';
+import { buildDayInfo } from '../../../domain/day.js';
 import { useTagesauswertung } from './useTagesauswertung.js';
 import { zahl } from '../../../domain/zahlen.js';
 import { IndikatorKarte, TrendZeile, Verlaufsgraph } from '../../components/Verlaufsgraph.jsx';
@@ -107,6 +108,7 @@ function eckwerte(acts){
 
 function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
   const tage = tagesGruppen(acts);
+  const p = plan.value, th = thresholds.value, start = startDate.value;
 
   return (
     <>
@@ -130,6 +132,8 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
         <div class="trliste">
           {tage.map(({ tag, acts: tagesActs }) => {
             const d = toMidnight(new Date(tag));
+            const geplant = p && start
+              ? geplanteRadart(buildDayInfo(p, th, d, start, varianten.value)) : null;
             return (
               <button class="trtagknopf" key={tag} onClick={() => onWaehlen(tag)}>
                 <span class="trtagkopf">
@@ -144,7 +148,7 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
                      auseinanderhaelt. Eingeordnet wird in domain/einheiten.js,
                      benannt wird die Art in der Zeile darunter: ohne den Namen
                      waere die Farbe eine Behauptung, die man erst lernen muss. */
-                  const art = artDerAktivitaet(a);
+                  const art = artDerAktivitaet(a, geplant);
                   const min = Math.round((a.moving_time || a.elapsed_time || 0) / 60);
                   const km = a.distance ? (a.distance / 1000).toFixed(1) + ' km' : null;
                   return (
@@ -182,8 +186,8 @@ function Liste({ acts, laedt, fehler, onWaehlen, onNeuLaden, range, setRange }){
    Tages, die Ueberschreitung an der Fahrt, die sie ausloest, und die Zonen
    dieser Fahrt. `spur` ist die Auswertung der Aufzeichnung - sie fehlt, solange
    geladen wird, und bleibt aus, wenn kein GPS-Stream vorliegt. */
-function Fahrtkarte({ act, spur, bewertung, mehrere }){
-  const art = artDerAktivitaet(act);
+function Fahrtkarte({ act, spur, bewertung, mehrere, geplant }){
+  const art = artDerAktivitaet(act, geplant);
   const min = Math.round((act.moving_time || act.elapsed_time || 0) / 60);
   const km = spur && spur.bilanz ? spur.bilanz.km : (act.distance || 0) / 1000;
   return (
@@ -291,7 +295,7 @@ function Tagesanalyse({ tag, acts, onZurueck }){
 
       {row.fahrten.map(f => (
         <Fahrtkarte act={f.act} spur={spuren[f.act.id]} bewertung={f}
-          mehrere={row.fahrten.length > 1} key={f.act.id} />
+          mehrere={row.fahrten.length > 1} geplant={geplanteRadart(row.plan)} key={f.act.id} />
       ))}
 
       {zustand.phase === 'fertig' && zustand.untergrundLaeuft && (
