@@ -2,7 +2,16 @@
 
 Begleitdokument zu `TRAININGSPLAN.md`, Abschnitt 2a.
 
-**Stand:** 17.09.2026, nach dem 5-min-Referenzwert. **Fassung 6.**
+**Stand:** 31.10.2026, nach dem Retest vom 22.10. **Fassung 7.**
+
+Änderung gegenüber Fassung 6: **Der Retest ist gefahren und ausgewertet** — 234,7 W über
+20 min, **FTP 223 W**, **LTHR 166 bpm**, beide erhoben und gesetzt. Der Test war
+ausbelastet (Max HF 180, letzte 5 min Ø 172) und gleichmäßig gefahren. Damit ist die
+**Arbeits-FTP aufgehoben** (Abschnitt 4.6): es gibt wieder eine FTP für Zonen, Zielwatt
+und Trainingslast. Die Kennzahl „HF am Intervallende" hängt jetzt an **≥ 166 bpm**, und
+**180 bpm sind ein Messwert** statt einer Annahme — als Untergrenze, weil kein gezielter
+Maximalversuch gefahren wurde. Die Herleitung und die Bedingungen des Tests stehen in
+`TRAININGSPLAN.md` Fassung 12, Abschnitte 2a und 9i.
 
 Änderung gegenüber Fassung 5: Die 171 bpm vom 17.09. sind **keine HFmax**, sondern der
 höchste bisher aufgezeichnete Wert, erreicht ohne Ausbelastung. Kontrollgrößen hängen
@@ -27,17 +36,30 @@ Fassung 4 (11.09.2026) brachte: Startzeit des Retests am 03.12. auf **14:00** fe
 | Datum | Woche | Ø-Watt 20 min | FTP | LTHR (Protokoll) | Ø-Kadenz | Gewicht | W/kg |
 |---|---|---|---|---|---|---|---|
 | **10.09.2026** | 4 | **203 W** | **192 W** | **152 bpm** | 86 rpm | 95,7 kg | **2,01** |
-| 22.10.2026 | 10 | | | | | | |
+| **22.10.2026** | 10 | **234,7 W** | **223 W** | **166 bpm** | 89 rpm | 91,8 kg | **2,43** |
 | 03.12.2026 | 16 | | | | | | |
 
-FTP = Ø-Watt × 0,95 = 202,6 × 0,95 = 192,5 → **192 W**
-LTHR nach Protokoll = Ø-Puls der 20 min = 151,8 → **152 bpm**
+Test 1: FTP = Ø-Watt × 0,95 = 202,6 × 0,95 = 192,5 → **192 W**
+Test 1: LTHR nach Protokoll = Ø-Puls der 20 min = 151,8 → **152 bpm**
+
+Test 2: FTP = 234,7 × 0,95 = 222,97 → **223 W**
+Test 2: LTHR = Ø-Puls der 20 min = **166 bpm** — Protokollwert und gesetzter Wert sind
+diesmal derselbe, weil der Test ausbelastet war. intervals.icu schlägt mit seiner eigenen
+Methode (98 % des 20-min-Pulses) 163 vor; dieser Plan bleibt bei der Methode aus
+Abschnitt 2a, damit die drei Tests vergleichbar bleiben.
+
+**Veränderung Test 1 → Test 2:** +32 W im 20-min-Wert (+16 %), FTP 192 → 223 W, Gewicht
+−3,9 kg, W/kg 2,01 → 2,43 (+21 %). Normalized Power am 22.10.: 236 W. Die 5-min-Abschnitte
+lagen bei 236 / 233 / 232 / 237 W, die HF im Mittel bei 166 und in den letzten 5 min bei
+172, **Max 180**. Die Pacing-Vorgabe von 225 W wurde um rund 10 W übertroffen; RPE wurde
+nicht erfasst, die Selbsteinschätzung vorab lautete „stark am Limit".
 
 Gewicht ist der Sieben-Tage-Schnitt, nicht der Tageswert (Tageswert 10.09.: 96,4 kg).
 
-**Zur Zonenbildung gesetzt ist LTHR 163, nicht der Protokollwert 152** — Begründung in
-Abschnitt 4.3. Die Testhistorie in `TRAININGSPLAN.md` Abschnitt 2a führt dieselben Werte
-und nennt beide Zahlen; weicht eine der beiden Tabellen ab, gilt dieses Dokument.
+**Beim ersten Test ist zur Zonenbildung LTHR 163 gesetzt worden, nicht der Protokollwert
+152** — Begründung in Abschnitt 4.3. Beim zweiten Test entfällt diese Korrektur. Die
+Testhistorie in `TRAININGSPLAN.md` Abschnitt 2a führt dieselben Werte und nennt beide
+Zahlen; weicht eine der beiden Tabellen ab, gilt dieses Dokument.
 
 ---
 
@@ -248,7 +270,13 @@ Der Wert erklärt sich aus dem Trainingsalter, nicht aus dem Lebensalter. Mit 40
 VO2max-Potenzial gegenüber 30 praktisch unverändert; der Unterschied betrifft die
 Regenerationsfähigkeit — dafür steht ab Woche 5 der 2:1-Rhythmus im Plan.
 
-### 4.6 Arbeits-FTP 206 W — die Folge aus dem 17.09. (neu in Fassung 5)
+### 4.6 Arbeits-FTP 206 W — die Folge aus dem 17.09. (aufgehoben in Fassung 7)
+
+> **Erledigt mit dem Retest vom 22.10.2026.** Die Arbeits-FTP war die Antwort auf einen
+> belegt zu niedrigen ersten Test. Sie stand zuletzt bei 215 W (Fassung 11 des
+> Trainingsplans) und liegt damit 8 W unter dem gemessenen Wert — sie war vorsichtig und
+> nicht überzogen. Seit dem Retest gibt es wieder **eine** FTP: 223 W für Zonen,
+> Zielwatt und Trainingslast. Der Abschnitt bleibt als Herleitung stehen.
 
 Zwei Zahlen mit zwei Aufgaben:
 
@@ -277,6 +305,13 @@ vorgezogene Retest neu zu prüfen.
 
 ## 5. Offene Punkte für die Retests
 
+> **Stand nach dem 22.10.:** Drei Punkte sind beantwortet. Das **Pacing** war konstant
+> (5-min-Abschnitte 236 / 233 / 232 / 237 W), der **vorgezogene Retest** hat sich mit dem
+> regulären Termin erledigt, und die **HFmax** ist mit 180 bpm nun ein Messwert aus einer
+> Ausbelastung — weiterhin als Untergrenze und weiterhin ohne Steuerfunktion, denn die
+> Kennzahl „HF am Intervallende" hängt an der LTHR, jetzt **≥ 166 bpm**. Offen bleiben
+> der Dezembertermin, die Runden und die Garmin-Schätzung.
+
 - **Pacing.** Der negative Split vom 10.09. ist nicht zu wiederholen. Am 22.10. und
   03.12. ist konstant zu fahren, sonst sind die Werte nicht vergleichbar.
 - **Vorgezogener Retest — entschieden (Fassung 5): nein.** Der 5-min-Wert vom 17.09. hat
@@ -286,7 +321,8 @@ vorgezogene Retest neu zu prüfen.
   aufgezeichnete Wert sind 171 bpm vom 17.09., erreicht am Ende eines streckenbedingt
   abfallenden 5-min-Versuchs, also ohne Ausbelastung. Als HFmax gesetzt würde er jede
   daran hängende Schwelle nach unten verzerren; die Annahme 180 ist ebenso unbelegt.
-  Deshalb: **Die Kennzahl „HF am Intervallende" ist ≥ 163 bpm (100 % LTHR)**, das Feld
+  Deshalb: **Die Kennzahl „HF am Intervallende" ist ≥ 163 bpm (100 % LTHR; seit dem
+  Retest vom 22.10. ≥ 166)**, das Feld
   „Max HR" bleibt bei 180 und steuert nichts, und aufgezeichnete Höchstwerte laufen in
   die Testhistorie. Eine belastbare HFmax entstünde nur aus einer bewussten
   Ausbelastung — nicht vorgesehen, weil keine Steuergröße davon abhängt.

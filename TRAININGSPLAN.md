@@ -13,13 +13,19 @@ Plan muss dieses Dokument mitgezogen werden.
 > **Fassung 12, Stand 22.10.2026.** **Retest ausgewertet: 234,7 W über 20 min → FTP 223 W,
 > LTHR 166 bpm.** Die Arbeits-FTP entfällt — Test-FTP und Zielwatt rechnen wieder auf
 > demselben Wert. **Neue Zielwatt:** Do-Intervalle 250–260 W, Sa-Blöcke 178–196 W,
-> Phase-4-Schwelle 201–212 W. **Z2 folgt jetzt der FTP:** Coggan-Z2 123–167 W, für lange
-> Fahrten gilt ein **Arbeitsbereich von Ø 135–150 W**, gesteuert über den Durchschnitt,
-> kontrolliert über das Decoupling. Die feste Regel „Z2 106–144 W unabhängig von der FTP"
-> ist aufgehoben. Das Pulskriterium der Intervalle hängt an **166 bpm**. **Woche 10 war
+> Phase-4-Schwelle 201–212 W. **Z2 folgt jetzt der FTP:** Coggan-Z2 123–167 W,
+> kontrolliert über Sprechtest und Decoupling. Die feste Regel „Z2 106–144 W unabhängig
+> von der FTP" ist aufgehoben. Das Pulskriterium der Intervalle hängt an **166 bpm**. **Woche 10 war
 > keine Erholungswoche** (Entscheidung nach Erkältungspause), nächste Erholungswoche
 > bleibt Woche 13. Der Anlauf zum 22.10. ist in Abschnitt 2a dokumentiert, der Test in der
 > Testhistorie. Begründung in Abschnitt 9i.
+>
+> **Nachtrag 31.10.2026.** Der **Z2-Arbeitsbereich Ø 135–150 W ist aus dem Plan
+> entfernt.** Er war ein Hilfsmittel beim Fahren und keine Planvorgabe, gegen die etwas
+> geprüft wird; für Z2 gelten die Zonengrenzen 123–167 W, darüber der Sprechtest und als
+> Kontrolle das Decoupling. Die App ist auf diese Fassung nachgezogen (Abschnitt 5,
+> Punkte 34 bis 36) — **ohne** die Erholungswochen: sie bleibt bei
+> `[4, 7, 10, 13, 16]` und bei den alten Minuten der Woche 10.
 >
 > Fassung 11 (24.09.2026) brachte: **Die Zielwatt der Donnerstagsintervalle stiegen auf
 > 240–250 W, die Arbeits-FTP von 206 auf 215 W.** Anlass: zwei Intervalleinheiten in Folge
@@ -341,7 +347,7 @@ Schläge gerundet.
 | Zone | % FTP | Watt | Verwendung |
 |---|---|---|---|
 | Z1 | 0–55 % | 1–122 | Intervallpausen, optionale Fahrten |
-| **Z2** | **56–75 %** | **123–167** | **Di, Mi, Sa — Grundlagenausdauer**, Arbeitsbereich lange Fahrt Ø 135–150 W |
+| **Z2** | **56–75 %** | **123–167** | **Di, Mi, Sa — Grundlagenausdauer** |
 | Z3 | 76–90 % | 168–200 | Samstagsblöcke |
 | Z4 | 91–105 % | 201–234 | Schwellenblöcke Phase 4 |
 | Z5 | 106–120 % | 235–267 | VO2max-Intervalle |
@@ -383,21 +389,13 @@ Begründet war das mit LT1 und dem belegten Arbeitspunkt um 139 W (Decoupling �
 
 - **Z2 ist die Coggan-Zone aus der aktuellen FTP**, derzeit **123–167 W**, und wandert
   mit jedem Test mit.
-- **Arbeitsbereich für lange Fahrten: Ø 135–150 W.** Gemeint ist die
-  Durchschnittsleistung beim Treten, nicht der Momentanwert. Kurze Wellen, Anfahren und
-  Kuppen dürfen darüber liegen; gesteuert wird über den Schnitt, damit ein gleichmäßiger
-  Fahrfluss möglich bleibt.
-- **Bei vielen Stopps** zieht das Rollen den Gesamtschnitt nach unten. Der angezeigte
-  Ø inklusive Rollphasen liegt dann rund 5–10 W unter dem Schnitt beim Treten.
-- **Kontrolle über das Decoupling:** ≤ 5 % → der Arbeitsbereich trägt diese Dauer.
-  Liegen zwei lange Fahrten in Folge über 5 %, wird der Arbeitsbereich auf Ø 130–145 W
-  zurückgenommen.
 - **Der Sprechtest bleibt oberste Instanz.** Ganze Sätze müssen möglich sein. Wird das
-  Sprechen kurzatmig, ist LT1 überschritten — unabhängig von der Zahl.
-
-**Warum der Arbeitsbereich unter der Zonenobergrenze liegt:** Coggan-Z2 reicht bis
-75 % FTP und liegt oben oft über LT1. Belegt ist bisher der Bereich um 139 W; 150 W ist
-der Schritt, den die gestiegene FTP plausibel macht, 167 W ist es nicht.
+  Sprechen kurzatmig, ist LT1 überschritten — unabhängig von der Zahl. Das gilt
+  besonders am oberen Rand: Coggan-Z2 reicht bis 75 % FTP und liegt dort oft über LT1.
+- **Kontrolle über das Decoupling:** ≤ 5 % → die Fahrt trägt diese Dauer. Liegen zwei
+  lange Fahrten in Folge über 5 %, wird im unteren Drittel der Zone gefahren.
+- **Bei vielen Stopps** zieht das Rollen den Gesamtschnitt nach unten. Der angezeigte
+  Ø inklusive Rollphasen liegt rund 5–10 W unter dem Schnitt beim Treten.
 
 **Zielwatt der Qualitätseinheiten — aus der FTP 223 W (Fassung 12):**
 
@@ -413,8 +411,7 @@ der Schritt, den die gestiegene FTP plausibel macht, 167 W ist es nicht.
 222–237 W, 165–181 W, 185–196 W.
 
 **Für Grundlagenfahrten sticht der Sprechtest die Zahl.** Zweite Kontrollinstanz ist
-der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn die Leistung im
-Arbeitsbereich lag.
+der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn die Leistung in Z2 lag.
 
 ### Steuergrößen je Einheit
 
@@ -455,13 +452,14 @@ Dieselbe Übersetzung mit 85–90 rpm ergibt überschlägig 155–165 W.
 
 - **Auf der Z2-Fahrt hat die Leistung Vorrang vor der Kadenz.** Zielkadenz auf dem Cube
   ist **80–85 rpm**.
-- **Nachtrag Fassung 12:** Mit dem Arbeitsbereich Ø 135–150 W liegt Gang 8 bei
-  80–85 rpm mitten im Ziel. 155–165 W bei 85–90 rpm sind jetzt zwar noch Z2, liegen aber
-  über dem Arbeitsbereich — die Regel „unter 85 rpm bleiben" gilt deshalb weiter.
+- **Nachtrag Fassung 12:** Gang 8 bei 80–85 rpm liegt mit rund 135–150 W mitten in Z2.
+  155–165 W bei 85–90 rpm sind zwar noch Z2, aber schon am oberen Rand, an dem der
+  Sprechtest entscheidet — die Regel „unter 85 rpm bleiben" gilt deshalb weiter.
 - **Geprüft am Sa 19.09. (Gang-Test):** Gang 7 mit 89 rpm ergab **Ø 107 W** — einen
   Zwischengang für ~139 W bei höherer Kadenz gibt es im Flachen nicht.
 - **Bei Gegenwind oder Rückenwind** verschiebt sich der passende Gang. Die Regel bleibt
-  dieselbe: den Gang wählen, in dem der Schnitt bei 80–85 rpm im Arbeitsbereich liegt.
+  dieselbe: den Gang wählen, in dem der Schnitt bei 80–85 rpm im unteren bis mittleren
+  Z2 liegt.
 - **Der Ort für reine Kadenzarbeit** ist die Kadenzpyramide am Mittwoch im leichten Gang
   sowie die Pendelfahrten auf dem Trekkingrad.
 
@@ -649,7 +647,7 @@ Erhaltungsreiz mit in die Einheit, in die der Donnerstag verlegt wird — bei Ve
 auf den Samstag in die zweite Hälfte der Ausfahrt. Der Samstag ist dann kein sauberer
 Z2-Tag mehr und **das Decoupling der Woche fällt als Kennzahl aus.**
 
-**Samstag:** Basis Z2, Arbeitsbereich **Ø 135–150 W**. **Z3-Blöcke nur in den Wochen 6,
+**Samstag:** Basis Z2 nach Sprechtest. **Z3-Blöcke nur in den Wochen 6,
 9 und 12** — jeweils die zweite Belastungswoche eines 2:1-Paars, und nicht in Phase 4.
 Dann 2 × 12 min in der **zweiten Hälfte** der Fahrt mit 8 min lockerem Rollen
 dazwischen, **178–196 W** (80–88 % der FTP 223 W; Woche 9 noch 172–189 W, Woche 6
@@ -865,7 +863,7 @@ Vergleich zum 03.12. ist der 22.10. die saubere Basis.**
 3. FTP auf **manuell**
 4. Dieselben Grenzwerte in die App und auf den Edge übernehmen
 5. Zeile in der Testhistorie ausfüllen — hier und in `SCHWELLENTESTS.md`
-6. Z2-Arbeitsbereich gegen das Decoupling der nächsten langen Ausfahrt prüfen
+6. Die neue Z2-Obergrenze gegen das Decoupling der nächsten langen Ausfahrt prüfen
 7. Am Folgetag locker oder frei
 
 ### Testhistorie
@@ -898,7 +896,7 @@ Wöchentlich nach der Samstagsausfahrt:
 
 | Größe | Wo | Was sie sagt |
 |---|---|---|
-| **Decoupling Pw:HR** | Aktivität Samstag | ≤ 5 % → Grundlage trägt diese Dauer und den Arbeitsbereich Ø 135–150 W |
+| **Decoupling Pw:HR** | Aktivität Samstag | ≤ 5 % → die Grundlagenfahrt trägt diese Dauer in Z2 |
 | **Efficiency Factor** | Aktivität Sa (Di nur über Puls und Zeit auf der festen Strecke) | Trend über Wochen, nicht Einzelwert |
 | **eFTP** | Power-Seite | Zwischenkontrolle |
 | **Wochenumfang** | Analyse-Tab | gegen den Deckel aus Abschnitt 2 |
@@ -1327,8 +1325,8 @@ Aus Fassung 8 (19.09.2026):
 30. **Analyse der Radeinheiten nach Abschnitten.** Gilt für Fahrten mit Leistungsmesser
     (Cube, Do/Sa); Di/Mi auf dem Trekkingrad bleiben bei der Pulsprüfung
     (Z2 ≤ 137 bpm seit Fassung 12).
-    - **Bezugswerte seit Fassung 12:** Z2 123–167 W und Arbeitsbereich Ø 135–150 W aus der
-      **FTP 223 W**; Blockziel Samstag 178–196 W (80–88 %), Do-Reiz 250–260 W (112–116 %).
+    - **Bezugswerte seit Fassung 12:** Z2 123–167 W aus der **FTP 223 W**; Blockziel
+      Samstag 178–196 W (80–88 %), Do-Reiz 250–260 W (112–116 %).
     - **Glätten:** Zonenzeiten auf dem 30-s-Gleitmittel. Stillstand (0 W **und** unter
       2 km/h) fällt aus allen Rechnungen heraus.
     - **Abschnitte:** erste 15 min Einfahren und letzte 10 min Ausrollen werden nicht
@@ -1337,17 +1335,17 @@ Aus Fassung 8 (19.09.2026):
       Fahrthälfte. Die 8 min nach jedem Block außer dem letzten sind Blockpause. Der Rest
       ist der Z2-Anteil.
     - **Bewertung:** Blöcke nur gegen ihr Zielband. Blockpause: Hinweis nur bei
-      Ø > 167 W. Z2-Anteil: Zeit über 167 W (geglättet) wird gezählt, Ø-Leistung beim
-      Treten gegen den Arbeitsbereich 135–150 W angezeigt.
+      Ø > 167 W. Z2-Anteil: Zeit über 167 W (geglättet) wird gezählt, dazu die
+      Ø-Leistung beim Treten.
     - **„Zu hart" für die Einheit** nur bei Decoupling Pw:HR des Z2-Anteils > 5 %; lässt es
-      sich nicht rechnen, bei Ø-Leistung des Z2-Anteils > 150 W oder mehr als 10 % seiner
-      Zeit über 167 W. **Decoupling ≤ 5 % heißt: keine Warnung.**
+      sich nicht rechnen, bei Ø-Leistung des Z2-Anteils über der Z2-Obergrenze oder mehr
+      als 10 % seiner Zeit darüber. **Decoupling ≤ 5 % heißt: keine Warnung.**
     - **Decoupling** nur über den Z2-Anteil ab Minute 15 bis zum Beginn des ersten Blocks
       (ohne Blöcke: bis zum Ausrollen), Hälften nach Bewegungszeit.
     - **Kadenz (nur Cube):** Z2-Anteil Ziel 80–85 rpm, Hinweis nur unter 80 rpm; Blöcke
       Ziel 85–90 rpm.
-    - **Anzeige:** „Z2-Anteil: X min, Ø Y W beim Treten (Arbeitsbereich 135–150)" und
-      „Geplante Blöcke: 2 × 12 min, Ø ___ W (Ziel 178–196)" getrennt.
+    - **Anzeige:** „Z2-Anteil: X min, davon Z min über Z2, Ø Y W" und „Geplante Blöcke:
+      2 × 12 min, Ø ___ W (Ziel 178–196)" getrennt.
 
 Aus Fassung 11 (24.09.2026):
 
@@ -1361,17 +1359,30 @@ Aus Fassung 11 (24.09.2026):
 
 Aus Fassung 12 (22.10.2026):
 
-34. **Werte nach dem Retest:** `ftp` 223, `lthr` 166, `arbeits_ftp` entfernen.
-    Zielbänder: Do-Reiz Phase 3 250–260 W, Sa-Blöcke Woche 12 178–196 W, Phase 4
-    201–212 W. Erholungswochen `[4, 7, 13, 16]`, Testwochen weiterhin `[4, 10, 16]`.
-    Woche 10: `SAT_MIN` 150, Soll 310, Deckel 341; Rumpfdosis der Woche bleibt reduziert,
-    Beinblock entfällt am Tag vor der langen Ausfahrt.
-35. **Z2-Arbeitsbereich als eigenes Feld** (`z2_arbeitsbereich: [135, 150]`), getrennt
-    von den Zonengrenzen. Karte „Samstag" zeigt „Ø 135–150 W (Z2 123–167)". Die App
-    darf den Arbeitsbereich nicht aus der FTP errechnen — er ist eine Entscheidung,
-    keine Formel.
-36. **Testhistorie:** Zeile 22.10. eintragen (Abschnitt 2a), inklusive Max HF 180 und
-    Pacing-Abschnitten.
+34. **Werte nach dem Retest.** FTP 223 und LTHR 166 werden in den Zonen der App
+    eingetragen, nicht in `plan.json` — sie sind Messwerte und stehen dort, wo die App
+    ihre Messwerte führt. In der Datei ist `arbeits_ftp` **entfernt**; seitdem rechnet
+    jeder Prozentsatz wieder gegen die eingetragene FTP, also Phase 4 bei 201–212 W und
+    die Sa-Blöcke der Woche 12 bei 178–196 W, beide ohne Pflege. Der Do-Reiz der Wochen
+    11 und 12 steht als festes Band bei **250–260 W** — er wird nachgesteuert und ist
+    deshalb keine Prozentzahl. Die Sa-Blöcke der gefahrenen Woche 9 sind mit 172–189 W
+    **eingefroren**, sonst wären sie rückwirkend gewandert. **Erledigt am 31.10.2026.**
+
+    **Nicht übernommen:** Erholungswochen und Woche 10. Die App führt weiter
+    `[4, 7, 10, 13, 16]` und die alten Minuten der Woche 10. Die Woche ist vorbei, der
+    Unterschied steht nur noch in der Wochenübersicht einer vergangenen Woche, und eine
+    nachträgliche Umwidmung ist keine Planänderung, der die App folgen muss.
+35. ~~**Z2-Arbeitsbereich als eigenes Feld.**~~ **Verworfen am 31.10.2026.** Der
+    Arbeitsbereich ist ein Hilfsmittel beim Fahren und keine Größe, gegen die die App
+    etwas prüft. Die Auswertung bleibt bei der Z2-Obergrenze; der Arbeitsbereich ist
+    auch aus diesem Dokument entfernt.
+36. **Testhistorie:** Zeile 22.10. eingetragen — hier und in `SCHWELLENTESTS.md`.
+    **Erledigt am 31.10.2026.**
+
+**Stand der älteren Punkte:** 32 und 33 sind seit Fassung 11 erledigt — der Timer zeigt
+das Zielband mit seiner Herkunft, und die Analyse des Donnerstags nennt je Wiederholung
+Ø-Watt und Ø-Puls der letzten 60 s mit dem Hinweis nach Regel 7. Die Schwelle dafür ist
+die eingetragene LTHR und folgt dem Retest von selbst.
 
 **Nicht in die App:** Abschnitt 11 (Ernährung).
 
@@ -1386,7 +1397,7 @@ Seit 23.08.2026 stehen alle Plandaten in `plan.json` neben `index.html`.
 | In der JSON | Im Code geblieben |
 |---|---|
 | Wochenwerte je Woche, Donnerstag und Samstagsblöcke je Woche | Kalender- und Wochenrechnung, Phasenzuordnung |
-| Pulszonen, Leistungszonen, Kadenzziele, Z2-Arbeitsbereich | Zonenberechnung aus LTHR und FTP |
+| Pulszonen, Leistungszonen, Kadenzziele | Zonenberechnung aus LTHR und FTP |
 | Übungen mit Schritten, Zielen, Bildpfaden; Beinblock-Dosierung je Phase | Wiederholungsziel aus Belastung ÷ Tempo, Zirkeldauer |
 | Timer-Konstanten, Schwellentest-Ablauf | Sequenzbau der Timer |
 | Freistehende Erklärtexte | Satzgerüste mit eingerechneten Zahlen |
@@ -1538,11 +1549,10 @@ legen.
 - **Z2-Tage ohne Leistungsmesser:** Warnung bei mehr als 15 % der Zeit in Z4/Z5, und
   wenn unter 40 % in Z2 und unter 75 % in Z1–Z2 liegen.
 - **Samstag:** in den Blockwochen werden die Blöcke erkannt und gegen ihr Zielband
-  geprüft — getrennt vom Z2-Anteil. Sonst gilt der Samstag als Z2-Tag mit
-  Arbeitsbereich Ø 135–150 W.
+  geprüft — getrennt vom Z2-Anteil. Sonst gilt der Samstag als reiner Z2-Tag.
 - **„Zu hart" an Z2-Tagen mit Leistungsmesser** nur, wenn das Decoupling des Z2-Anteils
-  über 5 % liegt (ohne Decoupling: Ø beim Treten über 150 W oder mehr als 10 % der Zeit
-  über 167 W).
+  über 5 % liegt (ohne Decoupling: Ø beim Treten über 167 W oder mehr als 10 % der Zeit
+  darüber).
 - **Donnerstag:** harte Zeit in der Watt-Zone gegen `Wiederholungen × Minuten`.
 - **Pendelfahrten (Di, Mi):** Die Solldauer ist eine **Untergrenze**. Über 20 % der Zeit
   oberhalb HF-Z2 heißt, der Weg wurde unter Zeitdruck gefahren.
@@ -1554,8 +1564,8 @@ legen.
 
 | Kennzahl | Einheit | Zielwert | Aussage |
 |---|---|---|---|
-| Decoupling Pw:HR | Samstag, Z2-Anteil ab Minute 15 bis zum ersten Block | ≤ 5 % | Grundlage trägt diese Dauer und den Arbeitsbereich; einziges Kriterium für „zu hart" |
-| Ø-Leistung beim Treten | Samstag, Z2-Anteil | 135–150 W | Arbeitsbereich getroffen |
+| Decoupling Pw:HR | Samstag, Z2-Anteil ab Minute 15 bis zum ersten Block | ≤ 5 % | Grundlage trägt diese Dauer; einziges Kriterium für „zu hart" |
+| Ø-Leistung beim Treten | Samstag, Z2-Anteil | in Z2, 123–167 W | Grundlage im Band gefahren |
 | Efficiency Factor NP ÷ Ø-HF | Samstag | Trend steigend | aerobe Basis wächst |
 | Leistungsabfall Wdh. 1 → letzte | Donnerstag | < 5 % | Pacing sauber |
 | Erste Wdh. über Zielband | Donnerstag | Warnung ab > 5 % darüber | zu hart gestartet |
@@ -1607,8 +1617,8 @@ Merkposten, ohne Festlegung:
 - **Der Dienstag ist eine feste Größe** (90 min, Fassung 10)
 - **Zweiter Qualitätstag pro Woche.** Die CTL liegt Mitte Oktober um 30 — die Frage ist
   für den Folgeplan neu zu stellen (siehe 9b)
-- **Z2-Arbeitsbereich** (Fassung 12): Nach drei bis vier langen Fahrten mit Decoupling
-  prüfen, ob 135–150 W trägt oder angepasst wird
+- **Oberer Rand von Z2** (Fassung 12): Nach drei bis vier langen Fahrten am Decoupling
+  prüfen, wie weit die neue Obergrenze 167 W auf langen Fahrten wirklich trägt
 
 ---
 
@@ -1796,14 +1806,14 @@ Retest aus der neuen FTP ergeben.
 | 2 | **Arbeits-FTP aufgehoben** | Der Testwert ist belastbar; zwei FTP-Werte waren eine Notlösung für einen zu niedrigen ersten Test. Die Arbeits-FTP 215 W lag 8 W unter dem Testwert — sie war vorsichtig, nicht überzogen |
 | 3 | **LTHR 166 bpm**, erhoben = gesetzt | Ø-Puls der 20 min, gleiche Methode wie Abschnitt 2a. Diesmal ausbelastet, daher keine Abweichung nötig. intervals.icu-Methode (98 %) ergäbe 163 — bewusst nicht verwendet, damit die Testreihe vergleichbar bleibt |
 | 4 | **Zielwatt neu:** Phase-3-Reiz 250–260 W, Sa-Blöcke 178–196 W, Schwelle 201–212 W | Prozentsätze unverändert, Bezugswert jetzt die FTP 223 W |
-| 5 | **Z2 folgt der FTP:** Coggan-Z2 123–167 W, Arbeitsbereich lange Fahrt **Ø 135–150 W** | Die feste Obergrenze 144 W stammte aus einer Zeit mit belegt zu niedriger FTP. Der Arbeitsbereich bleibt unter der Coggan-Obergrenze, weil Z2 oben über LT1 liegen kann; gesteuert wird über den Schnitt, kontrolliert über das Decoupling |
+| 5 | **Z2 folgt der FTP:** Coggan-Z2 123–167 W | Die feste Obergrenze 144 W stammte aus einer Zeit mit belegt zu niedriger FTP. Am oberen Rand kann Z2 über LT1 liegen — dort entscheidet der Sprechtest, kontrolliert wird über das Decoupling |
 | 6 | **Pulskriterium der Intervalle ≥ 166 bpm** | Folge aus 3 |
 | 7 | **Woche 10 keine Erholungswoche**, Erholungswochen 4, 7, 13, 16 | Woche 8 war krankheitsbedingt faktisch Pause; eine Erholungswoche direkt nach der Pause wäre zu früh gekommen. Absicherung über TSB-Regel und Wellness-Gate in Woche 11 und 12 |
 | 8 | **Woche 10 Soll 310 min, Deckel 341**, lange Ausfahrt 150 min | Folge aus 7, mit dem Testanlauf vereinbar |
 | 9 | **Anlauf zum 22.10. dokumentiert** (Tempotest Fr 16.10., lange Fahrt So 18.10.) | Nachvollziehbarkeit, Vorlage für den 03.12. |
 | 10 | **Max HF 180 als Messwert**, Feld bleibt 180 | Im Retest erreicht |
 | 11 | **Testhistorie, VO2max-Tabelle, Settings, Analyse-Bezugswerte nachgeführt** | Konsistenz |
-| 12 | **App-Anforderungen 34–36** | Neue Werte, Arbeitsbereich als eigenes Feld, Testhistorie |
+| 12 | **App-Anforderungen 34–36** | Neue Werte, Testhistorie; umgesetzt am 31.10.2026, ohne die Erholungswochen |
 | 13 | **Abschnitt 4.12 um Krankheit ergänzt**, Abschnitt 4.7 E1 mit Beispiel | Der Fall ist eingetreten und war nicht geregelt |
 
 ### Bewusst **nicht** geändert
@@ -1811,7 +1821,7 @@ Retest aus der neuen FTP ergeben.
 - **Erholungswoche 13 und Retest 03.12.** samt Protokoll, Strecke, Rad, 2,5 bar.
 - **Wochenstruktur, Umfänge ab Woche 11, Dienstag fest bei 90 min.**
 - **Kadenzziel Z2 auf dem Cube 80–85 rpm** — bleibt sinnvoll, weil 85–90 rpm in Gang 8
-  über dem Arbeitsbereich liegen.
+  schon an den oberen Rand von Z2 führen.
 - **Sprechtest als oberste Instanz für Z2**, „Atmung sticht die Zahl" bei Intervallen.
 - **Pulsbänder für die Pendeltage** (128–135 bpm) — belegt und weiter in HF-Z2.
 - **Die Nachsteuerregel** — nur ihre Schwelle wechselt auf 166 bpm.
