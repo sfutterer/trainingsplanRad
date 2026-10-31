@@ -18,7 +18,7 @@
 const TICK_MS = 250;
 
 export function createTimer({ now = () => Date.now(), setInterval: si = setInterval,
-                              clearInterval: ci = clearInterval } = {}){
+                              clearInterval: ci = clearInterval, endlos = false } = {}){
   let seq = [];
   let index = -1;
   let endsAt = 0;
@@ -52,7 +52,13 @@ export function createTimer({ now = () => Date.now(), setInterval: si = setInter
   }
 
   function enterStep(i){
-    index = i;
+    /* Endlos: hinter dem letzten Schritt geht es beim ersten weiter. Der
+       neutrale Timer hat keine Rundenzahl - Uebung und Pause wechseln sich ab,
+       bis jemand anhaelt. Eine Folge mit erfundener Rundenzahl waere das
+       Gegenteil: sie endete irgendwann, ohne dass es verlangt wurde, und zwar
+       mitten im Satz. Wer endlos auslaesst, bekommt den alten Ablauf und
+       laeuft auf seinen 'done'-Schritt zu. */
+    index = endlos && i >= seq.length ? 0 : i;
     const step = current();
     if(!step) return;
     if(step.type === 'done'){

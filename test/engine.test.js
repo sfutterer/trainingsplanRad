@@ -3,11 +3,13 @@
 
 import { describe, it, expect } from 'vitest';
 import { createTimer } from '../src/domain/timer/engine.js';
+import { buildNeutralSequence } from '../src/domain/timer/sequences.js';
 
-function harness(){
+function harness(opt){
   let t = 0;
   const ticks = [];
   const timer = createTimer({
+    ...opt,
     now: () => t,
     setInterval: (fn) => { ticks.push(fn); return ticks.length; },
     clearInterval: () => {}
@@ -95,6 +97,40 @@ describe('Timer-Engine', () => {
     expect(h.timer.running).toBe(false);
   });
 
+  /* Der neutrale Timer: Uebung und Pause im Wechsel, ohne 'done' und ohne
+     Rundenzahl. Genau das, was die Engine vor dem 31.10.2026 nicht konnte -
+     hinter dem letzten Schritt stand sie still, der Takt lief weiter und die
+     Anzeige blieb auf der letzten Ziffer stehen. */
+  it('faengt im Endlosbetrieb hinter dem letzten Schritt wieder vorne an', () => {
+    const h = harness({ endlos: true });
+    const gesehen = [];
+    h.timer.on('step', ({ step }) => gesehen.push(step.label));
+    h.timer.load([
+      { type:'work', label:'Übung', duration:60 },
+      { type:'rest', label:'Pause', duration:30 }
+    ]);
+    h.timer.start();
+    h.advance(60000); h.tick();
+    h.advance(30000); h.tick();
+    h.advance(60000); h.tick();
+    expect(gesehen).toEqual(['Übung', 'Pause', 'Übung', 'Pause']);
+    expect(h.timer.running).toBe(true);
+    expect(h.timer.secondsLeft()).toBe(30);
+  });
+
+  it('laeuft ohne endlos weiter auf das Ende zu', () => {
+    const h = harness();
+    const gesehen = [];
+    h.timer.on('step', ({ step }) => gesehen.push(step.label));
+    h.timer.load(seq());
+    h.timer.start();
+    h.advance(10000); h.tick();
+    h.advance(30000); h.tick();
+    h.advance(20000); h.tick();
+    expect(gesehen).toEqual(['Bereit', 'A', 'Pause', 'Fertig']);
+    expect(h.timer.running).toBe(false);
+  });
+
   it('laesst einen fehlerhaften Abonnenten den Ablauf nicht anhalten', () => {
     const h = harness();
     h.timer.on('tick', () => { throw new Error('kaputt'); });
@@ -103,5 +139,27 @@ describe('Timer-Engine', () => {
     h.advance(6000);
     expect(() => h.tick()).not.toThrow();
     expect(h.timer.secondsLeft()).toBe(4);
+  });
+});
+
+/* Die Folge des neutralen Timers. Zwei Schritte, kein 'done' - das Ende
+   besorgt der Nutzer, nicht die Datei. */
+describe('Neutrale Folge', () => {
+  it('wechselt Uebung und Pause und endet nicht von selbst', () => {
+    const seq = buildNeutralSequence({ workSec: 60, restSec: 30 });
+    expect(seq.map(s => [s.type, s.duration])).toEqual([['work', 60], ['rest', 30]]);
+    expect(seq.some(s => s.type === 'done')).toBe(false);
+  });
+
+  it('nimmt die kurze Dauer genauso', () => {
+    expect(buildNeutralSequence({ workSec: 30, restSec: 30 })[0].duration).toBe(30);
+  });
+
+  /* Eine Dauer von null Sekunden gibt es nicht: der Schritt waere in
+     demselben Takt vorbei, in dem er beginnt, und die Ansagen ueberschlugen
+     sich. */
+  it('laesst keinen Schritt auf null fallen', () => {
+    const seq = buildNeutralSequence({ workSec: 0, restSec: -5 });
+    expect(seq.map(s => s.duration)).toEqual([1, 1]);
   });
 });

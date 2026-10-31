@@ -188,6 +188,24 @@ export function remainingAfter(seq, index){
   return sum;
 }
 
+/* Der neutrale Wechsel aus Uebung und Pause.
+
+   Zwei Schritte, sonst nichts - keine Uebung, keine Zone, keine Rundenzahl.
+   Die Engine laeuft sie im Endlosbetrieb (siehe enterStep), es gibt deshalb
+   auch keinen 'done'-Schritt: dieser Timer endet nicht von selbst, sondern
+   wenn man ihn anhaelt.
+
+   Bewusst ohne Vorlauf. Die geplanten Timer beginnen mit "Bereit machen",
+   weil dort Rad, Zone und Uebungsfolge auf einen warten; hier drueckt man
+   Start, wenn man steht. Ein erfundener Vorlauf waere eine Wartezeit, die
+   niemand verlangt hat. */
+export function buildNeutralSequence({ workSec, restSec }){
+  return [
+    { type:'work', label:'Übung', duration: Math.max(1, Math.round(workSec)) },
+    { type:'rest', label:'Pause', duration: Math.max(1, Math.round(restSec)) }
+  ];
+}
+
 /* Eine einzelne Pause des Beinblocks.
 
    Der Beinblock zaehlt Wiederholungen, keine Sekunden - eine Kniebeuge mit 3 s

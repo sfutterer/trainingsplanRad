@@ -1,4 +1,4 @@
-/* Das gemeinsame Geruest der vier Trainingsbausteine.
+/* Das gemeinsame Geruest der Trainingsbausteine.
 
    Vorher hatte jeder Baustein seinen eigenen Bauplan: der Rumpf begann mit dem
    Ring, Beweglichkeit und Koordination mit einer Infokarte und versteckten
@@ -6,7 +6,7 @@
    Hinweise standen mal oben, mal unten, mal beides. Wer zwischen den Segmenten
    wechselte, musste jedes Mal neu suchen, wo die Bedienung liegt.
 
-   Deshalb dieselbe Reihenfolge fuer alle vier - und zwar erzwungen ueber
+   Deshalb dieselbe Reihenfolge fuer alle - und zwar erzwungen ueber
    Steckplaetze und nicht ueber Absprache:
 
      1  Kopf          Name, Dauer/Rhythmus, genau ein Status
@@ -16,8 +16,9 @@
      5  Schluss       Regeln und Einstellungen, immer zuletzt
 
    Ein Baustein darf Steckplaetze leer lassen (der Rumpf hat kein Protokoll,
-   die Beweglichkeit keine Einstellungen), aber er kann sie nicht umsortieren.
-   Genau das war der Fehler der alten Fassung.
+   die Beweglichkeit keine Einstellungen, der neutrale Timer keine Hinweise aus
+   dem Plan), aber er kann sie nicht umsortieren. Genau das war der Fehler der
+   alten Fassung.
 
    Zwei Regeln stecken in den Steckplaetzen selbst: der Status ist einer und
    nicht drei - was mehr ist, ist ein Hinweis und gehoert nach unten. Und

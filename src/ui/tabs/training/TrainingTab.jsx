@@ -1,18 +1,24 @@
 /* Sammelbereich fuer alles, was ohne Rad stattfindet: Rumpf, Beine,
-   Beweglichkeit, Koordination.
+   Beweglichkeit, Koordination - und der neutrale Timer.
 
-   Vier Segmente flach nebeneinander statt zweier gestaffelter Leisten. Eine
+   Fuenf Segmente flach nebeneinander statt zweier gestaffelter Leisten. Eine
    zweite Ebene ("Kraft" mit Unterauswahl, "Mobilitaet" mit Unterauswahl) waere
-   ein Tipp mehr fuer jeden Wechsel und wuerde verbergen, dass es vier
-   gleichrangige Bausteine sind. Die vier Etiketten passen in eine Zeile,
-   sobald die Schrift mitskaliert - die Regeln dafuer stehen in training.css.
+   ein Tipp mehr fuer jeden Wechsel und wuerde verbergen, dass es gleichrangige
+   Bausteine sind. Die Etiketten passen in eine Zeile, sobald die Schrift
+   mitskaliert - die Regeln dafuer stehen in training.css.
 
-   Alle vier Bausteine folgen demselben Geruest aus Baustein.jsx: Kopf, Buehne,
+   Der Timer ist der fuenfte und faellt bewusst aus der Reihe: er zaehlt keine
+   Planvorgabe, sondern Uebung gegen Pause, bis man ihn anhaelt. Er steht hier
+   und nicht in einem eigenen Bereich, weil er dort gebraucht wird, wo man
+   ohne Rad auf der Matte steht - und weil er dieselbe Bedienung hat wie die
+   vier daneben.
+
+   Alle Bausteine folgen demselben Geruest aus Baustein.jsx: Kopf, Buehne,
    Inhalt, Hinweise, Schluss. Vorher hatte jeder seinen eigenen Bauplan - der
    Start lag mal oben, mal am Ende der letzten Karte, mal gar nicht, und die
    Hinweise standen an vier verschiedenen Stellen.
 
-   Alle vier bleiben montiert und werden nur ausgeblendet. Das ist kein Detail:
+   Alle bleiben montiert und werden nur ausgeblendet. Das ist kein Detail:
    die Timer haengen an den Bausteinen, und ein ausgehaengter Baustein nimmt
    seine laufende Uhr mit. Genau das passierte bisher bei Beweglichkeit und
    Koordination - der Rumpfzirkel lief beim Umschalten weiter, ihre Haltezeit
@@ -46,6 +52,7 @@ import { useTimerBasis } from '../../components/useTimerBasis.js';
 import { Beinblock } from './Beinblock.jsx';
 import { Beweglichkeit } from './Beweglichkeit.jsx';
 import { Koordination } from './Koordination.jsx';
+import { Neutraltimer } from './Neutraltimer.jsx';
 import { speak, beep, vibrate, cancelSpeech } from '../../../platform/index.js';
 import '../../components/timer.css';
 import './training.css';
@@ -56,7 +63,8 @@ const SEGMENTE = [
   { id: 'core',         label: 'Rumpf' },
   { id: 'leg',          label: 'Beine' },
   { id: 'mobility',     label: 'Beweglichkeit' },
-  { id: 'coordination', label: 'Koordination' }
+  { id: 'coordination', label: 'Koordination' },
+  { id: 'neutral',      label: 'Timer' }
 ];
 
 export function TrainingTab(){
@@ -253,7 +261,7 @@ export function TrainingTab(){
           welcher Baustein ansteht, sagt der Plan - die App versperrt keinen
           Tag. */}
       <Segmented ziele={SEGMENTE} aktiv={segment} onWaehlen={setSegment}
-        klasse="vier" label="Trainingsbausteine" />
+        klasse="bausteine" label="Trainingsbausteine" />
 
       {fremde.map(t => (
         <button key={t.id} class="laufstreifen" onClick={() => setSegment(t.segment)}>
@@ -342,6 +350,10 @@ export function TrainingTab(){
 
       <div hidden={segment !== 'coordination'}>
         <Koordination onOpen={i => setDialogEx({ kind:'coordination', i })} />
+      </div>
+
+      <div hidden={segment !== 'neutral'}>
+        <Neutraltimer />
       </div>
 
       {dialogEx && <ExerciseDialog spec={dialogEx} workSec={cfg.workSec} onClose={() => setDialogEx(null)} />}

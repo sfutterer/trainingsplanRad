@@ -1,4 +1,4 @@
-/* Der Umschalter mit zwei bis vier Zielen nebeneinander.
+/* Der Umschalter mit zwei bis fuenf Zielen nebeneinander.
 
    Stand fuenfmal von Hand da: die vier Trainingsbausteine, Woche gegen Monat,
    Einheiten gegen Verlauf, die drei Themes und die drei Kartenstile. Fuenfmal

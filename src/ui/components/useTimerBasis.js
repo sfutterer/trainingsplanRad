@@ -35,10 +35,14 @@ import { beep, primeSpeech, ensureWakeLock } from '../../platform/index.js';
    ankuendigt. */
 const COUNTDOWN_AB = 3;
 
-export function useTimerBasis({ kennung, label, segment }){
+/* `endlos` gibt die Folge im Kreis: hinter dem letzten Schritt kommt wieder
+   der erste. Nur der neutrale Timer braucht das - er hat keine Rundenzahl und
+   laeuft, bis jemand anhaelt. Die vier geplanten Timer lassen es aus und
+   enden wie bisher auf ihrem 'done'-Schritt. */
+export function useTimerBasis({ kennung, label, segment, endlos }){
   const [, neu] = useState(0);
   const ref = useRef(null);
-  if(!ref.current) ref.current = createTimer();
+  if(!ref.current) ref.current = createTimer({ endlos: !!endlos });
   const timer = ref.current;
 
   const zeichnen = () => neu(x => x + 1);

@@ -1,13 +1,18 @@
-/* Vier Segmente in einer Zeile. Die Regeln stehen hier und nicht in app.css:
+/* Die Bausteinleiste. Die Regeln stehen hier und nicht in app.css:
    .segmented traegt dort drei Optionen, und dieser Bereich ist der einzige mit
-   vier. Bei 375 px bleiben je Knopf rund 86 px - "Beweglichkeit" passt dort nur
-   mit kleinerer Schrift, deshalb waechst sie erst mit der Breite mit. Der
-   Umbruch ist die Reserve fuer sehr schmale Geraete: zwei Zeilen zu je 13 px
-   passen in die 48 px Mindesthoehe, abgeschnittene Etiketten waeren schlimmer.
-   Verworfen: zwei gestaffelte Leisten - die vier Bausteine sind gleichrangig,
-   und jede zweite Ebene kostet einen Tipp. */
-.segmented.vier{ margin: 0 0 14px; }
-.segmented.vier .segbtn{
+   fuenf. Bei 375 px bleiben je Knopf rund 69 px - "Beweglichkeit" passt dort
+   nur mit kleinerer Schrift, deshalb waechst sie erst mit der Breite mit. Der
+   Umbruch ist die Reserve fuer schmale Geraete: zwei Zeilen zu je 13 px passen
+   in die 48 px Mindesthoehe, die Leiste bleibt damit so hoch wie vorher und
+   die Rechnung unten gilt weiter; abgeschnittene Etiketten waeren schlimmer.
+   Verworfen: zwei gestaffelte Leisten - die Bausteine sind gleichrangig, und
+   jede zweite Ebene kostet einen Tipp.
+
+   Der Name der Klasse stand bis hierher fuer die Zahl der Segmente ("vier").
+   Mit dem fuenften war er falsch, und eine Zahl im Klassennamen wird bei jedem
+   weiteren Baustein wieder falsch. */
+.segmented.bausteine{ margin: 0 0 14px; }
+.segmented.bausteine .segbtn{
   padding: 4px 6px;
   font-size: clamp(11px, 3vw, 14px);
   line-height: 1.2;
@@ -91,7 +96,7 @@
 .legrow input.aktiv{ border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 
 /* Ruecksprung zu einem Timer, der in einem anderen Baustein laeuft. Seit alle
-   vier Bausteine montiert bleiben, kann das jeder von ihnen sein - der
+   Bausteine montiert bleiben, kann das jeder von ihnen sein - der
    Streifen ist die einzige Stelle, an der man eine fremde Uhr noch sieht. */
 .laufstreifen{
   display: flex; justify-content: space-between; align-items: center;
@@ -174,7 +179,7 @@
    Am Kopf statt an .uebungsblock allein: die Regel galt sonst auch fuer den
    Intervall-Timer, der keine Segmentleiste hat und dem sie deshalb 62 px
    Ringhoehe abnahm, ohne dass dort etwas stand. */
-.segmented.vier ~ div .uebungsblock{
+.segmented.bausteine ~ div .uebungsblock{
   /* + Segmentleiste 62 */
   --block-leisten: 266px;
 }
@@ -190,7 +195,7 @@
    Navigationsleiste, wenn zwei Bausteine gleichzeitig laufen. Die
    Segmentleiste steht in der Auswahl mit drin, damit die Regel die
    allgemeinere von oben ueberwiegt. */
-.segmented.vier ~ .laufstreifen ~ div .uebungsblock{
+.segmented.bausteine ~ .laufstreifen ~ div .uebungsblock{
   /* + Ruecksprungstreifen 56 */
   --block-leisten: 322px;
 }

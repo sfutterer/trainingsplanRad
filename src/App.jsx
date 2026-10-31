@@ -103,7 +103,7 @@ const KOMPONENTEN = {
    Ein Blick auf den Plan mitten im Zirkel warf bisher alles davon weg. Es
    liess sich nicht einmal bemerken: die Uhr war beim Zurueckkommen einfach
    wieder auf "Start", und der angefangene Satz stand nur noch halb im
-   Protokoll. Genau dieselbe Begruendung, aus der schon die vier Bausteine
+   Protokoll. Genau dieselbe Begruendung, aus der schon die Bausteine
    innerhalb des Trainings-Tabs nur versteckt und nicht ausgehaengt werden -
    sie gilt eine Ebene hoeher weiter.
 
