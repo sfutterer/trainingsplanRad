@@ -37,6 +37,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, week, settings, coreLog, saveCoreLog, today, startDate } from '../../../state/store.js';
 import { laufendeTimer } from '../../../state/timerState.js';
+import { BAUSTEINE, baustein } from '../../../state/navigation.js';
 import { buildCircuitSequence } from '../../../domain/timer/sequences.js';
 import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
          repShort } from '../../../domain/core.js';
@@ -59,13 +60,11 @@ import './training.css';
 
 const FARBE = { work:'var(--work)', rest:'var(--rest)', roundrest:'var(--rest)', prep:'var(--prep)', done:'var(--work)' };
 
-const SEGMENTE = [
-  { id: 'core',         label: 'Rumpf' },
-  { id: 'leg',          label: 'Beine' },
-  { id: 'mobility',     label: 'Beweglichkeit' },
-  { id: 'coordination', label: 'Koordination' },
-  { id: 'neutral',      label: 'Timer' }
-];
+/* Die Liste kommt aus state/navigation.js. Sie stand hier, solange nur diese
+   Datei sie brauchte; seit die Tageskarte auf einen Baustein zeigen darf,
+   muss gotoTab pruefen koennen, ob es ihn gibt - dieselbe Begruendung, aus
+   der schon die Bereichsliste dort steht. */
+const SEGMENTE = Object.keys(BAUSTEINE).map(id => ({ id, label: BAUSTEINE[id] }));
 
 export function TrainingTab(){
   const p = plan.value, w = week.value;
@@ -82,7 +81,11 @@ export function TrainingTab(){
   }
   const [cfg, setCfg] = useState(vorgabe);
   const [dialogEx, setDialogEx] = useState(null);
-  const [segment, setSegment] = useState('core');
+  /* Welcher Baustein offen ist, liegt als Signal in navigation.js: der Sprung
+     von der Tageskarte setzt ihn mit, und ein useState hier haette davon
+     nichts mitbekommen. */
+  const segment = baustein.value;
+  const setSegment = id => { baustein.value = id; };
   const logRef = useRef(null);
 
   const { timer, zeichnen, melden, starten: basisStart } =

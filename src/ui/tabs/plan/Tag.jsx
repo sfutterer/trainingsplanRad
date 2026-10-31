@@ -315,7 +315,7 @@ function Einheitsabschnitt({ e, mitKopf }){
       {/* Der Knopf haengt an seiner Einheit und nicht mehr am Tag: der
           Rumpf-Timer steht unter dem Zirkel, nicht unter der Fahrt. */}
       {e.timer && <button class="btn tonal tagbtn" type="button"
-        onClick={() => gotoTab(e.timer.ziel, true)}>{e.timer.label}</button>}
+        onClick={() => gotoTab(e.timer.ziel, true, e.timer.baustein)}>{e.timer.label}</button>}
     </div>
   );
 }

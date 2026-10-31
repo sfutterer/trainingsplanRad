@@ -128,7 +128,20 @@
    dasselbe Zeichen, sind sie gleich. Die Laenge waechst um 5 Zeichen je
    Abzug: "150–250 hm" ist eine Stelle laenger als ein zweistelliges
    "ca. 80 hm" und so lang wie ein dreistelliges - zweistellig waren die
-   Wochen 5, 6, 7, 10 und 13. */
+   Wochen 5, 6, 7, 10 und 13.
+
+   Neu gesetzt am 31.10.2026: der Sprungknopf einer Einheit nennt neben dem
+   Bereich auch den Baustein. Rumpf und Beinblock liegen beide im
+   Trainingsbereich; ohne diese Angabe landete "Beinblock öffnen" am Dienstag
+   im Rumpf und "Rumpf-Timer öffnen" am Mittwoch in den Beinen - der Tab
+   bleibt montiert und zeigte den Baustein des letzten Besuchs.
+
+   Kein Text und kein Sollwert hat sich geaendert, und das laesst sich
+   nachrechnen: beide Abzuege sind um genau 917 Zeichen laenger, und das sind
+   33 mal die 19 Zeichen von ,"baustein":"core" plus 19 mal die 18 Zeichen von
+   ,"baustein":"leg" - die 33 Rumpf- und 19 Beineinheiten der 126 Tage. Die
+   Wochenangaben und die Wiederholungsziele haben ihre Pruefsumme behalten:
+   der Knopf haengt an der Einheit und nicht an der Woche. */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -290,7 +303,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '3e64b57869590190', len: 185219 });
+      .toEqual({ hash: 'da7777a85db8bdd8', len: 186136 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -314,7 +327,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '62285bd0b7c6e98f', len: 164755 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '49eac98625a3d29c', len: 165672 });
   });
 });
 

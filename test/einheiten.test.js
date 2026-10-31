@@ -98,3 +98,51 @@ describe('Einheitsart einer Aufzeichnung', () => {
     expect(artDerAktivitaet(fahrt({ icu_hr_zone_times: [0, 0, 0] }))).toBe('z2');
   });
 });
+
+/* Das Sprungziel der Tageskarte.
+
+   Der Knopf unter einer Einheit springt dorthin, wo ihre Uhr steht. Rumpf und
+   Beinblock liegen beide im Trainingsbereich, der Bereich allein genuegt
+   deshalb nicht - ohne den Baustein landete der Sprung dort, wo man zuletzt
+   war. Aufgefallen ist das erst, als der Beinblock auf den Dienstag und der
+   Zirkel auf den Mittwoch fiel: "Beinblock öffnen" fuehrte in den Rumpf,
+   "Rumpf-Timer öffnen" am Tag darauf in die Beine. */
+describe('Sprungziel der Tageskarte', () => {
+  const einheitenAm = d => buildDayInfo(plan, Z.NO_THRESHOLDS, d, start).einheiten || [];
+
+  /* Alle Einheiten des ganzen Plans, Tag fuer Tag. */
+  function alle(){
+    const liste = [];
+    for(let d = 0; d < 18 * 7; d++){
+      const tag = W.addDays(start, d);
+      einheitenAm(tag).forEach(e => liste.push({ tag, e }));
+    }
+    return liste;
+  }
+
+  it('nennt bei jedem Sprung in den Trainingsbereich auch den Baustein', () => {
+    const ohne = alle()
+      .filter(x => x.e.timer && x.e.timer.ziel === 'training' && !x.e.timer.baustein)
+      .map(x => x.e.titel);
+    expect(ohne).toEqual([]);
+  });
+
+  it('schickt den Beinblock in die Beine und den Zirkel in den Rumpf', () => {
+    const beine = alle().filter(x => x.e.titel === 'Beinblock');
+    const rumpf = alle().filter(x => /^Rumpf/.test(x.e.titel));
+    expect(beine.length).toBeGreaterThan(0);
+    expect(rumpf.length).toBeGreaterThan(0);
+    beine.forEach(x => expect(x.e.timer.baustein).toBe('leg'));
+    rumpf.forEach(x => expect(x.e.timer.baustein).toBe('core'));
+  });
+
+  /* Der Fall, der den Fehler sichtbar gemacht hat: ein Tag mit Beinblock und
+     ohne Zirkel. Solange beide auf denselben Tag fielen, war das falsche Ziel
+     nur ein Segment daneben. */
+  it('kennt Tage, an denen der Beinblock allein steht', () => {
+    const allein = alle().filter(x => x.e.titel === 'Beinblock')
+      .filter(x => !einheitenAm(x.tag).some(e => /^Rumpf/.test(e.titel)));
+    expect(allein.length).toBeGreaterThan(0);
+    allein.forEach(x => expect(x.e.timer.baustein).toBe('leg'));
+  });
+});

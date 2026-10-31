@@ -233,8 +233,13 @@ function einheit(e){
   };
 }
 
-const TIMER_RUMPF      = { art:'rumpf',      ziel:'training',   label:'Rumpf-Timer öffnen' };
-const TIMER_BEINE      = { art:'beine',      ziel:'training',   label:'Beinblock öffnen' };
+/* `baustein` nennt das Segment innerhalb des Zielbereichs. Rumpf und Beine
+   liegen beide im Trainingsbereich, und ohne diese Angabe landete der Sprung
+   dort, wo man zuletzt war - siehe state/navigation.js. */
+const TIMER_RUMPF      = { art:'rumpf',      ziel:'training',   baustein:'core',
+                           label:'Rumpf-Timer öffnen' };
+const TIMER_BEINE      = { art:'beine',      ziel:'training',   baustein:'leg',
+                           label:'Beinblock öffnen' };
 const TIMER_INTERVALLE = { art:'intervalle', ziel:'intervalle', label:'Intervall-Timer öffnen' };
 const TIMER_TEST       = { art:'test',       ziel:'test',       label:'Testablauf öffnen' };
 
