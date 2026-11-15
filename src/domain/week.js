@@ -43,8 +43,66 @@ export function weekIndex(plan, week){
   return Math.min(Math.max(week, 1), plan.weekCount) - 1;
 }
 
-function planWeek(plan, week){
+/* Die Woche, nach der sich eine Wochennummer richtet.
+
+   In Plan 2 sind nur die Wochen des laufenden Blocks ausgearbeitet; die
+   folgenden Bloecke stehen als Rahmen da und werden jeweils vor Blockbeginn
+   geschrieben. Bis dahin zeigt die App fuer eine spaetere Woche die Form
+   einer ausgearbeiteten: einer Belastungs-, Erholungs- oder Testwoche, je
+   nachdem, was die Woche laut Liste ist. Welche das sind, steht in der Datei
+   unter fortschreibung - und der Hinweis dazu steht auf jeder solchen Woche. */
+export function planWoche(plan, week){
+  if(plan.format === 2 && week > plan.weekCount){
+    const f = plan.fortschreibung || {};
+    const vorlage = plan.testWeekList.indexOf(week) >= 0 ? f.test
+      : isRecoveryWeek(plan, week) ? f.erholung : f.belastung;
+    return plan.weeks[Math.min(Math.max(vorlage || plan.weekCount, 1), plan.weekCount) - 1];
+  }
   return plan.weeks[weekIndex(plan, week)];
+}
+
+function planWeek(plan, week){
+  return planWoche(plan, week);
+}
+
+/* ---- Welcher Plan an einem Tag gilt ----
+
+   Plan 1 laeuft bis zum 04.12.2026, Plan 2 ab dem Uebergangswochenende
+   05./06.12. und mit Woche 1 ab Montag, 07.12.2026. Das Modell aus plan.js
+   kennt beide (folge / vorgaenger), gefragt wird hier mit einem Tag.
+
+   start1 ist der Planbeginn von Plan 1 - die Einstellung "Planbeginn". Der
+   Beginn von Plan 2 steht fest in der Datei: er ist ein Montag, und genau
+   darauf haengt die neue Wochenzaehlung. Aufrufer reichen deshalb immer den
+   Planbeginn aus den Einstellungen herein, und die Funktionen hier
+   entscheiden, welcher Beginn fuer welchen Plan gilt. */
+export function erstePlan(plan){
+  return plan && plan.vorgaenger ? plan.vorgaenger : plan;
+}
+
+export function planAm(plan, date, start1){
+  const p1 = erstePlan(plan);
+  const p2 = p1 && p1.folge;
+  if(p2 && date && toMidnight(date) >= p2.gueltigAb) return { plan: p2, start: p2.start };
+  return { plan: p1, start: start1 };
+}
+
+export function startFuer(plan, start1){
+  return plan && plan.format === 2 ? plan.start : start1;
+}
+
+/* Die Wochennummer eines Tages in dem Plan, der an ihm gilt - mindestens 1,
+   wie die Wochenrechnung der Oberflaeche immer schon. */
+export function wocheAm(plan, date, start1){
+  const a = planAm(plan, date, start1);
+  if(!a.start) return 1;
+  return Math.max(weekNumberFor(date, a.start), 1);
+}
+
+/* Alle Plaene der Folge, aeltester zuerst. */
+export function planKette(plan){
+  const p1 = erstePlan(plan);
+  return p1 ? (p1.folge ? [p1, p1.folge] : [p1]) : [];
 }
 
 /* Erholungswochen stehen einzeln in plan.json.
@@ -67,7 +125,15 @@ export function isWinterBlock(plan, week){
 }
 
 export function phaseOf(plan, week){
+  if(plan.format === 2) return blockFuerWoche(plan, week).nr;
   return isWinterBlock(plan, week) ? plan.winterBlock.phase : planWeek(plan, week).phase;
+}
+
+/* Der Block einer Woche in Plan 2, aus der Blocktabelle - auch fuer Wochen,
+   die noch nicht ausgearbeitet sind. */
+export function blockFuerWoche(plan, week){
+  const b = (plan.bloecke || []).find(x => week >= x.von && week <= x.bis);
+  return b || plan.bloecke[plan.bloecke.length - 1];
 }
 
 export function phaseName(plan, week){
@@ -88,16 +154,29 @@ export function phaseName(plan, week){
    eine Entsprechung hatten. Alle uebrigen las day.js roh aus plan.weeks[i],
    an der Winterlogik vorbei. */
 export function tagDaten(plan, week, tag){
+  if(plan.format === 2) return planWeek(plan, week).tage[tag] || [];
   const winter = isWinterBlock(plan, week) ? plan.winterBlock.tage : null;
   return (winter && winter[tag]) || planWeek(plan, week).tage[tag];
 }
 
 export function thursdayData(plan, week){
+  if(plan.format === 2){
+    /* Plan 2 hat zwei Qualitaetstage und keinen Donnerstag im Sinn von
+       Plan 1. Gefragt wird hier nur noch nach dem Test - als Objekt in der
+       Form, die test.js und die Wochenansicht von Plan 1 kennen. */
+    return plan.testWeekList.indexOf(week) >= 0 ? { kind: 'test' } : { kind: 'plan2' };
+  }
   return tagDaten(plan, week, 'do');
 }
 
 export function saturdayBlockData(plan, week){
   if(isRecoveryWeek(plan, week)) return null;
+  /* In Plan 2 liegen Bloecke der langen Fahrt (ab Block 3: Z3 im letzten
+     Drittel) an der Sonntagseinheit selbst. */
+  if(plan.format === 2){
+    const lang = tagDaten(plan, week, 'so').find(e => e.kind === 'lang');
+    return (lang && lang.bloecke) || null;
+  }
   return tagDaten(plan, week, 'sa').bloecke || null;
 }
 
@@ -108,20 +187,22 @@ export function isTestWeek(plan, week){
 /* Abgeleitet statt als zweite Liste gefuehrt - sonst laufen die beiden
    auseinander, sobald jemand eine Testwoche verschiebt. */
 export function testWeeks(plan){
+  if(plan.format === 2) return plan.testWeekList.slice();
   const out = [];
   for(let w = 1; w <= plan.weekCount; w++) if(isTestWeek(plan, w)) out.push(w);
   return out;
 }
 
-/* Der Donnerstag der Trainingswoche. Die Woche beginnt am Samstag, der
-   Qualitaetstag ist also der erste Donnerstag ab Wochenbeginn.
+/* Der Donnerstag der Trainingswoche: der erste Donnerstag ab Wochenbeginn.
+   In Plan 1 beginnt die Woche am Samstag, in Plan 2 am Montag - beide Male
+   ist es der Donnerstag, der in die Woche faellt.
 
    testDateFor ist derselbe Kalender unter dem Namen, unter dem ihn der Test
    sucht: der Testtermin ist der Donnerstag seiner Woche und kein zweites
    Datum daneben. Seit der Anlauf auch die Donnerstage ausserhalb der
    Testwochen betrifft, wird derselbe Tag auch ohne Test gebraucht. */
 export function thursdayDateFor(plan, week, startDate){
-  const d = toMidnight(startDate);
+  const d = toMidnight(startFuer(plan, startDate));
   d.setDate(d.getDate() + (week - 1) * 7);
   while(d.getDay() !== 4) d.setDate(d.getDate() + 1);
   return d;

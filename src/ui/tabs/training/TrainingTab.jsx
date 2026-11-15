@@ -35,13 +35,14 @@
    vorgibt. */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { plan, week, settings, coreLog, saveCoreLog, today, startDate } from '../../../state/store.js';
+import { plan, week, settings, coreLog, saveCoreLog, today, startDate, stufen } from '../../../state/store.js';
 import { laufendeTimer } from '../../../state/timerState.js';
 import { BAUSTEINE, baustein } from '../../../state/navigation.js';
 import { buildCircuitSequence } from '../../../domain/timer/sequences.js';
 import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
          repShort } from '../../../domain/core.js';
-import { isoDayLocal, weekNumberFor } from '../../../domain/week.js';
+import { isoDayLocal, wocheAm } from '../../../domain/week.js';
+import { stufeText } from '../../../domain/kraft.js';
 import { ExerciseDialog } from '../../components/ExerciseDialog.jsx';
 import { Segmented } from '../../components/Segmented.jsx';
 import { Zahlenfeld } from '../../components/Feld.jsx';
@@ -51,6 +52,7 @@ import { Buehne } from '../../components/Buehne.jsx';
    Timern - siehe useTimerBasis.js. */
 import { useTimerBasis } from '../../components/useTimerBasis.js';
 import { Beinblock } from './Beinblock.jsx';
+import { Kraftblock } from './Kraftblock.jsx';
 import { Beweglichkeit } from './Beweglichkeit.jsx';
 import { Koordination } from './Koordination.jsx';
 import { Neutraltimer } from './Neutraltimer.jsx';
@@ -64,7 +66,14 @@ const FARBE = { work:'var(--work)', rest:'var(--rest)', roundrest:'var(--rest)',
    Datei sie brauchte; seit die Tageskarte auf einen Baustein zeigen darf,
    muss gotoTab pruefen koennen, ob es ihn gibt - dieselbe Begruendung, aus
    der schon die Bereichsliste dort steht. */
-const SEGMENTE = Object.keys(BAUSTEINE).map(id => ({ id, label: BAUSTEINE[id] }));
+/* Der Baustein "leg" heisst in Plan 1 "Beine" (Beinblock-Zirkel) und in
+   Plan 2 "Kraft" (Saetze mit Gewicht, Montag und Donnerstag). Derselbe
+   Schluessel, damit der Sprung von der Tageskarte in beiden Plaenen
+   dorthin fuehrt. */
+function segmente(p){
+  return Object.keys(BAUSTEINE).map(id => ({ id,
+    label: id === 'leg' ? (p && p.format === 2 ? 'Kraft' : 'Beine') : BAUSTEINE[id] }));
+}
 
 export function TrainingTab(){
   const p = plan.value, w = week.value;
@@ -97,7 +106,7 @@ export function TrainingTab(){
     const now = new Date();
     logRef.current = {
       kind: 'core', id: now.toISOString(), day: isoDayLocal(now),
-      week: weekNumberFor(now, startDate.value),
+      week: wocheAm(p, now, startDate.value),
       plannedRounds: cfg.rounds, exCount: p.circuit.exercises.length,
       workSec: cfg.workSec, restSec: cfg.restSec,
       rounds: 0, sets: 0, workSecTotal: 0, finished: false,
@@ -149,10 +158,10 @@ export function TrainingTab(){
         if(logRef.current){ logRef.current.finished = true; persist(); logRef.current = null; }
         melden(false);
         vibrate([60, 40, 60]);
-        /* Der Zirkel ist das Aufwaermen des Beinblocks - wer ihn beendet, will
-           dorthin. An jedem Tag gleich: welcher Tag wofuer vorgesehen ist,
-           weiss der Nutzer selbst. */
-        setSegment('leg');
+        /* Der Zirkel ist in Plan 1 das Aufwaermen des Beinblocks - wer ihn
+           beendet, will dorthin. In Plan 2 steht der Zirkel allein (Mittwoch,
+           Rumpf kurz); dort bleibt die Ansicht stehen. */
+        if(p.format !== 2) setSegment('leg');
       }
     }));
     ab.push(timer.on('leave', ({ step, restSeconds }) => {
@@ -189,7 +198,7 @@ export function TrainingTab(){
     if(timer.running) return;
     setCfg(vorgabe());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [w, dow]);
+  }, [w, dow, p.kennung]);
 
   /* Der Protokolleintrag entsteht genau dann, wenn die Folge neu geladen
      wird - deshalb haengt logStart am Bauen der Folge und nicht am Start:
@@ -249,8 +258,12 @@ export function TrainingTab(){
   }
   const bild = bildIndex == null ? null : p.circuit.exercises[bildIndex];
 
-  const tagText = dow === 3 ? 'Mittwoch – verkürzter Zirkel'
+  const tagText = p.format === 2
+    ? (dow === 3 ? 'Mittwoch – Rumpf kurz' : 'Zirkel laut Plan am Mittwoch')
+    : dow === 3 ? 'Mittwoch – verkürzter Zirkel'
     : dow === 0 ? 'Sonntag – voller Zirkel' : 'kein Zirkeltag laut Plan';
+  /* Die Stufe der Stuetz-Uebungen (Plan 2) steht an der Uebung im Zirkel. */
+  const stufeZu = ex => (ex.stufenleiter ? stufeText(p, ex.stufenleiter, stufen.value) : null);
 
   /* Jeder Timer, der in einem anderen Baustein laeuft, bekommt einen Streifen.
      Ohne ihn liefe er unsichtbar - man hoert ihn nur noch. */
@@ -263,7 +276,7 @@ export function TrainingTab(){
           und im Ring, im Umschalter waeren sie ein zweites Mal dasselbe. Wann
           welcher Baustein ansteht, sagt der Plan - die App versperrt keinen
           Tag. */}
-      <Segmented ziele={SEGMENTE} aktiv={segment} onWaehlen={setSegment}
+      <Segmented ziele={segmente(p)} aktiv={segment} onWaehlen={setSegment}
         klasse="bausteine" label="Trainingsbausteine" />
 
       {fremde.map(t => (
@@ -326,7 +339,8 @@ export function TrainingTab(){
                 /* Nur bei Wiederholungen: dort ist das Zeitfenster die zweite
                    Haelfte der Anweisung. Bei "35 s halten" stuende sonst
                    dieselbe Zahl zweimal in einer Zeile. */
-                fokus: ex.mode === 'reps' ? 'in ' + cfg.workSec + ' s' : null
+                fokus: [ex.mode === 'reps' ? 'in ' + cfg.workSec + ' s' : null,
+                        stufeZu(ex) ? 'Stufe: ' + stufeZu(ex).text : null].filter(Boolean).join(' · ') || null
               }))}
               aktiv={aktiveUebung}
               onOpen={i => setDialogEx({ kind:'core', i })} />
@@ -344,7 +358,9 @@ export function TrainingTab(){
       </div>
 
       <div hidden={segment !== 'leg'}>
-        <Beinblock eintrag={legEintrag} onOpen={i => setDialogEx({ kind:'leg', i })} />
+        {p.format === 2
+          ? <Kraftblock onOpen={spec => setDialogEx(spec)} />
+          : <Beinblock eintrag={legEintrag} onOpen={i => setDialogEx({ kind:'leg', i })} />}
       </div>
 
       <div hidden={segment !== 'mobility'}>

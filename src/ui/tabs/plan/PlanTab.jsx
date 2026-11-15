@@ -55,11 +55,12 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, thresholds, startDate, today, week, varianten } from '../../../state/store.js';
-import { buildDayInfo } from '../../../domain/day.js';
+import { buildDayInfo, weekPlanMinutes, weekCapMinutes } from '../../../domain/day.js';
 import { tagesrueckschau } from '../../../state/meldungen.js';
 import { isoDayLocal, toMidnight, dayFromIso, addDays, phaseName,
          isWinterBlock, isRecoveryWeek, isTestWeek, testWeeks, testDateFor,
-         trainingWeekDays, trainingWeekStart, weekNumberFor,
+         trainingWeekDays, trainingWeekStart, weekNumberFor, planAm, startFuer,
+         blockFuerWoche,
          datumText, tagUndMonat, WEEKDAY_SHORT } from '../../../domain/week.js';
 import { usesCoggan } from '../../../domain/zones.js';
 import { useWellness, Tagesinhalt, Tageskopf, tagesArten } from './Tag.jsx';
@@ -98,6 +99,10 @@ function naechsterTest(p, heute, start){
 function StatusKarte(){
   const p = plan.value, w = week.value, start = startDate.value, th = thresholds.value;
   const winter = isWinterBlock(p, w);
+  const zwei = p.format === 2;
+  /* Plan 2: Block statt Phase, und das Wochensoll aus der Tabelle des Plans
+     mit seinem Deckel - die Ramp Rate ist die Bremse, das Soll Perspektive. */
+  const block = zwei ? blockFuerWoche(p, w) : null;
   const [offen, setOffen] = useState(false);
 
   const hinweise = [];
@@ -115,19 +120,25 @@ function StatusKarte(){
       <button class="klappzeile" type="button" aria-expanded={offen ? 'true' : 'false'}
         onClick={() => setOffen(o => !o)}>
         <span>Trainingswoche</span>
-        <b>Woche {w}{winter ? '' : ' von ' + p.weekCount}</b>
+        <b>{zwei ? 'Plan 2 · ' : ''}Woche {w}{winter || zwei ? '' : ' von ' + p.weekCount}</b>
         <span class={'chevron' + (offen ? ' auf' : '')} aria-hidden="true" />
       </button>
       {offen && (
         <div class="klappinhalt">
-          <div class="row"><span>Phase</span><b>
-            {winter ? p.winterBlock.name : 'Phase ' + p.weeks[Math.min(w, p.weekCount) - 1].phase + ' · ' + phaseName(p, w)}
-            {isRecoveryWeek(p, w) && !winter ? ' · Erholungswoche' : ''}
+          <div class="row"><span>{zwei ? 'Block' : 'Phase'}</span><b>
+            {zwei ? 'Block ' + block.nr + ' · ' + block.name + ' (Woche ' + block.von + '–' + block.bis + ')'
+              : winter ? p.winterBlock.name : 'Phase ' + p.weeks[Math.min(w, p.weekCount) - 1].phase + ' · ' + phaseName(p, w)}
+            {isRecoveryWeek(p, w) && (zwei || !winter) ? ' · Erholungswoche' : ''}
           </b></div>
+          {zwei && <div class="row"><span>Wochensoll Rad</span><b>
+            {weekPlanMinutes(p, w)} min · höchstens {weekCapMinutes(p, w)} min
+          </b></div>}
+          {zwei && block.schwerpunkt && <p class="hint">Schwerpunkt: {block.schwerpunkt}</p>}
           <div class="row"><span>Pulszonen</span><b>
             {usesCoggan(p, th, w) ? 'Coggan aus LTHR ' + th.lthr + ' bpm' : 'Übergangsbänder (bis zum Test)'}
           </b></div>
-          <div class="row"><span>Beginn Woche 1</span><b>{datumText(start)}</b></div>
+          <div class="row"><span>Beginn Woche 1</span><b>{datumText(startFuer(p, start))}</b></div>
+          {zwei && <p class="hint">Woche Montag bis Sonntag. {p.name}.</p>}
           {hinweise.map((h, i) => <p class="hint" key={i}>{h}</p>)}
         </div>
       )}
@@ -261,9 +272,17 @@ function Wochenansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsicht }){
      ohnehin nur zur laufenden Woche - in jeder anderen steht er gar nicht. */
   const [rueckOffen, setRueckOffen] = useState(false);
 
-  const tage = trainingWeekDays(anker, start);
-  const nummer = Math.max(weekNumberFor(anker, start), 1);
-  const inDieserWoche = isoDayLocal(trainingWeekStart(heute, start)) === isoDayLocal(tage[0]);
+  /* Die Woche haengt am Plan des Tages: bis zum 04.12.2026 Samstag bis
+     Freitag (Plan 1), ab dem 05.12. Montag bis Sonntag (Plan 2). Die Woche um
+     den Wechsel zeigt die letzten Tage von Plan 1 und das
+     Uebergangswochenende - jeder Tag mit dem Plan, der an ihm gilt. */
+  const amAnker = planAm(p, anker, start);
+  const tage = trainingWeekDays(anker, amAnker.start);
+  const roh = weekNumberFor(anker, amAnker.start);
+  const nummer = Math.max(roh, 1);
+  const titelWoche = roh < 1 && amAnker.plan.format === 2 ? 'Übergang zu Plan 2'
+    : (amAnker.plan.format === 2 ? 'Plan 2 · ' : '') + 'Woche ' + nummer;
+  const inDieserWoche = isoDayLocal(trainingWeekStart(heute, planAm(p, heute, start).start)) === isoDayLocal(tage[0]);
 
   const spanne = tagUndMonat(tage[0]) + '–' + tagUndMonat(tage[6]);
 
@@ -316,7 +335,7 @@ function Wochenansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsicht }){
     <>
       <div class="card kalnavi-karte">
         <KalenderNavi
-          titel={'Woche ' + nummer} unter={spanne}
+          titel={titelWoche} unter={spanne}
           zurueckLabel="Vorige Woche" vorLabel="Nächste Woche"
           onZurueck={() => setzeAnker(addDays(tage[0], -7))}
           onVor={() => setzeAnker(addDays(tage[0], 7))}

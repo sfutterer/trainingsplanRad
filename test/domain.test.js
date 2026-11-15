@@ -233,7 +233,24 @@
    Haerte-Bewertung liess. Er wird seitdem wie jede Z2-Fahrt bewertet. Der
    Vergleich vor und nach der Aenderung: 18 Dienstage, in jedem genau dieses
    eine Feld weniger im target, sonst kein Unterschied. Die Wochenangaben und
-   der Coggan-Pfad lesen das Feld nicht und behalten ihre Pruefsummen. */
+   der Coggan-Pfad lesen das Feld nicht und behalten ihre Pruefsummen.
+
+   Neu gesetzt am 15.11.2026 auf Fassung 13 des Trainingsplans: vor dem
+   Retest am 03.12. entfaellt der Tempotest. Die Anlaufschritte tragen dafuer
+   seither die Testwochen, fuer die sie gelten; die Anlaeufe zum 10.09. und
+   zum 22.10. bleiben Zeichen fuer Zeichen, wie sie gefahren wurden.
+
+   Betroffen sind genau drei der 126 Tage, in beiden Zonenpfaden, und sie
+   liessen sich vor dem Neusetzen einzeln benennen (Abzug von HEAD gegen den
+   neuen Stand, Zeile fuer Zeile verglichen):
+   - 26.11., Donnerstag der Woche 15: statt "Anlauf im Testtempo" der
+     geplante Qualitaetstag 3 x 12 min Schwelle, mit dem Fassung-13-Text als
+     Tageshinweis.
+   - 28.11., Samstag der Woche 16: der Anlaufhinweis nennt 105 min und
+     250-350 Hm statt "90 min reines Z2 statt der langen Ausfahrt".
+   - 01.12., Dienstag der Woche 16: "45-50 min" statt "45 min" im Hinweis.
+   Die Wochenangaben und die Wiederholungsziele behalten ihre Pruefsummen.
+   Gerechnet wird dabei ohne den Nachfolgeplan (siehe json1 unten). */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -247,7 +264,12 @@ import * as D from '../src/domain/day.js';
 import * as S from '../src/domain/timer/sequences.js';
 
 const json = JSON.parse(fs.readFileSync(new URL('../public/plan.json', import.meta.url), 'utf8'));
-const plan = createPlan(json);
+/* Diese Datei prueft Plan 1. Ohne den Nachfolgeplan, damit die Pruefsummen
+   ueber 18 Wochen den Winterblock von Plan 1 zeigen und nicht ab dem
+   05.12.2026 Plan 2 - der hat seine eigenen Tests in test/plan2.test.js. */
+const json1 = structuredClone(json);
+delete json1.folgeplan;
+const plan = createPlan(json1);
 const start = W.toMidnight(new Date('2026-08-15'));
 const sha = t => crypto.createHash('sha256').update(t, 'utf8').digest('hex').slice(0, 16);
 const j = v => JSON.stringify(v);
@@ -395,7 +417,7 @@ describe('Uebergangsbaender (ohne Testwerte)', () => {
   });
   it('Tageskarten unveraendert', () => {
     expect({ hash: sha(dumpDays(th)), len: dumpDays(th).length })
-      .toEqual({ hash: '961494d43d98e66e', len: 181965 });
+      .toEqual({ hash: '2c572ea2c46be520', len: 181353 });
   });
   it('Wiederholungsziele unveraendert', () => {
     expect({ hash: sha(dumpReps()), len: dumpReps().length })
@@ -419,7 +441,7 @@ describe('Coggan-Pfad (FTP 212, LTHR 163)', () => {
       out.push('D ' + W.isoDayLocal(date) + '|' + j(info.einheiten) + '|' + j(info.zusatz));
     }
     const t = out.join('\n');
-    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '04bb16baaabb1ae5', len: 163591 });
+    expect({ hash: sha(t), len: t.length }).toEqual({ hash: '5b0bc50f2a0d7492', len: 163070 });
   });
 });
 
@@ -682,7 +704,7 @@ describe('Testanlauf', () => {
   const testTag = W.testDateFor(plan, 4, start);
 
   it('legt jeden Anlaufschritt auf seinen Tag', () => {
-    for(const s of plan.testTaper.steps){
+    for(const s of plan.testTaper.steps.filter(x => D.schrittGiltFuer(x, 4))){
       const d = W.addDays(testTag, s.offsetDays);
       const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, d, start);
       expect(info.hinweise.join(' ')).toContain(s.text);
@@ -708,7 +730,7 @@ describe('Testanlauf', () => {
      weiter die Qualitaetseinheit, die laut Plan ausfaellt - in der Karte, im
      Timer und im Sollwert. */
   it('ersetzt den geplanten Tag, wo der Schritt eine eigene Einheit traegt', () => {
-    for(const s of plan.testTaper.steps){
+    for(const s of plan.testTaper.steps.filter(x => D.schrittGiltFuer(x, 4))){
       const d = W.addDays(testTag, s.offsetDays);
       const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, d, start);
       if(!s.session){
@@ -783,13 +805,30 @@ describe('Testanlauf', () => {
 
   /* Derselbe Anlauf gilt fuer die Retests - abgeleitet aus den Testwochen und
      nicht ein zweites Mal hingeschrieben. */
-  it('gilt vor jedem Testtermin', () => {
-    for(const w of W.testWeeks(plan)){
+  it('gilt vor jedem Testtermin bis Fassung 12', () => {
+    for(const w of [4, 10]){
       const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS,
         W.addDays(W.testDateFor(plan, w, start), -7), start);
       expect(info.title).toBe('Rad – Anlauf im Testtempo');
     }
     expect(W.testWeeks(plan)).toEqual([4, 10, 16]);
+  });
+
+  /* Fassung 13: vor dem Retest am 03.12. kein Tempotest. Der Donnerstag
+     26.11. bleibt der volle Qualitaetstag 3 x 12 min bei 90-95 % FTP; der
+     Anlauf nennt ihn nur, statt ihn zu ersetzen. Die beiden Anlaeufe davor
+     bleiben, wie sie gefahren wurden. */
+  it('laesst vor dem 03.12. den Qualitaetstag stehen (Fassung 13)', () => {
+    const tag = W.addDays(W.testDateFor(plan, 16, start), -7);
+    expect(W.isoDayLocal(tag)).toBe('2026-11-26');
+    const info = D.buildDayInfo(plan, Z.NO_THRESHOLDS, tag, start);
+    expect(info.title).toBe('Rad – Schwellenintervalle');
+    expect(info.ersetzt).toBeUndefined();
+    expect(info.target.reps).toBe(3);
+    expect(info.target.repMinutes).toBe(12);
+    expect(info.hinweise.join(' ')).toContain('Kein Tempotest');
+    const sa = D.buildDayInfo(plan, Z.NO_THRESHOLDS, W.addDays(tag, 2), start);
+    expect(sa.hinweise.join(' ')).toContain('105 min reines Z2');
   });
 });
 

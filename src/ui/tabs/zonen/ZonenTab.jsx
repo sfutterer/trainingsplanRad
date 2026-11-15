@@ -23,7 +23,7 @@
 import { useState } from 'preact/hooks';
 import { plan, thresholds, week, messwerte, testLog, interimLog, startDate,
          addInterimEntry } from '../../../state/store.js';
-import { isoDayLocal, toMidnight, dayFromIso, weekNumberFor, datumText,
+import { isoDayLocal, toMidnight, dayFromIso, wocheAm, startFuer, datumText,
          weekStartFor } from '../../../domain/week.js';
 import { hrBands, zonenGrund, zoneBand, quelleVon } from '../../../domain/zones.js';
 import { konsequenz, reihe, werteText, vorbelegtesDatum,
@@ -53,7 +53,7 @@ const EINHEIT  = { ftp: 'W', lthr: 'bpm', hrmax: 'bpm' };
 function Geltung(){
   const p = plan.value, th = thresholds.value, w = week.value, start = startDate.value;
   const { coggan, grund, abWoche } = zonenGrund(p, th, w);
-  const abDatum = abWoche && start ? weekStartFor(abWoche, start) : null;
+  const abDatum = abWoche && start ? weekStartFor(abWoche, startFuer(p, start)) : null;
   const nachWatt = th.ftp > 0;
 
   return (
@@ -278,7 +278,7 @@ function Erhebung(){
     const heute = toMidnight(new Date());
     await addInterimEntry({
       day: isoDayLocal(heute),
-      week: weekNumberFor(heute, startDate.value),
+      week: wocheAm(plan.value, heute, startDate.value),
       talkHr: f.talk > 0 ? f.talk : null,
       note: f.note.trim()
     });

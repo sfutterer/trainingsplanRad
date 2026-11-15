@@ -22,19 +22,24 @@
    Rein: kein DOM, kein fetch, keine Uhr. */
 
 import { testWeeks, testDateFor, thursdayDateFor, toMidnight, dayOffset,
-         isoDayLocal, dayFromIso, weekNumberFor, addDays } from './week.js';
-import { thursdayPlan, thursdayVariante, schrittSekunden } from './day.js';
+         isoDayLocal, dayFromIso, addDays, planKette, startFuer,
+         wocheAm } from './week.js';
+import { thursdayPlan, thursdayVariante, schrittSekunden, schrittGiltFuer } from './day.js';
 
 /* Alle Testtermine des Plans mit ihrem Datum. Abgeleitet aus den Testwochen,
    damit keine zweite Liste danebensteht. */
 export function testTermine(plan, startDate){
   if(!startDate) return [];
-  return testWeeks(plan).map(w => ({
+  /* Ueber beide Plaene: die Testreihe geht ueber die Plangrenze weiter, und
+     Testhistorie und Ergebnisansicht sollen alle Termine kennen - die drei
+     aus Plan 1 und die vier aus Plan 2. */
+  return planKette(plan).flatMap(p => testWeeks(p).map(w => ({
     week: w,
-    datum: testDateFor(plan, w, startDate),
-    minuten: thursdayPlan(plan, w).minutes,
-    titel: thursdayPlan(plan, w).title
-  }));
+    plan: p.kennung,
+    datum: testDateFor(p, w, startFuer(p, startDate)),
+    minuten: thursdayPlan(p, w).minutes,
+    titel: thursdayPlan(p, w).title
+  })));
 }
 
 /* Der Termin, um den es gerade geht.
@@ -64,7 +69,7 @@ export function anlaufTage(plan, termin, heute){
   if(!termin || !tt || !Array.isArray(tt.steps)) return [];
   const h = toMidnight(heute);
 
-  const zeilen = tt.steps.map(s => ({
+  const zeilen = tt.steps.filter(s => schrittGiltFuer(s, termin.week)).map(s => ({
     offset: s.offsetDays,
     datum: addDays(termin.datum, s.offsetDays),
     label: s.label,
@@ -354,14 +359,23 @@ export function tempoBloecke({ watts, puls, zeit, sekunden }){
    sie entsteht. Vorher zu wissen, worauf der Test hinauslaeuft, ist kein
    Selbstzweck - eine Zahl, die weit unter der bisherigen FTP liegt, ist am
    Tag davor ein Hinweis und nicht erst danach. */
-export function testZiel(prep, thresholds){
-  const watt = prep && prep.zielWatt > 0 ? prep.zielWatt : null;
+export function testZiel(prep, thresholds, vortest){
+  /* Seit Fassung 13 gibt es vor einem Retest keinen Tempotest mehr, solange
+     der letzte Test gleichmaessig gefahren wurde: die Vorgabe ist dann sein
+     Ø-Wert ueber 20 min (am 22.10.2026: 234,7 W -> 235 W). Eine notierte Zahl
+     - aus einem Tempotest oder von Hand nach dem Plausibilitaetscheck -
+     sticht ihn. */
+  const notiert = prep && prep.zielWatt > 0 ? prep.zielWatt : null;
+  const aus = !notiert && vortest && vortest.w20 > 0 ? vortest : null;
+  const watt = notiert || (aus ? Math.round(aus.w20) : null);
   if(!watt) return null;
   const ftp = Math.round(watt * FTP_FAKTOR);
   const alt = thresholds && thresholds.ftp > 0 ? thresholds.ftp : null;
   return {
     watt,
-    puls: prep.zielPuls > 0 ? prep.zielPuls : null,
+    quelle: notiert ? 'notiert' : 'vortest',
+    vortestTag: aus ? aus.day : null,
+    puls: notiert && prep.zielPuls > 0 ? prep.zielPuls : null,
     ftp,
     /* Nur der Vergleich, keine Bewertung: ob ein Minus an der Form liegt oder
        an einem zu vorsichtigen Anlauf, entscheidet der Test. */
@@ -479,13 +493,13 @@ export function ergebnisTermine(plan, startDate, testLog, heute){
   (testLog || []).forEach(e => {
     if(!e || !e.day) return;
     const datum = dayFromIso(e.day);
-    const eintragsWoche = e.week || (startDate ? weekNumberFor(datum, startDate) : null);
+    const eintragsWoche = e.week || (startDate ? wocheAm(plan, datum, startDate) : null);
     merke(e.day, datum, eintragsWoche, false).eintrag = e;
   });
 
   if(heute){
     const h = toMidnight(heute);
-    merke(isoDayLocal(h), h, startDate ? weekNumberFor(h, startDate) : null, false);
+    merke(isoDayLocal(h), h, startDate ? wocheAm(plan, h, startDate) : null, false);
   }
 
   return [...nachTag.values()].sort((a, b) => (a.tagIso < b.tagIso ? -1 : 1));

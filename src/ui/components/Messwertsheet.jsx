@@ -37,7 +37,7 @@ import { testWerte, baueTestEintrag, bestesFenster, laengsteFahrt,
          AUSBELASTET_RPE, FTP_FAKTOR } from '../../domain/test.js';
 import { isRide } from '../../domain/analysis.js';
 import { fetchActivities, fetchStreams, fetchGewicht, zahlenStrom } from '../../data/icu.js';
-import { weekNumberFor, dayFromIso, datumText, isoDayLocal, toMidnight } from '../../domain/week.js';
+import { wocheAm, dayFromIso, datumText, isoDayLocal, toMidnight } from '../../domain/week.js';
 import { zahl } from '../../domain/zahlen.js';
 import { Sheet } from './Sheet.jsx';
 import { Segmented } from './Segmented.jsx';
@@ -138,7 +138,7 @@ export function Messwertsheet({ eintrag, vorgabe, onClose }){
 
   async function speichern(){
     if(!bereit) return;
-    const woche = weekNumberFor(dayFromIso(f.day), startDate.value);
+    const woche = wocheAm(plan.value, dayFromIso(f.day), startDate.value);
     const neu = istTest
       ? baueTestEintrag({ tagIso: f.day, week: woche, werte,
                           ftp: werte.ftp, lthr: werte.lthr, bedingungen: f.bed, plan: p })

@@ -32,7 +32,15 @@ import { plan, thresholds, startDate, apiKey, coreLog, testLog, interimLog,
          today, varianten } from '../../../state/store.js';
 import { fetchActivities } from '../../../data/icu.js';
 import { streckenFazit } from '../../../domain/fazit.js';
-import { isoDayLocal, toMidnight, tagUndDatum, weekStartFor } from '../../../domain/week.js';
+import { isoDayLocal, toMidnight, tagUndDatum, weekStartFor, erstePlan } from '../../../domain/week.js';
+
+/* Ein Zeitraum ueber die Plangrenze enthaelt Woche 15 von Plan 1 und Woche 1
+   von Plan 2 - dann steht der Plan davor. Die Woche 0 ist das
+   Uebergangswochenende 05./06.12.2026. */
+function wochenName(w){
+  if(w.plan === 'p2' && w.week === 0) return 'Übergang';
+  return (w.mehrerePlaene ? (w.plan === 'p2' ? 'Plan 2 · ' : 'Plan 1 · ') : '') + 'Woche ' + w.week;
+}
 import { compareDay, weekTotals, buildReport, fmtMin, pct,
          tagesGruppen } from '../../../domain/analysis.js';
 import { T } from '../../../domain/texte.js';
@@ -224,8 +232,8 @@ function Tagesanalyse({ tag, acts, onZurueck }){
      der Umbau: vorher stand hier [act], und die Vorgabe wurde je Fahrt einmal
      ganz verlangt. */
   const row = compareDay(p, th, datum, start, acts, zustand.zonenById || null,
-    logs.filter(e => e.kind !== 'leg'), logs.filter(e => e.kind === 'leg'),
-    varianten.value);
+    logs.filter(e => e.kind !== 'leg' && e.kind !== 'kraft'), logs.filter(e => e.kind === 'leg'),
+    varianten.value, logs.filter(e => e.kind === 'kraft'));
 
   /* Erst wenn Strecke und Wetter da sind, ist das Fazit mehr als die halbe
      Wahrheit - vorher steht in der Kopfkarte nichts.
@@ -371,7 +379,7 @@ function Verlaufsansicht({ acts, wochen, verbunden, range, setRange, laedt }){
   const b = verlaufBericht({
     acts, thresholds: th, wochen,
     /* Ab hier zaehlt eine Fahrt ohne Leistung nicht mehr in den Effizienzfaktor. */
-    leistungAbIso: start && p ? isoDayLocal(weekStartFor(p.cogganFromWeek, start)) : null,
+    leistungAbIso: start && p ? isoDayLocal(weekStartFor(erstePlan(p).cogganFromWeek, start)) : null,
     testLog: testLog.value, interimLog: interimLog.value, coreLog: coreLog.value,
     startIso: start ? isoDayLocal(start) : null, verbunden
   });
@@ -572,8 +580,8 @@ export function AnalyseTab(){
             const ist = Math.round(w.istSec / 60);
             const diff = w.sollMin ? Math.round((ist - w.sollMin) / w.sollMin * 100) : null;
             return (
-              <div class="listrow" key={w.week}>
-                <span>Woche {w.week}{w.ueberDeckel ? ' · über dem Deckel' : ''}</span>
+              <div class="listrow" key={w.plan + ':' + w.week}>
+                <span>{wochenName(w)}{w.ueberDeckel ? ' · über dem Deckel' : ''}</span>
                 <span>{ist} min{w.sollMin ? ' / ' + w.sollMin + ' min (' + (diff >= 0 ? '+' : '') + diff + ' %)' : ''}</span>
               </div>
             );
@@ -583,8 +591,8 @@ export function AnalyseTab(){
               vollstaendig erfassten Woche. Eine halbe Woche kann ihn nicht
               ueberschreiten, nur unterbieten. */}
           {wochen.filter(w => w.ueberDeckel).map(w => (
-            <p class="hint warn" key={'d' + w.week}>
-              Woche {w.week}: {T.deckelUeberschritten(Math.round(w.istSec / 60), w.planMin, w.capMin)}
+            <p class="hint warn" key={'d' + w.plan + ':' + w.week}>
+              {wochenName(w)}: {T.deckelUeberschritten(Math.round(w.istSec / 60), w.planMin, w.capMin)}
             </p>
           ))}
           <p class="hint">Kennzahl: Z2-Summe je Woche, Zielgröße 300–400 min.</p>

@@ -4,12 +4,12 @@
    kein Zufall: eine Kniebeuge mit 3 s Absenken laesst sich nicht gegen einen
    Timer fahren, ohne genau das Tempo zu verlieren, das den Reiz ausmacht. */
 
-import { weekIndex, phaseOf, isRecoveryWeek, tagDaten } from './week.js';
+import { planWoche, phaseOf, isRecoveryWeek, tagDaten } from './week.js';
 
 /* Die Taktung des Zirkels steht seit Fassung 3 als eigener Abschnitt an der
    Woche: sie gehoert zusammen und zu keinem einzelnen Tag - der Zirkel laeuft
    am Mittwoch verkuerzt und am Sonntag voll, mit denselben Sekunden. */
-function zirkel(plan, week){ return plan.weeks[weekIndex(plan, week)].zirkel; }
+function zirkel(plan, week){ return planWoche(plan, week).zirkel; }
 
 export function coreWorkSeconds(plan, week){ return zirkel(plan, week).workSeconds; }
 export function coreRestSeconds(plan, week){ return zirkel(plan, week).restSeconds; }
@@ -19,7 +19,12 @@ export function coreRounds(plan, week){      return zirkel(plan, week).rounds; }
    als legRounds neben der Woche - in Fassung 2 hiessen die des Sonntags
    legRounds und die des Dienstags tuesdayLegRounds, zweimal dasselbe unter
    zwei Namen. */
-export function legRounds(plan, week){ return tagDaten(plan, week, 'so').legRounds; }
+export function legRounds(plan, week){
+  /* Plan 2 kennt keinen Beinblock-Zirkel mehr: die Beine laufen dort als
+     Krafteinheit mit Saetzen (siehe kraft.js). */
+  if(plan.format === 2) return 0;
+  return tagDaten(plan, week, 'so').legRounds;
+}
 
 /* Die zweite Beineinheit am Dienstagabend, ab Woche 11.
 
@@ -31,6 +36,7 @@ export function legRounds(plan, week){ return tagDaten(plan, week, 'so').legRoun
 
    0 heisst: an diesem Dienstag steht keine an. */
 export function tuesdayLegRounds(plan, week){
+  if(plan.format === 2) return 0;
   return tagDaten(plan, week, 'di').legRounds || 0;
 }
 

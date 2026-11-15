@@ -42,6 +42,9 @@ export function stundenText(sek){
 }
 
 export function minutenText(sek){
+  /* Unter einer Minute in Sekunden: die Sprints und die 30/15 von Plan 2
+     stuenden sonst als "0,2 min" und "0,5 min" da. */
+  if(sek > 0 && sek < 60) return Math.round(sek) + ' s';
   return String(Math.round(sek / 6) / 10).replace('.', ',') + ' min';
 }
 

@@ -20,7 +20,8 @@
 
 import { buildDayInfo, weekPlanMinutes, weekCapMinutes } from './day.js';
 import { legDoneRounds, legAborts } from './core.js';
-import { isoDayLocal } from './week.js';
+import { isoDayLocal, planKette } from './week.js';
+import { kraftSaetzeErledigt } from './kraft.js';
 import { T } from './texte.js';
 import { stundenText } from './zeit.js';
 import { STEADY, GRENZBAND_BPM } from './steady.js';
@@ -421,6 +422,37 @@ function legNotes(row, legSessions, t){
   return notes;
 }
 
+/* Krafteinheit mit Saetzen (Plan 2): Montag Rumpf + Oberkoerper, Donnerstag
+   abends Beine. Die Quelle ist das eigene Protokoll des Kraft-Timers -
+   intervals.icu kennt von einer Krafteinheit nur Dauer und Puls. Fehlt das
+   Protokoll, steht "nicht protokolliert" da und kein Ausfall: der Plan sagt
+   ausdruecklich, dass Krafteinheiten nicht zuverlaessig aufgezeichnet werden
+   und vor einer Bewertung nachgefragt wird. */
+function kraftNotes(row, kraftSessions, t, strength){
+  const notes = [];
+  if(!t.kraft) return notes;
+  const e = (kraftSessions || []).filter(x => x.programm === t.kraft).pop()
+         || (kraftSessions || [])[kraftSessions.length - 1];
+  if(!e){
+    if(strength && strength.length){
+      notes.push({ kind:'info', text:'Krafteinheit aufgezeichnet, aber nicht im Kraft-Timer protokolliert – Sätze und Gewichte fehlen.' });
+    } else {
+      notes.push({ kind:'', text:'Krafteinheit nicht protokolliert. Ausgefallen oder nur nicht erfasst?' });
+    }
+    return notes;
+  }
+  const n = kraftSaetzeErledigt(e);
+  const soll = e.geplanteSaetze || 0;
+  if(soll && n >= soll){
+    notes.push({ kind:'good', text:'Krafteinheit: alle ' + n + ' Sätze protokolliert.' });
+  } else if(n > 0){
+    notes.push({ kind:'', text:'Krafteinheit: ' + n + (soll ? ' von ' + soll : '') + ' Sätzen protokolliert.' });
+  } else {
+    notes.push({ kind:'', text:'Krafteinheit begonnen, aber kein Satz eingetragen.' });
+  }
+  return notes;
+}
+
 /* Zonenzeiten aller Fahrten des Tages zusammenfassen. Die Angaben zur
    Aufzeichnung muessen mitwandern, sonst kann recordingNote nichts sagen.
    Bei mehreren Fahrten gilt das unzuverlaessigste Verfahren und der groebste
@@ -759,7 +791,7 @@ function coreDayNotes(plan, row, t, rides, strength, teile){
    Variante zeigt: am Donnerstag der Woche 5 stuende dann "5× 4 min" im Soll,
    obwohl der Nutzer 5 min maximal und 4× 4 min gefahren hat. Zwei Minuten
    Unterschied, aber ein falscher Satz in der Begruendung. */
-export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessions, legSessions, wahlen){
+export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessions, legSessions, wahlen, kraftSessions){
   const info = buildDayInfo(plan, th, date, startDate, wahlen);
   const t = info.target || { sport:'rest' };
   const rides = acts.filter(a => isRide(a.type));
@@ -769,6 +801,7 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
     acts: acts, rides: rides, strength: strength,
     coreSessions: coreSessions || [],
     legSessions: legSessions || [],
+    kraftSessions: kraftSessions || [],
     notes: [], status: 'ok', badge: ''
   };
 
@@ -826,6 +859,20 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
 
   if(t.sport === 'core'){
     row.notes.push(...coreDayNotes(plan, row, t, rides, strength, teile));
+    row.notes.push(...kraftNotes(row, row.kraftSessions, t, strength));
+    return fertig(row);
+  }
+
+  /* Ein Tag, an dem nur Kraft ansteht (Plan 2, Montag). */
+  if(t.sport === 'kraft'){
+    const n = row.kraftSessions.length;
+    row.status = n || strength.length ? 'ok' : 'dev';
+    row.badge = n ? 'protokolliert' : strength.length ? 'aufgezeichnet' : 'nicht erfasst';
+    row.notes.push(...kraftNotes(row, row.kraftSessions, t, strength));
+    if(rides.length){
+      row.notes.push({ kind:'', text: T.ruhetagGefahren(fmtMin(row.rideSec)) });
+      fahrtenNotizen(row, teile, 0, false, null);
+    }
     return fertig(row);
   }
 
@@ -843,6 +890,9 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
      Trainingsplan warnt. */
   if(t.legRounds){
     row.notes.push(...legNotes(row, row.legSessions, t));
+  }
+  if(t.kraft){
+    row.notes.push(...kraftNotes(row, row.kraftSessions, t, strength));
   }
 
   if(!rides.length){
@@ -887,10 +937,14 @@ export function compareDay(plan, th, date, startDate, acts, zonesById, coreSessi
    Einheit. Gesamtdauer, Z2-Minuten und harte Zeit ueber die Woche sagen
    dagegen unabhaengig vom Wochentag, ob die Woche gestimmt hat. */
 export function weekTotals(rows, plan){
+  /* Gruppiert nach Plan und Woche: Woche 1 von Plan 2 ist nicht Woche 1 von
+     Plan 1, und ein Zeitraum ueber die Plangrenze enthaelt beide. */
   const byWeek = {};
   for(const r of rows){
-    const w = byWeek[r.week] = byWeek[r.week] ||
-      { week:r.week, sollMin:0, istSec:0, optSec:0, z2Sec:0, hardSec:0, tage:0, zeilen:0 };
+    const pk = (r.plan && r.plan.planKennung) || 'p1';
+    const schluessel = pk + ':' + r.week;
+    const w = byWeek[schluessel] = byWeek[schluessel] ||
+      { week:r.week, plan: pk, sollMin:0, istSec:0, optSec:0, z2Sec:0, hardSec:0, tage:0, zeilen:0 };
     w.sollMin += r.plannedMinutes || 0;
     w.istSec  += (r.plannedRideSec || 0) + (r.optionalRideSec || 0);
     w.optSec  += r.optionalRideSec || 0;
@@ -900,7 +954,8 @@ export function weekTotals(rows, plan){
     if(r.acts.length) w.tage += 1;
   }
 
-  const liste = Object.keys(byWeek).map(k => byWeek[k]).sort((a, b) => a.week - b.week);
+  const liste = Object.keys(byWeek).map(k => byWeek[k])
+    .sort((a, b) => (a.plan === b.plan ? a.week - b.week : (a.plan < b.plan ? -1 : 1)));
 
   /* Der Umfangsdeckel aus Fassung 3: zulaessig ist der Planwert plus
      weeklyVolumeCapPercent. Er ersetzt die Ramp-Rate als Fruehwarnung, solange
@@ -914,10 +969,14 @@ export function weekTotals(rows, plan){
      ausschliesslich bei vollstaendig erfassten Wochen - eine halbe Woche kann
      ihn nicht ueberschreiten, nur unterbieten. */
   if(plan){
+    const kette = planKette(plan);
     for(const w of liste){
-      if(w.week < 1 || w.week > plan.weekCount) continue;
-      w.planMin = weekPlanMinutes(plan, w.week);
-      w.capMin = weekCapMinutes(plan, w.week);
+      const p = kette.find(x => x.kennung === w.plan) || plan;
+      w.planName = p.name;
+      w.mehrerePlaene = liste.some(x => x.plan !== w.plan);
+      if(w.week < 1 || w.week > p.weekCount) continue;
+      w.planMin = weekPlanMinutes(p, w.week);
+      w.capMin = weekCapMinutes(p, w.week);
       w.vollstaendig = w.zeilen >= 7;
       w.ueberDeckel = w.vollstaendig && Math.round(w.istSec / 60) > w.capMin;
     }
@@ -935,10 +994,11 @@ export function buildReport(plan, th, startDate, from, to, activities, zonesById
     if(!d) continue;
     (byDay[d] = byDay[d] || []).push(a);
   }
-  const coreByDay = {}, legByDay = {};
+  const coreByDay = {}, legByDay = {}, kraftByDay = {};
   for(const e of (logEntries || [])){
     if(!e || !e.day) continue;
     if(e.kind === 'leg') (legByDay[e.day] = legByDay[e.day] || []).push(e);
+    else if(e.kind === 'kraft') (kraftByDay[e.day] = kraftByDay[e.day] || []).push(e);
     else (coreByDay[e.day] = coreByDay[e.day] || []).push(e);
   }
   const rows = [];
@@ -947,7 +1007,7 @@ export function buildReport(plan, th, startDate, from, to, activities, zonesById
     const key = isoDayLocal(cur);
     rows.push(compareDay(plan, th, new Date(cur), startDate,
                          byDay[key] || [], zonesById, coreByDay[key] || [],
-                         legByDay[key] || [], wahlen));
+                         legByDay[key] || [], wahlen, kraftByDay[key] || []));
     cur.setDate(cur.getDate() + 1);
   }
   return rows;

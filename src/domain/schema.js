@@ -11,6 +11,8 @@
 
    Rein: kein DOM, kein fetch. Das Laden steht in data/planSource.js. */
 
+import { schritteAusrollen, folgeplanJson } from './plan.js';
+
 export const PLAN_SCHEMA_VERSION = 3;
 
 const PV_ZONE_KEYS = ['unter','z1','z2','z3','z4','z5'];
@@ -387,6 +389,23 @@ function pvTage(err, t, feld, zonen){
    diese Bloecke an keiner Trainingswoche haengen. Die Schluessel muessen trotzdem
    eindeutig sein, sonst ueberschreiben sich zwei Uebungen in jeder Liste, die
    nach key sucht. */
+/* Eine Uebung zeigt seit dem 15.11.2026 ein Video ("video": Kennung eines
+   YouTube-Videos) statt eines Bildes. Ein eigener Plan von davor traegt noch
+   "image" und bleibt gueltig - eines von beiden muss dastehen. */
+function pvMedium(err, ex, f){
+  if(ex.video != null){
+    if(typeof ex.video !== 'string' || !/^[A-Za-z0-9_-]{11}$/.test(ex.video)){
+      err.push(f + '.video ist ' + JSON.stringify(ex.video) + ' – erwartet ist die elfstellige Kennung eines YouTube-Videos.');
+    }
+    return;
+  }
+  if(ex.image == null){
+    err.push(f + ' braucht "video" (YouTube-Kennung) oder "image".');
+    return;
+  }
+  pvStr(err, ex.image, f + '.image');
+}
+
 function pvBodyBlock(err, b, feld){
   if(!pvObj(err, b, feld)) return;
   pvStr(err, b.durationHint, feld + '.durationHint');
@@ -401,7 +420,7 @@ function pvBodyBlock(err, b, feld){
     pvStr(err, ex.name, f + '.name');
     pvStr(err, ex.dosage, f + '.dosage');
     pvStr(err, ex.focus, f + '.focus');
-    pvStr(err, ex.image, f + '.image');
+    pvMedium(err, ex, f);
     pvStr(err, ex.goal, f + '.goal');
     if(pvArr(err, ex.steps, f + '.steps', 1)){
       ex.steps.forEach((s, k) => pvStr(err, s, f + '.steps[' + k + ']'));
@@ -443,7 +462,8 @@ const PV_TOP_KEYS = [
   'recoveryWeeks', 'weeklyVolumeCapPercent', 'phaseNames', 'weeks', 'winterBlock',
   'heartRateZones', 'powerZones', 'arbeits_ftp', 'cadenceTargets', 'speedEstimate',
   'saturdayRide', 'fridayOptional', 'intervalTimer', 'thresholdTest', 'testTaper',
-  'coreCircuit', 'legBlock', 'mobilityFlow', 'coordination', 'boneStimulus', 'texts'
+  'coreCircuit', 'legBlock', 'mobilityFlow', 'coordination', 'boneStimulus', 'texts',
+  'folgeplan'
 ];
 
 export function planValidate(p){
@@ -660,10 +680,21 @@ export function planValidate(p){
         if(!pvNum(err, s.offsetDays, f + '.offsetDays', {int:true})) return;
         pvStr(err, s.label, f + '.label');
         pvStr(err, s.text, f + '.text');
-        if(gesehen.indexOf(s.offsetDays) >= 0){
+        /* Seit Fassung 13 darf ein Abstand zweimal vorkommen, wenn die beiden
+           Schritte fuer verschiedene Testwochen gelten ("wochen"): vor dem
+           03.12. steht am Donnerstag der Vorwoche kein Tempotest mehr, vor
+           den beiden Tests davor schon. Fuer dieselbe Woche bleibt es bei
+           genau einer Vorgabe je Tag. */
+        if(s.wochen != null && pvArr(err, s.wochen, f + '.wochen', 1)){
+          s.wochen.forEach((w, k) => pvNum(err, w, f + '.wochen[' + k + ']', {min:1, int:true}));
+        }
+        const wochen = Array.isArray(s.wochen) ? s.wochen : null;
+        const kollision = gesehen.some(g => g.off === s.offsetDays &&
+          (!g.wochen || !wochen || g.wochen.some(w => wochen.indexOf(w) >= 0)));
+        if(kollision){
           err.push(f + '.offsetDays ' + s.offsetDays + ' kommt doppelt vor – je Tag gibt es genau eine Vorgabe.');
         }
-        gesehen.push(s.offsetDays);
+        gesehen.push({ off: s.offsetDays, wochen });
         pvSession(err, s.session, f + '.session', zonen);
         if(Math.abs(s.offsetDays) > p.testTaper.leadDays + 7){
           err.push(f + '.offsetDays ist ' + s.offsetDays + ' und liegt damit weit außerhalb des Anlaufs.');
@@ -700,7 +731,7 @@ export function planValidate(p){
         if(!pvObj(err, ex, f)) return;
         pvStr(err, ex.name, f + '.name');
         pvStr(err, ex.goal, f + '.goal');
-        pvStr(err, ex.image, f + '.image');
+        pvMedium(err, ex, f);
         pvArr(err, ex.steps, f + '.steps', 1);
         if(ex.mode === 'reps'){
           pvNum(err, ex.tempoSeconds, f + '.tempoSeconds', {min:1, int:true});
@@ -752,7 +783,7 @@ export function planValidate(p){
         pvStr(err, ex.why, f + '.why');
         pvStr(err, ex.progression, f + '.progression');
         pvStr(err, ex.goal, f + '.goal');
-        pvStr(err, ex.image, f + '.image');
+        pvMedium(err, ex, f);
         pvArr(err, ex.steps, f + '.steps', 1);
         if(keys.indexOf(ex.key) >= 0) err.push(f + '.key "' + ex.key + '" kommt doppelt vor.');
         keys.push(ex.key);
@@ -795,5 +826,240 @@ export function planValidate(p){
     PV_TEXT_KEYS.forEach(k => pvStr(err, p.texts[k], 'texts.' + k));
   }
 
+  if(p.folgeplan != null) pvFolgeplan(err, p, p.folgeplan);
+
   return err;
+}
+
+/* ---- Plan 2 (folgeplan) ----
+
+   Der Nachfolgeplan steht in derselben Datei, damit eigener Plan, Export und
+   Sicherung beide Plaene in einem Stueck tragen. Er erbt Zonen, Kadenz,
+   Timer, Test und Koerperbloecke von Plan 1, solange er sie nicht selbst
+   nennt; was er nennt, wird hier wie dort geprueft.
+
+   Seine Tage sind Listen von Einheiten (siehe day.js, "Plan 2"). Geprueft
+   wird, dass jede Einheit eine bekannte Art traegt und die Felder hat, ohne
+   die sie keine Vorgabe machen kann. */
+const PV_TAGE2 = ['mo', 'di', 'mi', 'do', 'fr', 'sa', 'so'];
+const PV_ARTEN2 = ['ruhe', 'optional', 'fahrt', 'lang', 'steps', 'test', 'kraft', 'zirkel'];
+const PV_ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+function pvIsoTag(err, wert, feld){
+  if(typeof wert !== 'string' || !PV_ISO.test(wert)){
+    err.push(feld + ' ist ' + JSON.stringify(wert) + ' – erwartet ist ein Datum JJJJ-MM-TT.');
+    return null;
+  }
+  const [j, m, t] = wert.split('-').map(Number);
+  return new Date(j, m - 1, t);
+}
+
+function pvEinheit2(err, u, f, zonen, kraft){
+  if(!pvObj(err, u, f)) return;
+  if(PV_ARTEN2.indexOf(u.kind) < 0){
+    err.push(f + '.kind ist ' + JSON.stringify(u.kind) + ' – erlaubt sind ' + PV_ARTEN2.join(', ') + '.');
+    return;
+  }
+  const zone = z => {
+    if(zonen.indexOf(z) < 0) err.push(f + '.zone ist ' + JSON.stringify(z) + ' – erlaubt sind ' + zonen.join(', ') + '.');
+  };
+  if(u.kind === 'fahrt'){
+    pvStr(err, u.title, f + '.title');
+    pvNum(err, u.minutes, f + '.minutes', {min:1});
+    zone(u.zone);
+  } else if(u.kind === 'lang'){
+    pvNum(err, u.minutes, f + '.minutes', {min:1});
+    if(u.hoehenmeter != null && pvObj(err, u.hoehenmeter, f + '.hoehenmeter')){
+      pvNum(err, u.hoehenmeter.von, f + '.hoehenmeter.von', {min:0});
+      pvNum(err, u.hoehenmeter.bis, f + '.hoehenmeter.bis', {min:0});
+    }
+    if(u.verpflegung != null && pvObj(err, u.verpflegung, f + '.verpflegung')){
+      pvStr(err, u.verpflegung.gProStunde, f + '.verpflegung.gProStunde');
+      pvNum(err, u.verpflegung.abMinuten, f + '.verpflegung.abMinuten', {min:0});
+    }
+  } else if(u.kind === 'optional'){
+    pvNum(err, u.minMinutes, f + '.minMinutes', {min:0});
+    pvNum(err, u.maxMinutes, f + '.maxMinutes', {min:0});
+    zone(u.zone);
+  } else if(u.kind === 'steps'){
+    pvStr(err, u.title, f + '.title');
+    if(u.art != null) pvArt(err, u.art, f + '.art');
+    const flach = Array.isArray(u.steps) ? schritteAusrollen(u.steps) : u.steps;
+    pvSteps(err, flach, f + '.steps', zonen);
+    if(Array.isArray(flach) && !flach.some(x => x && x.type === 'work')){
+      err.push(f + '.steps enthält keinen Schritt vom Typ "work".');
+    }
+  } else if(u.kind === 'kraft'){
+    const progs = kraft && kraft.programme ? kraft.programme : {};
+    if(!progs[u.programm]){
+      err.push(f + '.programm ist ' + JSON.stringify(u.programm) + ' – erlaubt sind ' +
+               Object.keys(progs).join(', ') + ' (folgeplan.kraft.programme).');
+    }
+    if(u.saetze != null) pvNum(err, u.saetze, f + '.saetze', {min:1, int:true});
+  } else if(u.kind === 'zirkel'){
+    if(u.rounds != null) pvNum(err, u.rounds, f + '.rounds', {min:1, int:true});
+  }
+}
+
+function pvTage2(err, tage, feld, zonen, kraft){
+  if(!pvObj(err, tage, feld)) return;
+  for(const k of Object.keys(tage)){
+    if(PV_TAGE2.indexOf(k) < 0){
+      err.push(feld + '.' + k + ' ist kein Wochentag – erlaubt sind ' + PV_TAGE2.join(', ') + '.');
+      continue;
+    }
+    if(!pvArr(err, tage[k], feld + '.' + k, 1)) continue;
+    tage[k].forEach((u, i) => pvEinheit2(err, u, feld + '.' + k + '[' + i + ']', zonen, kraft));
+  }
+  PV_TAGE2.forEach(k => {
+    if(!tage[k]) err.push(feld + '.' + k + ' fehlt – in Plan 2 trägt jeder Tag eine Liste von Einheiten (auch "ruhe").');
+  });
+}
+
+function pvKraft(err, k, feld){
+  if(!pvObj(err, k, feld)) return;
+  const keys = [];
+  if(pvArr(err, k.uebungen, feld + '.uebungen', 1)){
+    k.uebungen.forEach((ex, i) => {
+      const f = feld + '.uebungen[' + i + ']';
+      if(!pvObj(err, ex, f)) return;
+      pvStr(err, ex.key, f + '.key');
+      pvStr(err, ex.name, f + '.name');
+      pvStr(err, ex.goal, f + '.goal');
+      pvMedium(err, ex, f);
+      pvArr(err, ex.steps, f + '.steps', 1);
+      if(ex.stufenleiter != null && !(k.stufenleitern && k.stufenleitern[ex.stufenleiter])){
+        err.push(f + '.stufenleiter ' + JSON.stringify(ex.stufenleiter) + ' steht nicht unter ' + feld + '.stufenleitern.');
+      }
+      if(keys.indexOf(ex.key) >= 0) err.push(f + '.key "' + ex.key + '" kommt doppelt vor.');
+      keys.push(ex.key);
+    });
+  }
+  const bekannt = key => {
+    if(keys.indexOf(key) < 0) err.push(feld + ': die Übung ' + JSON.stringify(key) + ' steht nicht unter uebungen.');
+  };
+  if(pvObj(err, k.programme, feld + '.programme')){
+    for(const pk of Object.keys(k.programme)){
+      const pr = k.programme[pk];
+      const f = feld + '.programme.' + pk;
+      if(!pvObj(err, pr, f)) continue;
+      pvStr(err, pr.titel, f + '.titel');
+      pvNum(err, pr.pauseSekunden, f + '.pauseSekunden', {min:0, int:true});
+      (pr.aufwaermUebungen || []).forEach(bekannt);
+      if(pvArr(err, pr.folge, f + '.folge', 1)){
+        pr.folge.forEach(x => {
+          if(x && x.paar) (x.uebungen || []).forEach(u => bekannt(u && u.uebung));
+          else bekannt(x && x.uebung);
+        });
+      }
+    }
+  }
+  if(k.stufenleitern != null && pvObj(err, k.stufenleitern, feld + '.stufenleitern')){
+    for(const lk of Object.keys(k.stufenleitern)){
+      const l = k.stufenleitern[lk];
+      if(!pvObj(err, l, feld + '.stufenleitern.' + lk)) continue;
+      pvStr(err, l.name, feld + '.stufenleitern.' + lk + '.name');
+      pvArr(err, l.stufen, feld + '.stufenleitern.' + lk + '.stufen', 2);
+    }
+  }
+}
+
+function pvFolgeplan(err, p, f){
+  const F = 'folgeplan';
+  if(!pvObj(err, f, F)) return;
+  pvStr(err, f.planName, F + '.planName');
+  const start = pvIsoTag(err, f.start, F + '.start');
+  if(start && start.getDay() !== 1){
+    err.push(F + '.start ist ' + f.start + ' – Plan 2 zählt die Woche von Montag bis Sonntag, der Beginn muss ein Montag sein.');
+  }
+  if(f.gueltigAb != null){
+    const ab = pvIsoTag(err, f.gueltigAb, F + '.gueltigAb');
+    if(ab && start && ab > start) err.push(F + '.gueltigAb liegt nach dem Beginn.');
+  }
+  pvNum(err, f.weeklyVolumeCapPercent, F + '.weeklyVolumeCapPercent', {min:0});
+
+  const aufsteigend = (liste, name) => {
+    if(!pvArr(err, liste, F + '.' + name, 1)) return;
+    let vorige = 0;
+    liste.forEach((w, i) => {
+      if(!pvNum(err, w, F + '.' + name + '[' + i + ']', {min:1, int:true})) return;
+      if(w <= vorige) err.push(F + '.' + name + '[' + i + '] ist ' + w + ' – die Liste muss aufsteigen.');
+      vorige = w;
+    });
+  };
+  aufsteigend(f.recoveryWeeks, 'recoveryWeeks');
+  aufsteigend(f.testWeeks, 'testWeeks');
+
+  if(pvArr(err, f.bloecke, F + '.bloecke', 1)){
+    f.bloecke.forEach((b, i) => {
+      const g = F + '.bloecke[' + i + ']';
+      if(!pvObj(err, b, g)) return;
+      pvNum(err, b.nr, g + '.nr', {min:1, int:true});
+      pvStr(err, b.name, g + '.name');
+      pvNum(err, b.von, g + '.von', {min:1, int:true});
+      pvNum(err, b.bis, g + '.bis', {min:1, int:true});
+    });
+  }
+
+  if(f.kraft != null) pvKraft(err, f.kraft, F + '.kraft');
+
+  /* Was Plan 2 selbst nennt, wird wie in Plan 1 geprueft - die
+     Uebungsabschnitte jedenfalls, weil dort das Video haengt. */
+  const m = folgeplanJson(p, f);
+  if(f.coreCircuit != null && pvObj(err, m.coreCircuit, F + '.coreCircuit')){
+    (m.coreCircuit.exercises || []).forEach((ex, i) => {
+      const g = F + '.coreCircuit.exercises[' + i + ']';
+      if(!pvObj(err, ex, g)) return;
+      pvStr(err, ex.name, g + '.name');
+      pvMedium(err, ex, g);
+      pvArr(err, ex.steps, g + '.steps', 1);
+    });
+  }
+  if(f.heartRateZones != null && pvObj(err, f.heartRateZones, F + '.heartRateZones')){
+    pvNum(err, f.heartRateZones.cogganFromWeek, F + '.heartRateZones.cogganFromWeek', {min:1, int:true});
+    pvBands(err, f.heartRateZones.transitionBands, F + '.heartRateZones.transitionBands', 'min', 'max');
+    pvBands(err, f.heartRateZones.cogganBands, F + '.heartRateZones.cogganBands', 'minFactor', 'maxFactor');
+  }
+
+  const zonen = PV_ZONE_KEYS.slice();
+  if(pvArr(err, f.weeks, F + '.weeks', 1)){
+    f.weeks.forEach((w, i) => {
+      const g = F + '.weeks[' + i + ']';
+      if(!pvObj(err, w, g)) return;
+      if(w.week !== i + 1){
+        err.push(g + '.week ist ' + JSON.stringify(w.week) + ', erwartet ' + (i + 1) + '.');
+      }
+      const name = g + ' (Woche ' + (i + 1) + ')';
+      pvNum(err, w.block, name + '.block', {min:1, int:true});
+      pvNum(err, w.soll, name + '.soll', {min:0});
+      if(['K1', 'K2'].indexOf(w.kraftPhase) < 0){
+        err.push(name + '.kraftPhase ist ' + JSON.stringify(w.kraftPhase) + ' – erlaubt sind K1 und K2.');
+      }
+      pvZirkelWoche(err, w.zirkel, name + '.zirkel');
+      pvTage2(err, w.tage, name + '.tage', zonen, f.kraft);
+    });
+  }
+
+  if(pvObj(err, f.fortschreibung, F + '.fortschreibung')){
+    pvStr(err, f.fortschreibung.hinweis, F + '.fortschreibung.hinweis');
+    const n = Array.isArray(f.weeks) ? f.weeks.length : 0;
+    ['belastung', 'erholung', 'test'].forEach(k => {
+      const v = f.fortschreibung[k];
+      if(pvNum(err, v, F + '.fortschreibung.' + k, {min:1, int:true}) && v > n){
+        err.push(F + '.fortschreibung.' + k + ' ist Woche ' + v + ', ausgearbeitet sind ' + n + '.');
+      }
+    });
+  }
+
+  if(f.sondertage != null && pvObj(err, f.sondertage, F + '.sondertage')){
+    for(const iso of Object.keys(f.sondertage)){
+      const g = F + '.sondertage["' + iso + '"]';
+      pvIsoTag(err, iso, g);
+      const t = f.sondertage[iso];
+      if(!pvObj(err, t, g)) continue;
+      if(pvArr(err, t.einheiten, g + '.einheiten', 1)){
+        t.einheiten.forEach((u, i) => pvEinheit2(err, u, g + '.einheiten[' + i + ']', zonen, f.kraft));
+      }
+    }
+  }
 }

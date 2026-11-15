@@ -78,6 +78,29 @@ function ohneHoehenmeter(p){
   k.coordination.exercises[2] = structuredClone(v2.coordination.exercises[2]);
   k.coordination.progression = structuredClone(v2.coordination.progression);
   k.planName = 'Trainingsplan Radfahren – Fassung 5';
+  /* Und nichts aus Fassung 13 (15.11.2026): kein Nachfolgeplan, keine
+     Videos statt der Bilder, keine auf Testwochen beschraenkten
+     Anlaufschritte, kein Pacing-Text. Ein gehobener Plan der Fassung 2
+     bringt seine Bilder und seinen Anlauf mit - und Plan 2 kommt nur mit der
+     ausgelieferten Datei. */
+  delete k.folgeplan;
+  delete k.thresholdTest.pacing;
+  k.winterBlock.note = v2.winterBlock.note;
+  k.testTaper.steps = k.testTaper.steps
+    .filter(st => !(Array.isArray(st.wochen) && st.wochen.indexOf(16) >= 0))
+    .map(st => { const c = { ...st }; delete c.wochen; return c; });
+  delete k.documentation.videos;
+  delete k.documentation.folgeplan;
+  k.documentation.bilder = v2.documentation.bilder;
+  for(const [teil, alt] of [['coreCircuit', v2.coreCircuit], ['legBlock', v2.legBlock],
+                            ['mobilityFlow', v2.mobilityFlow], ['coordination', v2.coordination]]){
+    k[teil].exercises.forEach((ex, i) => {
+      if(!ex.video) return;
+      delete ex.video;
+      ex.image = alt.exercises[i].image;
+      ex.name = alt.exercises[i].name;
+    });
+  }
   return k;
 }
 const v3OhneHm = ohneHoehenmeter(v3);

@@ -4,7 +4,7 @@
 import { repTarget } from '../core.js';
 import { zeitDosis } from '../koerper.js';
 import { thursdayPlan, thursdayAnlauf, anlaufSchritte, schrittSekunden,
-         varianteFuer } from '../day.js';
+         varianteFuer, timerEinheitPlan2 } from '../day.js';
 import { zoneSpan, targetText, zielband } from '../zones.js';
 
 /* Ein Zonenetikett fuer die Anzeige im Timer. z12 ist die Spanne beim
@@ -157,6 +157,17 @@ export function buildIntervalSequence(plan, th, week, { warmMin, workMin, restMi
    Woche 5 fuer die VO2max-Referenz entschieden hat, soll im Timer die fuenf
    Minuten zaehlen und nicht das fuenfte Intervall, das dafuer ausfaellt. */
 export function intervalDefaults(plan, week, startDate, heute, wahlen){
+  /* Plan 2: zwei Qualitaetstage je Woche (Dienstag und Donnerstag), dazu die
+     Oeffner am Mittwoch der Testwoche. Der Timer zaehlt die Einheit von
+     heute, sonst die naechste der Woche - festgelegt in der Datei und nicht
+     verstellbar, wie jede Folge aus plan.json. */
+  if(plan.format === 2){
+    const t = timerEinheitPlan2(plan, heute || plan.start);
+    if(!t) return { mode:'z2', plan:{ title:'Rad – Grundlage', minutes: 0 } };
+    const e = t.einheit;
+    if(e.kind === 'test') return { mode:'test', plan: thursdayPlan(plan, week) };
+    return { mode:'steps', feste: e, steps: e.steps, datum: t.datum };
+  }
   const anlauf = anlaufSchritte(plan, heute, startDate)
               || thursdayAnlauf(plan, week, startDate);
   if(anlauf) return { mode:'steps', anlauf, steps: anlauf.session.steps };

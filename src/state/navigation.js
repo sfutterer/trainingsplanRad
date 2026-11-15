@@ -45,13 +45,18 @@ export const BEREICHE = {
    ihn, der Sprung von aussen setzt ihn mit. */
 export const BAUSTEINE = {
   core:         'Rumpf',
-  leg:          'Beine',
+  leg:          'Beine / Kraft',
   mobility:     'Beweglichkeit',
   coordination: 'Koordination',
   neutral:      'Timer'
 };
 
 export const baustein = signal('core');
+
+/* Welches Kraftprogramm (Plan 2) beim Sprung von der Tageskarte offen sein
+   soll - "Kraft-Timer öffnen" am Montag meint Rumpf + Oberkoerper, am
+   Donnerstag die Beine. null heisst: das Programm des heutigen Tages. */
+export const kraftWahl = signal(null);
 
 /* Die vier Ziele der unteren Leiste - die Bereiche, die waehrend des Trainings
    gebraucht werden. Alles Seltenere steht nur im Drawer. */
@@ -75,7 +80,8 @@ export function tabId(roh){
    Der Baustein wird vor der Rueckkehr gesetzt. Wer schon im Trainingsbereich
    steht und auf einen anderen Baustein zeigt, waere sonst an der Pruefung
    darunter haengengeblieben - der Bereich stimmt ja bereits. */
-export function gotoTab(roh, push, bausteinId){
+export function gotoTab(roh, push, bausteinId, programm){
+  if(programm) kraftWahl.value = programm;
   const id = tabId(roh);
   if(!id) return;
   if(bausteinId && BAUSTEINE[bausteinId]) baustein.value = bausteinId;

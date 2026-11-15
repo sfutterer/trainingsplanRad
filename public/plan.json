@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "planName": "Trainingsplan Radfahren – Fassung 12",
+  "planName": "Trainingsplan Radfahren – Fassung 13",
   "documentation": {
     "zweck": "Einzige Quelle aller Planzahlen und Plantexte. Die App liest ausschliesslich aus dieser Datei; ohne sie startet sie nicht, sondern zeigt eine Fehlermeldung. Es gibt keine hartkodierten Ersatzwerte.",
     "bearbeiten": "Zahlen und Texte hier aendern und die Datei speichern. Den Service Worker erzeugt vite-plugin-pwa beim Bauen; er nimmt plan.json selbsttaetig in den Precache. Eine Fassungsnummer von Hand gibt es nicht mehr.",
@@ -11,7 +11,6 @@
     "zonen": "heartRateZones.transitionBands gelten bis heartRateZones.cogganFromWeek bzw. solange keine LTHR eingetragen ist. Danach rechnet die App die Baender aus der LTHR nach Coggan. Die Baender muessen lueckenlos aneinander anschliessen: max der einen Zone ist min der naechsten. max null heisst offen nach oben.",
     "powerZones": "Bewusst nicht lueckenlos - Coggan ist in vollen Prozentschritten definiert (z1 bis 55 %, z2 ab 56 %). Geprueft wird nur, dass die Zonen aufsteigen.",
     "texts": "Freistehende Saetze aus dem Plan. Reiner Text ohne Auszeichnung - die Anzeige setzt sie als Textknoten, Markierungen wie <b> erschienen woertlich. Saetze mit eingerechneten Zahlen stehen weiterhin im Code, weil sie ohne Vorlagensprache nicht in JSON abbildbar sind.",
-    "bilder": "Bild als .webp mit 1400x934 in public/assets ablegen und den Pfad hier eintragen. Der Precache von vite-plugin-pwa greift alle .webp selbsttaetig ab, eine eigene Liste gibt es nicht. Fehlt eine Datei, zeigt die Anzeige eine Platzhalterkachel statt eines kaputten Bildes.",
     "beweglichkeit": "mobilityFlow, coordination und boneStimulus stehen bewusst neben dem Radplan, nicht darin. Sie haengen an keiner Woche und an keiner Phase, weil sie radunabhaengig sind. Deshalb keine Dosierung je Phase wie beim legBlock, sondern ein fester Dosierungstext je Uebung. Seit Fassung 3 sind sie ausdruecklich kein Teil der Opferreihenfolge mehr - sie kosten keine Erholung.",
     "sprache": "Die Schluessel sind englisch, alle Werte und dieser Block sind deutsch. Absicht: die Schluessel bleiben maschinennah und stimmen mit den Feldnamen im Code ueberein, alles Erklaerende bleibt in der Sprache der App.",
     "farben": "Die Zonenfarben standen bis zum 29.08.2026 hier als Hexwerte und gleichzeitig als Tokens in src/ui/theme.css - beide wurden benutzt, also hatte dieselbe Zone je nach Anzeige eine andere Farbe, und die Fassung aus dieser Datei folgte dem Dunkelmodus nicht. Welche Farbe eine Zone traegt, ist Darstellung und keine Trainingsvorgabe; sie steht deshalb nur noch in theme.css.",
@@ -25,7 +24,9 @@
     "phasen": "phaseNames deckt die Phasen 1 bis 4 ab. winterBlock traegt die Phase 5 und seinen Namen selbst; die App traegt ihn beim Laden in phaseNames nach.",
     "migration": "Ein Plan der Fassung 2 wird beim Laden auf Fassung 3 gehoben: die Wochentage im Feldnamen (tuesdayMinutes, saturdayBlocks …) werden zu einem Objekt je Tag unter weeks[].tage.",
     "kadenz": "cadenceTargets.byZone gilt fuer das Cube (Do, Sa) - dort hat in Z2 die Leistung Vorrang, deshalb 80-85 rpm (Fassung 8). cadenceTargets.trekkingrad ueberschreibt einzelne Zonen fuer Di und Mi auf dem Trekkingrad, wo keine Wattvorgabe gilt und keine Kadenzdaten ankommen.",
-    "zielwatt": "zielwatt steht an einem tage.do, an einem work-Schritt und an tage.sa.bloecke und nennt das Zielband in Watt direkt: min, max und herkunft. Es hat Vorrang vor jedem Prozentsatz. Seit Fassung 12 gibt es nur noch eine FTP - die aus dem Schwellentest -, und jede Vorgabe steht wieder als Prozentsatz davon; zielwatt bleibt allein fuer die gefahrenen Wochen 5 bis 9, die ihre Baender aus der Arbeits-FTP 206 bzw. 215 W behalten, die es bis zum Retest am 22.10.2026 gab. Die Analyse eines gefahrenen Tages muss gegen die Vorgabe rechnen, die an ihm galt, und nicht gegen die von heute - deshalb werden sie eingefroren und nicht nachgezogen. min gleich max heisst ein fester Wert und keine Spanne. Alles Kuenftige steht als Prozentsatz (power an einem tage.do, effort an einem Schritt, saturdayRide.blockPower an den Samstagsbloecken) und folgt damit jedem Test von selbst."
+    "zielwatt": "zielwatt steht an einem tage.do, an einem work-Schritt und an tage.sa.bloecke und nennt das Zielband in Watt direkt: min, max und herkunft. Es hat Vorrang vor jedem Prozentsatz. Seit Fassung 12 gibt es nur noch eine FTP - die aus dem Schwellentest -, und jede Vorgabe steht wieder als Prozentsatz davon; zielwatt bleibt allein fuer die gefahrenen Wochen 5 bis 9, die ihre Baender aus der Arbeits-FTP 206 bzw. 215 W behalten, die es bis zum Retest am 22.10.2026 gab. Die Analyse eines gefahrenen Tages muss gegen die Vorgabe rechnen, die an ihm galt, und nicht gegen die von heute - deshalb werden sie eingefroren und nicht nachgezogen. min gleich max heisst ein fester Wert und keine Spanne. Alles Kuenftige steht als Prozentsatz (power an einem tage.do, effort an einem Schritt, saturdayRide.blockPower an den Samstagsbloecken) und folgt damit jedem Test von selbst.",
+    "videos": "Jede Übung trägt unter \"video\" die elfstellige Kennung eines deutschsprachigen YouTube-Videos (aus https://www.youtube.com/watch?v=KENNUNG). Die App zeigt das Vorschaubild und lädt das Video erst beim Antippen, über youtube-nocookie.com. Bis zum 15.11.2026 standen hier Bilder unter \"image\" – ein eigener Plan mit \"image\" bleibt gültig.",
+    "folgeplan": "Plan 2 (ab 07.12.2026) steht unter folgeplan in derselben Datei. Er erbt heartRateZones, powerZones, cadenceTargets, speedEstimate, saturdayRide, fridayOptional, intervalTimer, thresholdTest, testTaper, coreCircuit, legBlock, mobilityFlow, coordination, boneStimulus und arbeits_ftp von Plan 1, solange er sie nicht selbst nennt; texts werden zusammengelegt. Seine Woche läuft Montag bis Sonntag, jeder Tag (mo … so) ist eine Liste von Einheiten mit \"kind\": ruhe, optional, fahrt, lang, steps, test, kraft, zirkel. Schritte dürfen als Gruppe stehen: { \"wiederhole\": n, \"steps\": […], \"zwischen\": […] } – \"zwischen\" steht zwischen zwei Durchgängen, nicht nach dem letzten. \"soll\" ist das Wochensoll aus der Tabelle des Plans, der Deckel rechnet darauf. Wochen nach der letzten ausgearbeiteten zeigen die Form der unter fortschreibung genannten Wochen. sondertage nennt einzelne Daten mit eigenen Einheiten (Übergangswochenende)."
   },
   "recoveryWeeks": [
     4,
@@ -991,7 +992,7 @@
   "winterBlock": {
     "phase": 5,
     "name": "Nach dem Plan",
-    "note": "Der 16-Wochen-Plan endet am 04.12.2026. Danach wird auf Basis der drei Testergebnisse und der Auswertung ein neuer Plan geschrieben – dieser wird nicht fortgeschrieben. Offen: Entwicklung von FTP, LTHR und Gewicht, Rolle oder Smarttrainer für den Winter, Zieltermin und Zielereignis, Höhenmeter als eigenständige Progression, lange Ausfahrten jenseits von drei Stunden. Die Wochenwerte unten stehen weiter auf Woche 16.",
+    "note": "Der 16-Wochen-Plan endet am 04.12.2026. Ab dem 05.12.2026 gilt Plan 2 (folgeplan in dieser Datei): Übergangswochenende, dann Woche 1 ab Montag, 07.12.2026.",
     "tage": {
       "do": {
         "kind": "z2",
@@ -1258,7 +1259,8 @@
         "minutes": 10,
         "zone": "z1"
       }
-    ]
+    ],
+    "pacing": "Die ersten 3 min nicht über der Vorgabe – auf den Rundenschnitt schauen, nicht auf den Momentanwert. Ab Minute 10 sind +5 W erlaubt, wenn die Atmung es zulässt; mehr nicht, das ist kein geplanter negativer Split. Die letzten 3 min sind frei."
   },
   "testTaper": {
     "leadDays": 10,
@@ -1314,7 +1316,19 @@
               "zone": "z1"
             }
           ]
-        }
+        },
+        "wochen": [
+          4,
+          10
+        ]
+      },
+      {
+        "offsetDays": -7,
+        "wochen": [
+          16
+        ],
+        "label": "7 Tage davor (Do)",
+        "text": "Regulärer Qualitätstag: 3 × 12 min bei 90–95 % FTP, 5 min Pause – Band halten, keine „alles raus“-Schlusswiederholung, nicht verlängern. Zugleich Plausibilitätscheck der Pacing-Vorgabe: Ø-Puls der letzten 2 min von Block 3 notieren. Kein Tempotest (Fassung 13)."
       },
       {
         "offsetDays": -6,
@@ -1329,7 +1343,19 @@
       {
         "offsetDays": -5,
         "label": "5 Tage davor (Sa)",
-        "text": "90 min reines Z2 statt der geplanten langen Ausfahrt."
+        "text": "90 min reines Z2 statt der geplanten langen Ausfahrt.",
+        "wochen": [
+          4,
+          10
+        ]
+      },
+      {
+        "offsetDays": -5,
+        "wochen": [
+          16
+        ],
+        "label": "5 Tage davor (Sa)",
+        "text": "105 min reines Z2, 250–350 Hm."
       },
       {
         "offsetDays": -4,
@@ -1350,6 +1376,24 @@
         "offsetDays": -2,
         "label": "2 Tage davor (Di)",
         "text": "45 min, direkte Strecke, unteres Z2 – nicht verlängern.",
+        "session": {
+          "kind": "ride",
+          "title": "Rad – direkte Strecke",
+          "zone": "z2",
+          "note": "Unteres Z2 – nicht verlängern."
+        },
+        "wochen": [
+          4,
+          10
+        ]
+      },
+      {
+        "offsetDays": -2,
+        "wochen": [
+          16
+        ],
+        "label": "2 Tage davor (Di)",
+        "text": "45–50 min, kurze Strecke, unteres Z2 – nicht verlängern.",
         "session": {
           "kind": "ride",
           "title": "Rad – direkte Strecke",
@@ -1466,11 +1510,11 @@
     "wednesdayRounds": 2,
     "exercises": [
       {
-        "name": "Dead Bug",
+        "name": "Toter Käfer (Dead Bug)",
         "mode": "reps",
         "tempoSeconds": 5,
         "alternating": true,
-        "image": "assets/DeadBug.webp",
+        "video": "6BUVunRfJig",
         "steps": [
           "Rückenlage, Arme zeigen zur Decke, Knie 90° angewinkelt",
           "Gegenüberliegenden Arm und Bein langsam absenken, ca. 2 s",
@@ -1481,11 +1525,11 @@
         "goal": "Ziel: Kräftigt die tiefe Bauchmuskulatur, ohne den Rücken zu belasten."
       },
       {
-        "name": "Schulterstabilität (Band-Pull-Apart)",
+        "name": "Band auseinanderziehen (Band Pull-Apart)",
         "mode": "reps",
         "tempoSeconds": 3,
         "alternating": false,
-        "image": "assets/BandPullApart.webp",
+        "video": "kES0rH2KtNo",
         "steps": [
           "Band mit beiden Händen vor der Brust halten",
           "Arme auseinanderziehen, Schulterblätter zusammenziehen",
@@ -1498,7 +1542,7 @@
       {
         "name": "Unterarmstütz (Plank)",
         "mode": "hold",
-        "image": "assets/Plank.webp",
+        "video": "CAscND0ee6Y",
         "steps": [
           "Unterarme und Zehen am Boden aufstützen",
           "Körper bildet eine gerade Linie von Kopf bis Ferse",
@@ -1508,11 +1552,11 @@
         "goal": "Ziel: Trainiert die gesamte Rumpfmuskulatur, die beim Rennrad die gebückte Haltung stützt."
       },
       {
-        "name": "Bird Dog",
+        "name": "Vierfüßlerstand diagonal (Bird Dog)",
         "mode": "reps",
         "tempoSeconds": 5,
         "alternating": true,
-        "image": "assets/BirdDog.webp",
+        "video": "qh48UejslYQ",
         "steps": [
           "Vierfüßlerstand einnehmen, Hände unter den Schultern",
           "Gegenüberliegenden Arm und Bein gleichzeitig ausstrecken",
@@ -1527,7 +1571,7 @@
         "mode": "reps",
         "tempoSeconds": 3,
         "alternating": false,
-        "image": "assets/Liegestuetz.webp",
+        "video": "zc811n_V-cs",
         "steps": [
           "Auf Zehen oder Knien abstützen, Körper gerade",
           "Ellbogen nah am Körper absenken",
@@ -1540,7 +1584,7 @@
       {
         "name": "Seitstütz links",
         "mode": "hold",
-        "image": "assets/SidePlankLinks.webp",
+        "video": "ZRYKTCGI7BY",
         "steps": [
           "Auf einem Unterarm seitlich abstützen",
           "Körper gestreckt, Hüfte anheben und halten",
@@ -1549,11 +1593,11 @@
         "goal": "Ziel: Wichtig für seitliche Stabilität, verhindert Wackeln im Oberkörper beim Antritt."
       },
       {
-        "name": "Hüftheben (Glute Bridge)",
+        "name": "Beckenheben (Glute Bridge)",
         "mode": "reps",
         "tempoSeconds": 3,
         "alternating": false,
-        "image": "assets/GluteBridge.webp",
+        "video": "Frl3QaFCVu8",
         "steps": [
           "Rückenlage, Knie angewinkelt, Füße hüftbreit und flach am Boden",
           "Fersen in den Boden drücken und das Becken anheben",
@@ -1567,7 +1611,7 @@
       {
         "name": "Seitstütz rechts",
         "mode": "hold",
-        "image": "assets/SidePlankRechts.webp",
+        "video": "ZRYKTCGI7BY",
         "steps": [
           "Auf einem Unterarm seitlich abstützen",
           "Körper gestreckt, Hüfte anheben und halten",
@@ -1671,7 +1715,7 @@
         "key": "squat",
         "name": "Kniebeuge",
         "perSide": false,
-        "image": "assets/Squat.webp",
+        "video": "98piTWl-7gs",
         "steps": [
           "Füße schulterbreit, Zehen leicht nach außen",
           "Hüfte zuerst nach hinten, dann runter – Knie folgen der Fußrichtung",
@@ -1687,7 +1731,7 @@
         "key": "split",
         "name": "Split Squat / Ausfallschritt",
         "perSide": true,
-        "image": "assets/Lunges.webp",
+        "video": "DJb8ssrFKRo",
         "steps": [
           "Ein Fuß etwa eine Schrittlänge vor dem anderen, beide Füße zeigen nach vorn",
           "Oberkörper aufrecht, hinteres Knie senkrecht Richtung Boden absenken",
@@ -1703,7 +1747,7 @@
         "key": "calf",
         "name": "Wadenheben einbeinig",
         "perSide": true,
-        "image": "assets/WadenhebenEinbeinig.webp",
+        "video": "lfyTq8ir2us",
         "steps": [
           "Auf einem Bein stehen, mit den Fingerspitzen an einer Wand balancieren, nicht abstützen",
           "Langsam auf den Ballen heben, oben 1 s halten",
@@ -1727,7 +1771,7 @@
         "name": "Tiefe Kniebeuge halten, seitlich pendeln",
         "dosage": "60 s",
         "focus": "Hüfte, Sprunggelenk",
-        "image": "assets/TiefeKniebeuge.webp",
+        "video": "TzoFlHGdR54",
         "steps": [
           "Füße etwa schulterbreit, Zehen leicht nach außen, Fersen bleiben am Boden",
           "So tief in die Hocke setzen, wie der Rücken gerade bleibt, Ellbogen innen an den Knien",
@@ -1742,7 +1786,7 @@
         "name": "90/90-Wechsel im Sitzen",
         "dosage": "10 Wdh. je Seite",
         "focus": "Hüftrotation innen/außen",
-        "image": "assets/NeunzigNeunzig.webp",
+        "video": "6ZJ_yBWiQNA",
         "steps": [
           "Im Sitzen beide Beine 90° anwinkeln: ein Bein vor dem Körper, das andere zur Seite",
           "Aufrecht sitzen, Hände hinter dem Körper abstützen, Becken nicht wegkippen",
@@ -1757,7 +1801,7 @@
         "name": "Katze-Kuh und BWS-Rotation im Vierfüßlerstand",
         "dosage": "8 Wdh. je Seite",
         "focus": "Brustwirbelsäule",
-        "image": "assets/KatzeKuh.webp",
+        "video": "9lWHSXdrT0E",
         "steps": [
           "Vierfüßlerstand, Hände unter den Schultern, Knie unter der Hüfte",
           "Rücken abwechselnd rund machen und sanft absenken, dem Atem folgen",
@@ -1772,7 +1816,7 @@
         "name": "Schulterkreisen mit Stab oder Handtuch über Kopf",
         "dosage": "10 Wdh.",
         "focus": "Schulter",
-        "image": "assets/Schulterkreisen.webp",
+        "video": "uUaH9LXAj-g",
         "steps": [
           "Stab oder gespanntes Handtuch mit weitem Griff vor dem Körper halten",
           "Mit gestreckten Armen über den Kopf und so weit wie möglich nach hinten führen",
@@ -1786,7 +1830,7 @@
         "name": "Ausfallschritt mit Rotation zum vorderen Bein",
         "dosage": "6 je Seite",
         "focus": "Hüftbeuger, Rotation",
-        "image": "assets/AusfallschrittRotation.webp",
+        "video": "4DBOQyxNIfA",
         "steps": [
           "Aus dem Stand einen langen Schritt nach vorn setzen, hinteres Knie tief absenken",
           "Becken bewusst nach vorn schieben, bis der hintere Hüftbeuger zieht",
@@ -1813,7 +1857,7 @@
         "name": "Einbeinstand, Augen zu",
         "dosage": "3 × 20–30 s je Seite",
         "focus": "Propriozeption",
-        "image": "assets/EinbeinstandAugenZu.webp",
+        "video": "Qorz584oWZE",
         "steps": [
           "Barfuß oder in flachen Schuhen auf ein Bein stellen, Blick zuerst geradeaus",
           "Standbein leicht beugen, Zehen aktiv in den Boden drücken",
@@ -1828,7 +1872,7 @@
         "name": "Einbeinstand mit Kopfdrehungen",
         "dosage": "2 × 20 s je Seite",
         "focus": "Vestibularis",
-        "image": "assets/EinbeinstandKopfdrehung.webp",
+        "video": "V9YLafsf1yM",
         "steps": [
           "Auf ein Bein stellen, Augen offen, Blick geradeaus",
           "Kopf langsam nach links und rechts drehen, etwa eine Drehung je Sekunde",
@@ -1842,7 +1886,7 @@
         "name": "Einbeinige Standwaage („Airplane“)",
         "dosage": "5 Wdh. je Seite",
         "focus": "einbeinige Kontrolle, Hüfte, Propriozeption",
-        "image": "assets/Standwaage.webp",
+        "video": "lv89hVh5wGM",
         "steps": [
           "Auf ein Bein stellen, Standknie minimal gebeugt",
           "Oberkörper nach vorn kippen und gleichzeitig das freie Bein nach hinten strecken",
@@ -1858,7 +1902,7 @@
         "name": "Tandemstand auf instabiler Unterlage",
         "dosage": "2 × 30 s",
         "focus": "Gleichgewicht unter Zusatzreiz",
-        "image": "assets/Tandemstand.webp",
+        "video": "gRtBkAG2hno",
         "steps": [
           "Ein Kissen oder ein gerolltes Handtuch auf den Boden legen",
           "Fersen an Zehen stellen, beide Füße auf einer Linie",
@@ -1915,5 +1959,3244 @@
     "cadencePyramid": "Kadenzpyramide als Teil des Einfahrens am Mittwoch, alle ein bis zwei Wochen: 30 s je 90 / 100 / 110 / 120 / 110 / 100 / 90 rpm im leichten Gang, Puls bleibt in Z1/Z2, nicht im Sattel hüpfen. Kostet 3,5 min.",
     "volumeCap": "Die Wochensumme Rad ist eine Obergrenze, kein Sollwert. Wird sie überschritten, wird in der Folgewoche gekürzt, nicht kompensiert. Das ersetzt die Ramp-Rate als Absicherung, solange die CTL unter 20 liegt.",
     "timerFesteFolge": "Der Ablauf steht fest und lässt sich nicht verstellen – er kommt aus dem Plan und nicht aus den Eingabefeldern."
+  },
+  "folgeplan": {
+    "planName": "Trainingsplan 2 Radfahren – Fassung 1 (Entwurf)",
+    "start": "2026-12-07",
+    "gueltigAb": "2026-12-05",
+    "weeklyVolumeCapPercent": 10,
+    "recoveryWeeks": [
+      3,
+      6,
+      9,
+      12,
+      15,
+      18,
+      21,
+      24,
+      27,
+      30,
+      33,
+      36,
+      39,
+      42,
+      45,
+      48
+    ],
+    "testWeeks": [
+      9,
+      18,
+      27,
+      39
+    ],
+    "bloecke": [
+      {
+        "nr": 1,
+        "name": "Winterbasis",
+        "von": 1,
+        "bis": 12,
+        "stunden": "6,5–8,5",
+        "sonntag": "3:15 → 4:40 h",
+        "schwerpunkt": "Zweiter Qualitätstag, lange Fahrt bis ca. 4:40 h, Krafttraining mit Gewichten lernen, Verpflegung 60 → 70 g/h"
+      },
+      {
+        "nr": 2,
+        "name": "Aufbau",
+        "von": 13,
+        "bis": 21,
+        "stunden": "9–10",
+        "sonntag": "4:40 → 5:30 h, bis 1.500 hm",
+        "schwerpunkt": "Mittwoch lange Pendelstrecke, erste Fahrt über 150 km"
+      },
+      {
+        "nr": 3,
+        "name": "Spezifisch",
+        "von": 22,
+        "bis": 33,
+        "stunden": "10–12",
+        "sonntag": "5–7 h, 150 → 200 km, über 2.000 hm",
+        "schwerpunkt": "Tempoblöcke spät in der Fahrt, Verpflegung 80–90 g/h, Zwei-Tage-Blöcke, Rad am Ring"
+      },
+      {
+        "nr": 4,
+        "name": "Zielfenster",
+        "von": 34,
+        "bis": 39,
+        "stunden": "9–11",
+        "sonntag": "—",
+        "schwerpunkt": "250 km / 3.000 hm, sobald die Kriterien erfüllt sind"
+      },
+      {
+        "nr": 5,
+        "name": "Herbst",
+        "von": 40,
+        "bis": 47,
+        "stunden": "7–9",
+        "sonntag": "kürzer",
+        "schwerpunkt": "VO2max, Schwelle, Sprint, Kraft schwerer"
+      },
+      {
+        "nr": 6,
+        "name": "Übergang",
+        "von": 48,
+        "bis": 50,
+        "stunden": "frei",
+        "sonntag": "—",
+        "schwerpunkt": "2–3 Wochen ohne Struktur, dann Plan 3"
+      }
+    ],
+    "fortschreibung": {
+      "belastung": 11,
+      "erholung": 12,
+      "test": 9,
+      "hinweis": "Diese Woche ist noch nicht ausgearbeitet – die Blöcke ab März werden jeweils vor Blockbeginn wochengenau geplant. Bis dahin zeigt die App die Wochenform der Woche 11 (Belastung), 12 (Erholung) bzw. 9 (Testwoche)."
+    },
+    "sondertage": {
+      "2026-12-05": {
+        "titel": "Übergang – frei",
+        "hinweis": "Übergang von Plan 1 zu Plan 2. Woche 1 beginnt am Montag, 07.12.2026.",
+        "einheiten": [
+          {
+            "kind": "ruhe",
+            "title": "Frei",
+            "note": "Übergang aus Plan 1."
+          }
+        ]
+      },
+      "2026-12-06": {
+        "titel": "Rad – Brückenfahrt",
+        "hinweis": "Übergang von Plan 1 zu Plan 2. Woche 1 beginnt am Montag, 07.12.2026.",
+        "einheiten": [
+          {
+            "kind": "lang",
+            "title": "Rad – Brückenfahrt",
+            "minutes": 150,
+            "note": "Ca. 2:30 h Z2, locker – die Brücke zwischen den beiden Plänen."
+          }
+        ]
+      }
+    },
+    "heartRateZones": {
+      "cogganFromWeek": 1,
+      "transitionBands": [
+        {
+          "key": "unter",
+          "label": "<Z1",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "key": "z1",
+          "label": "Z1",
+          "min": 100,
+          "max": 128
+        },
+        {
+          "key": "z2",
+          "label": "Z2",
+          "min": 128,
+          "max": 142
+        },
+        {
+          "key": "z3",
+          "label": "Z3",
+          "min": 142,
+          "max": 155
+        },
+        {
+          "key": "z4",
+          "label": "Z4",
+          "min": 155,
+          "max": 168
+        },
+        {
+          "key": "z5",
+          "label": "Z5",
+          "min": 168,
+          "max": null
+        }
+      ],
+      "cogganBands": [
+        {
+          "key": "unter",
+          "label": "<Z1",
+          "minFactor": 0,
+          "maxFactor": 0.55
+        },
+        {
+          "key": "z1",
+          "label": "Z1",
+          "minFactor": 0.55,
+          "maxFactor": 0.68
+        },
+        {
+          "key": "z2",
+          "label": "Z2",
+          "minFactor": 0.68,
+          "maxFactor": 0.83
+        },
+        {
+          "key": "z3",
+          "label": "Z3",
+          "minFactor": 0.83,
+          "maxFactor": 0.94
+        },
+        {
+          "key": "z4",
+          "label": "Z4",
+          "minFactor": 0.94,
+          "maxFactor": 1.05
+        },
+        {
+          "key": "z5",
+          "label": "Z5",
+          "minFactor": 1.05,
+          "maxFactor": null
+        }
+      ]
+    },
+    "cadenceTargets": {
+      "fromWeek": 1,
+      "byZone": {
+        "z1": null,
+        "z2": "80–85 rpm",
+        "z3": "85–90 rpm",
+        "z4": "85–90 rpm",
+        "z5": "95–100 rpm"
+      },
+      "trekkingrad": {
+        "z2": "85–90 rpm"
+      }
+    },
+    "speedEstimate": {
+      "showUntilWeek": 0,
+      "baseKmh": 21,
+      "perWeekKmh": 0.15,
+      "maxKmh": 24
+    },
+    "boneStimulus": {
+      "label": "Knochenreiz",
+      "dosage": "20–30 beidbeinige Sprünge, zügig, weich landen",
+      "frequency": "Freitag und Samstag, unter 1 min.",
+      "skipWeekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "placement": "An den Mobility-Flow gehängt, Freitag und Samstag – nicht am Tag vor einem Qualitätstag (also nicht Montag und Mittwoch).",
+      "note": "Radfahren ist nicht gewichtstragend und leistet für die Knochendichte nichts. Der Reiz, der dort wirkt, ist kurz, stoßhaltig und ermüdungsfrei – bei laufendem Kaloriendefizit der einzige Reiz im Programm, den das Rad prinzipiell nicht liefern kann.",
+      "progression": "Steigerung erst, wenn 30 Sprünge ohne Ermüdung und mit weicher Landung gelingen: dann einbeinig, wenige Wiederholungen je Seite."
+    },
+    "testTaper": {
+      "leadDays": 7,
+      "intro": "Testwoche: Montag nur Rumpf-Zirkel, Dienstag Pendeln ohne Abendeinheit, Mittwoch Pendeln in Z1 mit Öffnern, Donnerstag Test ohne Beintraining, Freitag Ruhe. Pacing aus dem letzten Test und den Schwelleneinheiten davor.",
+      "steps": [],
+      "goNoGoTitel": "Go/No-Go am Testmorgen",
+      "goNoGo": [
+        "Ruhepuls höchstens 5 bpm über dem Sieben-Tage-Schnitt",
+        "Kein Muskelkater in den Oberschenkeln",
+        "Zwei Nächte hintereinander mindestens 7 Stunden Schlaf",
+        "Kein Infekt im Anflug, unter 30 °C, kein Sturm"
+      ],
+      "goNoGoNote": "Alle vier Punkte müssen zutreffen. Der TSB ist bewusst kein Kriterium: bei einer CTL um 10 ist ein Wert über −10 rechnerisch kaum zu erreichen, ein solches Kriterium würde den Test dauerhaft blockieren.",
+      "shiftRule": "Fällt das Go/No-Go durch, wird nach hinten verschoben – ohne Ersatzeinheit und ohne Tausch. Testtag: Ruhe oder höchstens 40 min Z1. Der Test läuft dann am Samstag und ersetzt die lange Fahrt am Sonntag – nie zwei harte Tage hintereinander. Bei einer zweiten Absage: Test am Donnerstag der Folgewoche, die Woche wird zur Grundlagenwoche."
+    },
+    "coreCircuit": {
+      "prepSeconds": 10,
+      "roundRestSeconds": 60,
+      "wednesdayRounds": 2,
+      "exercises": [
+        {
+          "name": "Toter Käfer (Dead Bug)",
+          "mode": "reps",
+          "tempoSeconds": 5,
+          "alternating": true,
+          "video": "6BUVunRfJig",
+          "steps": [
+            "Rückenlage, Arme zeigen zur Decke, Knie 90° angewinkelt",
+            "Gegenüberliegenden Arm und Bein langsam absenken, ca. 2 s",
+            "Unterer Rücken bleibt flach am Boden, Rippen Richtung Becken",
+            "Ca. 2 s kontrolliert zurück zur Ausgangsposition",
+            "Jede Wiederholung wechselt die Seite – nicht erst nach der Hälfte"
+          ],
+          "goal": "Ziel: Kräftigt die tiefe Bauchmuskulatur, ohne den Rücken zu belasten."
+        },
+        {
+          "name": "Band auseinanderziehen (Band Pull-Apart)",
+          "mode": "reps",
+          "tempoSeconds": 3,
+          "alternating": false,
+          "video": "kES0rH2KtNo",
+          "steps": [
+            "Band mit beiden Händen vor der Brust halten",
+            "Arme auseinanderziehen, Schulterblätter zusammenziehen",
+            "Kontrolliert wieder zurückführen",
+            "Ca. 2 s ziehen und kurz halten, 1 s zurück",
+            "Schultern bleiben unten, kein Hochziehen zu den Ohren"
+          ],
+          "goal": "Ziel: Wichtig gegen das typische Einsinken in den Schultern bei langem Fahren."
+        },
+        {
+          "name": "Unterarmstütz (Plank)",
+          "mode": "hold",
+          "video": "CAscND0ee6Y",
+          "steps": [
+            "Unterarme und Zehen am Boden aufstützen",
+            "Körper bildet eine gerade Linie von Kopf bis Ferse",
+            "Bauchnabel Richtung Wirbelsäule ziehen",
+            "Po nicht hochschieben, Rücken nicht durchhängen lassen"
+          ],
+          "goal": "Ziel: Trainiert die gesamte Rumpfmuskulatur, die beim Rennrad die gebückte Haltung stützt.",
+          "stufenleiter": "unterarmstuetz"
+        },
+        {
+          "name": "Vierfüßlerstand diagonal (Bird Dog)",
+          "mode": "reps",
+          "tempoSeconds": 10,
+          "alternating": true,
+          "video": "qh48UejslYQ",
+          "steps": [
+            "Vierfüßlerstand, Bauch anspannen, Hand drückt den Boden weg",
+            "Arm und gegenüberliegendes Bein lang statt hoch ausstrecken – das Bein nur bis zur Waagerechten",
+            "Hand zur Faust ballen, 8 s halten und dabei Gesäß und Bauch fest",
+            "Hüfte bleibt waagerecht (ein Glas Wasser auf dem unteren Rücken), langsam zurück, Seite wechseln"
+          ],
+          "goal": "Ziel: Trainiert Koordination und tiefe Rückenmuskulatur."
+        },
+        {
+          "name": "Liegestütz (erhöht)",
+          "mode": "reps",
+          "tempoSeconds": 3,
+          "alternating": false,
+          "video": "zc811n_V-cs",
+          "steps": [
+            "Hände erhöht aufstützen – Höhe nach der aktuellen Stufe, nicht auf den Knien",
+            "Körper gerade von Kopf bis Ferse, Bauch fest",
+            "Ellbogen nah am Körper absenken, bis die Brust kurz vor der Auflage ist",
+            "Ca. 2 s absenken, 1 s hochdrücken – kein Schwung"
+          ],
+          "goal": "Ziel: Kräftigt Brust, Trizeps und Schultern – wichtig für Armhaltung und Stützkraft am Lenker.",
+          "stufenleiter": "liegestuetz"
+        },
+        {
+          "name": "Seitstütz links",
+          "mode": "hold",
+          "video": "ZRYKTCGI7BY",
+          "steps": [
+            "Auf einem Unterarm seitlich abstützen",
+            "Körper gestreckt, Hüfte anheben und halten",
+            "Oberen Arm zur Decke strecken für mehr Stabilität"
+          ],
+          "goal": "Ziel: Wichtig für seitliche Stabilität, verhindert Wackeln im Oberkörper beim Antritt.",
+          "stufenleiter": "seitstuetz"
+        },
+        {
+          "name": "Beckenheben (Glute Bridge)",
+          "mode": "reps",
+          "tempoSeconds": 3,
+          "alternating": false,
+          "video": "Frl3QaFCVu8",
+          "steps": [
+            "Rückenlage, Knie angewinkelt, Füße hüftbreit und flach am Boden",
+            "Fersen in den Boden drücken und das Becken anheben",
+            "Oben das Gesäß bewusst anspannen – Schulter, Hüfte und Knie bilden eine Linie",
+            "Nicht ins Hohlkreuz drücken: die Bewegung kommt aus der Hüfte, nicht aus dem Rücken",
+            "Ca. 1 s oben halten, dann kontrolliert absenken ohne ganz abzulegen",
+            "Später schwerer: oben 2–3 s halten, danach einbeinig (Single Leg Glute Bridge)"
+          ],
+          "goal": "Ziel: Kräftigt Gesäß und hintere Oberschenkel – die Muskeln, die auf dem Rad das Becken stabilisieren und den unteren Rücken entlasten. Radfahrer sind hier klassisch schwach, weil im Sattel kaum Hüftstreckung gegen Widerstand vorkommt."
+        },
+        {
+          "name": "Seitstütz rechts",
+          "mode": "hold",
+          "video": "ZRYKTCGI7BY",
+          "steps": [
+            "Auf einem Unterarm seitlich abstützen",
+            "Körper gestreckt, Hüfte anheben und halten",
+            "Oberen Arm zur Decke strecken für mehr Stabilität"
+          ],
+          "goal": "Ziel: Wichtig für seitliche Stabilität, verhindert Wackeln im Oberkörper beim Antritt.",
+          "stufenleiter": "seitstuetz"
+        }
+      ]
+    },
+    "texts": {
+      "mondayRest": "Montag kein Rad.",
+      "wellnessRule": "Wellness-Gate morgens vor jedem Qualitätstag (Di und Do) prüfen: Ruhepuls > 7-Tage-Schnitt + 5 bpm (abgeschlossener Wert des Vortags), HRV deutlich unter dem 7-Tage-Schnitt oder zwei Nächte unter 6 h Schlaf → die Qualitätseinheit wird 60 min Z2. Die HRV zählt erst als Auslöser, wenn mindestens vier Wochen Werte vorliegen. Zwei rote Tage hintereinander → die ganze Woche als Erholungswoche."
+    },
+    "kraft": {
+      "phasen": {
+        "K1": {
+          "name": "K1 – Technik",
+          "text": "Bewusst leicht, 3–4 Wiederholungen bleiben im Tank. Ziel ist saubere Bewegung ohne starken Muskelkater vor der Sonntagsfahrt."
+        },
+        "K2": {
+          "name": "K2 – Kraft",
+          "text": "1–3 Wiederholungen bleiben im Tank."
+        }
+      },
+      "programme": {
+        "beine": {
+          "titel": "Beine",
+          "dauer": "ca. 45 min",
+          "pauseSekunden": 150,
+          "pauseText": "2–3 min",
+          "aufwaermen": "5 min: Hüftbeuge am Stab 10 Wdh., Kelchkniebeuge mit leichter Kurzhantel 10 Wdh.",
+          "aufwaermUebungen": [
+            "hueftbeuge",
+            "kelchkniebeuge"
+          ],
+          "folge": [
+            {
+              "uebung": "rdl",
+              "saetze": {
+                "K1": 3,
+                "K2": 3
+              },
+              "saetzeText": {
+                "K2": "3–4"
+              },
+              "wdh": {
+                "K1": "8–10",
+                "K2": "6–8"
+              }
+            },
+            {
+              "uebung": "bulgarisch",
+              "saetze": {
+                "K1": 3,
+                "K2": 3
+              },
+              "saetzeText": {
+                "K2": "3–4"
+              },
+              "wdh": {
+                "K1": "8–10",
+                "K2": "6–8"
+              }
+            },
+            {
+              "uebung": "hueftheben",
+              "saetze": 3,
+              "wdh": {
+                "K1": "10",
+                "K2": "8–12"
+              }
+            },
+            {
+              "uebung": "waden",
+              "saetze": 3,
+              "wdh": {
+                "K1": "12",
+                "K2": "10–15"
+              }
+            }
+          ],
+          "hinweise": [
+            "Pause 2–3 min zwischen den Sätzen. Bei einbeinigen Übungen zählt der Seitenwechsel als Pause.",
+            "Muskelkater-Regel aus Plan 1: leichter, diffuser Muskelkater → unteres Ende der Spanne; ausgeprägter → Beine entfallen.",
+            "Kein Beintraining am Tag vor der langen Fahrt und nicht am Tag vor der VO2max-Einheit. Testwochen: entfällt."
+          ]
+        },
+        "oberkoerper": {
+          "titel": "Rumpf + Oberkörper",
+          "dauer": "ca. 35–40 min",
+          "pauseSekunden": 75,
+          "pauseText": "60–90 s",
+          "runden": 3,
+          "aufwaermen": "5 min: Band auseinanderziehen 2 × 15, Bird Dog 2 × 5 je Seite (überarbeitete Ausführung).",
+          "aufwaermUebungen": [
+            "bandPullApart",
+            "birdDog"
+          ],
+          "folge": [
+            {
+              "paar": "A",
+              "uebungen": [
+                {
+                  "uebung": "unterarmstuetz",
+                  "wdh": "20–40 s"
+                },
+                {
+                  "uebung": "klimmzug",
+                  "wdh": "3–5"
+                }
+              ]
+            },
+            {
+              "paar": "B",
+              "uebungen": [
+                {
+                  "uebung": "pallofPress",
+                  "wdh": "8–10 je Seite, 2 s halten"
+                },
+                {
+                  "uebung": "bankdruecken",
+                  "wdh": "8–10"
+                }
+              ]
+            },
+            {
+              "paar": "C",
+              "uebungen": [
+                {
+                  "uebung": "seitstuetz",
+                  "wdh": "20–40 s je Seite"
+                },
+                {
+                  "uebung": "rudern",
+                  "wdh": "8–10"
+                }
+              ]
+            },
+            {
+              "uebung": "koffertragen",
+              "saetze": 2,
+              "wdh": "30–40 m je Seite",
+              "abschluss": true
+            }
+          ],
+          "hinweise": [
+            "Supersätze: A1 und A2 im Wechsel, 60–90 s Pause nach jedem Paar, 3 Runden (Erholungswoche 2).",
+            "Ohne Klimmzugstange: Rudern mit Theraband statt Klimmzug."
+          ]
+        }
+      },
+      "uebungen": [
+        {
+          "key": "hueftbeuge",
+          "name": "Hüftbeuge am Stab",
+          "video": "_yP6R-1Tbsc",
+          "steps": [
+            "Besenstiel längs am Rücken: er berührt Hinterkopf, Brustwirbelsäule und Kreuzbein",
+            "Knie leicht gebeugt, Po nach hinten schieben, Oberkörper neigt sich nach vorn",
+            "Verliert der Stab einen der drei Kontakte, rundet der Rücken – dort ist die Bewegung zu Ende"
+          ],
+          "goal": "Lernübung für das Kreuzheben, jederzeit ohne Gewicht."
+        },
+        {
+          "key": "kelchkniebeuge",
+          "name": "Kelchkniebeuge (Goblet Squat)",
+          "video": "FQiMMHcWLLM",
+          "gewicht": true,
+          "steps": [
+            "Kurzhantel senkrecht vor der Brust, Füße schulterbreit",
+            "Hüfte nach hinten und unten, Ellbogen zwischen die Knie",
+            "Rücken gerade, Fersen am Boden"
+          ],
+          "goal": "Hier nur zum Aufwärmen."
+        },
+        {
+          "key": "rdl",
+          "name": "Rumänisches Kreuzheben mit Kurzhanteln",
+          "video": "n9HS63PRILs",
+          "gewicht": true,
+          "steps": [
+            "Aufrecht stehen, Kurzhanteln seitlich nah am Körper",
+            "Bauch anspannen, Knie leicht gebeugt und fest",
+            "Bewegung aus der Hüfte: Po nach hinten, die Hanteln gleiten nah an den Beinen nach unten",
+            "Nur so weit, wie der Rücken gerade bleibt – meist knapp unter dem Knie. Dehnung in der Oberschenkelrückseite",
+            "3 s nach unten, über das Gesäß aufrichten, oben nicht nach hinten lehnen"
+          ],
+          "goal": "Kurzhanteln statt Langhantel: die Last liegt näher am Schwerpunkt und belastet den unteren Rücken weniger."
+        },
+        {
+          "key": "bulgarisch",
+          "name": "Bulgarische Kniebeuge",
+          "video": "eP7C7XyE4ag",
+          "gewicht": true,
+          "jeSeite": true,
+          "steps": [
+            "Hinterer Fuß mit dem Spann auf der Bank, vorderer Fuß gut einen Schritt davor",
+            "Zwei Kurzhanteln seitlich, Oberkörper leicht nach vorn geneigt",
+            "Hinteres Knie senkrecht nach unten absenken, vorderes Knie bleibt über dem Mittelfuß",
+            "3 s runter, 1 s hoch. Eine Seite komplett, dann wechseln"
+          ],
+          "goal": "Einbeinige Kraft für Tritt und Sprint, schont den Rücken gegenüber der beidbeinigen Kniebeuge mit Last."
+        },
+        {
+          "key": "hueftheben",
+          "name": "Einbeiniges Hüftheben an der Bank",
+          "video": "jCQ8URhBiGg",
+          "gewicht": true,
+          "jeSeite": true,
+          "steps": [
+            "Schulterblätter auf der Bankkante, ein Fuß am Boden, das andere Bein angewinkelt in der Luft",
+            "Kurzhantel quer auf der Hüfte",
+            "Über die Ferse das Becken anheben, bis Oberkörper und Oberschenkel eine Linie bilden, oben das Gesäß anspannen",
+            "Nicht ins Hohlkreuz drücken – Rippen bleiben unten"
+          ],
+          "goal": "Kräftigt das Gesäß – der Hüftstrecker, der beim Treten die meiste Arbeit leistet."
+        },
+        {
+          "key": "waden",
+          "name": "Wadenheben einbeinig auf der Stufe",
+          "video": "lfyTq8ir2us",
+          "gewicht": true,
+          "jeSeite": true,
+          "steps": [
+            "Ballen auf der Stufe, Ferse tiefer als die Stufe",
+            "Kurzhantel in der Hand der Arbeitsseite, mit der anderen Hand balancieren",
+            "Langsam auf den Ballen heben, oben 1 s halten, ebenso langsam absenken"
+          ],
+          "goal": "Wade und Achillessehne – Kraft für den Tritt und Belastbarkeit im Alltag."
+        },
+        {
+          "key": "bandPullApart",
+          "name": "Band auseinanderziehen (Band Pull-Apart)",
+          "video": "kES0rH2KtNo",
+          "steps": [
+            "Theraband mit beiden Händen vor der Brust halten",
+            "Arme auseinanderziehen, Schulterblätter zusammen",
+            "Kontrolliert zurückführen, Schultern bleiben unten"
+          ],
+          "goal": "Aufwärmen der Schultern vor dem Oberkörpertraining."
+        },
+        {
+          "key": "birdDog",
+          "name": "Vierfüßlerstand diagonal (Bird Dog), überarbeitet",
+          "video": "qh48UejslYQ",
+          "jeSeite": true,
+          "steps": [
+            "Vierfüßlerstand, Bauch anspannen, Hand drückt den Boden weg",
+            "Arm und gegenüberliegendes Bein lang statt hoch ausstrecken – das Bein nur bis zur Waagerechten",
+            "Hand zur Faust ballen, 8 s halten und dabei Gesäß und Bauch fest",
+            "Hüfte bleibt waagerecht (ein Glas Wasser auf dem unteren Rücken), langsam zurück, Seite wechseln"
+          ],
+          "goal": "Eine der „Big 3“ des Rückenforschers Stuart McGill: Rumpfstabilität ohne Last auf der Wirbelsäule."
+        },
+        {
+          "key": "unterarmstuetz",
+          "name": "Unterarmstütz",
+          "video": "CAscND0ee6Y",
+          "einheit": "s",
+          "stufenleiter": "unterarmstuetz",
+          "steps": [
+            "Unterarme aufstützen – Höhe nach der aktuellen Stufe",
+            "Körper bildet eine gerade Linie von Kopf bis Ferse",
+            "Bauch und Gesäß fest, Rücken nicht durchhängen lassen"
+          ],
+          "goal": "Rumpfspannung. Haltezeit bis 40 s, gesteigert wird über die nächste Stufe, nicht über die Zeit."
+        },
+        {
+          "key": "klimmzug",
+          "name": "Klimmzug",
+          "video": "_F41mcwacS0",
+          "stufenleiter": "klimmzug",
+          "steps": [
+            "Obergriff, schulterbreit",
+            "Nur Absenken: mit Hilfe eines Stuhls oben starten, 5 s kontrolliert nach unten",
+            "Mit Theraband: Band über die Stange, Knie oder Fuß im Band",
+            "Schultern vor dem Ziehen nach unten ziehen"
+          ],
+          "goal": "Zugkraft für Rücken und Arme. Ohne Stange: Rudern mit Theraband."
+        },
+        {
+          "key": "rudernBand",
+          "name": "Rudern mit Theraband (ohne Stange)",
+          "video": "NL5EbYSEe5k",
+          "steps": [
+            "Band auf Brusthöhe befestigen, aufrecht davor stehen",
+            "Ellbogen nah am Körper nach hinten ziehen, Schulterblätter zusammen",
+            "Kontrolliert zurück"
+          ],
+          "goal": "Ersatz für den Klimmzug, solange die Stange fehlt."
+        },
+        {
+          "key": "pallofPress",
+          "name": "Rotationsstabiles Drücken mit Theraband (Pallof Press)",
+          "video": "UOECi8GFkgo",
+          "jeSeite": true,
+          "steps": [
+            "Band seitlich auf Brusthöhe befestigen, seitlich dazu stehen",
+            "Griff mit beiden Händen vor der Brust",
+            "Arme gerade nach vorn drücken, 2 s halten, zurück",
+            "Der Oberkörper darf sich nicht zum Band drehen"
+          ],
+          "goal": "Rumpf gegen Rotation stabilisieren – schonend für den Rücken."
+        },
+        {
+          "key": "bankdruecken",
+          "name": "Bankdrücken mit Kurzhanteln",
+          "video": "m_lhdbLuU1w",
+          "gewicht": true,
+          "steps": [
+            "Rücken auf der Bank, Füße fest am Boden, Schulterblätter zusammen",
+            "Hanteln seitlich der Brust absenken, Ellbogen ca. 45° vom Körper",
+            "Drücken, ohne die Ellbogen ganz durchzustrecken"
+          ],
+          "goal": "Druckkraft für Brust, Schultern und Arme – Muskelerhalt im Alter."
+        },
+        {
+          "key": "seitstuetz",
+          "name": "Seitstütz",
+          "video": "ZRYKTCGI7BY",
+          "einheit": "s",
+          "jeSeite": true,
+          "stufenleiter": "seitstuetz",
+          "steps": [
+            "Auf einem Unterarm seitlich abstützen – Beinhaltung nach der aktuellen Stufe",
+            "Körper gestreckt, Hüfte anheben und halten",
+            "Kopf, Hüfte und Füße auf einer Linie"
+          ],
+          "goal": "Seitliche Rumpfmuskulatur, eine der „Big 3“ nach McGill."
+        },
+        {
+          "key": "rudern",
+          "name": "Rudern einarmig an der Bank",
+          "video": "Ccs4xNjkxdA",
+          "gewicht": true,
+          "jeSeite": true,
+          "steps": [
+            "Knie und Hand einer Seite auf der Bank, Rücken gerade und waagerecht",
+            "Kurzhantel zur Hüfte ziehen (nicht zur Brust), Schulterblatt nach hinten unten",
+            "Oberkörper dreht nicht auf"
+          ],
+          "goal": "Oberer Rücken und Haltung – Gegengewicht zur Sitzhaltung auf dem Rad."
+        },
+        {
+          "key": "koffertragen",
+          "name": "Koffertragen",
+          "video": "W2PSdhNvjK0",
+          "einheit": "m",
+          "gewicht": true,
+          "jeSeite": true,
+          "steps": [
+            "Eine schwere Kurzhantel in einer Hand, aufrecht gehen",
+            "Schultern waagerecht, der Oberkörper neigt sich nicht zur Hantelseite",
+            "Langsame, ruhige Schritte"
+          ],
+          "goal": "Rumpf gegen seitliches Kippen, Griffkraft – Kraft für den Alltag."
+        }
+      ],
+      "stufenleitern": {
+        "liegestuetz": {
+          "name": "Liegestütz",
+          "stufen": [
+            "Hände auf der Arbeitsplatte",
+            "Hände auf der Bank",
+            "Hände auf einer niedrigen Stufe",
+            "Boden"
+          ]
+        },
+        "unterarmstuetz": {
+          "name": "Unterarmstütz",
+          "stufen": [
+            "Unterarme auf der Bank",
+            "Unterarme auf einer niedrigen Stufe",
+            "Boden",
+            "Boden mit Armheben"
+          ]
+        },
+        "seitstuetz": {
+          "name": "Seitstütz",
+          "stufen": [
+            "Auf den Knien",
+            "Ein Bein gestreckt, oberes Knie gebeugt",
+            "Voll gestreckt",
+            "Mit Beinheben"
+          ]
+        },
+        "klimmzug": {
+          "name": "Klimmzug",
+          "stufen": [
+            "Nur Absenken (5 s)",
+            "Mit Theraband",
+            "Frei"
+          ]
+        }
+      },
+      "regeln": {
+        "ruecken": [
+          "Rücken gerade. Bewegungsumfang nur so weit, wie der Rücken neutral bleibt.",
+          "Vor jeder Wiederholung einatmen und den Bauch anspannen.",
+          "Schmerzregel: während der Übung höchstens ein leichtes Ziehen von 2–3 auf einer Skala von 10, am nächsten Morgen wie vorher → in Ordnung.",
+          "Sofort aufhören bei stechendem Schmerz im Rücken, Ausstrahlung ins Bein, Taubheit oder Kribbeln – dann erst ärztlich oder physiotherapeutisch abklären lassen.",
+          "Nie morgens direkt nach dem Aufstehen – die Bandscheiben sind dann am stärksten mit Wasser gefüllt und empfindlicher.",
+          "Kippt die Form, ist der Satz zu Ende."
+        ],
+        "steigerung": "Doppelte Progression, in dieser Reihenfolge: 1. mehr Wiederholungen, bis das obere Ende der Spanne in allen Sätzen sauber gelingt – 2. langsamer absenken (3–4 s) – 3. 2 s Pause im untersten Punkt – 4. mehr Gewicht.",
+        "stufen": "Startstufe am ersten Montag: je Übung die Stufe, auf der 3 × 20 s (Liegestütz: 3 × 8) sauber gelingen. Weiterrücken, wenn Zielzeit (40 s) bzw. Zielwiederholungen in allen Runden sauber gelingen – an zwei Terminen hintereinander. Die Haltezeit bleibt bei 40 s gedeckelt.",
+        "gewicht": "Gewicht ergänzen voraussichtlich nach 2–3 Monaten, wenn die Bulgarische Kniebeuge auch mit langsamem Absenken und Pause zu leicht wird: dann 30–40 kg zusätzliche Scheiben für Kreuzheben und Hüftheben mit der Langhantel."
+      }
+    },
+    "weeks": [
+      {
+        "week": 1,
+        "typ": "B",
+        "block": 1,
+        "kraftPhase": "K1",
+        "soll": 390,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 195,
+              "hoehenmeter": {
+                "von": 500,
+                "bis": 600
+              },
+              "verpflegung": {
+                "gProStunde": "60",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 4 × 4 min + 6 Sprints",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 6,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 10,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Sitzen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 4,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 4,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 4,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "steps",
+              "art": "intervalle",
+              "title": "Rad – HFmax-Test",
+              "zone": "z5",
+              "steering": "Anstrengung – der höchste Pulswert zählt",
+              "note": "Statt der Schwelle. An einem gleichmäßigen Anstieg von mindestens 4 min. Messung möglichst mit Brustgurt – mit der Uhr am Handgelenk ist der Wert eine Untergrenze. Go/No-Go wie am Testmorgen; bei Nässe, Glätte oder Sturm auf Do 17.12. verschieben. Wer in den letzten Jahren kein Belastungs-EKG hatte, lässt vorher eine sportmedizinische Untersuchung machen. Danach: liegt der Wert über 180, „Max HR“ in intervals.icu und Garmin anpassen – die Pulszonen hängen weiter an der LTHR.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 12,
+                  "zone": "z12"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Zügig",
+                      "short": "Zügig",
+                      "minutes": 1,
+                      "zone": "z3",
+                      "effort": "zügig"
+                    },
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 1,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "warm",
+                  "label": "Zum Anstieg rollen",
+                  "short": "Zum Anstieg",
+                  "minutes": 2,
+                  "zone": "z1"
+                },
+                {
+                  "type": "work",
+                  "label": "Anstieg 1 – steigern von Z4 bis Z5",
+                  "short": "Anstieg 1 steigern",
+                  "minutes": 3,
+                  "zone": "z4",
+                  "effort": "von Z4 bis Z5 steigern"
+                },
+                {
+                  "type": "work",
+                  "label": "Anstieg 1 – letzte 60 s alles",
+                  "short": "Anstieg 1 alles",
+                  "minutes": 1,
+                  "zone": "z5",
+                  "effort": "alles",
+                  "say": "Letzte Minute. Alles geben."
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker zurückrollen",
+                  "short": "Zurückrollen",
+                  "minutes": 5,
+                  "zone": "z1"
+                },
+                {
+                  "type": "work",
+                  "label": "Anstieg 2 – steigern von Z4 bis Z5",
+                  "short": "Anstieg 2 steigern",
+                  "minutes": 3,
+                  "zone": "z4",
+                  "effort": "von Z4 bis Z5 steigern"
+                },
+                {
+                  "type": "work",
+                  "label": "Anstieg 2 – letzte 60 s alles",
+                  "short": "Anstieg 2 alles",
+                  "minutes": 1,
+                  "zone": "z5",
+                  "effort": "alles",
+                  "say": "Letzte Minute. Alles geben."
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 15,
+                  "zone": "z1"
+                }
+              ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 2,
+        "typ": "B",
+        "block": 1,
+        "kraftPhase": "K1",
+        "soll": 428,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 205,
+              "hoehenmeter": {
+                "von": 550,
+                "bis": 650
+              },
+              "verpflegung": {
+                "gProStunde": "60",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 5 × 4 min + 6 Sprints",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 6,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 10,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Sitzen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 5,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 4,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 4,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "steps",
+              "art": "intervalle",
+              "title": "Rad – Schwelle 3 × 12 min",
+              "zone": "z4",
+              "steering": "90–95 % FTP, Trittfrequenz 85–90 rpm",
+              "note": "Auf dem Cube, per Gleitzeit im Hellen. Band halten – keine „alles raus“-Schlusswiederholung, nicht verlängern. Kontrolle: Leistungsabfall Block 1 → letzter unter 5 %, Atmung kontrolliert. Höher wird die Vorgabe erst über die nächste FTP.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 15,
+                  "zone": "z12"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Schwelle",
+                      "short": "Schwelle",
+                      "minutes": 12,
+                      "zone": "z4",
+                      "power": "90–95 % FTP"
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Pause",
+                      "short": "Pause",
+                      "minutes": 5,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 3,
+        "typ": "E",
+        "block": 1,
+        "kraftPhase": "K1",
+        "soll": 340,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 150,
+              "hoehenmeter": {
+                "von": 275,
+                "bis": 325
+              },
+              "verpflegung": {
+                "gProStunde": "60",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 3 × 3 min + 4 Sprints (Erholungswoche)",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Die kurze, knackige Einheit der Erholungswoche. Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 4,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 10,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Sitzen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 3,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 3,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Grundlage Z2",
+              "minutes": 60,
+              "zone": "z2",
+              "rad": "cube",
+              "note": "Erholungswoche: Z2 statt Schwelle. Weihnachten: Der Donnerstag (24.12.) darf auf einen anderen Tag der Woche wandern."
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 4,
+        "typ": "B",
+        "block": 1,
+        "kraftPhase": "K1",
+        "soll": 443,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 220,
+              "hoehenmeter": {
+                "von": 600,
+                "bis": 700
+              },
+              "verpflegung": {
+                "gProStunde": "60",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 5 × 4 min + 8 Sprints",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 8,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 10,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Sitzen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 5,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 4,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 4,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "steps",
+              "art": "intervalle",
+              "title": "Rad – Schwelle 3 × 12 min",
+              "zone": "z4",
+              "steering": "90–95 % FTP, Trittfrequenz 85–90 rpm",
+              "note": "Silvester: Geht der Donnerstag 31.12. nicht, wandert die Schwelle auf Mi 30.12.; die Pendelfahrt am Mittwoch entfällt dann. Auf dem Cube, per Gleitzeit im Hellen. Band halten – keine „alles raus“-Schlusswiederholung, nicht verlängern. Kontrolle: Leistungsabfall Block 1 → letzter unter 5 %, Atmung kontrolliert. Höher wird die Vorgabe erst über die nächste FTP.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 15,
+                  "zone": "z12"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Schwelle",
+                      "short": "Schwelle",
+                      "minutes": 12,
+                      "zone": "z4",
+                      "power": "90–95 % FTP"
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Pause",
+                      "short": "Pause",
+                      "minutes": 5,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 5,
+        "typ": "B",
+        "block": 1,
+        "kraftPhase": "K2",
+        "soll": 467,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 235,
+              "hoehenmeter": {
+                "von": 650,
+                "bis": 750
+              },
+              "verpflegung": {
+                "gProStunde": "70",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 5 × 4 min + 8 Sprints",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 8,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 10,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Sitzen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 5,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 4,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 4,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "steps",
+              "art": "intervalle",
+              "title": "Rad – Schwelle 3 × 15 min",
+              "zone": "z4",
+              "steering": "90–95 % FTP, Trittfrequenz 85–90 rpm",
+              "note": "Auf dem Cube, per Gleitzeit im Hellen. Band halten – keine „alles raus“-Schlusswiederholung, nicht verlängern. Kontrolle: Leistungsabfall Block 1 → letzter unter 5 %, Atmung kontrolliert. Höher wird die Vorgabe erst über die nächste FTP.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 15,
+                  "zone": "z12"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Schwelle",
+                      "short": "Schwelle",
+                      "minutes": 15,
+                      "zone": "z4",
+                      "power": "90–95 % FTP"
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Pause",
+                      "short": "Pause",
+                      "minutes": 5,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 6,
+        "typ": "E",
+        "block": 1,
+        "kraftPhase": "K2",
+        "soll": 365,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 175,
+              "hoehenmeter": {
+                "von": 325,
+                "bis": 375
+              },
+              "verpflegung": {
+                "gProStunde": "70",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 3 × 3 min + 4 Sprints (Erholungswoche)",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Die kurze, knackige Einheit der Erholungswoche. Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 4,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 10,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Sitzen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 3,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 3,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Grundlage Z2",
+              "minutes": 60,
+              "zone": "z2",
+              "rad": "cube",
+              "note": "Erholungswoche: Z2 statt Schwelle."
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 7,
+        "typ": "B",
+        "block": 1,
+        "kraftPhase": "K2",
+        "soll": 472,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 245,
+              "hoehenmeter": {
+                "von": 700,
+                "bis": 800
+              },
+              "verpflegung": {
+                "gProStunde": "70",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – Kurzintervalle 30/15 3 × 10 + 8 Sprints",
+              "zone": "z5",
+              "steering": "125–135 % FTP, alle Wiederholungen einer Serie gleich stark",
+              "note": "Kalibrierung: so hart, dass alle Wiederholungen einer Serie gleich stark gelingen. Steigerung über die Zahl der Wiederholungen (10 → 13 pro Serie), dann über die Leistung. Auf dem Cube, im Dunkeln auf bekannter Strecke.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 8,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 15,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Stehen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "wiederhole": 10,
+                      "steps": [
+                        {
+                          "type": "work",
+                          "label": "30 s hart",
+                          "short": "30 s hart",
+                          "seconds": 30,
+                          "zone": "z5",
+                          "power": "125–135 % FTP"
+                        }
+                      ],
+                      "zwischen": [
+                        {
+                          "type": "rest",
+                          "label": "15 s locker",
+                          "short": "15 s locker",
+                          "seconds": 15,
+                          "zone": "z1"
+                        }
+                      ]
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Serienpause",
+                      "short": "Serienpause",
+                      "minutes": 3,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "steps",
+              "art": "intervalle",
+              "title": "Rad – Schwelle 3 × 15 min",
+              "zone": "z4",
+              "steering": "90–95 % FTP, Trittfrequenz 85–90 rpm",
+              "note": "Auf dem Cube, per Gleitzeit im Hellen. Band halten – keine „alles raus“-Schlusswiederholung, nicht verlängern. Kontrolle: Leistungsabfall Block 1 → letzter unter 5 %, Atmung kontrolliert. Höher wird die Vorgabe erst über die nächste FTP.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 15,
+                  "zone": "z12"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Schwelle",
+                      "short": "Schwelle",
+                      "minutes": 15,
+                      "zone": "z4",
+                      "power": "90–95 % FTP"
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Pause",
+                      "short": "Pause",
+                      "minutes": 5,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 8,
+        "typ": "B",
+        "block": 1,
+        "kraftPhase": "K2",
+        "soll": 482,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 260,
+              "hoehenmeter": {
+                "von": 750,
+                "bis": 850
+              },
+              "verpflegung": {
+                "gProStunde": "70",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 5 × 4 min + 8 Sprints",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 8,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 15,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Stehen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 5,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 4,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 4,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "steps",
+              "art": "intervalle",
+              "title": "Rad – Schwelle 2 × 20 min",
+              "zone": "z4",
+              "steering": "90–95 % FTP, Trittfrequenz 85–90 rpm",
+              "note": "Auf dem Cube, per Gleitzeit im Hellen. Band halten – keine „alles raus“-Schlusswiederholung, nicht verlängern. Kontrolle: Leistungsabfall Block 1 → letzter unter 5 %, Atmung kontrolliert. Höher wird die Vorgabe erst über die nächste FTP.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 15,
+                  "zone": "z12"
+                },
+                {
+                  "wiederhole": 2,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Schwelle",
+                      "short": "Schwelle",
+                      "minutes": 20,
+                      "zone": "z4",
+                      "power": "90–95 % FTP"
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Pause",
+                      "short": "Pause",
+                      "minutes": 5,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 9,
+        "typ": "E",
+        "block": 1,
+        "kraftPhase": "K2",
+        "soll": 330,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "zirkel",
+              "rounds": 2,
+              "title": "Rumpf-Zirkel (2 Runden)",
+              "note": "Testwoche: nur Zirkel, kein Oberkörper schwer."
+            }
+          ],
+          "fr": [
+            {
+              "kind": "ruhe",
+              "title": "Ruhetag",
+              "note": "Ruhe nach dem Test."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 195,
+              "hoehenmeter": {
+                "von": 375,
+                "bis": 425
+              },
+              "verpflegung": {
+                "gProStunde": "70",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Testwoche: Pendeln direkt, keine Abendeinheit."
+            }
+          ],
+          "mi": [
+            {
+              "kind": "steps",
+              "art": "z2",
+              "title": "Rad – Pendeln mit Öffnern",
+              "zone": "z1",
+              "steering": "kurz und spritzig – nicht all-out",
+              "note": "Pendeln 30–40 min Z1 mit 3 × 1 min zügig / 1 min locker. Kein Rumpf an diesem Tag.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einrollen",
+                  "short": "Einrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Zügig",
+                      "short": "Zügig",
+                      "minutes": 1,
+                      "zone": "z3",
+                      "effort": "zügig",
+                      "note": "Kurz und spritzig, nicht all-out."
+                    },
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 1,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Locker weiter",
+                  "short": "Locker",
+                  "minutes": 22,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "do": [
+            {
+              "kind": "test",
+              "title": "Rad – FTP-Test",
+              "minutes": 55,
+              "note": "FTP-Test, Protokoll wie in Plan 1 (Abschnitt 2a): gleiche Strecke, Cube, 2,5 bar. Pacing aus dem letzten Test und den Schwelleneinheiten davor. Kein Beintraining."
+            }
+          ]
+        }
+      },
+      {
+        "week": 10,
+        "typ": "B",
+        "block": 1,
+        "kraftPhase": "K2",
+        "soll": 492,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 270,
+              "hoehenmeter": {
+                "von": 800,
+                "bis": 900
+              },
+              "verpflegung": {
+                "gProStunde": "70–80",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – Kurzintervalle 30/15 3 × 13 + 10 Sprints",
+              "zone": "z5",
+              "steering": "125–135 % FTP, alle Wiederholungen einer Serie gleich stark",
+              "note": "Steigerung über die Zahl der Wiederholungen (10 → 13 pro Serie), dann über die Leistung. Auf dem Cube, im Dunkeln auf bekannter Strecke.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 10,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 15,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Stehen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "wiederhole": 13,
+                      "steps": [
+                        {
+                          "type": "work",
+                          "label": "30 s hart",
+                          "short": "30 s hart",
+                          "seconds": 30,
+                          "zone": "z5",
+                          "power": "125–135 % FTP"
+                        }
+                      ],
+                      "zwischen": [
+                        {
+                          "type": "rest",
+                          "label": "15 s locker",
+                          "short": "15 s locker",
+                          "seconds": 15,
+                          "zone": "z1"
+                        }
+                      ]
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Serienpause",
+                      "short": "Serienpause",
+                      "minutes": 3,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "steps",
+              "art": "intervalle",
+              "title": "Rad – Schwelle 2 × 20 min",
+              "zone": "z4",
+              "steering": "90–95 % FTP, Trittfrequenz 85–90 rpm",
+              "note": "Auf dem Cube, per Gleitzeit im Hellen. Band halten – keine „alles raus“-Schlusswiederholung, nicht verlängern. Kontrolle: Leistungsabfall Block 1 → letzter unter 5 %, Atmung kontrolliert. Höher wird die Vorgabe erst über die nächste FTP.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 15,
+                  "zone": "z12"
+                },
+                {
+                  "wiederhole": 2,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Schwelle",
+                      "short": "Schwelle",
+                      "minutes": 20,
+                      "zone": "z4",
+                      "power": "90–95 % FTP"
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Pause",
+                      "short": "Pause",
+                      "minutes": 5,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 11,
+        "typ": "B",
+        "block": 1,
+        "kraftPhase": "K2",
+        "soll": 512,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 280,
+              "hoehenmeter": {
+                "von": 850,
+                "bis": 950
+              },
+              "verpflegung": {
+                "gProStunde": "70–80",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 5 × 4 min + 10 Sprints",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 10,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 15,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Stehen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 5,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 4,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 4,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "steps",
+              "art": "intervalle",
+              "title": "Rad – Schwelle 2 × 25 min",
+              "zone": "z4",
+              "steering": "90–95 % FTP, Trittfrequenz 85–90 rpm",
+              "note": "Auf dem Cube, per Gleitzeit im Hellen. Band halten – keine „alles raus“-Schlusswiederholung, nicht verlängern. Kontrolle: Leistungsabfall Block 1 → letzter unter 5 %, Atmung kontrolliert. Höher wird die Vorgabe erst über die nächste FTP.",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 15,
+                  "zone": "z12"
+                },
+                {
+                  "wiederhole": 2,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Schwelle",
+                      "short": "Schwelle",
+                      "minutes": 25,
+                      "zone": "z4",
+                      "power": "90–95 % FTP"
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Pause",
+                      "short": "Pause",
+                      "minutes": 5,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      },
+      {
+        "week": 12,
+        "typ": "E",
+        "block": 1,
+        "kraftPhase": "K2",
+        "soll": 400,
+        "zirkel": {
+          "workSeconds": 40,
+          "restSeconds": 20,
+          "rounds": 2
+        },
+        "tage": {
+          "mo": [
+            {
+              "kind": "kraft",
+              "programm": "oberkoerper",
+              "title": "Kraft – Rumpf + Oberkörper"
+            }
+          ],
+          "fr": [
+            {
+              "kind": "optional",
+              "title": "Ruhetag oder lockere Fahrt",
+              "minMinutes": 30,
+              "maxMinutes": 40,
+              "zone": "z1",
+              "note": "Ruhe oder optional 30–40 min Z1. Knochenreiz am Mobility-Flow."
+            }
+          ],
+          "sa": [
+            {
+              "kind": "ruhe",
+              "title": "Frei",
+              "note": "Wird für andere Arbeiten gebraucht. Optional Mobility, Knochenreiz."
+            }
+          ],
+          "so": [
+            {
+              "kind": "lang",
+              "title": "Rad – Lange Fahrt",
+              "minutes": 210,
+              "hoehenmeter": {
+                "von": 425,
+                "bis": 475
+              },
+              "verpflegung": {
+                "gProStunde": "70–80",
+                "abMinuten": 90,
+                "note": "Ab 90 min Fahrzeit. In intervals.icu als carbs_ingested eintragen – Darmtraining für die 250-km-Tour."
+              },
+              "note": "Reines Z2 auf dem Cube, Sprechtest ist oberste Instanz, Decoupling Pw:HR höchstens 5 %. Zielkadenz 80–85 rpm."
+            }
+          ],
+          "di": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Ca. 13 km, nur Hinweg. Ohne Leistungs- und Kadenzsensor: Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "steps",
+              "zeit": "abends",
+              "art": "intervalle",
+              "title": "Rad – VO2max 3 × 3 min + 4 Sprints (Erholungswoche)",
+              "zone": "z5",
+              "steering": "112–116 % FTP, Atmung führt",
+              "note": "Die kurze, knackige Einheit der Erholungswoche. Auf dem Cube. Dezember bis Ende März im Dunkeln: bekannte, befestigte, verkehrsarme Strecke (Plan 1, Abschnitt 4.11).",
+              "steps": [
+                {
+                  "type": "warm",
+                  "label": "Einfahren",
+                  "short": "Einfahren",
+                  "minutes": 10,
+                  "zone": "z12",
+                  "note": "Nach 10 min Einfahren folgen die Sprints, vor dem Hauptteil."
+                },
+                {
+                  "wiederhole": 4,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "Sprint",
+                      "short": "Sprint",
+                      "seconds": 10,
+                      "zone": "z5",
+                      "sprint": true,
+                      "effort": "Sprint, maximal – im Sitzen",
+                      "note": "Rollender Start bei ca. 25 km/h."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Locker",
+                      "short": "Locker",
+                      "minutes": 3,
+                      "zone": "z1",
+                      "note": "Volle Erholung: 3–4 min locker."
+                    }
+                  ]
+                },
+                {
+                  "type": "rest",
+                  "label": "Locker vor dem Hauptteil",
+                  "short": "Locker",
+                  "minutes": 3,
+                  "zone": "z1"
+                },
+                {
+                  "wiederhole": 3,
+                  "steps": [
+                    {
+                      "type": "work",
+                      "label": "VO2max",
+                      "short": "VO2max",
+                      "minutes": 3,
+                      "zone": "z5",
+                      "power": "112–116 % FTP",
+                      "note": "Nachsteuerung nach Regel 7 aus Plan 1: Puls in den letzten 60 s der letzten zwei Wiederholungen gegen die LTHR – darunter +5 W, deutlich darüber mit Atmung am Limit −5 W. Atmung führt, Puls bestätigt."
+                    }
+                  ],
+                  "zwischen": [
+                    {
+                      "type": "rest",
+                      "label": "Erholung",
+                      "short": "Erholung",
+                      "minutes": 3,
+                      "zone": "z1"
+                    }
+                  ]
+                },
+                {
+                  "type": "cool",
+                  "label": "Ausrollen",
+                  "short": "Ausrollen",
+                  "minutes": 12,
+                  "zone": "z1"
+                }
+              ]
+            }
+          ],
+          "mi": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Pendeln, direkte Strecke",
+              "minutes": 40,
+              "zone": "z2",
+              "rad": "trekking",
+              "note": "Lockerster Fahrtag der Woche – er liegt zwischen den beiden Qualitätstagen. Sprechtest und Puls, HF-Z2. In intervals.icu als commute und „kein Powermeter“ taggen."
+            },
+            {
+              "kind": "zirkel",
+              "zeit": "abends",
+              "rounds": 2,
+              "title": "Rumpf kurz (Zirkel)",
+              "note": "Reine Erhaltung, keine eigene Steigerung. Stütz-Übungen in der jeweils aktuellen Stufe, Liegestütz erhöht – nicht auf den Knien."
+            }
+          ],
+          "do": [
+            {
+              "kind": "fahrt",
+              "title": "Rad – Grundlage Z2",
+              "minutes": 60,
+              "zone": "z2",
+              "rad": "cube",
+              "note": "Erholungswoche: Z2 statt Schwelle."
+            },
+            {
+              "kind": "kraft",
+              "programm": "beine",
+              "zeit": "abends",
+              "title": "Kraft – Beine",
+              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+            }
+          ]
+        }
+      }
+    ]
   }
 }

@@ -49,7 +49,7 @@ import { steadyMaske, driftAus, pulsMedian, lthrBestaetigt } from '../../../doma
 import { abschnittsRahmen, abschnittsAuswertung } from '../../../domain/abschnitte.js';
 import { wiederholungsRahmen, wiederholungsAuswertung } from '../../../domain/wiederholungen.js';
 import { buildDayInfo } from '../../../domain/day.js';
-import { isoDayLocal, toMidnight, weekNumberFor } from '../../../domain/week.js';
+import { isoDayLocal, toMidnight, weekNumberFor, planAm } from '../../../domain/week.js';
 import { isRide } from '../../../domain/analysis.js';
 import { verfassungAus } from '../../../domain/wellness.js';
 import { melde } from '../../../state/snackbar.js';
@@ -161,7 +161,14 @@ export function useTagesauswertung(acts){
          dastehen. */
       const zonenById = {};
       const teile = [];
-      const wk = Math.max(weekNumberFor(new Date(liste[0].start_date_local), start), 1);
+      /* Der Plan des Tages, nicht der von heute: eine Fahrt im November wird
+         gegen Plan 1 ausgewertet, eine im Dezember gegen Plan 2 - mit dessen
+         Wochenzaehlung und dessen Coggan-Beginn ab Woche 1. */
+      const tagDatum = new Date(liste[0].start_date_local);
+      const am = planAm(p, tagDatum, start);
+      const pt = am.plan;
+      const wk = Math.max(weekNumberFor(tagDatum, am.start), 1);
+      const tagInfo = buildDayInfo(p, th, tagDatum, start, varianten.value);
 
       for(const a of fahrten){
         let streams = null;
@@ -182,7 +189,7 @@ export function useTagesauswertung(acts){
            Leistungsmesser, das Trekkingrad nicht, und beide koennen an
            demselben Tag gefahren worden sein. */
         const hatWatt = !!(watt && hatLeistungsstrom(watt.data));
-        const { quelle, bands } = zonenBaender(p, th, wk, hatWatt);
+        const { quelle, bands } = zonenBaender(pt, th, wk, hatWatt);
 
         const strom = quelle === 'watt' ? watt : hr;
         if(bands && strom && Array.isArray(strom.data)){
@@ -195,7 +202,7 @@ export function useTagesauswertung(acts){
              sich bezieht - und genau daran ist die Warnung vom 12.09.2026
              gescheitert. */
           zonenById[a.id]._quelle = quelle;
-          zonenById[a.id]._wattAusgefallen = quelle !== 'watt' && wk >= p.cogganFromWeek;
+          zonenById[a.id]._wattAusgefallen = quelle !== 'watt' && wk >= pt.cogganFromWeek;
           if(quelle !== 'watt') pulsVorbehalte(zonenById[a.id], bands, hr, zeit, dauer, tempo,
                                                hatWatt, th, testLog.value);
         }
@@ -206,8 +213,11 @@ export function useTagesauswertung(acts){
            Abruf waere umsonst. Faellt er aus, sucht abschnitte.js die Bloecke
            selbst. */
         if(quelle === 'watt' && zonenById[a.id] && zeit){
-          const istSamstag = new Date(a.start_date_local).getDay() === 6;
-          const rahmen = abschnittsRahmen(p, th, wk, istSamstag);
+          /* Die lange Fahrt traegt die Bloecke - in Plan 1 am Samstag, in
+             Plan 2 am Sonntag. Gefragt wird der Plan des Tages, nicht der
+             Wochentag. */
+          const istLang = tagInfo.type === 'long';
+          const rahmen = abschnittsRahmen(pt, th, wk, istLang);
           /* Der Qualitaetstag wird nicht nach Abschnitten, sondern nach
              Wiederholungen bewertet: sein Zielband haengt seit Fassung 11 am
              Pulskriterium, und das liest sich je Wiederholung - siehe
@@ -215,8 +225,7 @@ export function useTagesauswertung(acts){
              Woche, damit die gewaehlte Variante mitzaehlt: am Donnerstag der
              Woche 5 sind es mit dem Maximalversuch vier Wiederholungen und
              ohne ihn fuenf. */
-          const wdhRahmen = wiederholungsRahmen(
-            buildDayInfo(p, th, new Date(a.start_date_local), start, varianten.value).target, th);
+          const wdhRahmen = wiederholungsRahmen(tagInfo.target, th);
           let runden = null;
           if((rahmen && rahmen.bloeckeSoll) || wdhRahmen){
             try { runden = await fetchIntervals(key, a.id); }

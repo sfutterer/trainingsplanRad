@@ -48,10 +48,11 @@
    anderen fehlen. */
 
 import {
-  weekNumberFor, weekIndex, phaseOf, isRecoveryWeek, isWinterBlock,
+  weekNumberFor, phaseOf, isRecoveryWeek, isWinterBlock,
   thursdayData, saturdayBlockData, tagDaten, dayOffset, testWeeks, testDateFor,
-  thursdayDateFor, isoDayLocal
+  thursdayDateFor, isoDayLocal, planAm, planWoche, addDays, startFuer
 } from './week.js';
+import { kraftDosis, kraftUebungen, satzZiel } from './kraft.js';
 import {
   zoneText, zoneSpan, targetText, zielLabel, withCadence,
   estimateDistance, showsDistance, cadenceText, cadenceTextTrekking,
@@ -71,8 +72,9 @@ export { schrittSekunden, schritteMinuten };
    massgeblich ist die Tabelle in plan.json. Die Gesamtdauer wird gerechnet,
    nicht gepflegt - sonst laufen zwei Zahlen auseinander. */
 export function thursdayPlan(plan, week){
-  const t = thursdayData(plan, week);
   const phase = phaseOf(plan, week);
+  if(plan.format === 2) return donnerstagPlan2(plan, week, phase);
+  const t = thursdayData(plan, week);
 
   if(t.kind === 'test'){
     return { kind:'test', week, phase, minutes: t.minutes, title: t.title, zone: t.zone };
@@ -148,7 +150,12 @@ export function saturdayBlocks(plan, week){
    Aufloesung liegen. Der Trainingsplan nennt die Wochensumme ebenso mit
    Variante. */
 export function weekPlanMinutes(plan, week){
-  const tage = plan.weeks[weekIndex(plan, week)].tage;
+  /* Plan 2 nennt sein Wochensoll ausdruecklich (Spalte "Soll" der
+     Wochentabelle). Gerechnet aus den Tagen kaeme mehr heraus: die Sprints
+     mit 3-4 min voller Erholung stehen im Ablauf des Dienstags, in der
+     Tabelle aber nicht - und der Deckel gilt fuer die Tabelle. */
+  if(plan.format === 2) return planWoche(plan, week).soll;
+  const tage = planWoche(plan, week).tage;
   const v = thursdayVariante(plan, week);
   const donnerstag = v ? schritteMinuten(v.steps) : thursdayPlan(plan, week).minutes;
   return tage.di.minutes + tage.mi.minutes + donnerstag
@@ -167,6 +174,15 @@ export function weekCapMinutes(plan, week){
 
    Rueckgabe auch am Testtag selbst, wo es keinen Schritt gibt: dort haengt die
    Go/No-Go-Liste dran. */
+/* Ein Anlaufschritt kann auf bestimmte Testwochen beschraenkt sein
+   ("wochen"). Seit Fassung 13 entfaellt der Tempotest vor dem Retest am
+   03.12. (Woche 16); vor den Tests am 10.09. und 22.10. stand er im Plan und
+   bleibt dort stehen - die Analyse dieser Tage rechnet gegen die Vorgabe,
+   die an ihnen galt. */
+export function schrittGiltFuer(s, week){
+  return !Array.isArray(s.wochen) || s.wochen.indexOf(week) >= 0;
+}
+
 export function testTaperFor(plan, date, startDate){
   const tt = plan.testTaper;
   if(!tt || !Array.isArray(tt.steps)) return null;
@@ -176,7 +192,7 @@ export function testTaperFor(plan, date, startDate){
     if(off > 1) continue;                 // dieser Test liegt zurueck
     if(off < -tt.leadDays) return null;   // der naechste ist noch zu weit weg
     return { week: w, date: d, offset: off,
-             step: tt.steps.find(s => s.offsetDays === off) || null };
+             step: tt.steps.find(s => s.offsetDays === off && schrittGiltFuer(s, w)) || null };
   }
   return null;
 }
@@ -377,7 +393,7 @@ export function isCoordinationDay(plan, date, startDate){
 export function koordinationsRest(plan, date, startDate){
   const n = plan.coordination?.everyNthDay;
   if(!(n > 0) || !date || !startDate) return null;
-  const tage = dayOffset(date, startDate);
+  const tage = dayOffset(date, startFuer(plan, startDate));
   return (((tage % n) + n) % n);
 }
 
@@ -889,7 +905,13 @@ function sonntag(c){
    und bleibt im Intervalltimer. */
 function schrittTag(c, sess, timer){
   const { plan, th, week } = c;
-  const arbeit = sess.steps.filter(x => x.type === 'work');
+  /* Sprints im Einfahren (Plan 2) sind Belastungsschritte fuer den Timer,
+     aber keine Wiederholungen des Hauptteils: die Auswertung sucht 5 x 4 min
+     und nicht 6 x 10 s dazu. */
+  const alleArbeit = sess.steps.filter(x => x.type === 'work');
+  const ohneSprint = alleArbeit.filter(x => !x.sprint);
+  const arbeit = ohneSprint.length ? ohneSprint : alleArbeit;
+  const sprints = alleArbeit.filter(x => x.sprint);
   const gesamt = sess.steps.reduce((n, x) => n + schrittSekunden(x), 0);
   const hart = arbeit.reduce((n, x) => n + schrittSekunden(x), 0);
   const zone = arbeit[0].zone;
@@ -900,6 +922,8 @@ function schrittTag(c, sess, timer){
     /* Nicht "5 × 5 min": die Bloecke der VO2max-Variante sind ungleich lang,
        und die Kennzahl ist die Zahl, die man vor dem Losfahren abliest. */
     { label:'Belastung', wert: ablaufText(arbeit.map(schrittSekunden)) },
+    ...(sprints.length && arbeit !== alleArbeit
+      ? [{ label:'Sprints', wert: ablaufText(sprints.map(schrittSekunden)) }] : []),
     sess.steering
       ? { label:'Steuergröße', wert: sess.steering }
       : { label: zielLabel(th),    wert: targetText(plan, th, zone, week) }
@@ -924,7 +948,7 @@ function schrittTag(c, sess, timer){
        dort notiert. Der Intervalltimer kennt sie weiterhin, er ist nur nicht
        mehr die Stelle, an die die Tageskarte fuehrt. */
     einheiten: [einheit({
-      art, titel: sess.title, kennzahlen, bloecke,
+      art, titel: sess.title, zeit: sess.zeit || null, kennzahlen, bloecke,
       hinweise: sess.note ? [sess.note] : [],
       timer
     })],
@@ -1094,7 +1118,17 @@ const ART_JE_TYP = {
 /* getDay() zaehlt ab Sonntag. */
 const TAGE = [sonntag, montag, dienstag, mittwoch, donnerstag, freitag, samstag];
 
-export function buildDayInfo(plan, th, date, startDate, wahlen){
+export function buildDayInfo(planEin, th, date, startEin, wahlen){
+  /* Welcher Plan an diesem Tag gilt, entscheidet der Tag - nicht der
+     Aufrufer. Bis zum 04.12.2026 Plan 1 mit dem Planbeginn aus den
+     Einstellungen, ab dem Uebergangswochenende Plan 2 mit seinem festen
+     Beginn am Montag, 07.12.2026. Der Kalender blaettert ueber die Grenze,
+     die Analyse wertet Tage aus beiden Plaenen aus - beide reichen denselben
+     Plan und denselben Planbeginn herein. */
+  const am = planAm(planEin, date, startEin);
+  const plan = am.plan, startDate = am.start;
+  const sonder = plan.format === 2 ? (plan.sondertage[isoDayLocal(date)] || null) : null;
+
   /* Vor dem Planbeginn klemmt weekNumberFor auf Woche 1 und liefert damit
      einen vollstaendigen Trainingstag fuer ein Datum, an dem der Plan noch
      gar nicht lief. In der alten Ansicht fiel das nie auf, weil sie nur
@@ -1102,7 +1136,7 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
      zurueckblaettern. Die Klemmung bleibt - alle uebrigen Felder haengen an
      einer gueltigen Wochennummer -, aber der Tag wird als solcher markiert
      und von der Anzeige neutral dargestellt. */
-  const vorStart = weekNumberFor(date, startDate) < 1;
+  const vorStart = weekNumberFor(date, startDate) < 1 && !sonder;
   const week = Math.max(weekNumberFor(date, startDate), 1);
 
   const c = {
@@ -1135,7 +1169,7 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
      nebeneinander, beide lasen dieselben Felder, und keine von beiden wusste
      von der anderen: wer eine Zahl in der Anzeige aenderte, musste die zweite
      Stelle finden, an der sie in die Auswertung ging. */
-  let geplant = TAGE[date.getDay()](c);
+  let geplant = plan.format === 2 ? planZweiTag(c, date, sonder) : TAGE[date.getDay()](c);
 
   /* Die Variante tritt an die Stelle des Regelfalls, wenn sie gewaehlt wurde -
      vor dem Anlauf, weil der Anlauf den ganzen Tag ersetzt und nicht eine
@@ -1157,8 +1191,13 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
     ? anlaufEinheit(c, taper, geplant)
     : geplant;
 
-  info.week = week;
+  /* Das Uebergangswochenende vor Woche 1 von Plan 2 gehoert zu keiner
+     Woche: Woche 0, damit es weder in die Wochensumme von Woche 1 faellt
+     noch in den Deckel. */
+  info.week = sonder ? 0 : week;
   info.vorStart = vorStart;
+  info.planKennung = plan.kennung;
+  info.planName = plan.name;
   if(variante) info.variante = variante;
   info.phase = c.phase;
   info.recovery = c.recovery;
@@ -1186,6 +1225,16 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
      lesen. */
   info.tagHinweise = [];
   info.hinweise = info.einheiten.flatMap(e => e.hinweise);
+  /* Plan 2 ist nur fuer den laufenden Block wochengenau ausgearbeitet. Eine
+     spaetere Woche zeigt die Form einer ausgearbeiteten Woche - und sagt das. */
+  if(plan.format === 2 && !sonder && week > plan.weekCount && plan.fortschreibung){
+    info.tagHinweise.push(plan.fortschreibung.hinweis);
+    info.hinweise.push(plan.fortschreibung.hinweis);
+  }
+  if(sonder && sonder.hinweis){
+    info.tagHinweise.push(sonder.hinweis);
+    info.hinweise.push(sonder.hinweis);
+  }
 
   /* Die drei Knopfmarken bleiben abgeleitet stehen: sie sind seit dem Umbau
      eine Aussage ueber den Tag ("hier gibt es etwas zu zaehlen"), waehrend der
@@ -1207,4 +1256,281 @@ export function buildDayInfo(plan, th, date, startDate, wahlen){
     if(satz){ info.tagHinweise.push(satz); info.hinweise.push(satz); }
   }
   return info;
+}
+
+/* ==== Plan 2 ====
+
+   Plan 2 (ab 07.12.2026) beschreibt jeden Tag als Liste von Einheiten in
+   plan.json - Pendeln, Qualitaetseinheit, lange Fahrt, Kraft, Zirkel, Ruhe.
+   Die Woche laeuft Montag bis Sonntag, und alle sieben Tage tragen etwas:
+   der Montag Rumpf und Oberkoerper, der Samstag ist ausdruecklich frei.
+   Die Tagesfunktionen von Plan 1 bleiben fuer die gefahrenen Wochen stehen -
+   die Analyse eines Tages im Oktober muss gegen die Vorgabe rechnen, die
+   damals galt.
+
+   Was eine Einheit ist, entscheidet ihr "kind":
+     ruhe       Ruhetag oder freier Tag
+     optional   lockere Fahrt, die auch entfallen darf (Freitag)
+     fahrt      Fahrt nach Dauer und Zone, z. B. Pendeln auf dem Trekkingrad
+     lang       die lange Fahrt am Sonntag, mit Hoehenmetern und Verpflegung
+     steps      Schrittfolge fuer den Intervalltimer (VO2max, Schwelle,
+                30/15, HFmax-Test, Oeffner)
+     test       der FTP-Test aus thresholdTest
+     kraft      ein Programm aus folgeplan.kraft (Beine, Rumpf + Oberkoerper)
+     zirkel     der Rumpfzirkel aus Plan 1, kurz
+
+   Gebaut wird mit denselben Bausteinen wie in Plan 1, damit Tageskarte,
+   Glocke, Timer und Analyse nichts Neues lernen muessen. */
+
+const TAG_KUERZEL = ['so', 'mo', 'di', 'mi', 'do', 'fr', 'sa'];
+
+function timerKraft(programm){
+  return { art:'kraft', ziel:'training', baustein:'leg', label:'Kraft-Timer öffnen', programm };
+}
+
+function einheitenAm(plan, date, week, sonder){
+  if(sonder) return sonder.einheiten || [];
+  return tagDaten(plan, week, TAG_KUERZEL[date.getDay()]);
+}
+
+function istQualitaet(u){
+  return !!u && (u.kind === 'test' || (u.kind === 'steps' && (u.art || 'intervalle') === 'intervalle'));
+}
+
+function zoneDerFahrt(plan, th, week, zone, rad){
+  const t = targetText(plan, th, zone, week);
+  const cad = rad === 'trekking' ? cadenceTextTrekking(plan, zone, week) : cadenceText(plan, zone, week);
+  return cad ? t + ' · ' + cad : t;
+}
+
+const BAU2 = {
+  ruhe(c, u){
+    return { typ:'rest', einheit: einheit({
+      art:'ruhe', titel: u.title || 'Ruhetag',
+      kennzahlen: [{ label:'Umfang', wert: u.umfang || 'frei' }],
+      hinweise: [u.note]
+    }) };
+  },
+  optional(c, u){
+    const { plan, th, week } = c;
+    return { typ:'restopt', einheit: einheit({
+      art:'locker', titel: u.title || 'Ruhetag oder lockere Fahrt',
+      kennzahlen: [
+        { label:'Umfang', wert:`optional ${u.minMinutes}–${u.maxMinutes} min` },
+        { label: zielLabel(th), wert: targetText(plan, th, u.zone, week) }
+      ],
+      bloecke: [{ label:'Lockere Fahrt (optional)',
+        wert:`${u.minMinutes}–${u.maxMinutes} min · ${zoneText(plan, th, u.zone, week)}`,
+        hinweis: u.note || 'Sonst frei.' }]
+    }), soll: { sport:'optional', minutes: Math.round((u.minMinutes + u.maxMinutes) / 2), zone: u.zone } };
+  },
+  fahrt(c, u){
+    const { plan, th, week } = c;
+    const trekking = u.rad === 'trekking';
+    const kennzahlen = rideKennzahlen(plan, th, week, u.minutes, u.zone, trekking);
+    if(u.rad) kennzahlen.push({ label:'Rad', wert: trekking ? 'Trekkingrad, ohne Leistungsmesser' : 'Cube' });
+    return { typ:'ride', einheit: einheit({
+      art:'z2', titel: u.title, zeit: u.zeit || null, kennzahlen,
+      bloecke: [{ label: u.blockLabel || 'Fahrt',
+        wert:`${u.minutes} min · ${zoneDerFahrt(plan, th, week, u.zone, u.rad)}`, hinweis: u.note || undefined }],
+      hinweise: u.hinweise || []
+    }), fahrMinuten: u.minutes, zone: u.zone };
+  },
+  lang(c, u){
+    const { plan, th, week, recovery } = c;
+    const kennzahlen = rideKennzahlen(plan, th, week, u.minutes, 'z2');
+    const hm = u.hoehenmeter;
+    if(hm) kennzahlen.push({ label:'Höhenmeter', wert: hm.bis > 0 ? `${hm.von}–${hm.bis} hm` : 'flach' });
+    const v = u.verpflegung;
+    if(v) kennzahlen.push({ label:'Verpflegung', wert:`${v.gProStunde} g KH pro Stunde ab ${v.abMinuten} min` });
+    const bl = recovery ? null : (u.bloecke || null);
+    const bloecke = [{ label:'Lange Fahrt', wert:`${u.minutes} min · ${c.z2()}`, hinweis: u.note || undefined }];
+    if(bl){
+      const bw = blockWattBand(plan, th, bl);
+      bloecke.push({ label:`${bl.reps}× ${bl.minutes} min Tempo`,
+        wert: bw ? bw.text : zoneText(plan, th, 'z3', week),
+        hinweis:(bw && bw.herkunft ? bw.herkunft + '. ' : '') +
+                (bl.note || `Im letzten Drittel der Fahrt, ${bl.restMinutes} min locker dazwischen.`) });
+    }
+    if(v && v.note) bloecke.push({ label:'Verpflegung', wert:`${v.gProStunde} g/h`, hinweis: v.note });
+    return { typ:'long', einheit: einheit({
+      art:'lang', titel: u.title || 'Lange Fahrt', kennzahlen, bloecke,
+      hinweise: u.hinweise || []
+    }), soll: { sport:'ride', minutes: u.minutes, km: estimateDistance(plan, u.minutes, week),
+                zone:'z2', hardMinutes: bl ? bl.reps * bl.minutes : 0, hardZone:'z3',
+                verpflegung: v ? v.gProStunde : null } };
+  },
+  steps(c, u){
+    const info = schrittTag(c, u, TIMER_INTERVALLE);
+    return { typ: info.type, einheit: info.einheiten[0], soll: info.target,
+             qualitaet: istQualitaet(u), art: info.art };
+  },
+  test(c, u){
+    const { plan, th, week, T } = c;
+    const t = { title: u.title || 'Rad – FTP-Test',
+                minutes: u.minutes || schritteMinuten(plan.thresholdTest.steps) };
+    const steuer = plan.thresholdTest && plan.thresholdTest.steering;
+    const hinweise = [u.note || T.thursdayTest];
+    let checkliste = null;
+    const tt = plan.testTaper;
+    if(tt){
+      checkliste = { titel: tt.goNoGoTitel, punkte: tt.goNoGo, note: tt.goNoGoNote };
+      hinweise.push(tt.shiftRule);
+    }
+    return { typ:'interval', art:'test', qualitaet: true, checkliste, einheit: einheit({
+      art:'test', titel: t.title,
+      kennzahlen: [
+        { label:'Dauer',       wert: t.minutes + ' min' },
+        { label:'Testfenster', wert:'20 min gleichmäßig maximal' },
+        steuer ? { label:'Steuergröße', wert: steuer }
+               : { label: zielLabel(th), wert: targetText(plan, th, 'z4', week) }
+      ],
+      bloecke: schrittBloecke(plan, th, week, plan.thresholdTest?.steps ?? []),
+      hinweise, timer: TIMER_TEST
+    }), soll: { sport:'ride', zone:'z4', minutes: t.minutes, test:true,
+                hardMinutes:20, reps:1, repMinutes:20, ablauf:'20 min gleichmäßig maximal' } };
+  },
+  kraft(c, u){
+    const { plan, week } = c;
+    const d = kraftDosis(plan, week, u.programm, u);
+    if(!d) return null;
+    const uebungen = kraftUebungen(d);
+    const saetze = d.gruppen.reduce((n, g) => n + g.runden * g.uebungen.length, 0);
+    const bloecke = d.gruppen.map(g => (g.paar
+      ? { label:`Paar ${g.paar}: ${g.uebungen.map(x => x.name).join(' + ')}`,
+          wert:`${g.runden} Runden · ${g.uebungen.map(satzZiel).join(' / ')}`,
+          hinweis:`Im Wechsel, ${d.pauseText || d.pauseSek + ' s'} Pause nach dem Paar.` }
+      : { label: g.uebungen[0].name,
+          wert:`${g.uebungen[0].saetzeText && !d.reduziert ? g.uebungen[0].saetzeText : g.runden} × ${satzZiel(g.uebungen[0])}` }));
+    if(d.aufwaermen) bloecke.unshift({ label:'Aufwärmen', wert: d.aufwaermen });
+    const hinweise = [u.note, d.phaseInfo ? d.phaseInfo.name + ': ' + d.phaseInfo.text : null];
+    if(d.reduziert) hinweise.push('Erholungswoche: 2 Sätze bzw. Runden, gleiches Gewicht.');
+    return { typ:'core', einheit: einheit({
+      art:'rumpf', titel: u.title || ('Kraft – ' + d.titel), zeit: u.zeit || null,
+      kennzahlen: [
+        { label:'Dauer', wert: d.dauer || '' },
+        { label:'Umfang', wert:`${uebungen.length} Übungen · ${saetze} Sätze` },
+        { label:'Phase', wert: d.phaseInfo ? d.phaseInfo.name : d.phase }
+      ].filter(k => k.wert),
+      bloecke, hinweise, timer: timerKraft(u.programm)
+    }), kraft: { programm: u.programm, saetze } };
+  },
+  zirkel(c, u){
+    const { plan, week, exCount } = c;
+    const rounds = u.rounds || plan.circuit.wednesdayRounds;
+    const titel = u.title || 'Rumpf-Zirkel (kurz)';
+    return { typ:'core', einheit: einheit({
+      art:'rumpf', titel, zeit: u.zeit || null,
+      kennzahlen: circuitKennzahlen(plan, week, rounds, exCount),
+      bloecke: [circuitBlock(plan, week, rounds, titel, u.note)],
+      hinweise: u.hinweise || [],
+      timer: TIMER_RUMPF
+    }), zirkel: { rounds, minutes: coreMinutes(plan, week, rounds),
+                  workSec: coreWorkSeconds(plan, week), restSec: coreRestSeconds(plan, week) } };
+  }
+};
+
+const TYP_RANG = ['interval', 'long', 'ride', 'core', 'restopt', 'rest'];
+
+function planZweiTag(c, date, sonder){
+  const { plan, week } = c;
+  const roh = einheitenAm(plan, date, week, sonder);
+  const teile = roh.map(u => (BAU2[u.kind] ? BAU2[u.kind](c, u) : null)).filter(Boolean);
+  if(!teile.length) teile.push(BAU2.ruhe(c, { title:'Ruhetag' }));
+
+  const typ = TYP_RANG.find(t => teile.some(x => x.typ === t)) || 'rest';
+  const titel = sonder && sonder.titel ? sonder.titel
+    : teile.map((x, i) => (i === 0 ? x.einheit.titel : x.einheit.titel.replace(/^Rad – /, ''))).join(' + ');
+
+  const info = { type: typ, title: titel, einheiten: teile.map(x => x.einheit) };
+  const test = teile.find(x => x.art === 'test');
+  if(test){ info.art = 'test'; if(test.checkliste) info.checkliste = test.checkliste; }
+  else if(typ === 'interval') info.art = 'intervalle';
+
+  /* Der Sollwert des Tages. Gefahren wird an einem Tag oft zweimal - am
+     Dienstag das Pendeln und abends die Qualitaetseinheit -, und die Analyse
+     rechnet die Fahrten eines Tages zusammen. Die Haupteinheit traegt
+     deshalb das Soll, und die uebrigen Fahrminuten kommen dazu. */
+  const haupt = teile.find(x => x.qualitaet) || teile.find(x => x.typ === 'long')
+             || teile.find(x => x.soll && x.soll.sport === 'ride');
+  const fahrten = teile.filter(x => x.fahrMinuten);
+  const zirkel = teile.find(x => x.zirkel);
+  const kraft = teile.find(x => x.kraft);
+  let soll;
+  if(haupt){
+    soll = { ...haupt.soll };
+    soll.minutes = (soll.minutes || 0) + fahrten.reduce((n, x) => n + x.fahrMinuten, 0);
+  } else if(fahrten.length && zirkel){
+    soll = { sport:'core', ...zirkel.zirkel, legRounds: 0,
+             rideMinutes: fahrten.reduce((n, x) => n + x.fahrMinuten, 0),
+             rideZone: fahrten[0].zone, rideMinimum: true };
+  } else if(fahrten.length){
+    const min = fahrten.reduce((n, x) => n + x.fahrMinuten, 0);
+    soll = { sport:'ride', minutes: min, zone: fahrten[0].zone,
+             km: estimateDistance(plan, min, week) };
+  } else if(zirkel){
+    soll = { sport:'core', ...zirkel.zirkel, legRounds: 0 };
+  } else if(kraft){
+    soll = { sport:'kraft' };
+  } else {
+    const opt = teile.find(x => x.soll && x.soll.sport === 'optional');
+    soll = opt ? opt.soll : { sport:'rest' };
+  }
+  if(kraft) soll.kraft = kraft.kraft.programm;
+  if(zirkel && soll.sport !== 'core') soll.zirkel = zirkel.zirkel.rounds;
+  info.target = soll;
+
+  /* Das Wellness-Gate: entschieden wird am Morgen jedes Qualitaetstags
+     (Dienstag und Donnerstag), vorgewarnt am Tag davor. */
+  if(teile.some(x => x.qualitaet)){
+    info.wellness = { rolle:'entscheidung', donnerstag: test ? 'test' : 'qualitaet' };
+  } else {
+    const morgen = addDays(date, 1);
+    const wMorgen = Math.max(weekNumberFor(morgen, plan.start), 1);
+    const sMorgen = plan.sondertage[isoDayLocal(morgen)] || null;
+    const uMorgen = einheitenAm(plan, morgen, wMorgen, sMorgen);
+    if(uMorgen.some(istQualitaet)){
+      info.wellness = { rolle:'vorschau',
+                        donnerstag: uMorgen.some(u => u.kind === 'test') ? 'test' : 'qualitaet' };
+    }
+  }
+  return info;
+}
+
+/* Der Donnerstag von Plan 2 in der Form, in der test.js ihn von Plan 1
+   kennt. */
+function donnerstagPlan2(plan, week, phase){
+  const units = tagDaten(plan, week, 'do');
+  const t = units.find(u => u.kind === 'test');
+  if(t){
+    return { kind:'test', week, phase, zone:'z4', title: t.title || 'Rad – FTP-Test',
+             minutes: t.minutes || schritteMinuten(plan.thresholdTest.steps) };
+  }
+  const s = units.find(u => u.kind === 'steps');
+  if(s){
+    return { kind:'steps', phase, zone: s.zone || 'z4', title: s.title, steps: s.steps,
+             art: s.art || null, steering: s.steering || null, note: s.note || null,
+             minutes: schritteMinuten(s.steps) };
+  }
+  const f = units.find(u => u.kind === 'fahrt');
+  return { kind:'z2', phase, zone:'z2', minutes: f ? f.minutes : 0,
+           title: f ? f.title : 'Rad – Grundlage' };
+}
+
+/* Die Einheit, die der Intervalltimer an einem Tag zaehlen soll: die des
+   Tages selbst, sonst die naechste dieser Woche, sonst die erste. In Plan 1
+   war das immer der Donnerstag; in Plan 2 sind es Dienstag und Donnerstag,
+   dazu die Oeffner am Mittwoch der Testwoche und der HFmax-Test. */
+export function timerEinheitPlan2(plan, date){
+  const week = Math.max(weekNumberFor(date, plan.start), 1);
+  const montag = addDays(plan.start, (week - 1) * 7);
+  const mitTimer = u => !!u && (u.kind === 'test' || u.kind === 'steps');
+  const tage = [];
+  for(let i = 0; i < 7; i++){
+    const d = addDays(montag, i);
+    const sonder = plan.sondertage[isoDayLocal(d)] || null;
+    const u = einheitenAm(plan, d, week, sonder).find(mitTimer);
+    if(u) tage.push({ datum: d, einheit: u, offset: dayOffset(d, date) });
+  }
+  return tage.find(t => t.offset === 0) || tage.find(t => t.offset > 0) || tage[0] || null;
 }

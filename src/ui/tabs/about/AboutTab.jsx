@@ -72,6 +72,18 @@ export function AboutTab(){
                  der Fahrt. Der Stil steht in den Einstellungen unter Darstellung.</p>
             </>
           } />
+        <Zeile titel="YouTube" wert="Übungsvideos · kein Schlüssel"
+          hilfe={
+            <>
+              <p>Jede Übung zeigt ein deutschsprachiges Video. Zuerst steht nur das Vorschaubild
+                 da, geladen von i.ytimg.com – dabei sieht YouTube, welches Video angezeigt wird.</p>
+              <p>Der Player selbst wird erst beim Antippen geladen, über
+                 <b> youtube-nocookie.com</b>: YouTube setzt dann keine Cookies, bevor das Video
+                 abgespielt wird. Trainingsdaten gehen dorthin keine.</p>
+              <p>Ohne Netz bleibt statt des Videos eine Kachel mit dem Namen der Übung stehen; die
+                 Anleitung in Schritten steht immer darunter.</p>
+            </>
+          } />
         <Zeile titel="Google" wert="Anmeldung · Client-ID optional"
           hilfe={
             <>
@@ -122,6 +134,8 @@ export function AboutTab(){
                     alles aus derselben Datenbasis.</p>} />
         <Zeile titel="Karte" wert="Leaflet · BSD 2-Clause" />
         <Zeile titel="Oberfläche" wert="Preact · MIT" />
+        <Zeile titel="Übungsvideos" wert="YouTube, die jeweiligen Kanäle"
+          hilfe={<p>Die Videos gehören ihren Urhebern und werden nur eingebettet; der Kanal steht im Player.</p>} />
       </Gruppe>
     </>
   );

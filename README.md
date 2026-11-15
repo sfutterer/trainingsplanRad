@@ -38,7 +38,54 @@ Beim Laden wird geprüft. Ist etwas falsch, zeigt die App eine Meldung mit dem
 beanstandeten Feld und **keine Zahlen** – lieber gar keine Vorgabe als eine
 falsche.
 
-### Aufbau einer Woche
+### Zwei Pläne in einer Datei
+
+Seit dem 15.11.2026 trägt `plan.json` zwei Pläne: Plan 1 (16 Wochen ab
+15.08.2026, Woche Samstag bis Freitag) und unter `folgeplan` seinen
+Nachfolger, **Plan 2** (`TRAININGSPLAN_2.md`): Übergangswochenende 05./06.12.,
+Woche 1 ab **Montag, 07.12.2026**, die Woche läuft **Montag bis Sonntag** – wie
+die Wochen in intervals.icu.
+
+Welcher Plan an einem Tag gilt, entscheidet `planAm` in `src/domain/week.js`
+– nicht der Aufrufer. Alles, was „heute“ meint (Training, Intervalle, Test,
+Zonen), sieht den Plan von heute; Kalender und Analyse fragen je Tag, und eine
+Fahrt im November wird gegen Plan 1 ausgewertet, eine im Dezember gegen Plan 2.
+
+Plan 2 erbt Zonen, Kadenz, Timer, Test und Körperblöcke von Plan 1, solange er
+sie nicht selbst nennt. Seine Tage sind Listen von Einheiten:
+
+```json
+"tage": {
+  "mo": [{ "kind": "kraft", "programm": "oberkoerper" }],
+  "di": [{ "kind": "fahrt", "title": "Rad – Pendeln", "minutes": 40, "zone": "z2", "rad": "trekking" },
+         { "kind": "steps", "zeit": "abends", "title": "Rad – VO2max …", "steps": [ … ] }],
+  "mi": [ … ], "do": [ … ], "fr": [ … ], "sa": [{ "kind": "ruhe", "title": "Frei" }],
+  "so": [{ "kind": "lang", "minutes": 195, "hoehenmeter": { "von": 500, "bis": 600 },
+           "verpflegung": { "gProStunde": "60", "abMinuten": 90 } }]
+}
+```
+
+Arten: `ruhe`, `optional`, `fahrt`, `lang`, `steps`, `test`, `kraft`,
+`zirkel`. Schritte dürfen als Gruppe stehen –
+`{ "wiederhole": n, "steps": […], "zwischen": […] }` –, sonst stünden die
+Kurzintervalle 30/15 als 78 Einzelschritte da. `soll` je Woche ist das
+Wochensoll aus der Tabelle des Plans; der Umfangsdeckel rechnet darauf.
+Ausgearbeitet ist Block 1; spätere Wochen zeigen die Form der Wochen 11, 12
+bzw. 9 (`fortschreibung`) und sagen das auf der Tageskarte.
+
+Krafttraining in Plan 2 läuft im Baustein **Kraft** mit Sätzen, Supersätzen,
+Pausen, Gewicht und Wiederholungen je Satz (`src/domain/kraft.js`,
+`Kraftblock.jsx`). Die Stufenleitern (Liegestütz, Unterarmstütz, Seitstütz,
+Klimmzug) werden auf dem Gerät gespeichert, nicht in `plan.json`.
+
+### Übungsvideos
+
+Jede Übung trägt unter `video` die Kennung eines deutschsprachigen
+YouTube-Videos. Die App zeigt das Vorschaubild und lädt den Player erst beim
+Antippen, über youtube-nocookie.com. Ein eigener Plan mit `image` aus der Zeit
+davor bleibt gültig.
+
+### Aufbau einer Woche (Plan 1)
 
 Jede Woche trägt ihre Nummer, ihre Phase, die Taktung des Rumpfzirkels und
 unter `tage` je Wochentag das, was an ihm von der Woche abhängt:
@@ -475,6 +522,7 @@ Unterschied liegen unter der Auflösung des Umfangsdeckels.
 | Open-Meteo | Temperatur, Feuchte, Niederschlag und Wind je Stunde | keiner |
 | Overpass (OpenStreetMap) | Untergrund der gefahrenen Wege | keiner |
 | Google | Anmeldung, trennt die Profile auf einem Gerät | optional, Client-ID (siehe oben) |
+| YouTube | Übungsvideos (Vorschaubild, Player erst beim Antippen) | keiner |
 
 Die Anleitung, wo man die Schlüssel bekommt, steht in der App hinter dem
 Fragezeichen der jeweiligen Zeile.
@@ -573,7 +621,8 @@ hat eine Zeitgrenze (intervals.icu 15 s, Open-Meteo 10 s, Overpass 25 s).
 Fällt einer aus, zeigt die App die Auswertung ohne diesen Teil und sagt es
 kurz in einer Snackbar – statt zu warten oder eine Fehlerseite zu zeigen.
 
-Der Planbeginn steht standardmäßig auf dem **15.08.2026**, dem Samstag, an dem
-Woche 1 begonnen hat. Liegt er auf einem anderen Wochentag, warnt die App: die
+Der Planbeginn (Plan 1) steht standardmäßig auf dem **15.08.2026**, dem Samstag, an dem
+Woche 1 begonnen hat. Plan 2 beginnt fest am Montag, 07.12.2026; sein Beginn
+steht in `plan.json` und hängt nicht an dieser Einstellung. Liegt er auf einem anderen Wochentag, warnt die App: die
 Trainingswoche beginnt samstags, und ein verschobener Start zieht jeden Samstag
 in die Vorwoche – die lange Ausfahrt bekäme dann durchgehend die falsche Dauer.

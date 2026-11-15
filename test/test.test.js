@@ -31,7 +31,11 @@ const testTag = w => W.testDateFor(plan, w, START);
 describe('Testtermine', () => {
   it('leitet sie aus den Testwochen ab', () => {
     const t = testTermine(plan, START);
-    expect(t.map(x => x.week)).toEqual(W.testWeeks(plan));
+    /* Ueber beide Plaene: drei Termine in Plan 1, vier in Plan 2. */
+    expect(t.map(x => x.week)).toEqual([...W.testWeeks(plan), ...W.testWeeks(plan.folge)]);
+    expect(t.map(x => x.plan)).toEqual(['p1', 'p1', 'p1', 'p2', 'p2', 'p2', 'p2']);
+    expect(t.slice(3).map(x => W.isoDayLocal(x.datum)))
+      .toEqual(['2027-02-04', '2027-04-08', '2027-06-10', '2027-09-02']);
     /* Der Termin ist der Donnerstag seiner Woche - kein zweites Datum daneben. */
     for(const x of t) expect(x.datum.getDay()).toBe(4);
   });
@@ -60,7 +64,8 @@ describe('Welcher Termin gerade gilt', () => {
   });
 
   it('bleibt nach dem letzten Termin bei diesem stehen', () => {
-    const letzter = testTag(W.testWeeks(plan)[W.testWeeks(plan).length - 1]);
+    const p2 = plan.folge;
+    const letzter = W.testDateFor(p2, W.testWeeks(p2)[W.testWeeks(p2).length - 1], START);
     const spaet = W.addDays(letzter, 40);
     expect(aktuellerTermin(plan, spaet, START).datum.getTime()).toBe(letzter.getTime());
     expect(testPhase(plan, aktuellerTermin(plan, spaet, START), spaet)).toBe('vorbei');
@@ -88,7 +93,9 @@ describe('Anlauf als Zeitleiste', () => {
 
   it('legt jeden Schritt auf sein Datum und den Testtag dazwischen', () => {
     const tage = anlaufTage(plan, termin, START);
-    expect(tage.length).toBe(plan.testTaper.steps.length + 1);
+    /* Nur die Schritte, die fuer die Woche dieses Termins gelten - seit
+       Fassung 13 steht vor dem 03.12. kein Tempotest mehr. */
+    expect(tage.length).toBe(plan.testTaper.steps.filter(x => !x.wochen || x.wochen.includes(4)).length + 1);
     /* Aufsteigend nach Abstand, und der Testtag steht mitten drin - nicht am
        Ende, wo der Plan noch einen Schritt fuer den Tag danach kennt. */
     const offsets = tage.map(z => z.offset);

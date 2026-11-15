@@ -8,7 +8,7 @@
 import { signal, computed } from '@preact/signals';
 import { createRepos, KEYS } from '../data/storage.js';
 import { loadPlan, parsePlan, PlanError } from '../data/planSource.js';
-import { toMidnight, isoDayLocal, weekNumberFor } from '../domain/week.js';
+import { toMidnight, isoDayLocal, planAm, wocheAm } from '../domain/week.js';
 import { geltendeSchwellen, uebernimmSchwellen, sortiere, istTest,
          normalisiere } from '../domain/messwerte.js';
 import * as platform from '../platform/index.js';
@@ -22,7 +22,8 @@ import { initAuth, profilSpeicher } from './auth.js';
 export const store = createRepos(profilSpeicher);
 
 /* --- Kern --- */
-export const plan        = signal(null);   // normalisiertes Modell
+/* Das Modell aus plan.json - Plan 1 mit seinem Nachfolger unter .folge. */
+export const planBasis   = signal(null);
 export const planJson    = signal(null);   // Rohfassung, fuer den Export
 export const planSource  = signal('default');
 export const planError   = signal(null);
@@ -52,6 +53,10 @@ export const testPrep    = signal({});
 /* Welche Variante an einem Tag gilt: ISO-Tag auf Kennung, 'regel' fuer die
    ausdrueckliche Abwahl, kein Eintrag fuer unentschieden. */
 export const varianten   = signal({});
+/* Die aktuelle Stufe je Stufenleiter (Liegestuetz, Unterarmstuetz,
+   Seitstuetz, Klimmzug): Schluessel auf Index. Ein Stand, keine Vorgabe -
+   deshalb im Speicher und nicht in plan.json. */
+export const stufen      = signal({});
 /* Die Voreinstellungen stehen einmal da und nicht zweimal.
 
    Bis hierher trug das Signal eine Fassung ohne `theme` und boot() eine
@@ -75,9 +80,21 @@ export const today = signal(toMidnight(new Date()));
    zufaellig zum ersten Mal geoeffnet wird. Die Trainingswoche beginnt samstags. */
 export const PLAN_START_DEFAULT = '2026-08-15';
 
+/* Der Plan, der heute gilt. Bis zum 04.12.2026 Plan 1, ab dem 05.12. Plan 2.
+   Alles, was "heute" meint - Training, Intervalle, Test, Zonen -, liest
+   diesen; wer nach einem anderen Tag fragt (Kalender, Analyse), reicht
+   denselben Plan und den Planbeginn weiter, und day.js sucht sich den Plan
+   des Tages selbst (planAm in week.js).
+
+   startDate bleibt der Planbeginn aus den Einstellungen - der von Plan 1.
+   Plan 2 beginnt fest am Montag, 07.12.2026; die Domaenenfunktionen
+   kennen beide. */
+export const plan = computed(() => (planBasis.value
+  ? planAm(planBasis.value, today.value, startDate.value).plan : null));
+
 export const week = computed(() => {
-  if(!startDate.value) return 1;
-  return Math.max(weekNumberFor(today.value, startDate.value), 1);
+  if(!startDate.value || !planBasis.value) return 1;
+  return wocheAm(planBasis.value, today.value, startDate.value);
 });
 
 export async function boot(){
@@ -90,7 +107,7 @@ export async function boot(){
   /* Plan zuerst: ohne ihn zeigt die App nichts an. */
   try {
     const r = await loadPlan(store);
-    plan.value = r.plan;
+    planBasis.value = r.plan;
     planJson.value = r.json;
     planSource.value = r.source;
 
@@ -146,6 +163,7 @@ export async function boot(){
   interimLog.value = await store.interimLog();
   testPrep.value   = await store.testPrep();
   varianten.value  = await store.varianten();
+  stufen.value     = await store.stufen();
   settings.value   = Object.assign({}, SETTINGS_DEFAULT, await store.settings());
   theme.value      = settings.value.theme;
 
@@ -224,6 +242,12 @@ export async function addInterimEntry(entry){
   await store.setInterimLog(interimLog.value);
 }
 
+export async function setStufe(leiter, index){
+  if(!leiter) return;
+  stufen.value = { ...stufen.value, [leiter]: Math.max(0, index | 0) };
+  await store.setStufen(stufen.value);
+}
+
 export async function setVariante(tagIso, kennung){
   if(!tagIso) return;
   varianten.value = { ...varianten.value, [tagIso]: kennung };
@@ -249,7 +273,7 @@ export async function applyPlanOverride(roh){
      bekommen - und der Export soll die Datei liefern, mit der die App
      tatsaechlich rechnet. */
   await store.setPlanOverride(json);
-  plan.value = modell;
+  planBasis.value = modell;
   planJson.value = json;
   planSource.value = 'override';
 }
@@ -257,7 +281,7 @@ export async function applyPlanOverride(roh){
 export async function resetPlanToDefault(){
   await store.clearPlanOverride();
   const r = await loadPlan(store);
-  plan.value = r.plan;
+  planBasis.value = r.plan;
   planJson.value = r.json;
   planSource.value = r.source;
 }

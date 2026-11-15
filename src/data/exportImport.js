@@ -67,7 +67,8 @@ export const EINTRAEGE = {
   [KEYS.settings]:     { name: 'Einstellungen',                  pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
   [KEYS.planOverride]: { name: 'eigener Plan',                   pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
   [KEYS.untergrund]:   { name: 'Untergrund-Zwischenspeicher',    pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') },
-  [KEYS.gelesen]:      { name: 'Gelesene Meldungen',              pruef: r => alsJson(r, istListe,  'ist keine Liste') }
+  [KEYS.gelesen]:      { name: 'Gelesene Meldungen',              pruef: r => alsJson(r, istListe,  'ist keine Liste') },
+  [KEYS.stufen]:       { name: 'Stufenleitern',                   pruef: r => alsJson(r, istObjekt, 'ist kein Objekt') }
 };
 
 export function benenne(key){

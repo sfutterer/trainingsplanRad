@@ -201,3 +201,26 @@
    Platzhalter folgt denselben Regeln. */
 .illu .exbild-leer{ min-height: 0; flex: 0 1 auto; }
 .dialog .exbild{ border-radius: 12px; margin-bottom: 12px; }
+
+/* Uebungsvideo (seit 15.11.2026). Erst das Vorschaubild mit Abspielzeichen,
+   der Player kommt beim Antippen - siehe Uebungsbild.jsx. Format 16:9, wie
+   YouTube es liefert; das Vorschaubild hqdefault ist 4:3 mit Balken und wird
+   deshalb auf 16:9 beschnitten. */
+.exvideo-vorschau{
+  position: relative; padding: 0; border: 0; cursor: pointer;
+  background: #000; overflow: hidden; aspect-ratio: 16 / 9;
+  min-height: 0; flex: 0 1 auto;
+}
+.exvideo-vorschau img{
+  width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0;
+}
+.exvideo-vorschau .play{
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 56px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .72); color: #fff; font-size: 20px; line-height: 1;
+}
+.exvideo{ aspect-ratio: 16 / 9; overflow: hidden; background: #000; }
+.exvideo iframe{ width: 100%; height: 100%; border: 0; display: block; }
+.illu.vorschau .exvideo-vorschau img{ opacity: .82; }
+.dialog .exvideo, .dialog .exvideo-vorschau{ border-radius: 12px; margin-bottom: 12px; }

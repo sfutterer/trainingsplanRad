@@ -53,7 +53,7 @@ import { isRide } from '../../../domain/analysis.js';
 import { buildStepSequence, totalSeconds } from '../../../domain/timer/sequences.js';
 import { hrBands, usesCoggan } from '../../../domain/zones.js';
 import { ART_TEST } from '../../../domain/messwerte.js';
-import { isoDayLocal, toMidnight, dayOffset, weekNumberFor,
+import { isoDayLocal, toMidnight, dayOffset, wocheAm, dayFromIso,
          WEEKDAY_NAMES, datumText, tagUndMonat } from '../../../domain/week.js';
 import { fetchActivities, fetchStreams, zahlenStrom } from '../../../data/icu.js';
 import { Segmented } from '../../components/Segmented.jsx';
@@ -97,7 +97,7 @@ function LageKarte({ termin, phase, tage, prep }){
     <div class="card">
       <div class="row"><span>Schwellentest</span>
         <b>{termin
-          ? datumText(termin.datum) + ' · Woche ' + termin.week
+          ? datumText(termin.datum) + ' · ' + (termin.plan === 'p2' ? 'Plan 2, ' : '') + 'Woche ' + termin.week
           : 'kein Termin'}</b></div>
       {termin && phase !== 'heute' && phase !== 'vorbei' && (
         <div class="row"><span>{tage > 0 ? 'Noch' : 'Vergangen'}</span>
@@ -110,7 +110,7 @@ function LageKarte({ termin, phase, tage, prep }){
       {prep && prep.zielWatt > 0 && (
         <div class="testziel">
           <b>{prep.zielWatt} W</b>
-          <span>Zielleistung aus dem Tempotest{prep.zielPuls > 0 ? ' · dabei ⌀ ' + prep.zielPuls + ' bpm' : ''}</span>
+          <span>Zielleistung notiert{prep.zielPuls > 0 ? ' · dabei ⌀ ' + prep.zielPuls + ' bpm' : ''}</span>
         </div>
       )}
     </div>
@@ -368,18 +368,40 @@ function Vo2maxKarte({ termin, prep, onNotiz, ftp, laden }){
    oben im Bereich und niemand sagte, dass genau sie die Vorgabe der zwanzig
    Minuten ist. Die FTP daneben ist keine Vorhersage, sondern die Formel des
    Plans auf das Ziel angewandt - haelt es, faellt genau diese Zahl heraus. */
-function ZielKarte({ ziel, termin }){
+function ZielKarte({ ziel, termin, pacing, onNotiz }){
   if(!termin) return null;
   const datum = datumText(termin.datum);
+  /* Fassung 13: ohne Tempotest ist die Vorgabe der Ø-Wert des letzten Tests.
+     Nach dem Plausibilitaetscheck am Qualitaetstag eine Woche vorher wird
+     sie auf 230 oder 240 W gesetzt - von Hand, hier. */
+  const eintrag = onNotiz ? (
+    <Zahlenfeld titel="Vorgabe für den Test (W)" wert={ziel && ziel.quelle === 'notiert' ? ziel.watt : null} min={1}
+      onWert={v => onNotiz({ zielWatt: v, zielPuls: null })} />
+  ) : null;
+  if(ziel && ziel.quelle === 'vortest'){
+    return (
+      <div class="card">
+        <div class="row"><span>Pacing-Vorgabe für den {datum}</span><b>{ziel.watt} W konstant</b></div>
+        <p class="hint">
+          Ausgangswert: der Ø-Wert des letzten Tests vom {datumText(dayFromIso(ziel.vortestTag))} über 20 min.
+          Kein Tempotest – geprüft wird die Vorgabe an den Schwelleneinheiten davor. Nach dem Check
+          eine angepasste Vorgabe (z. B. 230 oder 240 W) unten eintragen.
+        </p>
+        {pacing ? <p class="hint">{pacing}</p> : null}
+        {eintrag}
+      </div>
+    );
+  }
   if(!ziel){
     return (
       <div class="card">
         <div class="row"><span>Ziel für den {datum}</span><b>steht noch aus</b></div>
         <p class="hint">
-          Ohne notierte Leistung aus dem Tempotest: nach Anstrengung fahren – ein Tempo, das
-          sich 20 min halten ließe, Sprechtest drei bis fünf Worte. Der Puls wird
-          mitgeschrieben, nicht angesteuert.
+          Ohne Vorwert aus einem früheren Test und ohne notierte Vorgabe: nach Anstrengung
+          fahren – ein Tempo, das sich 20 min halten ließe, Sprechtest drei bis fünf Worte.
+          Der Puls wird mitgeschrieben, nicht angesteuert.
         </p>
+        {eintrag}
       </div>
     );
   }
@@ -388,9 +410,8 @@ function ZielKarte({ ziel, termin }){
       <div class="row"><span>Ziel für den {datum}</span><b>{ziel.watt} W</b></div>
       <div class="formeln">
         <div class="formel"><b>{ziel.watt} W über 20 min</b>
-          <span>Die Ø-Leistung von Block 2 des Tempotests – erste drei Minuten bewusst
-            darunter, danach auf die Ø-Leistung der Runde schauen und nicht auf den
-            Momentanwert.</span></div>
+          <span>{ziel.quelle === 'notiert' && pacing ? pacing
+            : 'Die Ø-Leistung von Block 2 des Tempotests – erste drei Minuten bewusst darunter, danach auf die Ø-Leistung der Runde schauen und nicht auf den Momentanwert.'}</span></div>
         <div class="formel"><b>ergibt FTP {ziel.ftp} W</b>
           <span>
             {ziel.watt} × {String(FTP_FAKTOR).replace('.', ',')}, wenn das Ziel über die
@@ -655,7 +676,12 @@ export function TestTab(){
   const [ablauf, setAblauf] = useState(() => vorgewaehlterAblauf(ablaeufe));
 
   const tempo = ablaeufe.find(a => a.tempo) || null;
-  const ziel = testZiel(prep, th);
+  /* Seit Fassung 13 kommt die Pacing-Vorgabe ohne Tempotest aus dem letzten
+     Test vor diesem Termin - sein Ø-Wert ueber 20 min. */
+  const vortest = termin ? testLog.value
+    .filter(e => e && e.day && e.w20 > 0 && e.day < isoDayLocal(termin.datum))
+    .sort((a, b) => (a.day < b.day ? -1 : 1)).pop() || null : null;
+  const ziel = testZiel(prep, th, vortest);
 
   /* Die VO2max-Referenz haengt am Test davor und nicht am aktuellen Termin -
      nach dem 10.09. rueckt der Blick auf den Retest, der 5-min-Wert bleibt
@@ -727,7 +753,7 @@ export function TestTab(){
 
   /* Die Woche des Testtermins und nicht die heutige: die Baender im Ablauf
      sollen die des Tests sein, auch wenn man drei Tage vorher hineinsieht. */
-  const w = termin ? Math.max(weekNumberFor(termin.datum, start), 1) : 1;
+  const w = termin ? wocheAm(p, termin.datum, start) : 1;
 
   const umschalter = (
     <Segmented ziele={ANSICHTEN} aktiv={ansicht} onWaehlen={setAnsicht}
@@ -773,7 +799,8 @@ export function TestTab(){
         <TempotestKarte ablauf={tempo} prep={prep}
           onNotiz={patch => setTestPrep(schluessel, patch)} laden={ladeTempotest} />
       )}
-      <ZielKarte ziel={ziel} termin={termin} />
+      <ZielKarte ziel={ziel} termin={termin} pacing={p.thresholdTest && p.thresholdTest.pacing}
+        onNotiz={patch => setTestPrep(schluessel, patch)} />
       <DurchfuehrungKarte p={p} />
       <Vo2maxKarte termin={vo2} prep={vo2Prep} ftp={vo2Ftp} laden={ladeVo2max}
         onNotiz={patch => setTestPrep(vo2Schluessel, patch)} />

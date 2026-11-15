@@ -22,8 +22,7 @@ import { plan, thresholds, startDate, today, varianten } from '../../../state/st
 import { buildDayInfo } from '../../../domain/day.js';
 import {
   toMidnight, isoDayLocal, dayOffset, addMonths, startOfMonth, monthGrid,
-  monthLabel, weekdayColumns, WEEKDAY_NAMES
-} from '../../../domain/week.js';
+  monthLabel, weekdayColumns, WEEKDAY_NAMES, planAm } from '../../../domain/week.js';
 import { Tagesinhalt, Tageskopf, tagesArten } from './Tag.jsx';
 import { KalenderNavi } from './KalenderNavi.jsx';
 import { Einheitssymbol } from '../../components/Einheitssymbol.jsx';
@@ -84,7 +83,7 @@ export function Monatsansicht({ anker, setzeAnker, serie, ansichtLabel, onAnsich
             const klassen = ['kaltag'];
             if(!gleicherMonat(d, monat)) klassen.push('fremd');
             if(iso === heuteIso) klassen.push('istheute');
-            if((((dayOffset(d, start) % 7) + 7) % 7) === 0) klassen.push('wochenstart');
+            if((((dayOffset(d, planAm(p, d, start).start) % 7) + 7) % 7) === 0) klassen.push('wochenstart');
             /* Vor dem Planbeginn traegt der Tag keine Trainingsart, also auch
                kein Zeichen - sonst behauptet das Raster eine Einheit fuer
                einen Zeitraum, in dem der Plan noch nicht lief.

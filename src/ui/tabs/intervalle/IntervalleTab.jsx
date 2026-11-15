@@ -82,7 +82,13 @@ export function IntervalleTab(){
   /* Das Zielband des Tages, nicht aus cfg: die Zeiten dieses Timers darf man
      verstellen, das Ziel nicht. */
   const band = vorgabe.mode === 'intervals' ? zielband(p, th, vorgabe.plan) : null;
-  const [cfg, setCfg] = useState(ausVorgabe);
+  const [cfgRoh, setCfg] = useState(ausVorgabe);
+  /* Die Einstellungen gelten nur, solange die Vorgabe eine Intervalleinheit
+     mit drei Zahlen ist. Wechselt die Vorgabe waehrend die App offen ist -
+     ueber Nacht in eine Woche mit fester Folge, oder am 05.12.2026 von
+     Plan 1 auf Plan 2 -, stuende sonst bis zum naechsten Effekt der alte
+     Stand neben einer Vorgabe ohne Intervalle. */
+  const cfg = vorgabe.mode === 'intervals' ? (cfgRoh || ausVorgabe()) : null;
 
   const testmodus = vorgabe.mode === 'test';
   const nurZ2 = vorgabe.mode === 'z2';
@@ -118,7 +124,7 @@ export function IntervalleTab(){
     if(timer.running) return;
     setCfg(ausVorgabe());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [w]);
+  }, [w, p.kennung]);
 
   const vorschau = timer.sequence.length ? timer.sequence : sequenz();
 

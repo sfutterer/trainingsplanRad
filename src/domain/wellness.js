@@ -187,6 +187,10 @@ export function wellnessMassnahmen(donnerstag, zweiRot){
   const m = [];
   if(donnerstag === 'test'){
     m.push('Schwellentest heute nicht fahren, ein bis zwei Tage später oder in der Folgewoche.');
+  } else if(donnerstag === 'qualitaet'){
+    /* Plan 2: zwei Qualitaetstage, Dienstag und Donnerstag. Die Regel ist
+       dieselbe fuer beide und haengt nicht an einem Wochentag. */
+    m.push('Die Qualitätseinheit wird 60 min Z2.');
   } else if(donnerstag === 'z2'){
     m.push('Donnerstag ist ohnehin Z2: Dauer kürzen, Samstag ohne Blöcke.');
   } else {

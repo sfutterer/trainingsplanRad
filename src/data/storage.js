@@ -22,10 +22,13 @@ export const KEYS = {
   planOverride: 'plan-override',
   settings:   'app-settings',
   untergrund: 'untergrund-cache',
-  gelesen:    'meldungen-gelesen'
+  gelesen:    'meldungen-gelesen',
+  stufen:     'stufenleitern'
 };
 
-const CORE_LOG_MAX = 80;
+/* 200 statt 80, seit Plan 2 drei Kraft- und Zirkeleinheiten je Woche
+   protokolliert: 80 Eintraege waeren nach einem halben Jahr voll gewesen. */
+const CORE_LOG_MAX = 200;
 
 /* Mehr Fahrten sieht man nicht zweimal an, und der Platz in localStorage ist
    die einzige Kopie der Protokolle - der Zwischenspeicher darf ihn nicht
@@ -170,6 +173,11 @@ export function createRepos(store){
        "regel" fuer die ausdrueckliche Abwahl. Ein fehlender Eintrag heisst
        unentschieden - die drei Zustaende auseinanderzuhalten ist der ganze
        Zweck des Speichers. */
+    async stufen(){
+      const v = await json(KEYS.stufen, {});
+      return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+    },
+    async setStufen(map){ return store.set(KEYS.stufen, JSON.stringify(map || {})); },
     async varianten(){
       const v = await json(KEYS.varianten, {});
       return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};

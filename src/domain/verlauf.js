@@ -564,7 +564,9 @@ export function rumpfSerie(coreLog, startIso){
     const w = wochenNummer(e.day, startIso);
     if(w === null || w < 1) continue;
     const z = je[w] || (je[w] = { woche: w, rumpf: 0, bein: 0 });
-    if(e.kind === 'leg') z.bein++; else z.rumpf++;
+    /* Die Krafteinheiten von Plan 2 zaehlen wie der Beinblock: Kraft neben dem
+       Rumpf. */
+    if(e.kind === 'leg' || e.kind === 'kraft') z.bein++; else z.rumpf++;
   }
   const punkte = Object.keys(je).map(k => je[k]).sort((a, b) => a.woche - b.woche)
     .map(z => ({ t: z.woche * 7, v: z.rumpf, woche: z.woche, rumpf: z.rumpf, bein: z.bein,

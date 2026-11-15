@@ -26,7 +26,7 @@ export default defineConfig({
       injectRegister: null,
       manifest: false,               // manifest.webmanifest liegt handgepflegt in public/
       workbox: {
-        globPatterns: ['**/*.{js,css,html,webp,png,json,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,png,json,webmanifest}'],
         /* Workbox-Laufzeit in sw.js hineinschreiben statt per importScripts
            nachzuladen. Eine Datei weniger, ein Fehlerfall weniger - und bei
            dieser Groesse kostet es nichts. */
@@ -51,6 +51,17 @@ export default defineConfig({
            Antwort ist deshalb opaque und traegt Status 0. Ohne den Eintrag
            landet nie etwas im Cache. */
         runtimeCaching: [{
+          /* Die Vorschaubilder der Uebungsvideos. Sie aendern sich nicht, und
+             einmal gesehen sollen sie auch ohne Netz dastehen - das Video
+             selbst braucht ohnehin eine Verbindung. */
+          urlPattern: /^https:\/\/i\.ytimg\.com\/vi\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'videovorschau',
+            expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 90 },
+            cacheableResponse: { statuses: [0, 200] }
+          }
+        }, {
           urlPattern: /^https:\/\/lh3\.googleusercontent\.com\/.*/i,
           handler: 'CacheFirst',
           options: {

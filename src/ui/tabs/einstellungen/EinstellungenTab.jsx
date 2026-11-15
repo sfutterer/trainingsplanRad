@@ -252,14 +252,17 @@ export function EinstellungenTab(){
       </Gruppe>
 
       <Gruppe titel="Training">
-        <Zeile titel="Beginn Woche 1"
+        <Zeile titel="Beginn Woche 1 (Plan 1)"
           wert={datumText(sd) + ' · ' + WEEKDAY_NAMES[sd.getDay()] + (sdPasst ? '' : ' — verschiebt den Samstag')}
           hilfe={
             <>
-              <p>Aus dem Startdatum ergibt sich jede Wochennummer und damit jede Vorgabe.</p>
-              <p>Die Trainingswoche beginnt <b>samstags</b>. Liegt der Start auf einem anderen Tag,
+              <p>Aus dem Startdatum ergibt sich jede Wochennummer von Plan 1 und damit jede Vorgabe bis zum 04.12.2026.</p>
+              <p>Die Trainingswoche von Plan 1 beginnt <b>samstags</b>. Liegt der Start auf einem anderen Tag,
                  zählt jeder Samstag zur vorherigen Woche – die lange Ausfahrt bekommt dann
                  durchgehend die Dauer der Vorwoche, und man sieht es nirgends.</p>
+              <p>Plan 2 beginnt fest am <b>Montag, 07.12.2026</b> (Übergangswochenende ab 05.12.), und seine
+                 Woche läuft <b>Montag bis Sonntag</b> – wie die Wochen in intervals.icu. Sein Beginn steht in
+                 plan.json und hängt nicht an dieser Einstellung.</p>
             </>
           }
           onClick={() => setDatumOffen(o => !o)} />
