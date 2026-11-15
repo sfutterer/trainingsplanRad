@@ -10,7 +10,14 @@ Plan muss dieses Dokument mitgezogen werden.
 - **Repo:** https://github.com/sfutterer/trainingsplanRad
 - **Datenquelle:** intervals.icu, synchronisiert von Garmin Connect
 
-> **Fassung 12, Stand 22.10.2026.** **Retest ausgewertet: 234,7 W über 20 min → FTP 223 W,
+> **Fassung 13, Stand 15.11.2026.** **Kein Tempotest vor dem Retest am 03.12.** Der
+> Donnerstag 26.11. (Woche 15) bleibt ein voller Qualitätstag mit 3 × 12 min Schwelle bei
+> 201–212 W. Die Pacing-Vorgabe für den 03.12. kommt aus dem Retest vom 22.10.
+> (234,7 W, gleichmäßig gefahren): **Ausgangswert 235 W konstant**, geprüft an den
+> Schwelleneinheiten vom 19. und 26.11. Anlauf und Pacing-Tabelle in Abschnitt 2a,
+> Begründung in Abschnitt 9j.
+>
+> Fassung 12 (22.10.2026) brachte: **Retest ausgewertet: 234,7 W über 20 min → FTP 223 W,
 > LTHR 166 bpm.** Die Arbeits-FTP entfällt — Test-FTP und Zielwatt rechnen wieder auf
 > demselben Wert. **Neue Zielwatt:** Do-Intervalle 250–260 W, Sa-Blöcke 178–196 W,
 > Phase-4-Schwelle 201–212 W. **Z2 folgt jetzt der FTP:** Coggan-Z2 123–167 W,
@@ -75,7 +82,7 @@ Plan muss dieses Dokument mitgezogen werden.
 >
 > Begründungen der Änderungen in Abschnitt 9 (Fassung 3), 9a (Fassung 4),
 > 9b (Fassung 5), 9c (Fassung 6), 9d (Fassung 7), 9e (Fassung 8), 9f (Fassung 9),
-> 9g (Fassung 10), 9h (Fassung 11) und 9i (Fassung 12).
+> 9g (Fassung 10), 9h (Fassung 11), 9i (Fassung 12) und 9j (Fassung 13).
 
 ---
 
@@ -159,7 +166,7 @@ langen Ausfahrt und endet mit dem optionalen Freitag.
 | 12 | 31.10. – 06.11.2026 | 3 · Samstag mit Blöcken |
 | **13** | 07.11. – 13.11.2026 | 3 · Erholung |
 | 14 | 14.11. – 20.11.2026 | 4 |
-| 15 | 21.11. – 27.11.2026 | 4 |
+| 15 | 21.11. – 27.11.2026 | 4 · Do 26.11. voller Qualitätstag, **kein Tempotest** (Fassung 13) |
 | **16** | 28.11. – 04.12.2026 | 4 · Erholung · **Retest Do 03.12.** |
 
 **Aktuelle Woche selbst berechnen:** `floor((heute − 15.08.2026) / 7) + 1`. Das Datum in
@@ -430,7 +437,7 @@ der Drift: liegt er über 5 %, war die Fahrt zu hart, auch wenn die Leistung in 
 | Mi Z2 kurz (Trekkingrad) | Sprechtest, bewusst darunter | — |
 | Do Intervalle Phase 2 (abgeschlossen) | 112–116 % FTP, Nachsteuerung ±5 W | Atmung sticht die Zahl; HF nur am Intervallende (≥ 166 bpm, letzte 60 s) |
 | Do Z2 + Erhaltungsreiz (Phase 3) | Sprechtest für den Z2-Anteil, **112–116 % FTP** (250–259 W) für die 3 × 3 min | HF nur am Intervallende |
-| Do Schwelle (Phase 4) | **201–212 W** | HF sollte in Z4 einpendeln |
+| Do Schwelle (Phase 4) | **201–212 W** | HF sollte in Z4 einpendeln; am 19.11. und 26.11. zugleich Plausibilitätscheck der Pacing-Vorgabe für den 03.12. (Abschnitt 2a) |
 | Sa Basis | **Z2 123–167 W** | Sprechtest, Decoupling nach der Fahrt |
 | Sa Blöcke | **178–196 W** | HF steigt langsam, ist normal |
 | Fr/So optional | HF unter Z2-Obergrenze | — |
@@ -561,6 +568,10 @@ Do folgen dem Testanlauf (Abschnitt 2a), die lange Ausfahrt hat 150 statt 100 mi
 lag am Sonntag, weil der Samstag Rumpftag war. Die Rumpfdosis bleibt in der Testwoche
 reduziert, ohne Beinblock.
 
+**Woche 15 (Fassung 13):** Der Donnerstag 26.11. ist der volle Qualitätstag
+3 × 12 min Z4, wie in der Tabelle. Bis Fassung 12 sah der Testanlauf an dieser Stelle
+statt dessen 2 × 6 min Testtempo vor. Die Wochensumme ändert sich nicht.
+
 ### Wochenumfang Rad und Deckel
 
 | Woche | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
@@ -619,7 +630,7 @@ Erholungswoche.
 | 2 | 10 | Retest | FTP + LTHR |
 | 3 | 11–12 | 70–75 min Z2, darin **3 × 3 min bei 112–116 % FTP** (250–259 W), 3 min Pause | dritter Grundlagentag + Erhaltungsreiz VO2max |
 | 3 | 13 | 55 min Z2 | Erholungswoche |
-| 4 | 14–15 | 3 × 10–12 min bei **201–212 W** (90–95 %), 5 min Pause | Schwelle |
+| 4 | 14–15 | 3 × 10–12 min bei **201–212 W** (90–95 %), 5 min Pause — Woche 15 ohne Tempotest (Fassung 13) | Schwelle + Plausibilitätscheck Pacing |
 | 4 | 16 | Retest | FTP + LTHR |
 
 Einfahren immer 15 min, Ausrollen 12 min. Die Wiederholungszahl in Phase 2 war **fest
@@ -786,7 +797,9 @@ Testabschnitt lag gegen 17:15 bis 17:35, vor Sonnenuntergang.
 
 **Warum der Testtempo-Tag:** Zwei mal sechs Minuten im angestrebten Testtempo liefern
 eine Wattzahl, auf die im Test gezielt werden kann. Ohne das wird blind gepaced, und
-blind gepacete Tests fallen zu niedrig aus.
+blind gepacete Tests fallen zu niedrig aus. **Seit Fassung 13 gilt das nur, solange es
+keinen belastbaren Vorwert gibt** — vor dem 03.12. entfällt der Testtempo-Tag (siehe
+unten).
 
 **Warum die Öffner am Vortag:** Nach ruhigen Tagen fühlt sich das System träge an. Ein
 kurzer harter Reiz am Vortag stellt die Spritzigkeit her, ohne Ermüdung zu erzeugen.
@@ -814,9 +827,66 @@ Tage vor dem Test, die lange Ausfahrt am Sonntag statt Samstag, und durch den Pl
 und den ausgefallenen Dienstag waren die vier Tage vor dem Test ruhiger als geplant.
 Beides wirkt eher in Richtung frischer Beine.
 
-**Derselbe Anlauf gilt sinngemäß für den Retest am 03.12.:** Woche davor kein voller
-Qualitätstag, sondern 2 × 6 min Testtempo; Tag vor der langen Ausfahrt ohne Beinblock;
-Dienstag kurz; Mittwoch mit Öffnern. Woche 16 ist zugleich Erholungswoche.
+### Anlauf zum 03.12.2026 (neu in Fassung 13)
+
+**Kein Tempotest.** Bis Fassung 12 galt der Oktober-Anlauf sinngemäß auch für den
+03.12., mit 2 × 6 min Testtempo statt des Qualitätstags in der Woche davor. Das ist
+aufgehoben.
+
+| Datum | Tag | Einheit |
+|---|---|---|
+| Di 24.11. | W15 | 90 min Arbeitsweg, feste lange Strecke · abends Beinblock Erhaltungsdosis wie geplant |
+| Mi 25.11. | W15 | 40 min Arbeitsweg direkt · abends Rumpf verkürzt |
+| **Do 26.11.** | W15 | **Regulärer Qualitätstag: 3 × 12 min bei 201–212 W**, 5 min Pause, 73 min. **Band halten**, keine „alles raus"-Schlusswiederholung, nicht verlängern. Zugleich Plausibilitätscheck der Pacing-Vorgabe |
+| Fr 27.11. | W15 | Ruhe |
+| Sa 28.11. | W16 | 105 min reines Z2, 250–350 Hm |
+| So 29.11. | W16 | **Nur Rumpf-Zirkel (Erholungsdosis), kein Beinblock** |
+| Mo 30.11. | W16 | Ruhe |
+| Di 01.12. | W16 | 45–50 min, **kurze Strecke**, unteres Z2, nicht verlängern |
+| Mi 02.12. | W16 | 30 min Z1 **+ 3 × 1 min zügig / 1 min locker**, kein Rumpf |
+| **Do 03.12.** | W16 | **Retest**, Start 14:00, Pacing-Vorgabe siehe unten |
+| Fr 04.12. | W16 | Ruhe oder 30 min Z1 |
+
+**Warum kein Tempotest mehr:** Der Testtempo-Tag sollte eine Wattzahl liefern, damit
+nicht blind gepaced wird. Diese Zahl liefert seit dem 22.10. der Retest selbst:
+234,7 W, gleichmäßig über alle vier 5-min-Abschnitte (236 / 233 / 232 / 237 W). Zwei mal
+sechs Minuten sind dafür die schwächere Quelle. In Phase 4 ist der Qualitätstag die
+wichtigste Einheit der Woche (Abschnitt 4.2) — ihn für eine bereits bekannte Zahl zu
+opfern, kostet mehr, als es bringt.
+
+**Warum der volle Qualitätstag den Test nicht stört:** Sieben Tage Abstand, danach die
+Erholungswoche 16 mit reduziertem Umfang. Die Ermüdung aus 3 × 12 min Schwelle ist bis
+zum Testtag abgebaut. Deshalb aber auch: am 26.11. im Band bleiben und nichts
+draufpacken.
+
+### Pacing-Vorgabe für den 03.12.
+
+**Ausgangswert: 235 W konstant** — der Ø-Wert vom 22.10. Geprüft wird er an den
+Schwelleneinheiten der Wochen 14 und 15: der 19.11. (3 × 10 min) als erster Hinweis,
+**maßgeblich ist der 26.11.** Der Check ist nötig, weil zwischen Rahmenbruch und
+Rahmentausch (bis 06.11.) mehrere Wochen ohne Leistungsdaten lagen.
+
+| Befund 26.11.: Ø-Puls der letzten 2 min von Block 3, Band 201–212 W gehalten | Vorgabe 03.12. |
+|---|---|
+| **≤ 150 bpm**, Atmung kontrolliert | **240 W** |
+| **151–162 bpm** | **235 W** |
+| **≥ 163 bpm**, oder Leistungsabfall Block 1 → 3 über 5 %, oder Atmung am Limit | **230 W** |
+
+**Herleitung der Grenzen:** Im Tempotest vom 16.10. lagen 218 W nach 6 min bei 155 bpm,
+227 W bei 160 bpm. Bei unveränderter Form landen ~208 W nach 12 min im dritten Block
+überschlägig bei 155–160 bpm. Die Tabelle ist ein **Richtwert**, keine Messung. Sehr
+kalte Tage drücken den Puls etwas — dann im Zweifel die mittlere Zeile.
+
+**Zweite Quelle:** die eFTP in intervals.icu nach dem 26.11. Liegt sie mehr als 10 W über
+oder unter 223 W, bestätigt sie die Richtung; allein entscheidet sie nicht.
+
+**Ausführung am Testtag:**
+
+- **Die ersten 3 min nicht über der Vorgabe** — auf den Rundenschnitt schauen, nicht auf
+  den Momentanwert.
+- **Ab Minute 10** sind **+5 W** erlaubt, wenn die Atmung es zulässt. Mehr nicht — das ist
+  kein geplanter negativer Split.
+- **Die letzten 3 min sind frei.**
 
 ### Go/No-Go am Testmorgen
 
@@ -886,7 +956,7 @@ Vergleich zum 03.12. ist der 22.10. die saubere Basis.**
 |---|---|---|---|---|---|---|---|
 | **10.09.2026** | 4 | **202,6 W** | **192 W** | 152 erhoben / **163 gesetzt** | 86 rpm | 95,7 kg | 21,6 °C, teils bewölkt, Wind 2,5 km/h Ost, trocken, Start 16:21, Cube Nuroad, 2,5 bar. RPE 7–8, negativer Split +5,7 % |
 | **22.10.2026** | 10 | **234,7 W** (NP 236) | **223 W** | **166** erhoben und gesetzt | 89 rpm | 91,8 kg | ca. 14 °C, meist bewölkt, Wind ~10 km/h, trocken, Start 16:50 (Testabschnitt ca. 17:15), Cube Nuroad, 2,5 bar. 5-min-Abschnitte 236 / 233 / 232 / 237 W, HF Ø 166, letzte 5 min 172, **Max 180**. Pacing-Vorgabe 225 W, um 10 W übertroffen. RPE nicht erfasst, Selbsteinschätzung vorab „stark am Limit" |
-| 03.12.2026 | 16 | | | | | | Start 14:00, siehe 9c |
+| 03.12.2026 | 16 | | | | | | Start 14:00, siehe 9c. Anlauf ohne Tempotest (Fassung 13) |
 
 **Veränderung 10.09. → 22.10.:** +32 W im 20-min-Wert (+16 %), FTP 192 → 223 W, W/kg
 2,01 → 2,43 (+21 %, Gewicht −3,9 kg).
@@ -1285,7 +1355,7 @@ Aus Fassung 3 (30.08.2026):
 9. **Muskelkater-Abfrage** vor dem Beinblock am Sonntag: drei Stufen, steuert die
    angezeigte Wiederholungsspanne.
 10. **Testanlauf** aus Abschnitt 2a als Hinweis ab 10 Tagen vor dem Testtermin, inklusive
-    Go/No-Go-Liste am Testmorgen.
+    Go/No-Go-Liste am Testmorgen. Für den 03.12. ohne Testtempo-Tag (Punkt 37).
 
 Aus Fassung 4 (04.09.2026):
 
@@ -1394,6 +1464,14 @@ Aus Fassung 12 (22.10.2026):
     auch aus diesem Dokument entfernt.
 36. **Testhistorie:** Zeile 22.10. eingetragen — hier und in `SCHWELLENTESTS.md`.
     **Erledigt am 31.10.2026.**
+
+Aus Fassung 13 (15.11.2026):
+
+37. **Kein Testtempo-Tag vor dem 03.12.** Führt der Testanlauf-Hinweis (Punkt 10) oder
+    `plan.json` für Woche 15 einen Testtempo-Tag, wird er entfernt; der Donnerstag
+    26.11. bleibt 3 × 12 min bei 90–95 % FTP wie in Abschnitt 2. Führt die App keinen
+    solchen Tag, besteht kein Änderungsbedarf. Die Pacing-Tabelle aus Abschnitt 2a ist
+    keine App-Anforderung.
 
 **Stand der älteren Punkte:** 32 und 33 sind seit Fassung 11 erledigt — der Timer zeigt
 das Zielband mit seiner Herkunft, und die Analyse des Donnerstags nennt je Wiederholung
@@ -1586,6 +1664,7 @@ legen.
 | Leistungsabfall Wdh. 1 → letzte | Donnerstag | < 5 % | Pacing sauber |
 | Erste Wdh. über Zielband | Donnerstag | Warnung ab > 5 % darüber | zu hart gestartet |
 | HF am Intervallende | Donnerstag | **≥ 166 bpm** in den letzten 60 s, mindestens in den letzten zwei Wiederholungen | Reiz erreicht. Grundlage der Nachsteuerung (Regel 7) |
+| Ø-Puls letzte 2 min Block 3 | Donnerstag 26.11. | siehe Pacing-Tabelle Abschnitt 2a | Pacing-Vorgabe 03.12. (Fassung 13) |
 | Ø-Kadenz | Do und Sa (Cube) | **80–85 rpm in Z2**, 85–90 rpm in Schwellen- und Samstagsblöcken | Technik |
 | Kadenzabfall im Intervall | Donnerstag | < 8 rpm | Ermüdung, Gang zu schwer |
 | Zeit in Watt-Z2 | Woche | Trend Richtung 300 min | Grundlagendosis. **Nur Do und Sa liefern Watt**; Di und Mi über den Puls-Stream |
@@ -1635,6 +1714,9 @@ Merkposten, ohne Festlegung:
   für den Folgeplan neu zu stellen (siehe 9b)
 - **Oberer Rand von Z2** (Fassung 12): Nach drei bis vier langen Fahrten am Decoupling
   prüfen, wie weit die neue Obergrenze 167 W auf langen Fahrten wirklich trägt
+- **Testanlauf ohne Testtempo-Tag** (Fassung 13): Solange der letzte Test sauber gepaced
+  war, kommt die Pacing-Vorgabe aus ihm und aus den Qualitätseinheiten davor — kein
+  eigener Tag dafür
 
 ---
 
@@ -1826,7 +1908,7 @@ Retest aus der neuen FTP ergeben.
 | 6 | **Pulskriterium der Intervalle ≥ 166 bpm** | Folge aus 3 |
 | 7 | **Woche 10 keine Erholungswoche**, Erholungswochen 4, 7, 13, 16 | Woche 8 war krankheitsbedingt faktisch Pause; eine Erholungswoche direkt nach der Pause wäre zu früh gekommen. Absicherung über TSB-Regel und Wellness-Gate in Woche 11 und 12 |
 | 8 | **Woche 10 Soll 310 min, Deckel 341**, lange Ausfahrt 150 min | Folge aus 7, mit dem Testanlauf vereinbar |
-| 9 | **Anlauf zum 22.10. dokumentiert** (Tempotest Fr 16.10., lange Fahrt So 18.10.) | Nachvollziehbarkeit, Vorlage für den 03.12. |
+| 9 | **Anlauf zum 22.10. dokumentiert** (Tempotest Fr 16.10., lange Fahrt So 18.10.) | Nachvollziehbarkeit, Vorlage für den 03.12. — **in Fassung 13 ohne Tempotest** |
 | 10 | **Max HF 180 als Messwert**, Feld bleibt 180 | Im Retest erreicht |
 | 11 | **Testhistorie, VO2max-Tabelle, Settings, Analyse-Bezugswerte nachgeführt** | Konsistenz |
 | 12 | **App-Anforderungen 34–36** | Neue Werte, Testhistorie; umgesetzt am 31.10.2026, ohne die Erholungswochen |
@@ -1841,6 +1923,34 @@ Retest aus der neuen FTP ergeben.
 - **Sprechtest als oberste Instanz für Z2**, „Atmung sticht die Zahl" bei Intervallen.
 - **Pulsbänder für die Pendeltage** (128–135 bpm) — belegt und weiter in HF-Z2.
 - **Die Nachsteuerregel** — nur ihre Schwelle wechselt auf 166 bpm.
+
+---
+
+## 9j. Änderungen gegenüber Fassung 12
+
+### Anlass
+
+Frage des Sportlers am 15.11.2026: Wozu ein Tempotest vor dem 03.12., wenn das Testtempo
+aus dem letzten Test bekannt ist? Der Tempotest kostet in Woche 15 den Qualitätstag.
+
+### Die Änderung
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **Kein Tempotest vor dem 03.12.** | Der Testtempo-Tag sollte nur eine Pacing-Zahl liefern. Die liefert der gleichmäßig gefahrene Retest vom 22.10. (234,7 W) besser als 2 × 6 min |
+| 2 | **Do 26.11. bleibt voller Qualitätstag**, 3 × 12 min bei 201–212 W, ohne Verlängerung und ohne „alles raus" | In Phase 4 ist der Qualitätstag die wichtigste Einheit (4.2). Sieben Tage Abstand plus Erholungswoche 16 reichen, damit er den Test nicht vorbelastet |
+| 3 | **Pacing-Vorgabe 03.12.: Ausgangswert 235 W konstant**, Anpassung auf 230 oder 240 W nach dem Puls im dritten Block am 26.11. | Die Form kann sich seit dem 22.10. verschoben haben, vor allem durch die Wochen ohne Leistungsdaten bis zum Rahmentausch am 06.11. Der Check kostet keinen eigenen Tag |
+| 4 | **Ausführung:** erste 3 min nicht über der Vorgabe, ab Minute 10 höchstens +5 W, letzte 3 min frei | Kein geplanter negativer Split, aber Spielraum für einen besseren Tag |
+| 5 | **Anlauf zum 03.12. als eigene Tabelle** in Abschnitt 2a | Der Verweis „sinngemäß wie am 22.10." trug den Tempotest mit |
+| 6 | **„Warum der Testtempo-Tag"** auf Tests ohne belastbaren Vorwert eingeschränkt | Begründung bleibt für den ersten Test gültig |
+| 7 | **App-Anforderung 37**, Merkposten in Abschnitt 8, Kennzahl in Abschnitt 7 | Konsistenz |
+
+### Bewusst **nicht** geändert
+
+- **Testprotokoll, Strecke, Rad, 2,5 bar, Start 14:00** am 03.12.
+- **Rest des Anlaufs:** Wochenende ohne Beinblock, Dienstag kurz, Mittwoch mit Öffnern,
+  Go/No-Go und Verschiebungsregel.
+- **Wochensummen** der Wochen 15 und 16.
 
 ---
 
