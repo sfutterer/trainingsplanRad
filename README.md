@@ -78,6 +78,17 @@ Pausen, Gewicht und Wiederholungen je Satz (`src/domain/kraft.js`,
 `Kraftblock.jsx`). Die Stufenleitern (Liegestütz, Unterarmstütz, Seitstütz,
 Klimmzug) werden auf dem Gerät gespeichert, nicht in `plan.json`.
 
+Seit Fassung 2 von Plan 2 (16.11.2026) laufen die Beine **zweimal pro Woche**:
+Dienstagabend moderat (`beineModerat`, nur in Belastungswochen), Donnerstagabend
+schwer (`beine`). In Block 3 und 4 nur noch Donnerstag als Erhaltung – für
+noch nicht ausgearbeitete Wochen steht das am Block unter `kraftErsatz`.
+
+**Wochenleiste im Trainingsbereich:** Rumpf und Kraft lassen sich für jede
+Woche ansehen und trainieren, nicht nur für die von heute – über die Plangrenze
+hinweg, mit den Zirkeln und Krafteinheiten genau dieser Woche
+(`trainingsWoche` in `src/domain/day.js`). Ein Sprung von der Tageskarte führt
+immer zurück zur Woche von heute.
+
 ### Übungsvideos
 
 Jede Übung trägt unter `video` die Kennung eines deutschsprachigen

@@ -35,13 +35,15 @@
    vorgibt. */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { plan, week, settings, coreLog, saveCoreLog, today, startDate, stufen } from '../../../state/store.js';
+import { planBasis, thresholds, varianten, settings, coreLog, saveCoreLog, today, startDate,
+         stufen } from '../../../state/store.js';
 import { laufendeTimer } from '../../../state/timerState.js';
-import { BAUSTEINE, baustein } from '../../../state/navigation.js';
+import { BAUSTEINE, baustein, wochenVersatz, kraftLaeuft } from '../../../state/navigation.js';
 import { buildCircuitSequence } from '../../../domain/timer/sequences.js';
-import { coreRoundsForDay, coreWorkSeconds, coreRestSeconds, coreMinutes,
+import { coreWorkSeconds, coreRestSeconds, coreRounds, coreMinutes,
          repShort } from '../../../domain/core.js';
-import { isoDayLocal, wocheAm } from '../../../domain/week.js';
+import { trainingsWoche } from '../../../domain/day.js';
+import { isoDayLocal, wocheAm, addDays, tagUndMonat, WEEKDAY_SHORT } from '../../../domain/week.js';
 import { stufeText } from '../../../domain/kraft.js';
 import { ExerciseDialog } from '../../components/ExerciseDialog.jsx';
 import { Segmented } from '../../components/Segmented.jsx';
@@ -75,17 +77,44 @@ function segmente(p){
     label: id === 'leg' ? (p && p.format === 2 ? 'Kraft' : 'Beine') : BAUSTEINE[id] }));
 }
 
+/* Ein Tag der gezeigten Woche als Wahlknopf: "Mi 09.12." */
+function tagKurz(d){
+  return WEEKDAY_SHORT[d.getDay()] + ' ' + tagUndMonat(d);
+}
+
 export function TrainingTab(){
-  const p = plan.value, w = week.value;
+  /* Die gezeigte Woche. Bis zum 16.11.2026 zeigten Rumpf und Kraft nur die
+     Woche von heute; der Zirkel ist aber nicht jede Woche derselbe - Takt
+     und Runden wechseln, Erholungswochen nehmen eine Runde heraus, und am
+     Uebergang zu Plan 2 aendern sich Uebungen und Krafttraining
+     grundlegend. Mit der Wochenleiste laesst sich jede Woche ansehen und
+     auch so trainieren. `p` und `w` sind ab hier Plan und Woche der
+     gezeigten Woche, nicht die von heute. */
+  const versatz = wochenVersatz.value;
+  const anker = addDays(today.value, versatz * 7);
+  const tw = trainingsWoche(planBasis.value, thresholds.value, anker, startDate.value, varianten.value);
+  const p = tw.plan, w = Math.max(tw.week, 1);
   const dow = today.value.getDay();
   const s = settings.value;
+  /* Die Ansagen sind einmal je Stimme angemeldet und sehen den Plan ueber
+     diesen Verweis - sonst nennten sie nach einem Wochenwechsel die erste
+     Uebung des alten Zirkels. */
+  const pRef = useRef(p);
+  pRef.current = p;
+
+  /* Welcher Zirkel der Woche: Plan 1 hat zwei (Mittwoch verkuerzt, Sonntag
+     voll), Plan 2 einen (Mittwoch kurz), die Testwoche einen am Montag.
+     Voreinstellung ist der Zirkel am heutigen Wochentag, sonst der erste. */
+  const [zWahl, setZWahl] = useState(null);
+  const sitzung = tw.zirkel.find(z => isoDayLocal(z.datum) === zWahl)
+    || tw.zirkel.find(z => z.datum.getDay() === dow) || tw.zirkel[0] || null;
 
   function vorgabe(){
     return {
-      workSec: coreWorkSeconds(p, w),
-      restSec: coreRestSeconds(p, w),
+      workSec: sitzung ? sitzung.workSec : coreWorkSeconds(p, w),
+      restSec: sitzung ? sitzung.restSec : coreRestSeconds(p, w),
       roundRestSec: p.circuit.roundRestSeconds,
-      rounds: coreRoundsForDay(p, w, dow)
+      rounds: sitzung ? sitzung.rounds : coreRounds(p, w)
     };
   }
   const [cfg, setCfg] = useState(vorgabe);
@@ -130,7 +159,7 @@ export function TrainingTab(){
       zeichnen();
       const naechste = timer.sequence[index + 1];
       if(step.type === 'prep'){
-        const erste = p.circuit.exercises[0];
+        const erste = pRef.current.circuit.exercises[0];
         speak('Bereit machen. Erste Übung: ' + erste.name, s.voice);
       } else if(step.type === 'work'){
         beep(880, 180);
@@ -161,7 +190,7 @@ export function TrainingTab(){
         /* Der Zirkel ist in Plan 1 das Aufwaermen des Beinblocks - wer ihn
            beendet, will dorthin. In Plan 2 steht der Zirkel allein (Mittwoch,
            Rumpf kurz); dort bleibt die Ansicht stehen. */
-        if(p.format !== 2) setSegment('leg');
+        if(pRef.current.format !== 2) setSegment('leg');
       }
     }));
     ab.push(timer.on('leave', ({ step, restSeconds }) => {
@@ -194,11 +223,21 @@ export function TrainingTab(){
 
      Nicht waehrend eine Uhr laeuft: mitten im Zirkel die Rundenzahl unter der
      laufenden Folge auszutauschen waere schlimmer als der veraltete Wert. */
+  const sitzungsKennung = tw.kennung + ':' + (sitzung ? isoDayLocal(sitzung.datum) : '-');
   useEffect(() => {
     if(timer.running) return;
     setCfg(vorgabe());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [w, dow, p.kennung]);
+  }, [sitzungsKennung, dow]);
+
+  /* Waehrend eine Uhr laeuft, bleibt die Woche stehen: unter einem laufenden
+     Zirkel die Uebungsliste zu tauschen, hiesse die falschen Namen ansagen. */
+  const gesperrt = !!timer.step || kraftLaeuft.value;
+  function blaettere(n){
+    if(gesperrt) return;
+    wochenVersatz.value = n === 0 ? 0 : versatz + n;
+    setZWahl(null);
+  }
 
   /* Der Protokolleintrag entsteht genau dann, wenn die Folge neu geladen
      wird - deshalb haengt logStart am Bauen der Folge und nicht am Start:
@@ -258,10 +297,10 @@ export function TrainingTab(){
   }
   const bild = bildIndex == null ? null : p.circuit.exercises[bildIndex];
 
-  const tagText = p.format === 2
-    ? (dow === 3 ? 'Mittwoch – Rumpf kurz' : 'Zirkel laut Plan am Mittwoch')
-    : dow === 3 ? 'Mittwoch – verkürzter Zirkel'
-    : dow === 0 ? 'Sonntag – voller Zirkel' : 'kein Zirkeltag laut Plan';
+  const heuteIso = isoDayLocal(today.value);
+  const tagText = sitzung
+    ? tagKurz(sitzung.datum) + ' – ' + sitzung.titel + (isoDayLocal(sitzung.datum) === heuteIso ? ' · heute' : '')
+    : 'kein Zirkel in dieser Woche';
   /* Die Stufe der Stuetz-Uebungen (Plan 2) steht an der Uebung im Zirkel. */
   const stufeZu = ex => (ex.stufenleiter ? stufeText(p, ex.stufenleiter, stufen.value) : null);
 
@@ -285,6 +324,25 @@ export function TrainingTab(){
         </button>
       ))}
 
+      {/* Die Wochenleiste gilt fuer Rumpf und Kraft - die beiden Bausteine,
+          deren Inhalt an der Woche haengt. Beweglichkeit, Koordination und
+          der neutrale Timer sind jede Woche dieselben. */}
+      {(segment === 'core' || segment === 'leg') && (
+        <div class="wochenwahl">
+          <button class="iconbtn" type="button" aria-label="Woche davor" disabled={gesperrt}
+            onClick={() => blaettere(-1)}><span aria-hidden="true">‹</span></button>
+          <div class="wochenwahl-titel">
+            <b>{tw.label}</b>
+            <span>{tw.tage.length ? tagUndMonat(tw.tage[0]) + '–' + tagUndMonat(tw.tage[tw.tage.length - 1]) : ''}
+              {versatz === 0 ? ' · diese Woche' : ''}</span>
+          </div>
+          <button class="iconbtn" type="button" aria-label="Woche danach" disabled={gesperrt}
+            onClick={() => blaettere(1)}><span aria-hidden="true">›</span></button>
+          <button class={'btn tonal wochenwahl-heute' + (versatz === 0 ? ' leer' : '')} type="button"
+            disabled={gesperrt || versatz === 0} onClick={() => blaettere(0)}>Heute</button>
+        </div>
+      )}
+
       <div hidden={segment !== 'core'}>
         <Baustein
           titel="Rumpf"
@@ -301,7 +359,7 @@ export function TrainingTab(){
                                                : 'Als Erstes · ' + repShort(p.circuit.exercises[0], cfg.workSec) }}
               bild={bild ? { src: bild.img, name: bild.name, vorschau,
                              cap: <b>{bild.name}</b>,
-                             onClick: () => setDialogEx({ kind:'core', i: bildIndex }) } : null}
+                             onClick: () => setDialogEx({ kind:'core', i: bildIndex, plan: p }) } : null}
               zurueck={{ onClick: zurueck, disabled: !step || timer.index <= 0 }}
               haupt={{ label: laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
                        onClick: starten }}
@@ -326,6 +384,16 @@ export function TrainingTab(){
             </div>
           }>
 
+          {/* Die Zirkel der gezeigten Woche zur Wahl - nur wenn es mehr als
+              einen gibt. Jeder bringt seine Runden und seinen Takt mit. */}
+          {tw.zirkel.length > 1 && (
+            <Segmented rolle="radio" label="Zirkel der Woche" klasse="katerwahl"
+              ziele={tw.zirkel.map(z => ({ id: isoDayLocal(z.datum), disabled: !!step,
+                label: tagKurz(z.datum) + ' · ' + z.rounds + ' R. · ' + z.workSec + '/' + z.restSec + ' s' }))}
+              aktiv={sitzung ? isoDayLocal(sitzung.datum) : null}
+              onWaehlen={id => { if(!step) setZWahl(id); }} />
+          )}
+
           {/* Die Liste bleibt waehrend des Laufs stehen und markiert die
               aktive Uebung - dieselbe Zeilenform wie in den anderen drei
               Bausteinen, mit der Dosierung unter dem Namen. */}
@@ -343,7 +411,7 @@ export function TrainingTab(){
                         stufeZu(ex) ? 'Stufe: ' + stufeZu(ex).text : null].filter(Boolean).join(' · ') || null
               }))}
               aktiv={aktiveUebung}
-              onOpen={i => setDialogEx({ kind:'core', i })} />
+              onOpen={i => setDialogEx({ kind:'core', i, plan: p })} />
 
             {/* Die Schritte der laufenden Uebung unter der Liste - wie im
                 gefuehrten Ablauf. Auf dem Boden liegend ist das Bottom Sheet
@@ -359,8 +427,8 @@ export function TrainingTab(){
 
       <div hidden={segment !== 'leg'}>
         {p.format === 2
-          ? <Kraftblock onOpen={spec => setDialogEx(spec)} />
-          : <Beinblock eintrag={legEintrag} onOpen={i => setDialogEx({ kind:'leg', i })} />}
+          ? <Kraftblock woche={tw} onOpen={spec => setDialogEx({ ...spec, plan: p })} />
+          : <Beinblock p={p} w={w} eintrag={legEintrag} onOpen={i => setDialogEx({ kind:'leg', i, plan: p, week: w })} />}
       </div>
 
       <div hidden={segment !== 'mobility'}>

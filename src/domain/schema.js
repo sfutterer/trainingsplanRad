@@ -998,6 +998,14 @@ function pvFolgeplan(err, p, f){
       pvStr(err, b.name, g + '.name');
       pvNum(err, b.von, g + '.von', {min:1, int:true});
       pvNum(err, b.bis, g + '.bis', {min:1, int:true});
+      if(b.kraftErsatz != null && pvObj(err, b.kraftErsatz, g + '.kraftErsatz')){
+        const progs = f.kraft && f.kraft.programme ? f.kraft.programme : {};
+        for(const [von, nach] of Object.entries(b.kraftErsatz)){
+          [von, nach].filter(x => x !== null).forEach(x => {
+            if(!progs[x]) err.push(g + '.kraftErsatz nennt das Programm ' + JSON.stringify(x) + ', das unter folgeplan.kraft.programme fehlt.');
+          });
+        }
+      }
     });
   }
 

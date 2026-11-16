@@ -105,8 +105,9 @@ describe('Die Woche', () => {
     const [mo, di, mi, don, fr, sa, so] = woche1;
     expect(mo.target).toEqual({ sport: 'kraft', kraft: 'oberkoerper' });
     expect(di.einheiten.map(e => e.titel)).toEqual(['Rad – Pendeln, direkte Strecke',
-      'Rad – VO2max 4 × 4 min + 6 Sprints']);
+      'Rad – VO2max 4 × 4 min + 6 Sprints', 'Kraft – Beine moderat']);
     expect(di.einheiten[1].zeit).toBe('abends');
+    expect(di.target.kraft).toBe('beineModerat');
     expect(mi.target.sport).toBe('core');
     expect(mi.target.rideMinutes).toBe(40);
     expect(mi.target.rounds).toBe(2);
@@ -240,8 +241,41 @@ describe('Kraft', () => {
     expect(k2.phase).toBe('K2');
     expect(k2.gruppen[0].uebungen[0].wdh).toBe('6–8');
     expect(k2.gruppen[0].uebungen[0].saetzeText).toBe('3–4');
-    expect(e.gruppen.map(g => g.runden)).toEqual([2, 2, 2, 2]);
-    expect(K.kraftAblauf(k1).length).toBe(12);
+    /* Fassung 2: Donnerstag nur noch die Hauptlast. */
+    expect(k1.gruppen.map(g => g.uebungen[0].key)).toEqual(['rdl', 'bulgarisch']);
+    expect(e.gruppen.map(g => g.runden)).toEqual([2, 2]);
+    expect(K.kraftAblauf(k1).length).toBe(6);
+  });
+
+  /* Fassung 2: Beine zweimal pro Woche - Dienstag moderat in den
+     Belastungswochen, in Erholungs- und Testwochen nicht. */
+  it('legt die moderate Beineinheit auf den Dienstag der Belastungswochen', () => {
+    const dienstag = { 1: '2026-12-08', 3: '2026-12-22', 5: '2027-01-05', 9: '2027-02-02' };
+    const programme = iso => info(iso).einheiten
+      .filter(e => e.timer && e.timer.art === 'kraft').map(e => e.timer.programm);
+    expect(programme(dienstag[1])).toEqual(['beineModerat']);
+    expect(programme(dienstag[3])).toEqual([]);
+    expect(programme(dienstag[9])).toEqual([]);
+    expect(programme('2026-12-24')).toEqual(['beine']);     // Erholungswoche: Do bleibt, 2 Saetze
+    const k1 = K.kraftDosis(p2, 1, 'beineModerat');
+    const k2 = K.kraftDosis(p2, 5, 'beineModerat');
+    expect(k1.gruppen.map(g => g.uebungen[0].key)).toEqual(['hueftheben', 'waden', 'kelchkniebeuge']);
+    expect(k1.gruppen.map(g => g.runden)).toEqual([2, 2, 2]);
+    expect(k2.gruppen.map(g => g.runden)).toEqual([3, 3, 3]);
+    expect(k1.aufwaermen).toBe(null);
+  });
+
+  it('nimmt in Block 3 und 4 den Dienstag heraus und haelt Donnerstag als Erhaltung', () => {
+    const w = 25;                              // Block 3, fortgeschrieben aus Woche 11
+    expect(W.blockFuerWoche(p2, w).nr).toBe(3);
+    const di = W.tagDaten(p2, w, 'di').filter(u => u.kind === 'kraft');
+    const don = W.tagDaten(p2, w, 'do').filter(u => u.kind === 'kraft');
+    expect(di).toEqual([]);
+    expect(don.map(u => u.programm)).toEqual(['beineErhaltung']);
+    expect(K.kraftDosis(p2, w, 'beineErhaltung').gruppen.map(g => g.runden)).toEqual([2, 2]);
+    /* Block 2 und 5 behalten beide Einheiten. */
+    expect(W.tagDaten(p2, 14, 'di').some(u => u.programm === 'beineModerat')).toBe(true);
+    expect(W.tagDaten(p2, 41, 'di').some(u => u.programm === 'beineModerat')).toBe(true);
   });
 
   it('laeuft Supersaetze Paar fuer Paar, mit Pause nach dem Paar', () => {
@@ -313,5 +347,54 @@ describe('Pacing ohne Tempotest (Fassung 13)', () => {
     expect(n.watt).toBe(240);
     expect(n.quelle).toBe('notiert');
     expect(testZiel(null, { ftp: 223 }, null)).toBe(null);
+  });
+});
+
+/* Die Wochenleiste im Trainingsbereich: Rumpf und Kraft einer beliebigen
+   Woche, ueber die Plangrenze hinweg. */
+describe('Trainingswoche fuer Rumpf und Kraft', () => {
+  const woche = iso => D.trainingsWoche(plan, TH, tag(iso), START, {});
+  const kurz = z => W.isoDayLocal(z.datum) + ' ' + z.rounds + 'x' + z.workSec + '/' + z.restSec;
+
+  it('zeigt in Plan 1 beide Zirkel der Woche mit ihrem Takt', () => {
+    const t = woche('2026-11-16');
+    expect(t.label).toBe('Plan 1 · Woche 14');
+    expect(t.tage.length).toBe(7);
+    expect(t.tage[0].getDay()).toBe(6);                  // Plan 1: Samstag
+    expect(t.zirkel.map(kurz)).toEqual(['2026-11-15 3x40/20', '2026-11-18 2x40/20']);
+    expect(t.kraft).toEqual([]);
+  });
+
+  it('kennt die Woche 16 mit dem Anlauf zum Retest', () => {
+    const t = woche('2026-12-01');
+    expect(t.label).toBe('Plan 1 · Woche 16 · Testwoche');
+    /* Sonntag nur Zirkel (Anlauf), Mittwoch Oeffner ohne Zirkel. */
+    expect(t.zirkel.map(kurz)).toEqual(['2026-11-29 2x30/25']);
+  });
+
+  it('zeigt das Uebergangswochenende als eigene, kurze Woche', () => {
+    const t = woche('2026-12-05');
+    expect(t.label).toBe('Plan 2 · Übergang');
+    expect(t.tage.map(W.isoDayLocal)).toEqual(['2026-12-05', '2026-12-06']);
+    expect(t.zirkel).toEqual([]);
+  });
+
+  it('zeigt in Plan 2 die Woche Montag bis Sonntag mit ihren Krafteinheiten', () => {
+    const t = woche('2026-12-10');
+    expect(t.label).toBe('Plan 2 · Woche 1');
+    expect(t.tage[0].getDay()).toBe(1);
+    expect(t.plan.circuit.exercises.some(e => e.name === 'Liegestütz (erhöht)')).toBe(true);
+    expect(t.zirkel.map(kurz)).toEqual(['2026-12-09 2x40/20']);
+    expect(t.kraft.map(k => k.programm)).toEqual(['oberkoerper', 'beineModerat', 'beine']);
+  });
+
+  it('unterscheidet Erholungs- und Testwoche', () => {
+    const e = woche('2026-12-23');
+    expect(e.label).toBe('Plan 2 · Woche 3 · Erholungswoche');
+    expect(e.kraft.map(k => k.programm)).toEqual(['oberkoerper', 'beine']);
+    const t = woche('2027-02-03');
+    expect(t.label).toBe('Plan 2 · Woche 9 · Testwoche');
+    expect(t.kraft).toEqual([]);
+    expect(t.zirkel.map(z => z.datum.getDay())).toEqual([1]);
   });
 });

@@ -1961,7 +1961,7 @@
     "timerFesteFolge": "Der Ablauf steht fest und lässt sich nicht verstellen – er kommt aus dem Plan und nicht aus den Eingabefeldern."
   },
   "folgeplan": {
-    "planName": "Trainingsplan 2 Radfahren – Fassung 1 (Entwurf)",
+    "planName": "Trainingsplan 2 Radfahren – Fassung 2 (Entwurf)",
     "start": "2026-12-07",
     "gueltigAb": "2026-12-05",
     "weeklyVolumeCapPercent": 10,
@@ -2015,7 +2015,11 @@
         "bis": 33,
         "stunden": "10–12",
         "sonntag": "5–7 h, 150 → 200 km, über 2.000 hm",
-        "schwerpunkt": "Tempoblöcke spät in der Fahrt, Verpflegung 80–90 g/h, Zwei-Tage-Blöcke, Rad am Ring"
+        "schwerpunkt": "Tempoblöcke spät in der Fahrt, Verpflegung 80–90 g/h, Zwei-Tage-Blöcke, Rad am Ring",
+        "kraftErsatz": {
+          "beineModerat": null,
+          "beine": "beineErhaltung"
+        }
       },
       {
         "nr": 4,
@@ -2024,7 +2028,11 @@
         "bis": 39,
         "stunden": "9–11",
         "sonntag": "—",
-        "schwerpunkt": "250 km / 3.000 hm, sobald die Kriterien erfüllt sind"
+        "schwerpunkt": "250 km / 3.000 hm, sobald die Kriterien erfüllt sind",
+        "kraftErsatz": {
+          "beineModerat": null,
+          "beine": "beineErhaltung"
+        }
       },
       {
         "nr": 5,
@@ -2339,8 +2347,8 @@
       },
       "programme": {
         "beine": {
-          "titel": "Beine",
-          "dauer": "ca. 45 min",
+          "titel": "Beine schwer",
+          "dauer": "ca. 25–30 min",
           "pauseSekunden": 150,
           "pauseText": "2–3 min",
           "aufwaermen": "5 min: Hüftbeuge am Stab 10 Wdh., Kelchkniebeuge mit leichter Kurzhantel 10 Wdh.",
@@ -2376,28 +2384,77 @@
                 "K1": "8–10",
                 "K2": "6–8"
               }
-            },
-            {
-              "uebung": "hueftheben",
-              "saetze": 3,
-              "wdh": {
-                "K1": "10",
-                "K2": "8–12"
-              }
-            },
-            {
-              "uebung": "waden",
-              "saetze": 3,
-              "wdh": {
-                "K1": "12",
-                "K2": "10–15"
-              }
             }
           ],
           "hinweise": [
-            "Pause 2–3 min zwischen den Sätzen. Bei einbeinigen Übungen zählt der Seitenwechsel als Pause.",
-            "Muskelkater-Regel aus Plan 1: leichter, diffuser Muskelkater → unteres Ende der Spanne; ausgeprägter → Beine entfallen.",
-            "Kein Beintraining am Tag vor der langen Fahrt und nicht am Tag vor der VO2max-Einheit. Testwochen: entfällt."
+            "Donnerstagabend, die Hauptlast der Woche. Pause 2–3 min zwischen den Sätzen; bei einbeinigen Übungen zählt der Seitenwechsel als Pause.",
+            "Erholungswochen: 2 Sätze bei gleichem Gewicht. Testwochen: entfällt.",
+            "Muskelkater-Regel aus Plan 1: leichter, diffuser Muskelkater → unteres Ende der Spanne; ausgeprägter → die Einheit entfällt.",
+            "Kein Beintraining am Tag vor der langen Fahrt und nicht am Tag vor der VO2max-Einheit; nie an zwei Tagen hintereinander."
+          ]
+        },
+        "beineModerat": {
+          "titel": "Beine moderat",
+          "dauer": "ca. 20 min",
+          "pauseSekunden": 150,
+          "pauseText": "2–3 min",
+          "folge": [
+            {
+              "uebung": "hueftheben",
+              "saetze": {
+                "K1": 2,
+                "K2": 3
+              },
+              "wdh": "10–12"
+            },
+            {
+              "uebung": "waden",
+              "saetze": {
+                "K1": 2,
+                "K2": 3
+              },
+              "wdh": "12–15"
+            },
+            {
+              "uebung": "kelchkniebeuge",
+              "saetze": {
+                "K1": 2,
+                "K2": 3
+              },
+              "wdh": "10–12"
+            }
+          ],
+          "hinweise": [
+            "Dienstagabend direkt nach den VO2max-Intervallen – kein eigenes Aufwärmen nötig, die Beine sind vom Rad warm.",
+            "Immer 3–4 Wiederholungen im Tank, auch in Phase K2. Woche 1–4: 2 Sätze, ab Woche 5: 3 Sätze.",
+            "Fühlen sich die Beine am Donnerstag schwer an, wird der Dienstag in der Folgewoche auf 2 Sätze bzw. eine Übung reduziert.",
+            "Erholungs- und Testwochen: entfällt. Pause 2–3 min, der Seitenwechsel zählt als Pause."
+          ]
+        },
+        "beineErhaltung": {
+          "titel": "Beine Erhaltung",
+          "dauer": "ca. 20 min",
+          "pauseSekunden": 150,
+          "pauseText": "2–3 min",
+          "aufwaermen": "5 min: Hüftbeuge am Stab 10 Wdh., Kelchkniebeuge mit leichter Kurzhantel 10 Wdh.",
+          "aufwaermUebungen": [
+            "hueftbeuge",
+            "kelchkniebeuge"
+          ],
+          "folge": [
+            {
+              "uebung": "rdl",
+              "saetze": 2,
+              "wdh": "6–8"
+            },
+            {
+              "uebung": "bulgarisch",
+              "saetze": 2,
+              "wdh": "6–8"
+            }
+          ],
+          "hinweise": [
+            "Block 3–4 (Mai–August): Beine nur einmal pro Woche als Erhaltung – je 2 Sätze schwer, 1–3 Wiederholungen im Tank. Die langen Fahrten tragen die Last."
           ]
         },
         "oberkoerper": {
@@ -2484,9 +2541,10 @@
           "steps": [
             "Kurzhantel senkrecht vor der Brust, Füße schulterbreit",
             "Hüfte nach hinten und unten, Ellbogen zwischen die Knie",
-            "Rücken gerade, Fersen am Boden"
+            "So tief, wie der Rücken gerade bleibt, Fersen am Boden",
+            "3 s absenken, 1 s hoch"
           ],
-          "goal": "Hier nur zum Aufwärmen."
+          "goal": "Am Donnerstag leicht zum Aufwärmen, am Dienstag als Arbeitsübung."
         },
         {
           "key": "rdl",
@@ -2865,6 +2923,13 @@
                   "zone": "z1"
                 }
               ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beineModerat",
+              "zeit": "abends",
+              "title": "Kraft – Beine moderat",
+              "note": "Direkt nach den VO2max-Intervallen, die Beine sind vom Rad warm. Immer 3–4 Wiederholungen im Tank – die Schwelle am Donnerstag darf nicht leiden."
             }
           ],
           "mi": [
@@ -2981,8 +3046,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -3129,6 +3194,13 @@
                   "zone": "z1"
                 }
               ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beineModerat",
+              "zeit": "abends",
+              "title": "Kraft – Beine moderat",
+              "note": "Direkt nach den VO2max-Intervallen, die Beine sind vom Rad warm. Immer 3–4 Wiederholungen im Tank – die Schwelle am Donnerstag darf nicht leiden."
             }
           ],
           "mi": [
@@ -3199,8 +3271,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -3379,8 +3451,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -3527,6 +3599,13 @@
                   "zone": "z1"
                 }
               ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beineModerat",
+              "zeit": "abends",
+              "title": "Kraft – Beine moderat",
+              "note": "Direkt nach den VO2max-Intervallen, die Beine sind vom Rad warm. Immer 3–4 Wiederholungen im Tank – die Schwelle am Donnerstag darf nicht leiden."
             }
           ],
           "mi": [
@@ -3597,8 +3676,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -3745,6 +3824,13 @@
                   "zone": "z1"
                 }
               ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beineModerat",
+              "zeit": "abends",
+              "title": "Kraft – Beine moderat",
+              "note": "Direkt nach den VO2max-Intervallen, die Beine sind vom Rad warm. Immer 3–4 Wiederholungen im Tank – die Schwelle am Donnerstag darf nicht leiden."
             }
           ],
           "mi": [
@@ -3815,8 +3901,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -3995,8 +4081,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -4156,6 +4242,13 @@
                   "zone": "z1"
                 }
               ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beineModerat",
+              "zeit": "abends",
+              "title": "Kraft – Beine moderat",
+              "note": "Direkt nach den VO2max-Intervallen, die Beine sind vom Rad warm. Immer 3–4 Wiederholungen im Tank – die Schwelle am Donnerstag darf nicht leiden."
             }
           ],
           "mi": [
@@ -4226,8 +4319,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -4374,6 +4467,13 @@
                   "zone": "z1"
                 }
               ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beineModerat",
+              "zeit": "abends",
+              "title": "Kraft – Beine moderat",
+              "note": "Direkt nach den VO2max-Intervallen, die Beine sind vom Rad warm. Immer 3–4 Wiederholungen im Tank – die Schwelle am Donnerstag darf nicht leiden."
             }
           ],
           "mi": [
@@ -4444,8 +4544,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -4723,6 +4823,13 @@
                   "zone": "z1"
                 }
               ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beineModerat",
+              "zeit": "abends",
+              "title": "Kraft – Beine moderat",
+              "note": "Direkt nach den VO2max-Intervallen, die Beine sind vom Rad warm. Immer 3–4 Wiederholungen im Tank – die Schwelle am Donnerstag darf nicht leiden."
             }
           ],
           "mi": [
@@ -4793,8 +4900,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -4941,6 +5048,13 @@
                   "zone": "z1"
                 }
               ]
+            },
+            {
+              "kind": "kraft",
+              "programm": "beineModerat",
+              "zeit": "abends",
+              "title": "Kraft – Beine moderat",
+              "note": "Direkt nach den VO2max-Intervallen, die Beine sind vom Rad warm. Immer 3–4 Wiederholungen im Tank – die Schwelle am Donnerstag darf nicht leiden."
             }
           ],
           "mi": [
@@ -5011,8 +5125,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }
@@ -5191,8 +5305,8 @@
               "kind": "kraft",
               "programm": "beine",
               "zeit": "abends",
-              "title": "Kraft – Beine",
-              "note": "Am Abend des Schwellentags: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
+              "title": "Kraft – Beine schwer",
+              "note": "Am Abend des Schwellentags, direkt nach der Radeinheit: kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt bleiben drei Tage."
             }
           ]
         }

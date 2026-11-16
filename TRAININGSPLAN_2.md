@@ -4,7 +4,13 @@
 läuft bis zum 04.12.2026 unverändert zu Ende, einschließlich Retest am Do 03.12.
 Dieser Plan beginnt am **Mo 07.12.2026**.
 
-> **Fassung 1 (Entwurf), Stand 15.11.2026.** Erarbeitet im Chat am 15.11.2026.
+> **Fassung 2 (Entwurf), Stand 16.11.2026.** **Beine zweimal pro Woche** in Block 1–2
+> und Block 5: Do schwer (Rumänisches Kreuzheben, Bulgarische Kniebeuge), Di abends nach
+> den VO2max-Intervallen moderat (Einbeiniges Hüftheben, Wadenheben, Kelchkniebeuge). In
+> Block 3–4 einmal pro Woche als Erhaltung. Gesamtmenge etwa gleich, nur verteilt.
+> Begründung in Abschnitt 14.
+>
+> **Fassung 1 (Entwurf), 15.11.2026.** Erarbeitet im Chat am 15.11.2026.
 > **Wattwerte vorläufig** auf FTP 223 W / LTHR 166 bpm (Retest 22.10.2026). Nach dem
 > Retest am 03.12. werden FTP und LTHR eingetragen; alle Vorgaben stehen als Prozentsatz
 > und wandern ohne Hand am Dokument mit. Block 1 (Winterbasis) ist wochengenau
@@ -135,9 +141,9 @@ Tage versetzt).
 | Tag | Rad | Kraft |
 |---|---|---|
 | **Mo** | — | **Rumpf + Oberkörper** (Supersätze) |
-| **Di** | Pendeln direkt, Z2 · **abends Qualität 1: VO2max + Sprints** (Cube) | — |
+| **Di** | Pendeln direkt, Z2 · **abends Qualität 1: VO2max + Sprints** (Cube) | direkt danach **Beine moderat** |
 | **Mi** | Pendeln direkt, locker | **Rumpf kurz** (Zirkel, 2 Runden) |
-| **Do** | **Qualität 2: Schwelle** (Cube, per Gleitzeit im Hellen) | abends **Beine** |
+| **Do** | **Qualität 2: Schwelle** (Cube, per Gleitzeit im Hellen) | abends **Beine schwer** |
 | **Fr** | Ruhe oder optional 30–40 min Z1 | — |
 | **Sa** | **frei** (wird für andere Arbeiten gebraucht) | optional Mobility |
 | **So** | **lange Fahrt**, Z2 (Cube) | — |
@@ -148,10 +154,12 @@ Täglich bzw. alle zwei Tage: Mobility, Gleichgewicht, Knochenreiz (Abschnitt 9)
 
 - **Do → So drei Tage, So → Di zwei Tage mit Ruhetag dazwischen.** Beide Qualitätstage
   haben Abstand zur langen Fahrt.
-- **Harte Tage hart, leichte Tage leicht:** Die Beinkraft liegt am Abend des
-  Schwellentags. Sie kostet dort kaum zusätzliche Erholung, und bis zur langen Fahrt
-  bleiben drei Tage. Am Samstag würde sie die Sonntagsfahrt verderben, am Montag läge sie
-  zu nah an den VO2max-Intervallen.
+- **Harte Tage hart, leichte Tage leicht:** Beide Beineinheiten liegen an den
+  Qualitätstagen, direkt nach der Radeinheit. Sie kosten dort kaum zusätzliche Erholung.
+  Die schwere Einheit am Donnerstag hat drei Tage Abstand zur langen Fahrt; die moderate
+  am Dienstag 48 h Abstand zur Schwelle. Am Montag läge Beintraining zu nah an den
+  VO2max-Intervallen, am Freitag direkt hinter dem Donnerstag, am Samstag vor der langen
+  Fahrt.
 - **Mittwoch ist der lockerste Fahrtag** — er liegt zwischen den beiden Qualitätstagen.
 - **Sprints im Einfahren am Dienstag**, nicht auf dem Trekkingrad mit Gepäck.
 - **Der Dienstagabend ist von Dezember bis Ende März dunkel.** Die Intervalle laufen dann
@@ -166,7 +174,8 @@ Täglich bzw. alle zwei Tage: Mobility, Gleichgewicht, Knochenreiz (Abschnitt 9)
 3. **Nie zwei harte oder lange Tage hintereinander** — Ausnahme: geplante
    Zwei-Tage-Blöcke an langen Wochenenden (Abschnitt 6).
 4. **Kein Beintraining am Tag vor der langen Fahrt** und nicht am Tag vor der
-   VO2max-Einheit.
+   VO2max-Einheit. Beintraining liegt nach der Radeinheit eines Qualitätstags, nie an
+   zwei Tagen hintereinander.
 5. **Verschieben schlägt Streichen. Streichen schlägt Stapeln.**
 
 ### Pendeln
@@ -430,25 +439,55 @@ Der Sportler hat Rückenprobleme (Art noch offen, Abschnitt 13).
   Wasser gefüllt und empfindlicher.
 - **Kippt die Form, ist der Satz zu Ende.**
 
-### Donnerstag abends — Beine
+### Beine — zwei Einheiten pro Woche (seit Fassung 2)
+
+**Häufigkeit je Block:**
+
+| Block | Beine | |
+|---|---|---|
+| 1 Winterbasis, 2 Aufbau (Dez–Apr) | **2 × pro Woche**, Di moderat + Do schwer | Aufbau |
+| 3 Spezifisch, 4 Zielfenster (Mai–Aug) | **1 × pro Woche**, Do | Erhaltung: Rumänisches Kreuzheben und Bulgarische Kniebeuge, je 2 Sätze schwer (1–3 Wdh. im Tank) |
+| 5 Herbst (Sep–Okt) | **2 × pro Woche** | Aufbau |
+
+**Pause zwischen den Sätzen 2–3 min**, bei einbeinigen Übungen zählt der Seitenwechsel
+als Pause.
+
+#### Donnerstag abends — schwer (Hauptlast)
 
 Aufwärmen 5 min: Hüftbeuge am Stab 10 Wdh., Kelchkniebeuge mit leichter Kurzhantel
-10 Wdh. **Pause zwischen den Sätzen 2–3 min**, bei einbeinigen Übungen zählt der
-Seitenwechsel als Pause. Zeitbedarf ca. 45 min.
+10 Wdh. Zeitbedarf ca. 25–30 min.
 
 | # | Übung | Material | Phase K1 (Woche 1–4) | Phase K2 (ab Woche 5) |
 |---|---|---|---|---|
 | 1 | **Rumänisches Kreuzheben** | zwei Kurzhanteln, beidbeinig | 3 × 8–10 | 3–4 × 6–8 |
 | 2 | **Bulgarische Kniebeuge** | zwei Kurzhanteln, hinterer Fuß auf der Bank | 3 × 8–10 je Seite | 3–4 × 6–8 je Seite |
-| 3 | **Einbeiniges Hüftheben an der Bank** | Kurzhantel auf der Hüfte | 3 × 10 je Seite | 3 × 8–12 je Seite |
-| 4 | **Wadenheben einbeinig auf der Stufe** | Kurzhantel | 3 × 12 je Seite | 3 × 10–15 je Seite |
 
 - **K1 — Technik:** bewusst leicht, **3–4 Wiederholungen bleiben im Tank**. Ziel ist
   saubere Bewegung ohne starken Muskelkater vor der Sonntagsfahrt.
 - **K2 — Kraft:** **1–3 Wiederholungen im Tank.**
-- **Erholungswochen:** 2 Sätze, gleiches Gewicht. **Testwochen:** entfällt.
+
+#### Dienstag abends — moderat (direkt nach den VO2max-Intervallen)
+
+Kein eigenes Aufwärmen nötig, die Beine sind vom Rad warm. Zeitbedarf ca. 20 min.
+
+| # | Übung | Material | Sätze × Wdh. |
+|---|---|---|---|
+| 1 | **Einbeiniges Hüftheben an der Bank** | Kurzhantel auf der Hüfte | 2–3 × 10–12 je Seite |
+| 2 | **Wadenheben einbeinig auf der Stufe** | Kurzhantel | 2–3 × 12–15 je Seite |
+| 3 | **Kelchkniebeuge** | Kurzhantel vor der Brust, 3 s absenken | 2–3 × 10–12 |
+
+- **Immer 3–4 Wiederholungen im Tank** — auch in Phase K2. Die Dienstagseinheit darf die
+  Schwelle am Donnerstag nicht beeinträchtigen.
+- K1 (Woche 1–4): 2 Sätze, ab Woche 5: 3 Sätze.
+- **Fühlen sich die Beine am Donnerstag schwer an**, wird der Dienstag in der Folgewoche
+  auf 2 Sätze bzw. eine Übung reduziert.
+
+#### Für beide Beineinheiten
+
+- **Erholungswochen:** Do 2 Sätze bei gleichem Gewicht, **Di entfällt**.
+- **Testwochen:** beide entfallen.
 - **Muskelkater-Regel aus Plan 1:** leichter, diffuser Muskelkater → unteres Ende der
-  Spanne; ausgeprägter → Beine entfallen.
+  Spanne; ausgeprägter → die Einheit entfällt.
 
 **Steigerung (doppelte Progression), in dieser Reihenfolge:**
 
@@ -457,10 +496,12 @@ Seitenwechsel als Pause. Zeitbedarf ca. 45 min.
 3. 2 s Pause im untersten Punkt
 4. mehr Gewicht
 
+Am Dienstag gilt dieselbe Reihenfolge, aber immer mit 3–4 Wiederholungen im Tank.
+
 **Gewicht ergänzen:** voraussichtlich nach 2–3 Monaten, wenn die Bulgarische Kniebeuge
 auch mit langsamem Absenken und Pause zu leicht wird. Dann **30–40 kg zusätzliche
-Scheiben** → Rumänisches Kreuzheben und Hüftheben mit der Langhantel (beide vom Boden,
-ohne Rack). Ein Rack nur, falls später beidbeinige Kniebeugen mit der Langhantel
+Scheiben** → Rumänisches Kreuzheben (Do) und Hüftheben (Di) mit der Langhantel (beide vom
+Boden, ohne Rack). Ein Rack nur, falls später beidbeinige Kniebeugen mit der Langhantel
 gewünscht sind.
 
 ### Montag — Rumpf und Oberkörper
@@ -534,7 +575,9 @@ Gesäß anspannen. **Nicht ins Hohlkreuz drücken** — Rippen bleiben unten.
 tiefer als die Stufe, Kurzhantel in der Hand der Arbeitsseite. Oben 1 s halten.
 
 **Kelchkniebeuge** — Kurzhantel senkrecht vor der Brust, Füße schulterbreit. Hüfte nach
-hinten und unten, Ellbogen zwischen die Knie. *Hier nur zum Aufwärmen.*
+hinten und unten, Ellbogen zwischen die Knie, so tief, wie der Rücken gerade bleibt.
+3 s absenken, 1 s hoch. *Am Donnerstag leicht zum Aufwärmen, am Dienstag als
+Arbeitsübung.*
 
 **Klimmzug** — Obergriff, schulterbreit. **Nur Absenken:** mit Hilfe eines Stuhls oben
 starten, 5 s kontrolliert nach unten. **Mit Theraband:** Band über die Stange, Knie oder
@@ -588,11 +631,11 @@ Planverstöße; bewertet wird die Wochensumme.
 | Fall | Lösung |
 |---|---|
 | **Sonntag fällt aus** | Samstag nur, wenn er frei ist (dann Fr ohne Fahrt). Sonst verkürzt am Sonntag oder ersatzlos. **Nicht auf Mo oder Di.** |
-| **Dienstagabend geht nicht** | VO2max auf **Mi abends**, Schwelle dann auf **Fr**, So lang wie geplant. Beine am Freitagabend nach der Schwelle |
-| **Donnerstag geht nicht** | Schwelle auf **Fr**, Beine am Freitagabend |
+| **Dienstagabend geht nicht** | VO2max und Beine moderat auf **Mi abends**, Schwelle dann auf **Fr**, Beine schwer am Freitagabend, So lang wie geplant |
+| **Donnerstag geht nicht** | Schwelle auf **Fr**, Beine schwer am Freitagabend |
 | **Wetter oder Dunkelheit am Donnerstag** | Plan 1, Abschnitt 4.11: tagsüber → im Dunkeln auf bekannter Strecke → verlegen |
 | **Wellness-Gate rot** | Qualitätseinheit wird 60 min Z2 |
-| **Zeitnot** | Opferreihenfolge: optionale Fahrten → Rumpf kurz (Mi) → Pendeln → Kraft Mo → Qualität 1 → zuletzt Schwelle oder lange Fahrt. In Block 1 und 3 ist die lange Fahrt wichtiger, in Block 5 die Qualität |
+| **Zeitnot** | Opferreihenfolge: optionale Fahrten → Beine moderat (Di) → Rumpf kurz (Mi) → Pendeln → Kraft Mo → Qualität 1 → zuletzt Schwelle oder lange Fahrt. In Block 1 und 3 ist die lange Fahrt wichtiger, in Block 5 die Qualität |
 | **Krankheit** | mindestens so viele lockere Tage wie Krankheitstage, bevor wieder Intensität gefahren wird. Nichts nachholen |
 | **Urlaub ohne Rad** | Kraft, Rumpf und Mobility brauchen wenig Material; Radwoche als Erholungswoche werten |
 
@@ -626,8 +669,10 @@ Planverstöße; bewertet wird die Wochensumme.
    HFmax-Test als eigener Ablauf.
 5. **Lange Fahrt am Sonntag** — die Analyse wertet den Sonntag als sauberen Z2-Tag
    (Decoupling), nicht mehr den Samstag.
-6. **Satz-Timer** für Kraft (Do Beine, Mo Supersätze): Satzzahl, Wiederholungsziel,
-   Pausenzeit, Supersatz-Paare; Protokoll mit Gewicht und Wiederholungen je Satz.
+6. **Satz-Timer** für Kraft (Di Beine moderat, Do Beine schwer, Mo Supersätze):
+   Satzzahl, Wiederholungsziel, Pausenzeit, Supersatz-Paare; Protokoll mit Gewicht und
+   Wiederholungen je Satz. Häufigkeit der Beine je Block (Abschnitt 7) — in Block 3–4
+   keine Dienstagseinheit.
 7. **Rumpf voll am Montag, kurz am Mittwoch.**
 8. **Stufenleitern** für Liegestütz, Unterarmstütz, Seitstütz und Klimmzug mit
    gespeicherter aktueller Stufe.
@@ -651,3 +696,24 @@ Planverstöße; bewertet wird die Wochensumme.
 | **Ernährungsplan** auf Plan 2 abstimmen (Defizit bis Block 2, Erhaltung ab Block 3) | vor Woche 1 |
 | **Block 2** wochengenau ausarbeiten | Februar 2027 |
 | Bodensee-Umrundung: ob und wann | bis Block 3 |
+
+---
+
+## 14. Änderungen
+
+### Fassung 2 (16.11.2026) gegenüber Fassung 1
+
+**Anlass:** Frage des Sportlers, ob Rumpf- und Beintraining einmal pro Woche zu wenig
+sind.
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **Beine 2 × pro Woche** in Block 1–2 und Block 5 | WHO (2020): muskelkräftigende Aktivität für alle großen Muskelgruppen an 2 oder mehr Tagen pro Woche. Rønnestad, Hansen, Raastad (2010, Eur J Appl Physiol): bei Radfahrern schweres Krafttraining 2 × pro Woche in einer 12-wöchigen Vorbereitung, danach 1 × pro Woche als Erhaltung — Muskelquerschnitt und Kraft blieben 13 Wochen lang erhalten |
+| 2 | **Zweite Einheit Di abends nach den VO2max-Intervallen**, moderat | Harte Tage hart. Montag (vor den Intervallen), Freitag (direkt nach dem Donnerstag) und Samstag (vor der langen Fahrt) scheiden aus |
+| 3 | **Aufteilen statt mehr:** Do Rumänisches Kreuzheben + Bulgarische Kniebeuge, Di Einbeiniges Hüftheben + Wadenheben + Kelchkniebeuge | Jede Muskelgruppe zweimal pro Woche bei etwa gleicher Gesamtmenge; der Donnerstagabend wird kürzer (ca. 25–30 statt 45 min) |
+| 4 | **Block 3–4: 1 × pro Woche als Erhaltung** | Muster aus Rønnestad 2010; im Sommer tragen die langen Fahrten die Last |
+| 5 | Erholungswochen: Di-Beine entfallen; Abweichungsregeln, Opferreihenfolge und App-Anforderung 6 angepasst | Konsistenz |
+
+**Bewusst nicht geändert:** Rumpf bleibt bei zwei Einheiten pro Woche (Mo voll, Mi
+kurz) — er wird zusätzlich bei Koffertragen, Kreuzheben und Bulgarischer Kniebeuge
+gefordert.

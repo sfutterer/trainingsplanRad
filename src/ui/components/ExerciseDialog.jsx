@@ -31,7 +31,9 @@ const QUELLEN = {
 };
 
 export function ExerciseDialog({ spec, workSec, onClose }){
-  const p = plan.value;
+  /* Der Trainingsbereich kann eine andere Woche zeigen als die von heute -
+     auch eine aus dem anderen Plan. Der Dialog nimmt dann deren Uebungen. */
+  const p = spec.plan || plan.value;
   const istBein = spec.kind === 'leg';
   const istKraft = spec.kind === 'kraft';
   const istKoerper = spec.kind === 'mobility' || spec.kind === 'coordination';
@@ -39,7 +41,7 @@ export function ExerciseDialog({ spec, workSec, onClose }){
   const liste = quelle(p);
   const ex = spec.key ? liste.find(x => x.key === spec.key) : liste[spec.i];
   if(!ex) return null;
-  const dose = istBein ? legDose(p, week.value) : null;
+  const dose = istBein ? legDose(p, spec.week || week.value) : null;
   const dosis = istKraft
     ? (spec.dosis || '')
     : istBein

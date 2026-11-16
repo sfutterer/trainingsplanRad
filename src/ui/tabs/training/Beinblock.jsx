@@ -36,8 +36,10 @@ import { Buehne } from '../../components/Buehne.jsx';
 import { useTimerBasis } from '../../components/useTimerBasis.js';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
-export function Beinblock({ eintrag, onOpen }){
-  const p = plan.value, w = week.value;
+export function Beinblock({ eintrag, onOpen, p: pEin, w: wEin }){
+  /* Plan und Woche der gezeigten Woche aus dem Trainingsbereich, sonst die
+     von heute. */
+  const p = pEin || plan.value, w = wEin || week.value;
   const s = settings.value;
   const stufen = sorenessLevels(p);
 

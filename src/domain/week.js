@@ -154,7 +154,22 @@ export function phaseName(plan, week){
    eine Entsprechung hatten. Alle uebrigen las day.js roh aus plan.weeks[i],
    an der Winterlogik vorbei. */
 export function tagDaten(plan, week, tag){
-  if(plan.format === 2) return planWeek(plan, week).tage[tag] || [];
+  if(plan.format === 2){
+    const tage = planWeek(plan, week).tage[tag] || [];
+    /* Eine fortgeschriebene Woche (noch nicht ausgearbeitet) traegt die
+       Krafteinheiten ihrer Vorlage - in Block 3 und 4 laufen die Beine aber
+       nur einmal pro Woche als Erhaltung (Trainingsplan 2, Fassung 2). Der
+       Block nennt dafuer unter kraftErsatz, welches Programm wodurch ersetzt
+       wird; null heisst: entfaellt. Eine ausgearbeitete Woche sagt selbst,
+       was sie will, und bleibt unberuehrt. */
+    const ersatz = week > plan.weekCount ? blockFuerWoche(plan, week).kraftErsatz : null;
+    if(!ersatz) return tage;
+    return tage.flatMap(u => {
+      if(u.kind !== 'kraft' || !(u.programm in ersatz)) return [u];
+      const neu = ersatz[u.programm];
+      return neu ? [{ ...u, programm: neu, title: null }] : [];
+    });
+  }
   const winter = isWinterBlock(plan, week) ? plan.winterBlock.tage : null;
   return (winter && winter[tag]) || planWeek(plan, week).tage[tag];
 }

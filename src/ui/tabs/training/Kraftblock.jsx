@@ -24,11 +24,11 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, week, settings, coreLog, saveCoreLog, today, stufen, setStufe,
          startDate } from '../../../state/store.js';
-import { kraftWahl } from '../../../state/navigation.js';
+import { kraftWahl, kraftLaeuft } from '../../../state/navigation.js';
 import { buildLegRestSequence } from '../../../domain/timer/sequences.js';
 import { kraftDosis, kraftAblauf, kraftUebungen, satzZiel, zielZahl, einheitKurz,
          kraftEintragId, kraftSaetzeErledigt, letztesGewicht, stufeText } from '../../../domain/kraft.js';
-import { isoDayLocal, tagDaten, planAm, weekNumberFor } from '../../../domain/week.js';
+import { isoDayLocal, planAm, weekNumberFor, WEEKDAY_SHORT } from '../../../domain/week.js';
 import { Baustein, Uebungsliste } from './Baustein.jsx';
 import { Segmented } from '../../components/Segmented.jsx';
 import { Buehne } from '../../components/Buehne.jsx';
@@ -36,31 +36,33 @@ import { Auswahlfeld } from '../../components/Feld.jsx';
 import { useTimerBasis } from '../../components/useTimerBasis.js';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
-const NAMEN = { oberkoerper: 'Mo · Rumpf + Oberkörper', beine: 'Do · Beine' };
-const TAG_KUERZEL = ['so', 'mo', 'di', 'mi', 'do', 'fr', 'sa'];
+/* Ohne Krafteinheit in der gezeigten Woche (Uebergang) stehen diese zur
+   Wahl - die drei Einheiten einer normalen Belastungswoche. */
+const STANDARD = ['oberkoerper', 'beineModerat', 'beine'];
 
-/* Die Krafteinheit, die heute im Plan steht - fuer die Voreinstellung des
-   Programms und fuer eine abweichende Satzzahl aus der Datei. */
-function heutigeEinheit(p, w, datum){
-  if(!p || p.format !== 2) return null;
-  return tagDaten(p, w, TAG_KUERZEL[datum.getDay()]).find(e => e.kind === 'kraft') || null;
-}
-
-export function Kraftblock({ onOpen }){
-  const p = plan.value, w = week.value;
+/* `woche` kommt aus trainingsWoche (day.js): die Woche, die der
+   Trainingsbereich gerade zeigt. Zur Wahl stehen die Krafteinheiten dieser
+   Woche, mit ihrem Wochentag - seit Fassung 2 sind das in Belastungswochen
+   drei (Mo Rumpf + Oberkoerper, Di Beine moderat, Do Beine schwer), in
+   Erholungswochen zwei, in Testwochen keine. */
+export function Kraftblock({ woche, onOpen }){
+  const p = woche ? woche.plan : plan.value;
+  const w = woche ? Math.max(woche.week, 1) : week.value;
   const s = settings.value;
   const tag = isoDayLocal(today.value);
-  const heute = heutigeEinheit(p, w, today.value);
-  /* Montag zuerst, wie die Woche. */
-  const programme = Object.keys(p.kraft.programme)
-    .sort((a, b) => (a === 'oberkoerper' ? -1 : b === 'oberkoerper' ? 1 : 0));
 
-  const vorwahl = () => kraftWahl.value
-    || (heute && heute.programm)
-    || (today.value.getDay() === 1 ? 'oberkoerper' : 'beine');
-  const [prog, setProg] = useState(vorwahl);
+  const geplant = woche ? woche.kraft : [];
+  const angebot = geplant.length
+    ? geplant.map(k => ({ id: k.programm, datum: k.datum, einheit: k.einheit }))
+    : STANDARD.filter(k => p.kraft.programme[k]).map(k => ({ id: k, datum: null, einheit: null }));
+  const heuteGeplant = angebot.find(a => a.datum && isoDayLocal(a.datum) === tag);
+  /* Die Wahl liegt in kraftWahl - die Tageskarte setzt sie beim Sprung mit.
+     Steht das gewaehlte Programm nicht in dieser Woche, gilt das von heute,
+     sonst das erste der Woche. */
+  const gewaehlt = angebot.find(a => a.id === kraftWahl.value) || heuteGeplant || angebot[0];
+  const prog = gewaehlt.id;
 
-  const einheit = heute && heute.programm === prog ? heute : null;
+  const einheit = gewaehlt.einheit;
   const dosis = kraftDosis(p, w, prog, einheit);
   const ablauf = kraftAblauf(dosis);
   const uebungen = kraftUebungen(dosis);
@@ -77,12 +79,11 @@ export function Kraftblock({ onOpen }){
   const { timer, zeichnen, melden } =
     useTimerBasis({ kennung: 'kraft', label: 'Kraft', segment: 'leg' });
 
-  /* Ein Sprung von der Tageskarte setzt das Programm mit. */
+  /* Laeuft ein Ablauf, bleibt die Woche im Trainingsbereich stehen. */
   useEffect(() => {
-    if(kraftWahl.value && kraftWahl.value !== prog && idx < 0) setProg(kraftWahl.value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kraftWahl.value]);
-
+    kraftLaeuft.value = idx >= 0;
+    return () => { kraftLaeuft.value = false; };
+  }, [idx]);
 
   const laufend = idx >= 0 && idx < ablauf.length;
   const satz = laufend ? ablauf[idx] : null;
@@ -205,7 +206,6 @@ export function Kraftblock({ onOpen }){
   function waehlen(k){
     if(laufend) return;
     kraftWahl.value = k;
-    setProg(k);
   }
 
   const erledigtAnzahl = kraftSaetzeErledigt(eintrag);
@@ -267,7 +267,7 @@ export function Kraftblock({ onOpen }){
       meta={(dosis.dauer || '') + (dosis.reduziert ? ' · Erholungswoche' : '')}
       status={
         <p class={'tagchip' + (ablauf.length && erledigtAnzahl >= ablauf.length ? ' an' : '')}>
-          Woche {w} · {dosis.phaseInfo ? dosis.phaseInfo.name : dosis.phase} · {erledigtAnzahl} / {ablauf.length} Sätze protokolliert
+          {gewaehlt.datum ? WEEKDAY_SHORT[gewaehlt.datum.getDay()] + ' ' + gewaehlt.datum.getDate() + '.' + (gewaehlt.datum.getMonth() + 1) + '.' : 'Woche ' + w} · {dosis.phaseInfo ? dosis.phaseInfo.name : dosis.phase} · {erledigtAnzahl} / {ablauf.length} Sätze heute protokolliert
         </p>
       }
       buehne={buehne}
@@ -294,9 +294,17 @@ export function Kraftblock({ onOpen }){
         </div>
       }>
 
-      <Segmented rolle="radio" label="Programm" klasse="katerwahl"
-        ziele={programme.map(k => ({ id: k, label: NAMEN[k] || p.kraft.programme[k].titel, disabled: laufend }))}
-        aktiv={prog} onWaehlen={waehlen} />
+      {angebot.length > 1 || !geplant.length ? (
+        <Segmented rolle="radio" label="Krafteinheit der Woche" klasse="katerwahl"
+          ziele={angebot.map(a => ({ id: a.id, disabled: laufend,
+            label: (a.datum ? WEEKDAY_SHORT[a.datum.getDay()] + ' · ' : '') + p.kraft.programme[a.id].titel }))}
+          aktiv={prog} onWaehlen={waehlen} />
+      ) : null}
+      {!geplant.length && woche ? (
+        <p class="hint">{woche.test
+          ? 'Testwoche: Montag nur Rumpf-Zirkel, die Beineinheiten entfallen.'
+          : 'In dieser Woche steht keine Krafteinheit im Plan.'}</p>
+      ) : null}
 
       {dosis.aufwaermen ? (
         <div class="card">

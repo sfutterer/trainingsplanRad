@@ -1534,3 +1534,67 @@ export function timerEinheitPlan2(plan, date){
   }
   return tage.find(t => t.offset === 0) || tage.find(t => t.offset > 0) || tage[0] || null;
 }
+
+/* ==== Eine Trainingswoche fuer die Bausteine Rumpf und Kraft ====
+
+   Der Zirkel und die Krafteinheiten sind nicht jede Woche dieselben: Takt
+   und Runden wechseln mit der Woche, Erholungswochen nehmen eine Runde
+   heraus, und am Uebergang zu Plan 2 aendert sich alles - andere Uebungen
+   im Zirkel, Saetze statt Beinblock. Der Trainingsbereich zeigte bis zum
+   16.11.2026 nur die Woche von heute. Hier entsteht die Woche um einen
+   beliebigen Tag, mit allem, was die beiden Bausteine daraus brauchen:
+
+     plan, week   der Plan, der an diesem Tag gilt, und seine Wochennummer
+     tage         die Tage der Woche, die zu diesem Plan gehoeren - die Woche
+                  um den Wechsel zeigt so nur das Uebergangswochenende
+     zirkel       je Tag mit Zirkel: Runden, Belastung, Pause
+     kraft        je Tag mit Krafteinheit (Plan 2): Programm und Einheit
+
+   Gerechnet wird ueber buildDayInfo, also mit dem Testanlauf und allen
+   Sondertagen - was hier steht, ist dasselbe, was die Tageskarte sagt. */
+export function trainingsWoche(planEin, th, anker, start1, wahlen){
+  const am = planAm(planEin, anker, start1);
+  const p = am.plan;
+  const roh = weekNumberFor(anker, am.start);
+  const week = p.format === 2 && roh < 1 ? 0 : Math.max(roh, 1);
+  const beginn = addDays(am.start, Math.floor(dayOffset(anker, am.start) / 7) * 7);
+  const tage = [];
+  for(let i = 0; i < 7; i++){
+    const d = addDays(beginn, i);
+    if(planAm(planEin, d, start1).plan === p) tage.push(d);
+  }
+
+  const zirkel = [], kraft = [];
+  for(const d of tage){
+    const info = buildDayInfo(planEin, th, d, start1, wahlen);
+    if(info.vorStart) continue;
+    const t = info.target || {};
+    const e = info.einheiten.find(x => x.timer && x.timer.art === 'rumpf');
+    if(e){
+      const w = Math.max(info.week, 1);
+      const voll = t.sport === 'core' && t.rounds > 0;
+      zirkel.push({
+        datum: d, titel: e.titel,
+        rounds: voll ? t.rounds : (t.zirkel || p.circuit.wednesdayRounds),
+        workSec: voll && t.workSec > 0 ? t.workSec : coreWorkSeconds(p, w),
+        restSec: voll && t.restSec != null ? t.restSec : coreRestSeconds(p, w)
+      });
+    }
+    if(p.format === 2){
+      const sonder = p.sondertage[isoDayLocal(d)] || null;
+      for(const u of einheitenAm(p, d, week, sonder)){
+        if(u.kind === 'kraft') kraft.push({ datum: d, programm: u.programm, einheit: u });
+      }
+    }
+  }
+
+  const recovery = week >= 1 && isRecoveryWeek(p, week);
+  const test = week >= 1 && testWeeks(p).indexOf(week) >= 0;
+  const kopf = p.format === 2 ? (week < 1 ? 'Plan 2 · Übergang' : 'Plan 2 · Woche ' + week)
+                              : 'Plan 1 · Woche ' + week;
+  return {
+    plan: p, week, tage, zirkel, kraft, recovery, test,
+    label: kopf + (test ? ' · Testwoche' : recovery ? ' · Erholungswoche' : ''),
+    kennung: p.kennung + ':' + week
+  };
+}

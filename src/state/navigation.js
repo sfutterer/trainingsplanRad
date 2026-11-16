@@ -58,6 +58,16 @@ export const baustein = signal('core');
    Donnerstag die Beine. null heisst: das Programm des heutigen Tages. */
 export const kraftWahl = signal(null);
 
+/* Welche Woche Rumpf und Kraft im Trainingsbereich zeigen: 0 ist die Woche
+   von heute, 1 die naechste, -1 die davor. Gezaehlt in Wochen ab heute und
+   nicht als Wochennummer, weil die Nummer am Uebergang zu Plan 2 von 16 auf
+   1 springt. Ein Sprung von der Tageskarte fuehrt immer zur Woche von
+   heute - dort steht die Einheit, die man oeffnen will. */
+export const wochenVersatz = signal(0);
+
+/* Laeuft ein Kraftablauf, bleibt die Wochenleiste gesperrt. */
+export const kraftLaeuft = signal(false);
+
 /* Die vier Ziele der unteren Leiste - die Bereiche, die waehrend des Trainings
    gebraucht werden. Alles Seltenere steht nur im Drawer. */
 export const HAUPTZIELE = ['plan', 'training', 'intervalle', 'analyse'];
@@ -84,7 +94,10 @@ export function gotoTab(roh, push, bausteinId, programm){
   if(programm) kraftWahl.value = programm;
   const id = tabId(roh);
   if(!id) return;
-  if(bausteinId && BAUSTEINE[bausteinId]) baustein.value = bausteinId;
+  if(bausteinId && BAUSTEINE[bausteinId]){
+    baustein.value = bausteinId;
+    if(!kraftLaeuft.value) wochenVersatz.value = 0;
+  }
   if(tab.value === id) return;
   tab.value = id;
   if(push) history.pushState({ tab: id }, '', '#' + id);
