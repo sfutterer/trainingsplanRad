@@ -1945,11 +1945,11 @@
     "legTempo": "Tempo durchgehend 3 s absenken, 1 s heben – keine Pause unten, kein Schwung. Das exzentrische Absenken ist der Reiz.",
     "legTempoPlain": "3 s absenken, 1 s heben, keine Pause unten, kein Schwung.",
     "legPerSideNote": "Eine Seite komplett, dann wechseln.",
-    "legAbortSigns": "Abbruchzeichen: Knie fällt beim Aufrichten nach innen, Rücken rundet unten, Ferse hebt sich, Oberkörper kippt beim Split Squat zur Seite. Lieber 6 saubere Wiederholungen als 12 schlechte.",
+    "legAbortSigns": "Abbruchzeichen: Knie fällt nach innen, Rücken rundet, Ferse hebt sich, Oberkörper kippt zur Seite. Lieber 6 saubere Wiederholungen als 12 schlechte.",
     "legProgression": "Die Progression ist von den Phasengrenzen entkoppelt: weitergerückt wird, sobald das obere Ende der Spanne an zwei aufeinanderfolgenden Sonntagen in allen Runden mit sauberer Form erreicht wurde – auch wenn die Phase das noch nicht vorsieht. Reihenfolge: mehr Wiederholungen → mehr Runden → schwierigere Variante → Zusatzgewicht. Nicht über das Tempo und nicht über mehr Übungen.",
     "legWednesdayNote": "Mittwoch ist der verkürzte Zirkel ohne Beinblock. Fällt der Sonntag aus, wird der Beinblock nicht auf den Mittwoch nachgeholt – ausgefallen ist ausgefallen.",
     "legTuesdayNote": "Zweite Beineinheit am Abend, am unteren Rand der Wiederholungsspanne. Erst ab Phase 3 möglich: davor liegt der Qualitätstag am Donnerstag keine 40 Stunden entfernt. In Phase 4 nur noch Erhaltungsdosis – Kraft zu erhalten braucht deutlich weniger Reiz als Kraft aufzubauen.",
-    "coreAbortRule": "Regel: Wenn die Form kippt – Hüfte hängt durch, Rücken wird rund, Zittern – ist der Satz zu Ende. Abbrechen ist besser als schlecht weitermachen; eine Runde weniger kostet nichts.",
+    "coreAbortRule": "Kippt die Form – Hüfte hängt durch, Rücken wird rund, Zittern –, ist der Satz zu Ende. Eine Runde weniger kostet nichts.",
     "zoneNoteTransition": "Arbeitsannahme aus dem Plan, kein gemessener Wert. Die Obergrenze 142 bpm ist eine harte Grenze, kein Ziel. Der Sprechtest hat Vorrang.",
     "zoneNoteCoggan": "Auch Coggan-Z2 ist breit und reicht oben oft über LT1. Der Sprechtest sticht die Zahl: ganze Sätze müssen möglich sein. Zweite Kontrollinstanz ist der Drift – liegt er über 5 %, war die Fahrt zu hart, auch wenn der Puls im Band lag.",
     "thresholdTestSummary": "20 min Einfahren mit 3× 1 min zügig, 5 min locker, 20 min gleichmäßig maximal, 10 min Ausrollen. FTP = Ø-Watt der 20 min × 0,95 · LTHR = Ø-Puls der 20 min. Pacing: die ersten drei Minuten bewusst konservativer als das Ziel, auf die Durchschnittsleistung schauen, nicht auf den Momentanwert.",
@@ -2794,6 +2794,9 @@
           "Rumänisches Kreuzheben mit Verschlüssen: Die Stange vor dem Satz auf zwei stabile Erhöhungen auf Schienbeinhöhe legen (Stufen, Kisten) – dann ist die erste Wiederholung nicht vom Boden. Ohne Erhöhung mit gebeugten Knien und geradem Rücken aufnehmen.",
           "Immer mindestens 2 Wiederholungen im Tank, auch in Phase K2. Ohne Partner und Ablage gibt es keinen Versuch bis zum Muskelversagen.",
           "Langhantel und Kurzhanteln teilen sich die 30 kg Scheiben: vor der Einheit aufteilen bzw. zwischen den Übungen umstecken."
+        ],
+        "beimSatz": [
+          "Kippt die Form, ist der Satz zu Ende. Mit der Langhantel ohne Rack: nie bis zum Muskelversagen."
         ]
       }
     },

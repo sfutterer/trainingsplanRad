@@ -34,8 +34,7 @@ export function Beweglichkeit({ onOpen }){
   return (
     <Baustein
       status={<p class="merksatz">{m.note}</p>}
-      buehne={buehne}
-      hinweise={[m.placement, m.scope]}>
+      buehne={buehne}>
       {liste}
     </Baustein>
   );

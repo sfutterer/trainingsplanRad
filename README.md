@@ -87,6 +87,14 @@ einzeilige Wochenleiste, die während eines laufenden Ablaufs ganz verschwindet,
 und kein Übungsvideo unter der Bühne des Kraftablaufs. Dauer und
 Erholungswochen-Marke stehen jetzt in der Statuszeile unter der Bühne.
 
+**Hinweise sind eine Auswahl, keine Sammlung.** Der Steckplatz `hinweise`
+trägt nur noch die Regeln, die *während* der Einheit gelten, und zeigt sie als
+Zeilen (`.merkzeilen`) statt als Karte mit Kopfzeile — bei Kraft und Beinblock
+je zwei, bei Beweglichkeit und Koordination keine. Was man einmal liest und
+dann weiß (Progression, Muskelkater, Freischaltregel), steht im Schluss-Slot
+oder nur im Trainingsplan. Die Regeln für die Langhantel ohne Rack stehen
+zusätzlich in den Schritten der betroffenen Übung, wo sie zur Bewegung gehören.
+
 Seit Fassung 2 von Plan 2 (16.11.2026) laufen die Beine **zweimal pro Woche**:
 Dienstagabend moderat (`beineModerat`, nur in Belastungswochen), Donnerstagabend
 schwer (`beine`). In Block 3 und 4 nur noch Donnerstag als Erhaltung – für

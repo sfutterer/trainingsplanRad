@@ -217,6 +217,16 @@ export function Kraftblock({ woche, onOpen }){
      einem 375er Geraet schob es die Tastenreihe unter die Navigationsleiste -
      ausgerechnet "Erledigt" war abgeschnitten. Erreichbar bleibt es ueber die
      Uebungsliste und den Uebungsdialog, also vor und nach dem Satz. */
+  /* Zwei Zeilen statt sechzehn Absaetze: die Tankregel der laufenden Phase
+     und der eine Satz, der ohne Rack die Notbremse ist. Der Rest -
+     Rueckenregeln, Progression, Muskelkater, Gewicht ergaenzen - steht im
+     Trainingsplan; zwischen zwei Saetzen liest ihn niemand. Was zur Bewegung
+     selbst gehoert, steht in den Schritten der Uebung. */
+  const merkzeilen = [
+    dosis.phaseInfo ? dosis.phaseInfo.text : null,
+    ...((p.kraft.regeln || {}).beimSatz || [])
+  ];
+
   const erledigtAnzahl = kraftSaetzeErledigt(eintrag);
   const offenDialog = key => onOpen({ kind:'kraft', key,
     dosis: (() => { const u = uebungen.find(x => x.key === key); return u ? satzZiel(u) : ''; })() });
@@ -265,7 +275,8 @@ export function Kraftblock({ woche, onOpen }){
           {gewaehlt.datum ? WEEKDAY_SHORT[gewaehlt.datum.getDay()] + ' ' + gewaehlt.datum.getDate() + '.' + (gewaehlt.datum.getMonth() + 1) + '.' : 'Woche ' + w} · {dosis.phaseInfo ? dosis.phaseInfo.name : dosis.phase}{dosis.reduziert ? ' · Erholungswoche' : ''} · {erledigtAnzahl} / {ablauf.length} Sätze heute protokolliert
         </p>
       }
-      buehne={buehne}>
+      buehne={buehne}
+      hinweise={merkzeilen}>
 
       {angebot.length > 1 || !geplant.length ? (
         <Segmented rolle="radio" label="Krafteinheit der Woche" klasse="katerwahl"

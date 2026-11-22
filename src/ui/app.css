@@ -157,6 +157,22 @@
 }
 .tagchip.an{ background: var(--ok-bg); color: var(--ok); }
 
+/* Die Regeln, die waehrend einer Einheit gelten - als Zeilen und nicht als
+   Karte. Eine Karte haette eine Kopfzeile ("Hinweise · aus dem Plan"), einen
+   Rahmen und einen eigenen Abstand; drei Dinge, die hier nichts tragen. Die
+   Linie links sagt, dass die Zeilen zusammengehoeren, und kostet keinen Platz
+   nach unten.
+
+   Steht hier und nicht in training.css: den Baustein benutzen auch der
+   Intervall- und der Testbereich, und die werden nachgeladen - training.css
+   kaeme dort vielleicht nie an. */
+.merkzeilen{
+  margin: 12px 0 0; padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--outline);
+}
+.merkzeilen p{ margin: 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+.merkzeilen p + p{ margin-top: 7px; }
+
 /* Abstaende aus der Nachbarschaft statt aus style-Attributen im JSX.
 
    Vorher standen an zwei Dutzend Stellen style="margin-top:12px" - dieselbe

@@ -77,7 +77,6 @@ export function Koordination({ onOpen }){
             {istHeute ? 'Heute ist Koordinationstag.' : 'Heute nicht dran – der nächste ist ' + naechster + '.'}
           </p>}
       buehne={buehne}
-      hinweise={[c.placement, c.scope]}
       schluss={
         <div class="card">
           <div class="row"><span>Freischaltregel</span><b>{stufenWort}</b></div>

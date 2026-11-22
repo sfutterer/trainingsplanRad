@@ -246,6 +246,15 @@ export function Beinblock({ eintrag, onOpen, p: pEin, w: wEin }){
       ende={{ label:'Ablauf beenden', onClick: beenden }} />
   );
 
+  /* Von sechs Absaetzen bleiben zwei: das Tempo und die Abbruchzeichen.
+     Beides gilt waehrend des Satzes. Die Pausen zaehlt die Uhr, und was
+     Muskelkater bedeutet und wann weitergerueckt wird, liest man einmal im
+     Trainingsplan und nicht zwischen zwei Runden. */
+  const merkzeilen = [
+    p.texts.legTempoPlain + (dose.extra ? ' ' + dose.extra : ''),
+    p.texts.legAbortSigns
+  ];
+
   return (
     <Baustein
       status={
@@ -255,15 +264,17 @@ export function Beinblock({ eintrag, onOpen, p: pEin, w: wEin }){
         </p>
       }
       buehne={buehne}
-      hinweise={[
-        'Pause ' + p.legs.restBetweenExercisesSeconds + ' s zwischen den Übungen, '
-          + p.legs.restBetweenRoundsSeconds + ' s zwischen den Runden. ' + p.texts.legTempoPlain,
-        dose.extra,
-        p.legs.sorenessNote,
-        p.legs.sorenessWarning,
-        p.texts.legAbortSigns,
-        p.texts.legProgression
-      ]}>
+      hinweise={merkzeilen}
+      /* Was man einmal liest und dann weiss, steht zuletzt - das ist, wofuer
+         der Schluss-Steckplatz da ist. Oben bleiben die zwei Zeilen, die
+         waehrend des Satzes gelten. */
+      schluss={
+        <div class="card">
+          <div class="row"><span>Regeln</span><b>einmal lesen</b></div>
+          <p class="hint">{p.texts.legProgression}</p>
+          <p class="hint">{p.legs.sorenessNote}</p>
+        </div>
+      }>
 
       {/* Die Abfrage steht vor dem Raster und nicht in den Hinweisen: sie ist
           eine Eingabe, keine Erlaeuterung, und sie aendert die Zahlen, die

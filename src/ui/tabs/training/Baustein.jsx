@@ -12,7 +12,7 @@
      1  Kopf          Name, Dauer/Rhythmus, genau ein Status
      2  Buehne        Ring oder Dosis, Bild, Tastenreihe
      3  Inhalt        Uebungsliste, Protokoll, Raster
-     4  Hinweise      alle Saetze aus dem Plan, gesammelt
+     4  Hinweise      die Regeln, die waehrend der Einheit gelten
      5  Schluss       Regeln und Einstellungen, immer zuletzt
 
    Ein Baustein darf Steckplaetze leer lassen (der Rumpf hat kein Protokoll,
@@ -55,10 +55,20 @@ export function Baustein({ titel, meta, status, buehne, hinweise, schluss, child
       {status}
       {children}
 
+      {/* Hinweise sind Zeilen, keine Karte mehr. Die Karte hatte eine
+          Kopfzeile ("Hinweise · aus dem Plan"), die nichts sagte, was die
+          Saetze darunter nicht schon sagen, und einen Rahmen, der sie zu
+          einem eigenen Abschnitt machte - bei der Kraft waren es damit
+          sechzehn Absaetze Regeltext unter dem Ablauf.
+
+          Was hier steht, ist jetzt eine Auswahl und keine Sammlung: nur
+          Regeln, die waehrend der Einheit gelten. Alles, was erklaert, wann
+          man trainiert oder was nicht protokolliert wird, steht im
+          Trainingsplan und nicht auf dem Bildschirm, auf den man zwischen
+          zwei Saetzen schaut. */}
       {saetze.length ? (
-        <div class="card">
-          <div class="row"><span>Hinweise</span><b>aus dem Plan</b></div>
-          {saetze.map((t, i) => <p class="hint" key={i}>{t}</p>)}
+        <div class="merkzeilen">
+          {saetze.map((t, i) => <p key={i}>{t}</p>)}
         </div>
       ) : null}
 
