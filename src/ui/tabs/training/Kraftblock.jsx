@@ -274,6 +274,7 @@ export function Kraftblock({ woche, onOpen }){
       hinweise={[
         ...(dosis.hinweise || []),
         dosis.phaseInfo ? dosis.phaseInfo.name + ': ' + dosis.phaseInfo.text : null,
+        ...((dosis.langhantel || []).map(r => 'Langhantel ohne Rack: ' + r)),
         regeln.steigerung,
         regeln.gewicht,
         ...((regeln.ruecken || []).map(r => 'Rücken: ' + r))

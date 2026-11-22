@@ -2342,19 +2342,20 @@
         },
         "K2": {
           "name": "K2 – Kraft",
-          "text": "1–3 Wiederholungen bleiben im Tank."
+          "text": "2–3 Wiederholungen bleiben im Tank – ohne Rack und ohne Partner kein Satz bis zum Muskelversagen."
         }
       },
       "programme": {
         "beine": {
           "titel": "Beine schwer",
-          "dauer": "ca. 25–30 min",
+          "dauer": "ca. 25–30 min plus Umstecken der Scheiben",
           "pauseSekunden": 150,
           "pauseText": "2–3 min",
-          "aufwaermen": "5 min: Hüftbeuge am Stab 10 Wdh., Kelchkniebeuge mit leichter Kurzhantel 10 Wdh.",
+          "aufwaermen": "5 min: Hüftbeuge am Stab 10 Wdh., Kelchkniebeuge mit leichter Kurzhantel 10 Wdh., 1 Satz Rumänisches Kreuzheben mit der leeren Stange (8 Wdh.).",
           "aufwaermUebungen": [
             "hueftbeuge",
-            "kelchkniebeuge"
+            "kelchkniebeuge",
+            "rdl"
           ],
           "folge": [
             {
@@ -2454,7 +2455,7 @@
             }
           ],
           "hinweise": [
-            "Block 3–4 (Mai–August): Beine nur einmal pro Woche als Erhaltung – je 2 Sätze schwer, 1–3 Wiederholungen im Tank. Die langen Fahrten tragen die Last."
+            "Block 3–4 (Mai–August): Beine nur einmal pro Woche als Erhaltung – je 2 Sätze schwer, 2–3 Wiederholungen im Tank. Die langen Fahrten tragen die Last."
           ]
         },
         "oberkoerper": {
@@ -2463,10 +2464,11 @@
           "pauseSekunden": 75,
           "pauseText": "60–90 s",
           "runden": 3,
-          "aufwaermen": "5 min: Band auseinanderziehen 2 × 15, Bird Dog 2 × 5 je Seite (überarbeitete Ausführung).",
+          "aufwaermen": "5 min: Band auseinanderziehen 2 × 15, Bird Dog 2 × 5 je Seite (überarbeitete Ausführung), 1 Satz Bankdrücken mit der leeren Stange (10 Wdh.).",
           "aufwaermUebungen": [
             "bandPullApart",
-            "birdDog"
+            "birdDog",
+            "bankdruecken"
           ],
           "folge": [
             {
@@ -2517,6 +2519,7 @@
           ],
           "hinweise": [
             "Supersätze: A1 und A2 im Wechsel, 60–90 s Pause nach jedem Paar, 3 Runden (Erholungswoche 2).",
+            "Scheiben vorher aufteilen: Langhantel für das Bankdrücken, eine Kurzhantel für Rudern und Koffertragen – dann muss während der Supersätze nichts umgesteckt werden.",
             "Ohne Klimmzugstange: Rudern mit Theraband statt Klimmzug."
           ]
         }
@@ -2548,17 +2551,20 @@
         },
         {
           "key": "rdl",
-          "name": "Rumänisches Kreuzheben mit Kurzhanteln",
-          "video": "n9HS63PRILs",
+          "name": "Rumänisches Kreuzheben mit Langhantel",
+          "video": "Dh2jEfzfwNU",
           "gewicht": true,
           "steps": [
-            "Aufrecht stehen, Kurzhanteln seitlich nah am Körper",
+            "Aufnehmen: Stange vor dem Satz auf zwei stabile Erhöhungen auf Schienbeinhöhe legen und von dort aufnehmen – ohne Erhöhung mit gebeugten Knien und geradem Rücken vom Boden heben. Verschlüsse drauf",
+            "Aufrecht stehen, Füße hüftbreit, Griff knapp schulterbreit im Obergriff, Stange an den Oberschenkeln",
             "Bauch anspannen, Knie leicht gebeugt und fest",
-            "Bewegung aus der Hüfte: Po nach hinten, die Hanteln gleiten nah an den Beinen nach unten",
+            "Bewegung aus der Hüfte: Po nach hinten, die Stange gleitet an den Beinen entlang nach unten",
             "Nur so weit, wie der Rücken gerade bleibt – meist knapp unter dem Knie. Dehnung in der Oberschenkelrückseite",
-            "3 s nach unten, über das Gesäß aufrichten, oben nicht nach hinten lehnen"
+            "3 s nach unten, über das Gesäß aufrichten, oben nicht nach hinten lehnen",
+            "Ablegen wie beim Aufnehmen, mit geradem Rücken"
           ],
-          "goal": "Kurzhanteln statt Langhantel: die Last liegt näher am Schwerpunkt und belastet den unteren Rücken weniger."
+          "goal": "Langhantel statt Kurzhanteln: eine Stange, symmetrisch, leicht nah an den Beinen zu führen und fein zu steigern.",
+          "langhantel": true
         },
         {
           "key": "bulgarisch",
@@ -2577,7 +2583,7 @@
         {
           "key": "hueftheben",
           "name": "Einbeiniges Hüftheben an der Bank",
-          "video": "jCQ8URhBiGg",
+          "video": "PqgFk20IWxw",
           "gewicht": true,
           "jeSeite": true,
           "steps": [
@@ -2677,15 +2683,20 @@
         },
         {
           "key": "bankdruecken",
-          "name": "Bankdrücken mit Kurzhanteln",
-          "video": "m_lhdbLuU1w",
+          "name": "Bankdrücken mit Langhantel",
+          "video": "oERl5kPK5-Q",
           "gewicht": true,
           "steps": [
-            "Rücken auf der Bank, Füße fest am Boden, Schulterblätter zusammen",
-            "Hanteln seitlich der Brust absenken, Ellbogen ca. 45° vom Körper",
-            "Drücken, ohne die Ellbogen ganz durchzustrecken"
+            "Ohne Verschlüsse – das ist die Notbremse, wenn eine Wiederholung nicht hochgeht",
+            "Aufnehmen: ans Bankende setzen, Stange auf die Oberschenkel nah an der Hüfte legen, mit beiden Händen festhalten, zurücklegen und die Stange über die Hüfte zur unteren Brust rollen",
+            "Füße fest am Boden, Schulterblätter zusammen und nach unten, Griff etwas breiter als schulterbreit",
+            "Stange kontrolliert zur unteren Brust absenken, Ellbogen ca. 45° vom Körper",
+            "Drücken, ohne die Ellbogen ganz durchzustrecken",
+            "Ablegen in umgekehrter Reihenfolge: zur Brust, über die Hüfte auf die Oberschenkel rollen, aufsetzen",
+            "Notfall: Geht eine Wiederholung nicht hoch, die Stange zur Seite kippen, bis die Scheiben abrutschen"
           ],
-          "goal": "Druckkraft für Brust, Schultern und Arme – Muskelerhalt im Alter."
+          "goal": "Druckkraft für Brust, Schultern und Arme – Muskelerhalt im Alter. Mit der Langhantel fällt die saubere Ausführung leichter als mit Kurzhanteln.",
+          "langhantel": true
         },
         {
           "key": "seitstuetz",
@@ -2777,7 +2788,13 @@
         ],
         "steigerung": "Doppelte Progression, in dieser Reihenfolge: 1. mehr Wiederholungen, bis das obere Ende der Spanne in allen Sätzen sauber gelingt – 2. langsamer absenken (3–4 s) – 3. 2 s Pause im untersten Punkt – 4. mehr Gewicht.",
         "stufen": "Startstufe am ersten Montag: je Übung die Stufe, auf der 3 × 20 s (Liegestütz: 3 × 8) sauber gelingen. Weiterrücken, wenn Zielzeit (40 s) bzw. Zielwiederholungen in allen Runden sauber gelingen – an zwei Terminen hintereinander. Die Haltezeit bleibt bei 40 s gedeckelt.",
-        "gewicht": "Gewicht ergänzen voraussichtlich nach 2–3 Monaten, wenn die Bulgarische Kniebeuge auch mit langsamem Absenken und Pause zu leicht wird: dann 30–40 kg zusätzliche Scheiben für Kreuzheben und Hüftheben mit der Langhantel."
+        "gewicht": "Gewicht ergänzen voraussichtlich nach 2–3 Monaten, wenn Rumänisches Kreuzheben oder Bulgarische Kniebeuge mit den vorhandenen 30 kg auch mit langsamem Absenken und Pause zu leicht werden: dann 30–40 kg zusätzliche Scheiben. Später möglich: Hüftheben (Di) mit der Langhantel.",
+        "langhantel": [
+          "Bankdrücken ohne Verschlüsse: Gelingt eine Wiederholung nicht, die Stange zur Seite kippen – die Scheiben rutschen ab.",
+          "Rumänisches Kreuzheben mit Verschlüssen: Die Stange vor dem Satz auf zwei stabile Erhöhungen auf Schienbeinhöhe legen (Stufen, Kisten) – dann ist die erste Wiederholung nicht vom Boden. Ohne Erhöhung mit gebeugten Knien und geradem Rücken aufnehmen.",
+          "Immer mindestens 2 Wiederholungen im Tank, auch in Phase K2. Ohne Partner und Ablage gibt es keinen Versuch bis zum Muskelversagen.",
+          "Langhantel und Kurzhanteln teilen sich die 30 kg Scheiben: vor der Einheit aufteilen bzw. zwischen den Übungen umstecken."
+        ]
       }
     },
     "weeks": [

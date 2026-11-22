@@ -83,6 +83,14 @@ Dienstagabend moderat (`beineModerat`, nur in Belastungswochen), Donnerstagabend
 schwer (`beine`). In Block 3 und 4 nur noch Donnerstag als Erhaltung – für
 noch nicht ausgearbeitete Wochen steht das am Block unter `kraftErsatz`.
 
+Seit Fassung 3 (22.11.2026) laufen **Bankdrücken** (Mo) und **Rumänisches
+Kreuzheben** (Do) mit der **Langhantel** statt mit Kurzhanteln. Eine Übung sagt
+das selbst: `"langhantel": true` unter `folgeplan.kraft.uebungen`. Die
+Sicherheitsregeln ohne Rack stehen einmal unter `kraft.regeln.langhantel` und
+erscheinen nur in den Einheiten, in denen eine Stange vorkommt – am Dienstag
+mit Kurzhanteln wären sie Lärm. Das Aufwärmen zählt dabei mit: der Satz mit der
+leeren Stange ist der erste Griff an die Hantel.
+
 **Wochenleiste im Trainingsbereich:** Rumpf und Kraft lassen sich für jede
 Woche ansehen und trainieren, nicht nur für die von heute – über die Plangrenze
 hinweg, mit den Zirkeln und Krafteinheiten genau dieser Woche

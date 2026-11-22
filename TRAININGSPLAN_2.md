@@ -4,7 +4,11 @@
 läuft bis zum 04.12.2026 unverändert zu Ende, einschließlich Retest am Do 03.12.
 Dieser Plan beginnt am **Mo 07.12.2026**.
 
-> **Fassung 2 (Entwurf), Stand 16.11.2026.** **Beine zweimal pro Woche** in Block 1–2
+> **Fassung 3 (Entwurf), Stand 22.11.2026.** **Bankdrücken (Mo) und Rumänisches
+> Kreuzheben (Do) mit der Langhantel** statt mit Kurzhanteln. Sicherheitsregeln ohne Rack
+> in Abschnitt 8, Begründung in Abschnitt 14.
+>
+> **Fassung 2 (Entwurf), 16.11.2026.** **Beine zweimal pro Woche** in Block 1–2
 > und Block 5: Do schwer (Rumänisches Kreuzheben, Bulgarische Kniebeuge), Di abends nach
 > den VO2max-Intervallen moderat (Einbeiniges Hüftheben, Wadenheben, Kelchkniebeuge). In
 > Block 3–4 einmal pro Woche als Erhaltung. Gesamtmenge etwa gleich, nur verteilt.
@@ -420,6 +424,9 @@ Die Umsetzung steht in `ERNAEHRUNGSPLAN.md` und wird dort festgelegt.
 **Material:** Hantelbank, Kurzhanteln und Langhantel (zusammen 30 kg Scheiben), Theraband.
 **Kein Rack.** Klimmzugstange wird besorgt. Einen Gewichtsgürtel braucht es nicht.
 
+**Langhantel und Kurzhanteln teilen sich die 30 kg Scheiben** (seit Fassung 3). Vor der
+Einheit die Scheiben passend aufteilen bzw. zwischen den Übungen umstecken.
+
 **Warum keine Zirkel mehr für die Beine:** Im Zirkel sind die Pausen kurz und die Technik
 leidet mit der Ermüdung — gut für Kondition, schlecht, wenn die Last steigen soll. Für
 Sprint, Muskel- und Knochenerhalt im Alter sind **einzelne Sätze mit voller Pause** die
@@ -439,6 +446,16 @@ Der Sportler hat Rückenprobleme (Art noch offen, Abschnitt 13).
   Wasser gefüllt und empfindlicher.
 - **Kippt die Form, ist der Satz zu Ende.**
 
+### Langhantel ohne Rack (seit Fassung 3)
+
+- **Bankdrücken: ohne Verschlüsse.** Gelingt eine Wiederholung nicht, die Stange zur
+  Seite kippen — die Scheiben rutschen ab.
+- **Rumänisches Kreuzheben: mit Verschlüssen.** Die Stange vor dem Satz auf zwei stabile
+  Erhöhungen auf Schienbeinhöhe legen (Stufen, Kisten) — dann ist die erste Wiederholung
+  nicht vom Boden. Ohne Erhöhung mit gebeugten Knien und geradem Rücken aufnehmen.
+- **Immer mindestens 2 Wiederholungen im Tank**, auch in Phase K2. Ohne Partner und
+  Ablage gibt es keinen Versuch bis zum Muskelversagen.
+
 ### Beine — zwei Einheiten pro Woche (seit Fassung 2)
 
 **Häufigkeit je Block:**
@@ -446,7 +463,7 @@ Der Sportler hat Rückenprobleme (Art noch offen, Abschnitt 13).
 | Block | Beine | |
 |---|---|---|
 | 1 Winterbasis, 2 Aufbau (Dez–Apr) | **2 × pro Woche**, Di moderat + Do schwer | Aufbau |
-| 3 Spezifisch, 4 Zielfenster (Mai–Aug) | **1 × pro Woche**, Do | Erhaltung: Rumänisches Kreuzheben und Bulgarische Kniebeuge, je 2 Sätze schwer (1–3 Wdh. im Tank) |
+| 3 Spezifisch, 4 Zielfenster (Mai–Aug) | **1 × pro Woche**, Do | Erhaltung: Rumänisches Kreuzheben und Bulgarische Kniebeuge, je 2 Sätze schwer (2–3 Wdh. im Tank) |
 | 5 Herbst (Sep–Okt) | **2 × pro Woche** | Aufbau |
 
 **Pause zwischen den Sätzen 2–3 min**, bei einbeinigen Übungen zählt der Seitenwechsel
@@ -455,16 +472,17 @@ als Pause.
 #### Donnerstag abends — schwer (Hauptlast)
 
 Aufwärmen 5 min: Hüftbeuge am Stab 10 Wdh., Kelchkniebeuge mit leichter Kurzhantel
-10 Wdh. Zeitbedarf ca. 25–30 min.
+10 Wdh., **1 Satz Rumänisches Kreuzheben mit der leeren Stange** (8 Wdh.). Zeitbedarf ca.
+25–30 min plus Umstecken der Scheiben.
 
 | # | Übung | Material | Phase K1 (Woche 1–4) | Phase K2 (ab Woche 5) |
 |---|---|---|---|---|
-| 1 | **Rumänisches Kreuzheben** | zwei Kurzhanteln, beidbeinig | 3 × 8–10 | 3–4 × 6–8 |
+| 1 | **Rumänisches Kreuzheben** | **Langhantel**, beidbeinig | 3 × 8–10 | 3–4 × 6–8 |
 | 2 | **Bulgarische Kniebeuge** | zwei Kurzhanteln, hinterer Fuß auf der Bank | 3 × 8–10 je Seite | 3–4 × 6–8 je Seite |
 
 - **K1 — Technik:** bewusst leicht, **3–4 Wiederholungen bleiben im Tank**. Ziel ist
   saubere Bewegung ohne starken Muskelkater vor der Sonntagsfahrt.
-- **K2 — Kraft:** **1–3 Wiederholungen im Tank.**
+- **K2 — Kraft:** **2–3 Wiederholungen im Tank** (Langhantel ohne Rack, siehe oben).
 
 #### Dienstag abends — moderat (direkt nach den VO2max-Intervallen)
 
@@ -498,22 +516,26 @@ Kein eigenes Aufwärmen nötig, die Beine sind vom Rad warm. Zeitbedarf ca. 20 m
 
 Am Dienstag gilt dieselbe Reihenfolge, aber immer mit 3–4 Wiederholungen im Tank.
 
-**Gewicht ergänzen:** voraussichtlich nach 2–3 Monaten, wenn die Bulgarische Kniebeuge
-auch mit langsamem Absenken und Pause zu leicht wird. Dann **30–40 kg zusätzliche
-Scheiben** → Rumänisches Kreuzheben (Do) und Hüftheben (Di) mit der Langhantel (beide vom
-Boden, ohne Rack). Ein Rack nur, falls später beidbeinige Kniebeugen mit der Langhantel
+**Gewicht ergänzen:** voraussichtlich nach 2–3 Monaten, wenn Rumänisches Kreuzheben oder
+Bulgarische Kniebeuge mit den vorhandenen 30 kg auch mit langsamem Absenken und Pause zu
+leicht werden. Dann **30–40 kg zusätzliche Scheiben**. Später möglich: Hüftheben (Di) mit
+der Langhantel. Ein Rack nur, falls später beidbeinige Kniebeugen mit der Langhantel
 gewünscht sind.
 
 ### Montag — Rumpf und Oberkörper
 
 Aufwärmen 5 min: Band auseinanderziehen 2 × 15, Bird Dog 2 × 5 je Seite (überarbeitete
-Ausführung, Abschnitt 8). **Supersätze:** A1 und A2 im Wechsel, 60–90 s Pause nach jedem
-Paar, **3 Runden** (Erholungswoche 2). Zeitbedarf ca. 35–40 min.
+Ausführung, Abschnitt 8), **1 Satz Bankdrücken mit der leeren Stange** (10 Wdh.).
+**Supersätze:** A1 und A2 im Wechsel, 60–90 s Pause nach jedem Paar, **3 Runden**
+(Erholungswoche 2). Zeitbedarf ca. 35–40 min.
+
+**Scheiben vorher aufteilen:** Langhantel für das Bankdrücken, eine Kurzhantel für Rudern
+und Koffertragen — dann muss während der Supersätze nichts umgesteckt werden.
 
 | Paar | Rumpf | Oberkörper |
 |---|---|---|
 | **A** | **Unterarmstütz** (Stufenleiter), 20–40 s | **Klimmzug** (Stufenleiter), 3–5 Wdh.; ohne Stange: Rudern mit Theraband |
-| **B** | **Rotationsstabiles Drücken mit Theraband**, 8–10 je Seite, 2 s halten | **Bankdrücken mit Kurzhanteln**, 8–10 |
+| **B** | **Rotationsstabiles Drücken mit Theraband**, 8–10 je Seite, 2 s halten | **Bankdrücken mit Langhantel**, 8–10 (2–3 Wdh. im Tank) |
 | **C** | **Seitstütz** (Stufenleiter), 20–40 s je Seite | **Rudern einarmig an der Bank**, 8–10 je Seite |
 | Abschluss | **Koffertragen** (eine Kurzhantel einseitig), 2 × 30–40 m je Seite | — |
 
@@ -553,13 +575,18 @@ Brustwirbelsäule und Kreuzbein. Knie leicht gebeugt, Po nach hinten schieben, O
 neigt sich nach vorn. Verliert der Stab einen der drei Kontakte, rundet der Rücken —
 dort ist die Bewegung zu Ende. *Lernübung für das Kreuzheben, jederzeit ohne Gewicht.*
 
-**Rumänisches Kreuzheben mit Kurzhanteln** — Aufrecht stehen, Kurzhanteln seitlich nah
-am Körper. Bauch anspannen, Knie leicht gebeugt und fest. Bewegung aus der Hüfte: Po nach
-hinten, Hanteln gleiten nah an den Beinen nach unten — **nur so weit, wie der Rücken
-gerade bleibt**, meist knapp unter dem Knie. Dehnung in der Oberschenkelrückseite. 3 s
-nach unten, über das Gesäß aufrichten, oben nicht nach hinten lehnen.
-*Kurzhanteln statt Langhantel: Die Last liegt näher am Schwerpunkt und belastet den
-unteren Rücken weniger.*
+**Rumänisches Kreuzheben mit Langhantel** (seit Fassung 3) — **Aufnehmen:** Stange vor
+dem Satz auf zwei stabile Erhöhungen auf Schienbeinhöhe legen und von dort aufnehmen;
+ohne Erhöhung mit gebeugten Knien und geradem Rücken vom Boden heben, wie beim normalen
+Kreuzheben. Verschlüsse drauf. **Ausführung:** Aufrecht stehen, Füße hüftbreit, Griff
+knapp schulterbreit im Obergriff, Stange an den Oberschenkeln. Bauch anspannen, Knie
+leicht gebeugt und fest. Bewegung aus der Hüfte: Po nach hinten, die Stange gleitet an
+den Beinen entlang nach unten — **nur so weit, wie der Rücken gerade bleibt**, meist
+knapp unter dem Knie. Dehnung in der Oberschenkelrückseite. 3 s nach unten, über das
+Gesäß aufrichten, oben nicht nach hinten lehnen. **Ablegen** wie beim Aufnehmen, mit
+geradem Rücken.
+*Langhantel statt Kurzhanteln: eine Stange, symmetrisch, leicht nah an den Beinen zu
+führen und fein zu steigern.*
 
 **Bulgarische Kniebeuge** — Hinterer Fuß mit dem Spann auf der Bank, vorderer Fuß gut
 einen Schritt davor. Oberkörper leicht nach vorn geneigt, hinteres Knie senkrecht nach
@@ -587,9 +614,16 @@ Fuß im Band. Schultern vor dem Ziehen nach unten ziehen.
 seitlich dazu stehen, Griff mit beiden Händen vor der Brust. Arme gerade nach vorn
 drücken, 2 s halten, zurück. Der Oberkörper darf sich **nicht** zum Band drehen.
 
-**Bankdrücken mit Kurzhanteln** — Rücken auf der Bank, Füße fest am Boden,
-Schulterblätter zusammen. Hanteln seitlich der Brust absenken, Ellbogen ca. 45° vom
-Körper, drücken ohne die Ellbogen ganz durchzustrecken.
+**Bankdrücken mit Langhantel** (seit Fassung 3) — **Ohne Verschlüsse.** **Aufnehmen:**
+ans Bankende setzen, Stange auf die Oberschenkel nah an der Hüfte legen, mit beiden Händen
+festhalten, zurücklegen und die Stange über die Hüfte zur unteren Brust rollen; von dort
+die erste Wiederholung drücken. **Ausführung:** Füße fest am Boden, Schulterblätter
+zusammen und nach unten. Griff etwas breiter als schulterbreit. Stange kontrolliert zur
+unteren Brust absenken, Ellbogen ca. 45° vom Körper, drücken ohne die Ellbogen ganz
+durchzustrecken. **Ablegen** in umgekehrter Reihenfolge: zur Brust, über die Hüfte auf
+die Oberschenkel rollen, aufsetzen. **Notfall:** Geht eine Wiederholung nicht hoch, die
+Stange zur Seite kippen, bis die Scheiben abrutschen. Deshalb immer 2–3 Wiederholungen
+im Tank.
 
 **Rudern einarmig an der Bank** — Knie und Hand einer Seite auf der Bank, Rücken gerade
 und waagerecht. Kurzhantel zur Hüfte ziehen (nicht zur Brust), Schulterblatt nach hinten
@@ -693,6 +727,7 @@ Planverstöße; bewertet wird die Wochensumme.
 | **Urlaube 2027** | sobald bekannt |
 | **Startstufen** Liegestütz, Unterarmstütz, Seitstütz | Mo 07.12.2026 |
 | **Klimmzugstange** besorgen | Woche 1 |
+| **Zwei stabile Erhöhungen** auf Schienbeinhöhe als Ablage für die Langhantel (Kreuzheben) | Woche 1 |
 | **Ernährungsplan** auf Plan 2 abstimmen (Defizit bis Block 2, Erhaltung ab Block 3) | vor Woche 1 |
 | **Block 2** wochengenau ausarbeiten | Februar 2027 |
 | Bodensee-Umrundung: ob und wann | bis Block 3 |
@@ -700,6 +735,23 @@ Planverstöße; bewertet wird die Wochensumme.
 ---
 
 ## 14. Änderungen
+
+### Fassung 3 (22.11.2026) gegenüber Fassung 2
+
+**Anlass:** Fragen des Sportlers zum Krafttraining (Klimmzug, Rotationsstabiles
+Drücken, Bankdrücken, Rudern, Hüftheben, Kreuzheben).
+
+| # | Änderung | Begründung |
+|---|---|---|
+| 1 | **Bankdrücken mit Langhantel** statt mit Kurzhanteln (Mo) | Die saubere Ausführung fällt dem Sportler mit der Langhantel leichter. Fehlendes Rack über Regeln abgesichert: ohne Verschlüsse, 2–3 Wdh. im Tank, Aufnehmen über die Hüfte |
+| 2 | **Rumänisches Kreuzheben mit Langhantel** statt mit Kurzhanteln (Do) | Leichter nah an den Beinen zu führen und feiner zu steigern; der Rückenvorteil der Kurzhanteln ist gering. Aufnehmen von zwei Erhöhungen auf Schienbeinhöhe, damit die erste Wiederholung nicht vom Boden kommt |
+| 3 | **Abschnitt „Langhantel ohne Rack"**, Aufwärmsatz mit leerer Stange (Mo, Do), Scheiben aufteilen bzw. umstecken | Folge aus 1–2; Langhantel und Kurzhanteln teilen sich 30 kg Scheiben |
+| 4 | **K2 und Erhaltung Block 3–4: 2–3 statt 1–3 Wdh. im Tank** | Ohne Rack und Partner kein Satz bis ans Limit |
+| 5 | „Gewicht ergänzen" angepasst, Erhöhungen als offener Punkt | Kreuzheben läuft schon mit der Langhantel |
+
+**Bewusst nicht geändert:** Klimmzug, Rotationsstabiles Drücken, Rudern einarmig an der
+Bank und Einbeiniges Hüftheben an der Bank bleiben wie in Fassung 2 — im Chat am
+22.11.2026 erklärt.
 
 ### Fassung 2 (16.11.2026) gegenüber Fassung 1
 

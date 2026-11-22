@@ -291,6 +291,27 @@ describe('Kraft', () => {
     expect(K.satzZiel(a[1])).toBe('3–5 Wdh.');
   });
 
+  /* Fassung 3: Bankdruecken (Mo) und Rumaenisches Kreuzheben (Do) mit der
+     Langhantel. Ohne Rack haengen daran Sicherheitsregeln - sie sollen dort
+     stehen, wo die Stange vorkommt, und nur dort. */
+  it('zeigt die Regeln fuer die Langhantel nur in den Einheiten mit Stange', () => {
+    const do_ = K.kraftDosis(p2, 2, 'beine');
+    const mo = K.kraftDosis(p2, 2, 'oberkoerper');
+    const di = K.kraftDosis(p2, 2, 'beineModerat');
+    const erhaltung = K.kraftDosis(p2, 25, 'beineErhaltung');
+    expect(do_.langhantel.length).toBeGreaterThan(0);
+    expect(mo.langhantel).toEqual(do_.langhantel);
+    expect(erhaltung.langhantel).toEqual(do_.langhantel);
+    expect(di.langhantel).toEqual([]);                 // Dienstag nur Kurzhanteln
+    expect(do_.langhantel.join(' ')).toContain('2 Wiederholungen im Tank');
+    /* Der Aufwaermsatz mit der leeren Stange steht in beiden Einheiten. */
+    expect(do_.aufwaermUebungen.map(u => u.key)).toContain('rdl');
+    expect(mo.aufwaermUebungen.map(u => u.key)).toContain('bankdruecken');
+    expect(di.aufwaermen).toBe(null);
+    /* K2 geht ohne Rack nicht mehr bis ans Limit. */
+    expect(K.kraftDosis(p2, 5, 'beine').phaseInfo.text).toContain('2–3');
+  });
+
   it('kennt die Stufenleitern mit der leichtesten Stufe als Voreinstellung', () => {
     expect(K.stufeText(p2, 'liegestuetz', {}).text).toBe('Hände auf der Arbeitsplatte');
     expect(K.stufeText(p2, 'klimmzug', { klimmzug: 2 }).text).toBe('Frei');

@@ -45,6 +45,18 @@ function jePhase(wert, phase){
   return wert;
 }
 
+/* Die Sicherheitsregeln fuer die Langhantel ohne Rack - aber nur, wenn im
+   Programm ueberhaupt eine Langhantel vorkommt. Gezaehlt wird auch das
+   Aufwaermen: der Satz mit der leeren Stange ist der erste Griff an die
+   Hantel und faellt damit unter dieselben Regeln. */
+function langhantelRegeln(plan, gruppen, aufwaermen){
+  const regeln = (plan.kraft.regeln || {}).langhantel || [];
+  if(!regeln.length) return [];
+  const dabei = gruppen.some(g => g.uebungen.some(u => u.langhantel)) ||
+                (aufwaermen || []).some(u => u && u.langhantel);
+  return dabei ? regeln : [];
+}
+
 /* Die Dosis eines Programms in einer Woche.
 
    `saetze` aus der Einheit des Tages sticht die Phase: in Erholungswochen
@@ -70,6 +82,7 @@ export function kraftDosis(plan, week, programmKey, einheit){
       einheit: ex ? (ex.einheit || 'wdh') : 'wdh',
       jeSeite: !!(ex && ex.jeSeite),
       gewicht: !!(ex && ex.gewicht),
+      langhantel: !!(ex && ex.langhantel),
       stufenleiter: ex ? (ex.stufenleiter || null) : null,
       abschluss: !!f.abschluss
     };
@@ -85,14 +98,22 @@ export function kraftDosis(plan, week, programmKey, einheit){
       gruppen.push({ paar: null, runden: z.saetze, uebungen: [z] });
     }
   }
+  const aufwaermUebungen = (prog.aufwaermUebungen || []).map(k => kraftUebung(plan, k)).filter(Boolean);
   return {
     key: programmKey, titel: prog.titel, dauer: prog.dauer || null, phase,
     phaseInfo: (plan.kraft.phasen || {})[phase] || null,
     erholung, reduziert: !!ueber,
     pauseSek: prog.pauseSekunden, pauseText: prog.pauseText || null,
     aufwaermen: prog.aufwaermen || null,
-    aufwaermUebungen: (prog.aufwaermUebungen || []).map(k => kraftUebung(plan, k)).filter(Boolean),
+    aufwaermUebungen,
     hinweise: prog.hinweise || [],
+    /* Die Regeln fuer die Langhantel ohne Rack stehen nur dort, wo eine
+       Langhantel vorkommt - am Dienstag mit Kurzhanteln waeren sie Laerm.
+       Welche Uebung eine ist, sagt die Uebung selbst (`langhantel`), nicht
+       eine Liste von Programmen: sonst muesste man an zwei Stellen denken,
+       wenn eine Uebung das Geraet wechselt - und genau das ist in Fassung 3
+       passiert. */
+    langhantel: langhantelRegeln(plan, gruppen, aufwaermUebungen),
     gruppen
   };
 }
