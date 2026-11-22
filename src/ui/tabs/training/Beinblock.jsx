@@ -248,11 +248,9 @@ export function Beinblock({ eintrag, onOpen, p: pEin, w: wEin }){
 
   return (
     <Baustein
-      titel="Beinblock"
-      meta={entfaellt ? 'entfällt heute' : rundenText(rounds) + ' · ' + p.legs.durationHint}
       status={
         <p class={'tagchip' + (rounds > 0 && voll >= rounds ? ' an' : '')}>
-          {voll} / {rounds} volle Runden protokolliert
+          {entfaellt ? 'Entfällt heute · ' : ''}{voll} / {rounds} volle Runden protokolliert
           {ab ? ' · ' + ab + (ab === 1 ? ' Satz' : ' Sätze') + ' unter dem Ziel' : ''}
         </p>
       }

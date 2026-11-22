@@ -116,8 +116,6 @@ export function Neutraltimer(){
 
   return (
     <Baustein
-      titel="Timer"
-      meta={workSec + ' s · Pause ' + PAUSE_SEK + ' s'}
       status={<p class="tagchip">Neutral · ohne Bezug zum Plan</p>}
       buehne={
         <Buehne

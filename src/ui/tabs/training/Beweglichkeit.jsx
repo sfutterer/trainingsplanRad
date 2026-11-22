@@ -33,8 +33,6 @@ export function Beweglichkeit({ onOpen }){
 
   return (
     <Baustein
-      titel="Beweglichkeit"
-      meta={m.durationHint + ' · täglich'}
       status={<p class="merksatz">{m.note}</p>}
       buehne={buehne}
       hinweise={[m.placement, m.scope]}>

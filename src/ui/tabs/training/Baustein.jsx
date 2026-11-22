@@ -20,6 +20,14 @@
    dem Plan), aber er kann sie nicht umsortieren. Genau das war der Fehler der
    alten Fassung.
 
+   Der Kopf bleibt leer, wo ueber dem Baustein schon die Segmentleiste seinen
+   Namen traegt - also im ganzen Trainingsbereich. Dort stand er als zweite
+   Nennung zwischen Wochenleiste und Buehne und nahm dem Ring und der
+   Tastenreihe 52 px, die auf einem 375er Geraet fehlten: die Tasten rutschten
+   unter die Navigationsleiste. Im Intervall- und im Testbereich bleibt er,
+   denn dort nennt ihn sonst niemand - er traegt den Namen der heutigen
+   Einheit.
+
    Zwei Regeln stecken in den Steckplaetzen selbst: der Status ist einer und
    nicht drei - was mehr ist, ist ein Hinweis und gehoert nach unten. Und
    Regeln und Einstellungen stehen zuletzt, weil man sie einmal setzt und
@@ -35,10 +43,13 @@ export function Baustein({ titel, meta, status, buehne, hinweise, schluss, child
           jeder Pixel, den er nimmt, fehlt dem Ring und dem Uebungsbild. Als
           Karte mit Status darin schob er die Tastenreihe hinter die
           Navigationsleiste - deshalb traegt er nur noch Name und Dauer, und
-          der Status steht unter der Buehne. */}
-      <div class="bausteinkopf">
-        <span>{titel}</span><b>{meta}</b>
-      </div>
+          der Status steht unter der Buehne. Ohne `titel` faellt er ganz weg,
+          samt seinem Abzug an der Hoehe der Buehne. */}
+      {titel ? (
+        <div class="bausteinkopf">
+          <span>{titel}</span><b>{meta}</b>
+        </div>
+      ) : null}
 
       {buehne}
       {status}

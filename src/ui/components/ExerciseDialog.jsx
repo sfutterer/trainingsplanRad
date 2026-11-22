@@ -16,9 +16,10 @@
    Escape, Fokusfalle und die Rueckgabe des Fokus liegen in Sheet.jsx - der
    Dialog teilt sie sich mit dem Tagesueberblick und den Rueckfragen. */
 
-import { plan, week, stufen } from '../../state/store.js';
+import { plan, week, stufen, setStufe } from '../../state/store.js';
 import { repLong, legDose, legRepText } from '../../domain/core.js';
-import { stufeText } from '../../domain/kraft.js';
+import { stufeText, stufenleiter } from '../../domain/kraft.js';
+import { Auswahlfeld } from './Feld.jsx';
 import { Sheet } from './Sheet.jsx';
 import { Uebungsbild, istVideo, videoLink } from '../tabs/training/Uebungsbild.jsx';
 
@@ -51,14 +52,26 @@ export function ExerciseDialog({ spec, workSec, onClose }){
       ? ex.dosage + ' · ' + ex.focus
       : repLong(ex, workSec);
   const stufe = ex.stufenleiter ? stufeText(p, ex.stufenleiter, stufen.value) : null;
+  const leiter = ex.stufenleiter ? stufenleiter(p, ex.stufenleiter) : null;
 
   return (
     <Sheet onClose={onClose} labelledBy="exdialog-titel">
       <Uebungsbild src={ex.img} name={ex.name} />
       <h3 id="exdialog-titel">{ex.name}</h3>
       {dosis ? <div class="dose">{dosis}</div> : null}
+      {/* Die Stufe wird hier umgestellt und nicht mehr in einer Karte unter
+          dem Kraftablauf: sie gehoert an die Uebung, die sie betrifft, und im
+          Trainingsbereich nahm sie als Block aus vier Auswahlfeldern Platz
+          weg, ohne dass man sie dort je ansah. Sie ist ein Stand, keine
+          Vorgabe - gespeichert auf dem Geraet, gueltig in Zirkel und
+          Kraftablauf zugleich. */}
       {stufe ? (
-        <p class="hint">Aktuelle Stufe {stufe.index + 1} von {stufe.anzahl}: <b>{stufe.text}</b></p>
+        <div class="stufenwahl">
+          <Auswahlfeld titel={'Stufe (' + (stufe.index + 1) + ' von ' + stufe.anzahl + ')'}
+            wert={String(stufe.index)}
+            onWert={v => setStufe(ex.stufenleiter, parseInt(v, 10) || 0)}
+            optionen={leiter.stufen.map((x, i) => ({ id: String(i), label: (i + 1) + '. ' + x }))} />
+        </div>
       ) : null}
       <ol>{ex.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
       <p class="goal">{istBein ? ex.why + ' ' + ex.goal : ex.goal}</p>

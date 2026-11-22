@@ -201,6 +201,17 @@
 .card > .buttons{ margin-top: 12px; }
 .sheet > .btn.block{ margin-top: 14px; }
 .sheet .buttons{ margin-top: 16px; }
+
+/* Die Stufe einer Stuetzuebung im Uebungsdialog. Das Auswahlfeld ist sonst
+   118 px breit - fuer Zahlen gedacht; hier stehen ganze Saetze darin ("3.
+   Hände auf einer niedrigen Stufe"), deshalb Beschriftung darueber und das
+   Feld ueber die volle Breite. */
+.stufenwahl{ margin: 10px 0 4px; }
+.stufenwahl .field{
+  flex-direction: column; align-items: stretch; gap: 4px;
+  min-height: 0; border-bottom: 0;
+}
+.stufenwahl .field select{ width: 100%; text-align: left; }
 .banner > span{ flex: 1; }
 
 /* Touch-Ziele: 48 dp. In der alten Fassung erreichte kein einziges Element

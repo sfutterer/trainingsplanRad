@@ -326,28 +326,30 @@ export function TrainingTab(){
 
       {/* Die Wochenleiste gilt fuer Rumpf und Kraft - die beiden Bausteine,
           deren Inhalt an der Woche haengt. Beweglichkeit, Koordination und
-          der neutrale Timer sind jede Woche dieselben. */}
-      {(segment === 'core' || segment === 'leg') && (
+          der neutrale Timer sind jede Woche dieselben.
+
+          Waehrend eine Uhr laeuft, ist sie ganz weg und nicht nur abgeblendet:
+          blaettern kann man ohnehin nicht (`gesperrt`), und mitten im Ablauf
+          zaehlen Ring und Tastenreihe - jede Zeile darueber nimmt ihnen Platz,
+          den sie auf einem 375er Geraet nicht haben. */}
+      {(segment === 'core' || segment === 'leg') && !gesperrt && (
         <div class="wochenwahl">
-          <button class="iconbtn" type="button" aria-label="Woche davor" disabled={gesperrt}
+          <button class="iconbtn" type="button" aria-label="Woche davor"
             onClick={() => blaettere(-1)}><span aria-hidden="true">‹</span></button>
           <div class="wochenwahl-titel">
             <b>{tw.label}</b>
-            <span>{tw.tage.length ? tagUndMonat(tw.tage[0]) + '–' + tagUndMonat(tw.tage[tw.tage.length - 1]) : ''}
-              {versatz === 0 ? ' · diese Woche' : ''}</span>
+            <span>{tw.tage.length ? tagUndMonat(tw.tage[0]) + '–' + tagUndMonat(tw.tage[tw.tage.length - 1]) : ''}</span>
           </div>
-          <button class="iconbtn" type="button" aria-label="Woche danach" disabled={gesperrt}
+          <button class="iconbtn" type="button" aria-label="Woche danach"
             onClick={() => blaettere(1)}><span aria-hidden="true">›</span></button>
           <button class={'btn tonal wochenwahl-heute' + (versatz === 0 ? ' leer' : '')} type="button"
-            disabled={gesperrt || versatz === 0} onClick={() => blaettere(0)}>Heute</button>
+            disabled={versatz === 0} onClick={() => blaettere(0)}>Heute</button>
         </div>
       )}
 
       <div hidden={segment !== 'core'}>
         <Baustein
-          titel="Rumpf"
-          meta={cfg.rounds + ' Runden · ca. ' + coreMinutes(p, w, cfg.rounds) + ' min'}
-          status={<p class="tagchip">Woche {w} · {tagText}</p>}
+          status={<p class="tagchip">Woche {w} · {tagText} · {cfg.rounds} Runden, ca. {coreMinutes(p, w, cfg.rounds)} min</p>}
           buehne={
             <Buehne
               ring={{ fraction: timer.fraction(),

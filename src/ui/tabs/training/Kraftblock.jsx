@@ -4,7 +4,7 @@
    Beine in einzelnen Saetzen mit voller Pause. Der Ablauf kommt aus kraft.js;
    hier wird er gefuehrt:
 
-     Satz     Uebung, Satz x von n, Ziel, Video. Eingabe: Wiederholungen (bei
+     Satz     Uebung, Satz x von n, Ziel. Eingabe: Wiederholungen (bei
               Stuetzuebungen Sekunden, beim Koffertragen Meter) und Gewicht.
               Die Taste heisst "Erledigt": der Satz endet, wenn er zu Ende
               ist, nicht nach einer Uhr.
@@ -17,12 +17,17 @@
    Wiederholungen, dann mehr Gewicht - und was intervals.icu von einer
    Krafteinheit nicht weiss.
 
-   Die Stufenleitern (Liegestuetz, Unterarmstuetz, Seitstuetz, Klimmzug)
-   stehen darunter zum Einstellen. Die Stufe ist ein Stand, keine Vorgabe:
-   sie wird gespeichert und gilt auch im Rumpfzirkel am Mittwoch. */
+   Was hier bewusst nicht mehr steht: die Hinweise aus dem Plan und die
+   Stufenleitern. Beides waren Karten unter dem Ablauf - sechzehn Absaetze
+   Regeltext und vier Auswahlfelder, die man einmal setzt und danach nicht
+   mehr ansieht. Die Regeln stehen im Trainingsplan und, wo sie zur Bewegung
+   gehoeren (Langhantel ohne Rack), in den Schritten der Uebung selbst; die
+   Stufe stellt man dort um, wo sie gilt - im Uebungsdialog. Die Stufe bleibt
+   ein Stand, keine Vorgabe: sie wird gespeichert und gilt auch im
+   Rumpfzirkel am Mittwoch. */
 
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { plan, week, settings, coreLog, saveCoreLog, today, stufen, setStufe,
+import { plan, week, settings, coreLog, saveCoreLog, today, stufen,
          startDate } from '../../../state/store.js';
 import { kraftWahl, kraftLaeuft } from '../../../state/navigation.js';
 import { buildLegRestSequence } from '../../../domain/timer/sequences.js';
@@ -32,7 +37,6 @@ import { isoDayLocal, planAm, weekNumberFor, WEEKDAY_SHORT } from '../../../doma
 import { Baustein, Uebungsliste } from './Baustein.jsx';
 import { Segmented } from '../../components/Segmented.jsx';
 import { Buehne } from '../../components/Buehne.jsx';
-import { Auswahlfeld } from '../../components/Feld.jsx';
 import { useTimerBasis } from '../../components/useTimerBasis.js';
 import { speak, primeSpeech, beep, vibrate, ensureWakeLock, cancelSpeech } from '../../../platform/index.js';
 
@@ -208,6 +212,11 @@ export function Kraftblock({ woche, onOpen }){
     kraftWahl.value = k;
   }
 
+  /* Das Uebungsvideo steht im Ablauf nicht mehr unter der Buehne. Es war dort
+     doppelt im Weg: wer gerade einen Satz drueckt, sieht es nicht an, und auf
+     einem 375er Geraet schob es die Tastenreihe unter die Navigationsleiste -
+     ausgerechnet "Erledigt" war abgeschnitten. Erreichbar bleibt es ueber die
+     Uebungsliste und den Uebungsdialog, also vor und nach dem Satz. */
   const erledigtAnzahl = kraftSaetzeErledigt(eintrag);
   const offenDialog = key => onOpen({ kind:'kraft', key,
     dosis: (() => { const u = uebungen.find(x => x.key === key); return u ? satzZiel(u) : ''; })() });
@@ -229,11 +238,6 @@ export function Kraftblock({ woche, onOpen }){
               time: String(timer.secondsLeft()),
               exercise: naechster ? naechster.name : 'Fertig',
               meta: naechster ? 'Satz ' + naechster.satz + ' / ' + naechster.saetze : '' }}
-      bild={naechster && naechster.key ? (() => {
-        const ex = uebungen.find(u => u.key === naechster.key);
-        return ex && ex.ex ? { src: ex.ex.img, name: ex.name, vorschau: true,
-                               cap: <b>{ex.name}</b>, onClick: () => offenDialog(ex.key) } : null;
-      })() : null}
       zurueck={{ onClick: () => blaettern(idx), disabled: false, label:'Zurück' }}
       haupt={{ label: timer.running ? 'Pause' : 'Fortsetzen', onClick: pauseTaste }}
       weiter={{ onClick: () => blaettern(idx + 1), label:'Überspringen' }}
@@ -247,53 +251,21 @@ export function Kraftblock({ woche, onOpen }){
                      : dosis.phaseInfo ? dosis.phaseInfo.text : '',
                kinder: <Satzfeld wert={wert} setWert={setWert} einheit={einheitKurz(satz)}
                          gewicht={gewichtsfeld ? gewicht : null} setGewicht={setGewicht} /> }}
-      bild={(() => {
-        const ex = uebungen.find(u => u.key === satz.key);
-        return ex && ex.ex ? { src: ex.ex.img, name: ex.name, cap: <b>{ex.name}</b>,
-                               onClick: () => offenDialog(ex.key) } : null;
-      })()}
       zurueck={{ onClick: () => blaettern(idx - 1), disabled: idx === 0 }}
       haupt={{ label:'Erledigt', onClick: erledigt }}
       weiter={{ label: letzter ? 'Fertig' : 'Weiter', onClick: () => blaettern(idx + 1) }}
       ende={{ label:'Ablauf beenden', onClick: beenden }} />
   );
 
-  const regeln = p.kraft.regeln || {};
-  const leitern = Object.keys(p.kraft.stufenleitern || {});
 
   return (
     <Baustein
-      titel={'Kraft – ' + dosis.titel}
-      meta={(dosis.dauer || '') + (dosis.reduziert ? ' · Erholungswoche' : '')}
       status={
         <p class={'tagchip' + (ablauf.length && erledigtAnzahl >= ablauf.length ? ' an' : '')}>
-          {gewaehlt.datum ? WEEKDAY_SHORT[gewaehlt.datum.getDay()] + ' ' + gewaehlt.datum.getDate() + '.' + (gewaehlt.datum.getMonth() + 1) + '.' : 'Woche ' + w} · {dosis.phaseInfo ? dosis.phaseInfo.name : dosis.phase} · {erledigtAnzahl} / {ablauf.length} Sätze heute protokolliert
+          {gewaehlt.datum ? WEEKDAY_SHORT[gewaehlt.datum.getDay()] + ' ' + gewaehlt.datum.getDate() + '.' + (gewaehlt.datum.getMonth() + 1) + '.' : 'Woche ' + w} · {dosis.phaseInfo ? dosis.phaseInfo.name : dosis.phase}{dosis.reduziert ? ' · Erholungswoche' : ''} · {erledigtAnzahl} / {ablauf.length} Sätze heute protokolliert
         </p>
       }
-      buehne={buehne}
-      hinweise={[
-        ...(dosis.hinweise || []),
-        dosis.phaseInfo ? dosis.phaseInfo.name + ': ' + dosis.phaseInfo.text : null,
-        ...((dosis.langhantel || []).map(r => 'Langhantel ohne Rack: ' + r)),
-        regeln.steigerung,
-        regeln.gewicht,
-        ...((regeln.ruecken || []).map(r => 'Rücken: ' + r))
-      ]}
-      schluss={
-        <div class="card">
-          <div class="row"><span>Stufenleitern</span><b>aktuelle Stufe</b></div>
-          {leitern.map(k => {
-            const l = p.kraft.stufenleitern[k];
-            const t = stufeText(p, k, stufen.value);
-            return (
-              <Auswahlfeld key={k} titel={l.name} wert={String(t.index)}
-                onWert={v => setStufe(k, parseInt(v, 10) || 0)}
-                optionen={l.stufen.map((x, i) => ({ id: String(i), label: (i + 1) + '. ' + x }))} />
-            );
-          })}
-          {regeln.stufen ? <p class="hint">{regeln.stufen}</p> : null}
-        </div>
-      }>
+      buehne={buehne}>
 
       {angebot.length > 1 || !geplant.length ? (
         <Segmented rolle="radio" label="Krafteinheit der Woche" klasse="katerwahl"

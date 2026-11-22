@@ -76,7 +76,16 @@ bzw. 9 (`fortschreibung`) und sagen das auf der Tageskarte.
 Krafttraining in Plan 2 läuft im Baustein **Kraft** mit Sätzen, Supersätzen,
 Pausen, Gewicht und Wiederholungen je Satz (`src/domain/kraft.js`,
 `Kraftblock.jsx`). Die Stufenleitern (Liegestütz, Unterarmstütz, Seitstütz,
-Klimmzug) werden auf dem Gerät gespeichert, nicht in `plan.json`.
+Klimmzug) werden auf dem Gerät gespeichert, nicht in `plan.json`; umgestellt
+wird die Stufe im Übungsdialog, also an der Übung, die sie betrifft.
+
+**Platz im Trainingsbereich.** Auf einem 375er Gerät müssen Bühne und
+Tastenreihe ohne Scrollen zusammen sichtbar sein — Stand 22.11.2026 waren sie
+es nicht. Deshalb: kein `bausteinkopf` in den fünf Trainingsbausteinen (die
+Segmentleiste nennt sie ohnehin, im Intervall- und Testbereich bleibt er), eine
+einzeilige Wochenleiste, die während eines laufenden Ablaufs ganz verschwindet,
+und kein Übungsvideo unter der Bühne des Kraftablaufs. Dauer und
+Erholungswochen-Marke stehen jetzt in der Statuszeile unter der Bühne.
 
 Seit Fassung 2 von Plan 2 (16.11.2026) laufen die Beine **zweimal pro Woche**:
 Dienstagabend moderat (`beineModerat`, nur in Belastungswochen), Donnerstagabend

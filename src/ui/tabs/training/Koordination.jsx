@@ -71,8 +71,6 @@ export function Koordination({ onOpen }){
 
   return (
     <Baustein
-      titel="Koordination"
-      meta={c.durationHint + ' · alle ' + rhythmus + ' Tage'}
       status={rest == null
         ? <p class="tagchip">Ohne Startdatum lässt sich der Rhythmus nicht ausrechnen.</p>
         : <p class={'tagchip' + (istHeute ? ' an' : '')}>
