@@ -7,6 +7,13 @@
       "runtimeArgs": ["vite", "--port", "5173", "--strictPort"],
       "port": 5173,
       "url": "http://localhost:5173"
+    },
+    {
+      "name": "trainingsplan-build",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "preview", "--port", "4173", "--strictPort"],
+      "port": 4173,
+      "url": "http://localhost:4173"
     }
   ]
 }

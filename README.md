@@ -17,6 +17,17 @@ npm run build    # Produktionsbuild nach dist/
 Node-Version steht in `.nvmrc`. Ein Push auf `main` baut und veröffentlicht
 automatisch über GitHub Actions.
 
+**Update auf dem Gerät.** Der Service Worker läuft mit `registerType: 'prompt'`:
+eine neue Fassung wird vollständig installiert und **wartet**, bis sie
+`SKIP_WAITING` bekommt. Ein bloßes `location.reload()` reicht dafür nicht — der
+alte Worker bedient die neu geladene Seite sofort weiter, und die App zeigt
+denselben Stand wie davor. Genau das war bis zum 22.11.2026 der Fehler im
+Update-Banner; die Umschaltung liegt jetzt in `src/state/update.js`. Wer eine
+Änderung am Gerät prüfen will, nimmt `npm run build` plus `npx vite preview`
+(Konfiguration `trainingsplan-build` in `.claude/launch.json`) — im
+Entwicklungsserver gibt es keinen Service Worker und damit auch keinen
+Beweis, dass das Update ankommt.
+
 **Voraussetzung in den Repo-Einstellungen:** Settings → Pages → Build and
 deployment → Source muss auf **GitHub Actions** stehen, nicht auf „Deploy from
 a branch". Sonst liefert Pages den Quelltext statt des Builds aus – und die
