@@ -293,8 +293,6 @@ export function EinstellungenTab(){
         <Schalter titel="Bildschirm anlassen" an={s.keepAwake} onChange={v => setSettings({ keepAwake: v })}
           wert={s.keepAwake ? 'an' : 'aus'}
           hilfe={<p>Hält den Bildschirm während einer laufenden Einheit wach. Ohne das sperrt Android mitten im Satz.</p>} />
-        <Schalter titel="Übungsbild im Timer" an={s.showIllu} onChange={v => setSettings({ showIllu: v })}
-          wert={s.showIllu ? 'an' : 'aus'} />
       </Gruppe>
 
       <Gruppe titel="Trainingsplan">

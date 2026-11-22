@@ -84,7 +84,11 @@ Tastenreihe ohne Scrollen zusammen sichtbar sein — Stand 22.11.2026 waren sie
 es nicht. Deshalb: kein `bausteinkopf` in den fünf Trainingsbausteinen (die
 Segmentleiste nennt sie ohnehin, im Intervall- und Testbereich bleibt er), eine
 einzeilige Wochenleiste, die während eines laufenden Ablaufs ganz verschwindet,
-und kein Übungsvideo unter der Bühne des Kraftablaufs. Dauer und
+und **kein Übungsvideo mehr auf der Bühne** – in keinem Baustein. Es stand
+zwischen Anzeige und Tastenreihe, war selbst angeschnitten und schob die Tasten
+unter die Navigationsleiste; angesehen hat es während eines Satzes ohnehin
+niemand. Zu sehen ist es in der Übungsliste und im Übungsdialog. Die
+Einstellung „Übungsbild im Timer" ist damit entfallen. Dauer und
 Erholungswochen-Marke stehen jetzt in der Statuszeile unter der Bühne.
 
 **Hinweise sind eine Auswahl, keine Sammlung.** Der Steckplatz `hinweise`

@@ -40,7 +40,7 @@ export function Baustein({ titel, meta, status, buehne, hinweise, schluss, child
   return (
     <>
       {/* Der Kopf ist eine Zeile und keine Karte: er steht ueber der Buehne und
-          jeder Pixel, den er nimmt, fehlt dem Ring und dem Uebungsbild. Als
+          jeder Pixel, den er nimmt, fehlt dem Ring und der Tastenreihe. Als
           Karte mit Status darin schob er die Tastenreihe hinter die
           Navigationsleiste - deshalb traegt er nur noch Name und Dauer, und
           der Status steht unter der Buehne. Ohne `titel` faellt er ganz weg,

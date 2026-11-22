@@ -65,7 +65,8 @@ export const kraftWahl = signal(null);
    heute - dort steht die Einheit, die man oeffnen will. */
 export const wochenVersatz = signal(0);
 
-/* Laeuft ein Kraftablauf, bleibt die Wochenleiste gesperrt. */
+/* Laeuft ein gefuehrter Ablauf im Baustein "leg" (Beinblock in Plan 1,
+   Kraftblock in Plan 2), ist die Wochenleiste weg. */
 export const kraftLaeuft = signal(false);
 
 /* Die vier Ziele der unteren Leiste - die Bereiche, die waehrend des Trainings

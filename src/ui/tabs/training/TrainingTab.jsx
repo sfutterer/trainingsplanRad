@@ -284,19 +284,6 @@ export function TrainingTab(){
     : step.type === 'roundrest' ? 'Rundenpause'
     : step.type === 'done' ? 'Fertig' : 'Bereit';
 
-  /* In der Pause die naechste Uebung zeigen - man richtet sich waehrend der
-     Pause schon ein, nicht erst wenn die Ansage kommt. */
-  let bildIndex = null, vorschau = false;
-  if(s.showIllu && step){
-    if(step.type === 'work'){ bildIndex = step.exIndex; }
-    else if(step.type === 'prep'){ bildIndex = 0; vorschau = true; }
-    else if(step.type === 'rest' || step.type === 'roundrest'){
-      const n = timer.sequence[timer.index + 1];
-      if(n && n.type === 'work'){ bildIndex = n.exIndex; vorschau = true; }
-    }
-  }
-  const bild = bildIndex == null ? null : p.circuit.exercises[bildIndex];
-
   const heuteIso = isoDayLocal(today.value);
   const tagText = sitzung
     ? tagKurz(sitzung.datum) + ' – ' + sitzung.titel + (isoDayLocal(sitzung.datum) === heuteIso ? ' · heute' : '')
@@ -359,9 +346,6 @@ export function TrainingTab(){
                       exercise: step ? step.label : p.circuit.exercises[0].name,
                       meta: step && step.round ? 'Runde ' + step.round + ' / ' + cfg.rounds
                                                : 'Als Erstes · ' + repShort(p.circuit.exercises[0], cfg.workSec) }}
-              bild={bild ? { src: bild.img, name: bild.name, vorschau,
-                             cap: <b>{bild.name}</b>,
-                             onClick: () => setDialogEx({ kind:'core', i: bildIndex, plan: p }) } : null}
               zurueck={{ onClick: zurueck, disabled: !step || timer.index <= 0 }}
               haupt={{ label: laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
                        onClick: starten }}

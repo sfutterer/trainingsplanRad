@@ -64,7 +64,7 @@ export const stufen      = signal({});
    undefiniertes Thema. Zwei Voreinstellungen fuer dieselbe Sache laufen
    auseinander, und diese beiden waren es schon. */
 const SETTINGS_DEFAULT = Object.freeze({
-  voice: true, keepAwake: true, showIllu: true, theme: 'system', mapStyle: 'atlas'
+  voice: true, keepAwake: true, theme: 'system', mapStyle: 'atlas'
 });
 
 export const settings    = signal({ ...SETTINGS_DEFAULT });

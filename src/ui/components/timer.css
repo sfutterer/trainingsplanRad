@@ -110,14 +110,6 @@
 .uebungsblock .ring{ --ring-max: 300px; --ring-hoehe: 36dvh; flex: none; }
 .uebungsblock .controls{ flex: none; }
 
-.illu{ margin-bottom: 14px; display: flex; flex-direction: column; min-height: 0; flex: 0 1 auto; }
-.illu img{
-  width: 100%; border-radius: var(--radius-s); display: block;
-  /* Schrumpfen statt abschneiden. contain haelt dabei das Seitenverhaeltnis. */
-  min-height: 0; flex: 0 1 auto; object-fit: contain;
-}
-.illu .cap{ font-size: 12.5px; color: var(--muted); margin-top: 6px; flex: none; }
-
 /* Stehen ueber der Ablaufliste noch Vorgabezeilen, braucht sie Luft nach
    oben - wie jeder Abstand in dieser App aus der Nachbarschaft und nicht aus
    einem style-Attribut. */
@@ -169,14 +161,6 @@
 .dialog ol{ padding-left: 20px; margin: 0 0 12px; }
 .dialog li{ margin-bottom: 7px; font-size: 14.5px; }
 .dialog .goal{ font-size: 13.5px; color: var(--muted); }
-.illu .cap .tag{
-  display: inline-block; margin-right: 8px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--on-primary-container); background: var(--primary-container);
-  padding: 2px 8px; border-radius: 999px; vertical-align: 1px;
-}
-.illu.vorschau img{ opacity: .82; }
-
 /* Uebungsbild und sein Platzhalter. Die Bilder zu Beweglichkeit und
    Koordination liegen noch nicht im Ordner assets, die Pfade stehen aber schon
    im Plan. Schlaegt das Laden fehl, tritt eine Kachel im Bildformat an die
@@ -197,9 +181,6 @@
 .exbild-leer small{
   font-size: 11px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase;
 }
-/* Im Uebungsblock gibt das Bild als Erstes nach, wenn der Platz eng wird - der
-   Platzhalter folgt denselben Regeln. */
-.illu .exbild-leer{ min-height: 0; flex: 0 1 auto; }
 .dialog .exbild{ border-radius: 12px; margin-bottom: 12px; }
 
 /* Uebungsvideo (seit 15.11.2026). Erst das Vorschaubild mit Abspielzeichen,
@@ -222,5 +203,4 @@
 }
 .exvideo{ aspect-ratio: 16 / 9; overflow: hidden; background: #000; }
 .exvideo iframe{ width: 100%; height: 100%; border: 0; display: block; }
-.illu.vorschau .exvideo-vorschau img{ opacity: .82; }
 .dialog .exvideo, .dialog .exvideo-vorschau{ border-radius: 12px; margin-bottom: 12px; }

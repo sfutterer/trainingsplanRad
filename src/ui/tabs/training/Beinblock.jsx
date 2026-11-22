@@ -24,6 +24,7 @@
 
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { plan, week, settings, coreLog, saveCoreLog, today } from '../../../state/store.js';
+import { kraftLaeuft } from '../../../state/navigation.js';
 import { buildLegRestSequence } from '../../../domain/timer/sequences.js';
 import { legDose, legRoundsForDay, legRepText, legRepMin, legDoneRounds, legAborts,
          sorenessLevels, sorenessLevel, legSkipped, rundenText } from '../../../domain/core.js';
@@ -103,6 +104,17 @@ export function Beinblock({ eintrag, onOpen, p: pEin, w: wEin }){
      angemeldet zu werden. */
   const naechsteRef = useRef(null);
   naechsteRef.current = laufend && !letzte ? uebungen[(zelle + 1) % uebungen.length] : null;
+
+  /* Dasselbe Signal wie im Kraftblock: solange ein gefuehrter Ablauf im
+     Baustein "leg" laeuft, ist die Wochenleiste weg. Ueber `timer.step`
+     allein ginge das hier nicht - zwischen den Saetzen zaehlt keine Uhr, der
+     Ablauf laeuft trotzdem. Beide Bausteine koennen sich das Signal teilen,
+     weil nie beide zugleich sichtbar sind: Beinblock gehoert zu Plan 1,
+     Kraftblock zu Plan 2. */
+  useEffect(() => {
+    kraftLaeuft.value = laufend;
+    return () => { kraftLaeuft.value = false; };
+  }, [laufend]);
 
   useEffect(() => {
     const ab = [];
@@ -225,9 +237,6 @@ export function Beinblock({ eintrag, onOpen, p: pEin, w: wEin }){
               time: String(sec),
               exercise: naechste ? naechste.name : 'Fertig',
               meta: 'Runde ' + (rundenwechsel ? runde + 1 : runde) + ' / ' + rounds }}
-      bild={naechste ? { src: naechste.img, name: naechste.name, vorschau: true,
-              cap: <b>{naechste.name}</b>,
-              onClick: () => onOpen((zelle + 1) % uebungen.length) } : null}
       zurueck={{ onClick: () => blaettern(zelle - 1), disabled: zelle === 0 }}
       haupt={{ label: laeuft ? 'Pause' : 'Fortsetzen', onClick: pauseTaste }}
       weiter={{ onClick: () => blaettern(zelle + 1) }}
@@ -238,8 +247,6 @@ export function Beinblock({ eintrag, onOpen, p: pEin, w: wEin }){
                wert: legRepText(aktuelle, dose), exercise: aktuelle.name,
                meta: p.texts.legTempoPlain,
                kinder: <Wdhfeld wert={wert} setWert={setWert} /> }}
-      bild={{ src: aktuelle.img, name: aktuelle.name,
-              cap: <b>{aktuelle.name}</b>, onClick: () => onOpen(exIndex) }}
       zurueck={{ onClick: () => blaettern(zelle - 1), disabled: zelle === 0 }}
       haupt={{ label:'Erledigt', onClick: erledigt }}
       weiter={{ label: letzte ? 'Fertig' : 'Weiter', onClick: () => blaettern(zelle + 1) }}

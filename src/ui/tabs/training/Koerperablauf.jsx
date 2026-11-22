@@ -171,8 +171,6 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
               time: step ? (step.type === 'done' ? '0' : String(sec)) : String(zeit.sekunden),
               exercise: step ? step.label : aktuelle.name,
               meta: step ? satzText(step) : aktuelle.dosage }}
-      bild={{ src: aktuelle.img, name: aktuelle.name,
-              cap: <b>{aktuelle.name}</b>, onClick: () => onOpen(schritt) }}
       zurueck={zurueck}
       haupt={{ label: laeuft ? 'Pause' : (step && step.type !== 'done' ? 'Fortsetzen' : 'Start'),
                onClick: starten }}
@@ -181,8 +179,6 @@ export function useKoerperablauf({ uebungen, timerId, label, segment, onOpen }){
     <Buehne
       dosis={{ phase:'Übung ' + (schritt + 1) + ' / ' + uebungen.length,
                wert: aktuelle.dosage, exercise: aktuelle.name, meta: aktuelle.focus }}
-      bild={{ src: aktuelle.img, name: aktuelle.name,
-              cap: <b>{aktuelle.name}</b>, onClick: () => onOpen(schritt) }}
       zurueck={zurueck}
       haupt={{ label:'Erledigt', onClick: () => blaettern(letzte ? -1 : schritt + 1) }}
       weiter={weiter} ende={ende} />
